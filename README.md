@@ -1,1 +1,1 @@
-# vimana-framework
+# Vimana Framework
