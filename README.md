@@ -15,4 +15,13 @@ The idea for the tool came up in 2010 during an intrusion test where (in those t
 
 According to Sanskrit texts the ancients had several types of airships called vimanas. These vehicles were used to fly through the air from city to city; to conduct aerial surveys of uncharted lands; and as delivery vehicles for awesome weapons.
 
+**How to use**
+
+The easiest and recommended way is through Docker containers:
+```
+sudo git clone https://github.com/s4dhul4bs/vimana-framework.git
+cd vimana-framework
+built -t vimana_framework .
+```
+
 
