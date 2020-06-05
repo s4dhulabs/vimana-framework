@@ -23,5 +23,10 @@ sudo git clone https://github.com/s4dhul4bs/vimana-framework.git
 cd vimana-framework
 built -t vimana_framework .
 ```
+Once the image has been successfully created, you can call to start a Vimana container as follows:
+
+```docker run --name vimana -i -t vimana_framework```
+
+And the framework's initial menu will be displayed:
 
 
