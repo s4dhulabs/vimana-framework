@@ -21,7 +21,7 @@ The easiest and recommended way is through Docker containers:
 ```
 sudo git clone https://github.com/s4dhul4bs/vimana-framework.git
 cd vimana-framework
-built -t vimana_framework .
+sudo docker build --network=host -t vimana_framework .
 ```
 Once the image has been successfully created, you can call to start a Vimana container as follows:
 
