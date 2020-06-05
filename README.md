@@ -25,7 +25,7 @@ built -t vimana_framework .
 ```
 Once the image has been successfully created, you can call to start a Vimana container as follows:
 
-```docker run --name vimana -i -t vimana_framework```
+```sudo docker run -it vimana_framework:latest```
 
 And the framework's initial menu will be displayed:
 
