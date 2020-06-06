@@ -19,13 +19,14 @@ According to Sanskrit texts the ancients had several types of airships called vi
 
 The easiest and recommended way is through Docker containers:
 ```
+timedatectl set-ntp yes
 sudo git clone https://github.com/s4dhul4bs/vimana-framework.git
 cd vimana-framework
-sudo docker build --network=host -t vimana_framework .
+sudo docker build --network=host -t vimana_framework:alpha .
 ```
 Once the image has been successfully created, you can call to start a Vimana container as follows:
 
-```sudo docker run -it --name vimana vimana_framework:latest```
+```sudo docker run -it --name vimana vimana_framework:alpha```
 
 And the framework's initial menu will be displayed:
 
