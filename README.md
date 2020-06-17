@@ -22,7 +22,7 @@ The easiest and recommended way is through Docker containers:
 timedatectl set-ntp yes
 sudo git clone https://github.com/s4dhul4bs/vimana-framework.git
 cd vimana-framework
-sudo docker build --network=host -t vimana_framework:alpha .
+sudo docker build --no-cache=true --network=host -t vimana_framework:alpha .
 ```
 Once the image has been successfully created, you can call to start a Vimana container as follows:
 
