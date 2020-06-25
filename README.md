@@ -36,4 +36,5 @@ Once the image has been successfully created, you can call to start a Vimana con
 And the framework's initial menu will be displayed:
 
 Example:
-```sudo docker run -it vimana_framework:alpha run --module dmt --target http://192.168.1.101 --port 8000 --verbose --debug```
+
+```sudo docker run -it vimana_framework:alpha run --module dmt --target-list 192.168.1.101,192.168.1.212,mypythonapp.com --port-list 5000,5001,8000 --verbose --debug --random```
