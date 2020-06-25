@@ -17,7 +17,12 @@ According to Sanskrit texts the ancients had several types of airships called vi
 
 **How to use**
 
-The easiest and recommended way is through Docker containers:
+The easiest and recommended way is through is through the Docker image build script:
+```
+sudo git clone https://github.com/s4dhul4bs/vimana-framework.git
+cd vimana-framework && ./vmnf_build
+```
+Or if you prefer you can follow the same steps as the script manually to build the image:
 ```
 timedatectl set-ntp yes
 sudo git clone https://github.com/s4dhul4bs/vimana-framework.git
