@@ -29,7 +29,7 @@ sudo git clone https://github.com/s4dhul4bs/vimana-framework.git
 cd vimana-framework
 sudo docker build --no-cache=true --network=host -t vimana_framework:alpha .
 ```
-Once the image has been successfully created, you can call to start a Vimana container as follows:
+Once the image has been successfully created, you can start Vimana as follows:
 
 ```sudo docker run -it --name vimana vimana_framework:alpha```
 
@@ -38,3 +38,5 @@ And the framework's initial menu will be displayed:
 Example:
 
 ```sudo docker run -it vimana_framework:alpha run --module dmt --target-list 192.168.1.101,192.168.1.212,mypythonapp.com --port-list 5000,5001,8000 --verbose --debug --random```
+
+This command will run the dmt module (Django Misconfiguration Tracker) against targets 192.168.1.101,192.168.1.212 and mypythonapp.com on ports 5000,5001,8000 with debug, verbose and randomization flag enabled.
