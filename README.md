@@ -2,12 +2,15 @@
 Vimana is a modular security framework designed to audit Python applications.
 ![Alt text](imgs/vimana1.png?raw=true "VIMANAFRAMEWORK")
 
+## Content
 1. [ Structure. ](#struct)
 2. [ Starting with Vimana. ](#starting)
 3. [ About this Version. ](#about)
 
+
+
 <a name="struct"></a>
-## Framework Structure
+### Framework Structure
 
 The base of the Vimana is composed of crawlers focused on frameworks (in addition to the generic ones for web), trackers, discovery, fuzzer, parser among other types of modules. The main idea, from where the framework emerged, is to identify, through a blackbox approach, configuration flaws and inadequate and/or insufficient implementations that allow unhandled exceptions to be triggered. Depending on the framework settings (or specific libs even when not using frameworks, for example raw wsgi) this can lead to leakage of sensitive and critical information that can allow to compromising the entire application, server, apis, databases, services and any third part software with tokens, secrets or api keys in current exposed environment variables.
 
@@ -23,7 +26,7 @@ The idea for the tool came up in 2010 during an intrusion test where (in those t
 According to Sanskrit texts the ancients had several types of airships called vimanas. These vehicles were used to fly through the air from city to city; to conduct aerial surveys of uncharted lands; and as delivery vehicles for awesome weapons.
 
 <a name="starting"></a>
-## Starting with Vimana
+### Starting with Vimana
 
 The easiest and recommended way is through Docker image build script:
 ```
@@ -51,4 +54,4 @@ This command will run the dmt module (Django Misconfiguration Tracker) against t
 
 
 <a name="about"></a>
-## About this Version
+### About this Version
