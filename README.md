@@ -50,9 +50,14 @@ This command will run the dmt module (Django Misconfiguration Tracker) against t
 
 This is a version with exhaustively tested features, however, with a limited number of features, so it is considered alpha. For example the fact that in this version there are only features focused on the Django framework and that work in the vast majority in homologation and/or production scenarios with DEBUG true.
 
-**For the next version**
+**For the next releases**
 
-Features for fault tracking and fingerprinting of template engines (Genshi, Jinja, Mako, etc.) that will serve as input for other resources for automated tests of SSTI (Server Side Template Injection).
+In addition to the general improvements in the entire framework structure and in the siddhis already available, there are other important points that are:
+
+* Features for tracking and fingerprinting template engines (like Genshi, Jinja, Mako, etc.) 
+* Resources for automated SSTI tests (Server Side Template Injection)
+* New fuzzers rules for Django e others frameworks
+* 
 
 Modules focused on other development frameworks such as Flask, Web2py, Bottle and so on).
 
