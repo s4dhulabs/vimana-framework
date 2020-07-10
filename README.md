@@ -42,7 +42,20 @@ Example:
 
 ```sudo docker run -it vimana_framework:alpha run --module dmt --target-list 192.168.1.101,192.168.1.212,mypythonapp.com --port-list 5000,5001,8000 --verbose --debug --random```
 
-This command will run the dmt module (Django Misconfiguration Tracker) against targets 192.168.1.101,192.168.1.212 and mypythonapp.com on ports 5000,5001,8000 with debug, verbose and randomization flag enabled.
+
+Explaining the command line syntax above:
+
+```run``` Command to run a siddhi (vimana framework module) in inline mode (in this case, module DMT, Django Misconfiguration Tracker)
+
+```target-list``` the framework supports several types of scope definition arguments (although this also depends on the arguments expected by each module). In this case, a list of IPs and URLs was used with the argument target-list (comma-separated).
+
+```post-list``` Here, as with the definition of targets, the ports also accept various formats, in this case the port-list with a list of ports to be tested is being used. An important note, when you do not want the defined port to be tested before the chosen module is invoked, the `` --ignore-state`` argument must be passed so that the state of the port will not be checked.
+
+```verbose``` Enable verbose mode in realtime issues presentation
+
+```debug```  Enable Vimana debug mode,showing realtime technical information about execution 
+
+```random``` Enable randomize, this flag, enable randomization in supported modules (for example user-agent, cookies, tokens, etc) 
 
 
 <a name="about"></a>
@@ -57,9 +70,10 @@ In addition to the general improvements in the entire framework structure and in
 * Features for tracking and fingerprinting template engines (like Genshi, Jinja, Mako, etc.) 
 * Resources for automated SSTI tests (Server Side Template Injection)
 * New fuzzers rules for Django e others frameworks
-* 
-
-Modules focused on other development frameworks such as Flask, Web2py, Bottle and so on).
+* Some lib exploits
+* Resources to generate custom payloads on app context
+* New siddhis focused on other development frameworks such as Flask, Web2py, Bottle and so on)
+* App Crawler
 
 
 <a name="curio"></a>
