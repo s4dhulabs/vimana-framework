@@ -3,10 +3,10 @@ Vimana is a modular security framework designed to audit Python applications.
 ![Alt text](imgs/vimana1.png?raw=true "VIMANAFRAMEWORK")
 
 ## Content
-1. [ Structure. ](#struct)
+1. [ Framework Structure. ](#struct)
 2. [ Starting with Vimana. ](#starting)
 3. [ About this Version. ](#about)
-
+3. [ Curiosities. ](#curio)
 
 
 <a name="struct"></a>
@@ -16,14 +16,6 @@ The base of the Vimana is composed of crawlers focused on frameworks (in additio
 
 Another important step performed by Vimana is to obtain and reconstruct the source code snippets of the affected modules (leaked by exceptions) that allow the discovery of hardcoded credentials, connection strings to databases, vulnerable libraries, in addition to allowing the analysis of logic of the application of a mixed perspective between the black and whitebox approaches, since the initial analysis starts from a blind test, but ends up allowing access to code snippets.
 
-
-**The genesis of the tool**
-
-The idea for the tool came up in 2010 during an intrusion test where (in those typical scenarios without many relevant vulnerabilities) I found numerous IPs on the internal network, with some python applications also exposed to the internet running with Django framework, WSGI and Flask, some with DEBUG true, well, it was a scenario with a lot of relevant information that could enable me to compromise the company's internal communication channels, services and developer accounts. However, I was unable, within the stipulated period, to analyze, collect and test everything that was leaked, so (in the height of despair) I imagined a ship abducting all that and putting together a report to save the project, but I didn't have one dedicated to such a purpose, so I decided to start a new one in the way I imagined.
-
-**About the name**
-
-According to Sanskrit texts the ancients had several types of airships called vimanas. These vehicles were used to fly through the air from city to city; to conduct aerial surveys of uncharted lands; and as delivery vehicles for awesome weapons.
 
 <a name="starting"></a>
 ### Starting with Vimana
@@ -55,3 +47,17 @@ This command will run the dmt module (Django Misconfiguration Tracker) against t
 
 <a name="about"></a>
 ### About this Version
+
+This is a Alpha version. 
+
+
+<a name="curio"></a>
+### Curiosities
+
+**The genesis of the tool**
+
+The idea for the tool came up in 2010 during an intrusion test where (in those typical scenarios without many relevant vulnerabilities) I found numerous IPs on the internal network, with some python applications also exposed to the internet running with Django framework, WSGI and Flask, some with DEBUG true, well, it was a scenario with a lot of relevant information that could enable me to compromise the company's internal communication channels, services and developer accounts. However, I was unable, within the stipulated period, to analyze, collect and test everything that was leaked, so (in the height of despair) I imagined a ship abducting all that and putting together a report to save the project, but I didn't have one dedicated to such a purpose, so I decided to start a new one in the way I imagined.
+
+**About the name**
+
+According to Sanskrit texts the ancients had several types of airships called vimanas. These vehicles were used to fly through the air from city to city; to conduct aerial surveys of uncharted lands; and as delivery vehicles for awesome weapons.
