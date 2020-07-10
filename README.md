@@ -45,17 +45,17 @@ Example:
 
 Explaining the command line syntax above:
 
-```run``` Command to run a siddhi (vimana framework module) in inline mode (in this case, module DMT, Django Misconfiguration Tracker)
+```run```         Command to run a siddhi (vimana framework module) in inline mode (in this case, module DMT, Django Misconfiguration Tracker)
 
-```target-list``` the framework supports several types of scope definition arguments (although this also depends on the arguments expected by each module). In this case, a list of IPs and URLs was used with the argument target-list (comma-separated).
+```--target-list``` The framework supports several types of scope definition arguments (although this also depends on the arguments expected by each module). In this case, a list of IPs and URLs was used with the argument target-list (comma-separated).
 
-```post-list``` Here, as with the definition of targets, the ports also accept various formats, in this case the port-list with a list of ports to be tested is being used. An important note, when you do not want the defined port to be tested before the chosen module is invoked, the `` --ignore-state`` argument must be passed so that the state of the port will not be checked.
+```--post-list``` Here, as with the definition of targets, the ports also accept various formats, in this case the port-list with a list of ports to be tested is being used. An important note, when you do not want the defined port to be tested before the chosen module is invoked, the `` --ignore-state`` argument must be passed so that the state of the port will not be checked.
 
-```verbose``` Enable verbose mode in realtime issues presentation
+```--verbose```   Enable verbose mode in realtime issues presentation
 
-```debug```  Enable Vimana debug mode,showing realtime technical information about execution 
+```--debug```     Enable Vimana debug mode,showing realtime technical information about execution 
 
-```random``` Enable randomize, this flag, enable randomization in supported modules (for example user-agent, cookies, tokens, etc) 
+```--random```    Enable randomize, this flag, enable randomization in supported modules (for example user-agent, cookies, tokens, etc) 
 
 
 <a name="about"></a>
