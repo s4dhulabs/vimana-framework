@@ -1,5 +1,5 @@
 # Vimana Framework
-Vimana is a modular security framework designed to audit Python applications.
+Vimana is a modular security framework designed to audit Python applications with a focus on issues little explored in traditional security tools.
 ![Alt text](imgs/vimana1.png?raw=true "VIMANAFRAMEWORK")
 
 ## Content
@@ -69,13 +69,16 @@ This is a version with exhaustively tested features, however, with a limited num
 
 In addition to the general improvements in the entire framework structure and in the siddhis already available, there are other important points that are:
 
-* Features for tracking and fingerprinting template engines (like Genshi, Jinja, Mako, etc.) 
+* Features for tracking and fingerprinting template engines (like Genshi, Jinja, Mako, etc.)  
 * Resources for automated SSTI tests (Server Side Template Injection)
-* New fuzzers rules for Django e others frameworks
+* New fuzzers rules for Django 
 * Some lib exploits
 * Resources to generate custom payloads on app context
 * New siddhis focused on other development frameworks such as Flask, Web2py, Bottle and so on)
 * App Crawler
+* DB integration
+* Logging
+* Siddhis to test service according with leak contexts (abduct)
 
 
 <a name="curio"></a>
@@ -91,7 +94,7 @@ According to Sanskrit texts the ancients had several types of airships called vi
 
 
 
-<a name="curio"></a>
+<a name="ack"></a>
 ### Acknowledgment
 
-Special thanks to the guys from Alligator and NullByte conferences who gave me the opportunity to show a little bit about the research that resulted in the tool.
+Special thanks to the guys from [AlligatorCon!](https://alligatorcon.com) and NullByte conferences who gave me the opportunity to show a little bit about the research that resulted in the tool.
