@@ -7,6 +7,8 @@ Vimana is a modular security framework designed to audit Python applications.
 2. [ Starting with Vimana. ](#starting)
 3. [ About this Version. ](#about)
 3. [ Curiosities. ](#curio)
+4. [ Acknowledgment. ](#ack)
+
 
 
 <a name="struct"></a>
@@ -86,3 +88,9 @@ The idea for the tool came up in 2010 during an intrusion test where (in those t
 **About the name**
 
 According to Sanskrit texts the ancients had several types of airships called vimanas. These vehicles were used to fly through the air from city to city; to conduct aerial surveys of uncharted lands; and as delivery vehicles for awesome weapons.
+
+
+
+<a name="curio"></a>
+### Acknowledgment
+
