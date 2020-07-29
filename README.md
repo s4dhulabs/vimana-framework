@@ -94,3 +94,4 @@ According to Sanskrit texts the ancients had several types of airships called vi
 <a name="curio"></a>
 ### Acknowledgment
 
+Special thanks to the guys from Alligator and NullByte conferences who gave me the opportunity to show a little bit about the research that resulted in the tool.
