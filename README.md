@@ -64,7 +64,9 @@ Explaining the command line syntax above:
 <a name="about"></a>
 ### About this Version
 
-This is a version with exhaustively tested features, however, with a limited number of features, so it is considered alpha. For example the fact that in this version there are only features focused on the Django framework and that work in the vast majority in homologation and/or production scenarios with DEBUG true.
+Most of the features have been exhaustively tested for a long time against different scenarios and observed carefully, however, the tool has acquired a considerable size and complexity and therefore, there will certainly be some bugs not known at the moment. The known ones will be documented in issues. Feel free to contact us if you have suggestions, collaborations, or anything else related.
+
+Another point about this alpha version is that the main features (siddhis) are focused on Django framework with application running in the vast majority in homologation and/or production scenarios with DEBUG true. 
 
 **For the next releases**
 
