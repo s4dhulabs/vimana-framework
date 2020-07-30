@@ -8,6 +8,7 @@ Vimana is a modular security framework designed to audit Python applications wit
 3. [ About this Version. ](#about)
 3. [ Curiosities. ](#curio)
 4. [ Acknowledgment. ](#ack)
+5. [ Vimana is not](#vin)
 
 
 
@@ -92,9 +93,16 @@ The idea for the tool came up in 2010 during an intrusion test where (in those t
 
 According to Sanskrit texts the ancients had several types of airships called vimanas. These vehicles were used to fly through the air from city to city; to conduct aerial surveys of uncharted lands; and as delivery vehicles for awesome weapons.
 
-
-
 <a name="ack"></a>
 ### Acknowledgment
 
 Special thanks to the guys from [AlligatorCon](https://alligatorcon.com) and [NullByte](https://nullbyte-con.org) conferences who gave me the opportunity to show a little bit about the research that resulted in the tool.
+
+<a name="vin"></a>
+### Vimana is not
+
+Vimana is not a vulnerability scanner, at least non-traditional, because it does not look directly for flaws like SQLi, XSS, XXE, RFI and so on. Instead, the main focus of the framework, which is also its main feature, is to perform fuzzing to trigger exceptions and from there feed other modules that can perform other tasks from that initial input. However, when I spoke about the research that led to this tool, I showed that in some cases it was possible to identify traditional vulnerabilities (such as those in the OWASP Top 10) by analyzing an exception that was triggered. So, there are already plans for a siddhi to identify these vulnerabilities, however, it is important to keep in mind that vimana is not intended to be a tool to exploit a possible sqli injection, for this it has sqlmap and several others.
+
+There are certain parts where scope definitions are made (against which a particular module will be executed), where basic tests are made to check the state of the port informed as an argument on the command line. However, it is also important to note that this tool is not intended to be a port and service scanner, for this there is nmap and others.
+
+And so on, what this framework is I don't know yet, it's early, but I can already point out some things that it is not and does not intend to be.
