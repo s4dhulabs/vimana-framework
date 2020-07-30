@@ -1,5 +1,5 @@
 # Vimana Framework
-Vimana is a modular security framework designed to audit Python applications with a focus on issues little explored in traditional security tools.
+Vimana is a modular security framework designed to audit Python applications.
 ![Alt text](imgs/vimana1.png?raw=true "VIMANAFRAMEWORK")
 
 ## Content
