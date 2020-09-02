@@ -129,4 +129,4 @@ Soon we will have a wiki with exploration scenarios using the framework.
 
 <a name="disc"></a>
 ### Disclaimer
-Legal notice: The project aims to materialize an idea resulting from real audit scenarios for which there was no alternative to take advantage of the vectors in question. Therefore, it has a proposal to stimulate research in this context. The author of the project is not responsible for misuse, damage or loss caused by the use of the project, nor does it offer any warranty.
+The project aims to materialize an idea resulting from real audit scenarios for which there was no alternative to take advantage of the vectors in question. Therefore, it has a proposal to stimulate research in this context. The author of the project is not responsible for misuse, damage or loss caused by the use of the project, nor does it offer any warranty.
