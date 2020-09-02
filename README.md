@@ -1,14 +1,15 @@
 # Vimana Framework
-Vimana is a modular security framework designed to audit Python applications with a focus on issues little explored in traditional security tools.
-![Alt text](imgs/vimana1.png?raw=true "VIMANAFRAMEWORK")
+Vimana is a modular security framework designed to audit Python applications.
+![Alt text](imgs/s0v6.png?raw=true "VIMANAFRAMEWORK")
 
 ## Content
 1. [ Framework Structure. ](#struct)
 2. [ Starting with Vimana. ](#starting)
 3. [ About this Version. ](#about)
-3. [ Curiosities. ](#curio)
-4. [ Acknowledgment. ](#ack)
-
+4. [ Curiosities. ](#curio)
+5. [ Vimana is not](#vin)
+6. [ Acknowledgment. ](#ack)
+7. [ Wiki. ](#wiki)
 
 
 <a name="struct"></a>
@@ -22,12 +23,14 @@ Another important step performed by Vimana is to obtain and reconstruct the sour
 <a name="starting"></a>
 ### Starting with Vimana
 
-The easiest and recommended way is through Docker image build script:
+The easiest way is through Docker image build script:
 ```
 sudo git clone https://github.com/s4dhul4bs/vimana-framework.git
 cd vimana-framework && sudo ./vmnf_build
 ```
-Or if you prefer you can follow the same steps as the script manually to build the image:
+If the build runs smoothly, you will see the about screen (README image above)
+
+If you prefer you can follow the same steps as the script manually to build the image:
 ```
 timedatectl set-ntp yes
 sudo git clone https://github.com/s4dhul4bs/vimana-framework.git
@@ -36,13 +39,20 @@ sudo docker build --no-cache=true --network=host -t vimana_framework:alpha .
 ```
 Once the image has been successfully created, you can start Vimana as follows:
 
-```sudo docker run -it --name vimana vimana_framework:alpha```
+```sudo docker run -it --name vimana vimana_framework:alpha about```
 
-And the framework's initial menu will be displayed:
+And the same image will be displayed.
 
-Example:
+Of course, the framework can also be executed in the traditional way. directly by code (most stable way so far):
+```
+sudo git clone https://github.com/s4dhul4bs/vimana-framework.git
+cd vimana-framework
+python3 vimana.py 
+```
 
-```sudo docker run -it vimana_framework:alpha run --module dmt --target-list 192.168.1.101,192.168.1.212,mypythonapp.com --port-list 5000,5001,8000 --verbose --debug --random```
+Example of running a siddhi (vimana module): 
+
+```sudo docker run -it vimana_framework:alpha run --module dmt --target-list 192.168.1.101,192.168.1.212,mypythonapp.com --port-list 5000,5001,8000 --verbose --debug --random --threads 5```
 
 
 Explaining the command line syntax above:
@@ -51,7 +61,7 @@ Explaining the command line syntax above:
 
 ```--target-list``` The framework supports several types of scope definition arguments (although this also depends on the arguments expected by each module). In this case, a list of IPs and URLs was used with the argument target-list (comma-separated).
 
-```--post-list``` Here, as with the definition of targets, the ports also accept various formats, in this case the port-list with a list of ports to be tested is being used. An important note, when you do not want the defined port to be tested before the chosen module is invoked, the `` --ignore-state`` argument must be passed so that the state of the port will not be checked.
+```--port-list``` Here, as with the definition of targets, the ports also accept various formats, in this case the port-list with a list of ports to be tested is being used. An important note, when you do not want the defined port to be tested before the chosen module is invoked, the `` --ignore-state`` argument must be passed so that the state of the port will not be checked.
 
 ```--verbose```   Enable verbose mode in realtime issues presentation
 
@@ -59,11 +69,16 @@ Explaining the command line syntax above:
 
 ```--random```    Enable randomize, this flag, enable randomization in supported modules (for example user-agent, cookies, tokens, etc) 
 
+```--threads```   Configures the number of threads to be executed by the modules involved in the analysis (those that support threads). 
+
+To know the arguments supported by a siddhi, use the syntax: ```vimana.py args --module <module_name>```
 
 <a name="about"></a>
 ### About this Version
 
-This is a version with exhaustively tested features, however, with a limited number of features, so it is considered alpha. For example the fact that in this version there are only features focused on the Django framework and that work in the vast majority in homologation and/or production scenarios with DEBUG true.
+Most of the features have been exhaustively tested for a long time against different scenarios and observed carefully, however, the tool has acquired a considerable size and complexity and therefore, there will certainly be some bugs not known at the moment. The known ones will be documented in issues. Feel free to contact us if you have suggestions, collaborations, or anything else related.
+
+Another point about this alpha version is that the main features (siddhis) are focused on Django framework with application running in the vast majority in homologation and/or production scenarios with DEBUG true. 
 
 **For the next releases**
 
@@ -92,10 +107,21 @@ The idea for the tool came up in 2010 during an intrusion test where (in those t
 
 According to Sanskrit texts the ancients had several types of airships called vimanas. These vehicles were used to fly through the air from city to city; to conduct aerial surveys of uncharted lands; and as delivery vehicles for awesome weapons.
 
+<a name="vin"></a>
+### Vimana is not
 
+Vimana is not a vulnerability scanner, at least non-traditional, because it does not look directly for flaws like SQLi, XSS, XXE, RFI and so on. Instead, the main focus of the framework, which is also its main feature, is to perform fuzzing to trigger exceptions and from there feed other modules that can perform other tasks from that initial input. However, when I spoke about the research that led to this tool, I showed that in some cases it was possible to identify traditional vulnerabilities (such as those in the OWASP Top 10) by analyzing an exception that was triggered. So, there are already plans for a siddhi to identify these vulnerabilities, however, it is important to keep in mind that vimana is not intended to be a tool to exploit a possible sqli injection, for this it has sqlmap and several others.
+
+There are certain parts where scope definitions are made (against which a particular module will be executed), where basic tests are made to check the state of the port informed as an argument on the command line. However, it is also important to note that this tool is not intended to be a port and service scanner, for this there is nmap and others.
+
+And so on, what this framework is I don't know yet, it's early, but I can already point out some things that it is not and does not intend to be.
 
 <a name="ack"></a>
 ### Acknowledgment
 
 Special thanks to the guys from [AlligatorCon](https://alligatorcon.com) and [NullByte](https://nullbyte-con.org) conferences who gave me the opportunity to show a little bit about the research that resulted in the tool.
 
+
+<a name="wiki"></a>
+### Wiki
+Soon we will have a wiki with exploration scenarios using the framework.
