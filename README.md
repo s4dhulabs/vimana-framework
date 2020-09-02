@@ -74,9 +74,7 @@ Explaining the command line syntax above:
 
 To know the arguments supported by a siddhi, use the syntax: ```vimana.py args --module <module_name>```
 
-* Note: Vimana is a command line tool that does all the representation of the results and interaction through the terminal, so it is important to configure the buffer size to allow the correct presentation. In Terminator this can be done by editing the ```~/.config/terminator/config``` file and adding the following entry below the ```[profile]``` section:
-
-`` `scrollback_infinite = True```
+*Note: Vimana is a command line tool that does all the representation of the results and interaction through the terminal, so it is important to configure the buffer size to allow the correct presentation. In Terminator this can be done by editing the ```~/.config/terminator/config``` file and adding the following entry below the ```[profile]``` section: ```scrollback_infinite = True```
 
 <a name="about"></a>
 ### About this Version
