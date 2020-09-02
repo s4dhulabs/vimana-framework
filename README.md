@@ -23,7 +23,7 @@ Another important step performed by Vimana is to obtain and reconstruct the sour
 <a name="starting"></a>
 ### Starting with Vimana
 
-The easiest and recommended way is through Docker image build script:
+The easiest way is through Docker image build script:
 ```
 sudo git clone https://github.com/s4dhul4bs/vimana-framework.git
 cd vimana-framework && sudo ./vmnf_build
@@ -43,7 +43,7 @@ Once the image has been successfully created, you can start Vimana as follows:
 
 And the same image will be displayed.
 
-Of course, the framework can also be executed in the traditional way. directly by code:
+Of course, the framework can also be executed in the traditional way. directly by code (most stable way so far):
 ```
 sudo git clone https://github.com/s4dhul4bs/vimana-framework.git
 python3 vimana.py 
