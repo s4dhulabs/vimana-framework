@@ -48,6 +48,7 @@ Of course, the framework can also be executed in the traditional way. directly b
 ```
 sudo git clone https://github.com/s4dhul4bs/vimana-framework.git
 cd vimana-framework
+pip3 install -r requirements.txt
 python3 vimana.py 
 ```
 
