@@ -71,6 +71,8 @@ Explaining the command line syntax above:
 
 ```--threads```   Configures the number of threads to be executed by the modules involved in the analysis (those that support threads). 
 
+To know the arguments supported by a siddhi, use the syntax: ```vimana.py args --module <module_name>```
+
 <a name="about"></a>
 ### About this Version
 
