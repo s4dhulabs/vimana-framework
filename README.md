@@ -52,7 +52,7 @@ python3 vimana.py
 
 Example of running a siddhi (vimana module): 
 
-```sudo docker run -it vimana_framework:alpha run --module dmt --target-list 192.168.1.101,192.168.1.212,mypythonapp.com --port-list 5000,5001,8000 --verbose --debug --random```
+```sudo docker run -it vimana_framework:alpha run --module dmt --target-list 192.168.1.101,192.168.1.212,mypythonapp.com --port-list 5000,5001,8000 --verbose --debug --random --threads 5```
 
 
 Explaining the command line syntax above:
@@ -61,7 +61,7 @@ Explaining the command line syntax above:
 
 ```--target-list``` The framework supports several types of scope definition arguments (although this also depends on the arguments expected by each module). In this case, a list of IPs and URLs was used with the argument target-list (comma-separated).
 
-```--post-list``` Here, as with the definition of targets, the ports also accept various formats, in this case the port-list with a list of ports to be tested is being used. An important note, when you do not want the defined port to be tested before the chosen module is invoked, the `` --ignore-state`` argument must be passed so that the state of the port will not be checked.
+```--port-list``` Here, as with the definition of targets, the ports also accept various formats, in this case the port-list with a list of ports to be tested is being used. An important note, when you do not want the defined port to be tested before the chosen module is invoked, the `` --ignore-state`` argument must be passed so that the state of the port will not be checked.
 
 ```--verbose```   Enable verbose mode in realtime issues presentation
 
@@ -69,6 +69,7 @@ Explaining the command line syntax above:
 
 ```--random```    Enable randomize, this flag, enable randomization in supported modules (for example user-agent, cookies, tokens, etc) 
 
+```--threads```   Configures the number of threads to be executed by the modules involved in the analysis (those that support threads). 
 
 <a name="about"></a>
 ### About this Version
