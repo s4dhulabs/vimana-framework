@@ -6,9 +6,9 @@ Vimana is a modular security framework designed to audit Python applications.
 1. [ Framework Structure. ](#struct)
 2. [ Starting with Vimana. ](#starting)
 3. [ About this Version. ](#about)
-3. [ Curiosities. ](#curio)
-4. [ Acknowledgment. ](#ack)
+4. [ Curiosities. ](#curio)
 5. [ Vimana is not](#vin)
+6. [ Acknowledgment. ](#ack)
 
 
 
@@ -95,11 +95,6 @@ The idea for the tool came up in 2010 during an intrusion test where (in those t
 
 According to Sanskrit texts the ancients had several types of airships called vimanas. These vehicles were used to fly through the air from city to city; to conduct aerial surveys of uncharted lands; and as delivery vehicles for awesome weapons.
 
-<a name="ack"></a>
-### Acknowledgment
-
-Special thanks to the guys from [AlligatorCon](https://alligatorcon.com) and [NullByte](https://nullbyte-con.org) conferences who gave me the opportunity to show a little bit about the research that resulted in the tool.
-
 <a name="vin"></a>
 ### Vimana is not
 
@@ -108,3 +103,8 @@ Vimana is not a vulnerability scanner, at least non-traditional, because it does
 There are certain parts where scope definitions are made (against which a particular module will be executed), where basic tests are made to check the state of the port informed as an argument on the command line. However, it is also important to note that this tool is not intended to be a port and service scanner, for this there is nmap and others.
 
 And so on, what this framework is I don't know yet, it's early, but I can already point out some things that it is not and does not intend to be.
+
+<a name="ack"></a>
+### Acknowledgment
+
+Special thanks to the guys from [AlligatorCon](https://alligatorcon.com) and [NullByte](https://nullbyte-con.org) conferences who gave me the opportunity to show a little bit about the research that resulted in the tool.
