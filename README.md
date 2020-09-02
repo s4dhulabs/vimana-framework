@@ -46,6 +46,7 @@ And the same image will be displayed.
 Of course, the framework can also be executed in the traditional way. directly by code (most stable way so far):
 ```
 sudo git clone https://github.com/s4dhul4bs/vimana-framework.git
+cd vimana-framework
 python3 vimana.py 
 ```
 
