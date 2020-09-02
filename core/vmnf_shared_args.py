@@ -1,0 +1,131 @@
+# -*- coding: utf-8 -*-
+
+from argparse import SUPPRESS
+import argparse
+from time import sleep
+import sys
+
+sys.path.insert(0, '../../../')
+
+from helpers.vmnf_helpers import VimanaHelp
+
+
+
+class MyParser(argparse.ArgumentParser):
+    def format_help(self):
+        VimanaHelp().full_help()
+
+class VimanaSharedArgs:
+    '''
+        Vimana Framework shared arguments
+        =================================
+
+        This class implements a method to shares common arguments
+        with siddhi modules. 
+
+        Usage example:
+
+        # Import Vimana shared args Class
+        from core.vmnf_shared_args import VimanaSharedArgs
+
+
+        def siddhi_args_method(self):
+
+            # This will invoke VimanaSharedArgs().args() method and return common arguments
+            # to siddhi module parser as a parent arguments 
+            siddhi_parser = argparse.ArgumentParser(
+                parents=[VimanaSharedArgs().args()],
+                add_help=False
+            )
+
+            # So you can insert your own modules arguments to parser  
+            siddhi_parser.add_argument('--siddhi-argument1')
+            siddhi_parser.add_argument('--siddhi-argument2')
+
+            # And here will be all the arguments, siddhi own arguments and Vimana shared ones
+            args = siddhi_parser.parse_args()
+
+            # Show argparser Namepace
+            print(args)
+
+    '''
+
+    def __init__(self):
+        ''' ~ VIMANA SHARED ARGUMENTS ~ '''
+
+    def args(self): 
+        vmnf_shared_parser = MyParser(argparse.ArgumentParser(
+            conflict_handler='resolve',
+	    argument_default=SUPPRESS,
+	    prog="Vimana shared args", 
+            add_help=False,
+	    formatter_class=argparse.RawDescriptionHelpFormatter)
+        )
+
+        # -------------------------------------------------------------------------------
+        # > Scope setting - [ Target parser ] 
+        # -------------------------------------------------------------------------------
+        #target = parser.add_mutually_exclusive_group()
+        vmnf_shared_parser.add_argument('--target',action='store',dest='single_target',default=False)
+        vmnf_shared_parser.add_argument('--file',action='store',dest='file_scope',default=False)
+        vmnf_shared_parser.add_argument('--ip-range',action='store',dest='ip_range', default=False)
+        vmnf_shared_parser.add_argument('--cidr-range',action='store',dest='cidr_range', default=False)
+        vmnf_shared_parser.add_argument('--target-list',action='store',dest='list_target', default=False)
+        # -------------------------------------------------------------------------------
+        # > Scope setting - [ port parser ] 
+        # -------------------------------------------------------------------------------
+        #ports = parser.add_mutually_exclusive_group()
+        vmnf_shared_parser.add_argument("--port",action="store",dest='single_port',default=False)
+        vmnf_shared_parser.add_argument("--port-list",action="store",nargs='+',dest='port_list',default=False)
+        vmnf_shared_parser.add_argument("--port-range",action="store",dest='port_range',default=False)
+        vmnf_shared_parser.add_argument('--ignore-state',action='store_true',dest='ignore_state',default=False)
+        # -------------------------------------------------------------------------------
+        # > Analisys - [ configuration options ] 
+        # -------------------------------------------------------------------------------
+        vmnf_shared_parser.add_argument("--debug",action="store_true",default=False)
+        vmnf_shared_parser.add_argument("--verbose", '-v', action='count', default=False)
+        vmnf_shared_parser.add_argument("--random", action="store_true",default=False)
+        vmnf_shared_parser.add_argument("--wait", action="store", type=int, default=0)
+        vmnf_shared_parser.add_argument("--threads",action="store", type=int, default=3)
+        vmnf_shared_parser.add_argument("--timeout", action="store", type=int, default=5)
+        vmnf_shared_parser.add_argument("--pause-steps", action="store_true",default=False)
+        vmnf_shared_parser.add_argument("--auto", action="store_true",default=False)
+        # -------------------------------------------------------------------------------
+        # > Scope setting - [ scope parser options ] 
+        # -------------------------------------------------------------------------------
+        vmnf_shared_parser.add_argument("--urlconf", action="store", dest='url_conf',default=False)
+        vmnf_shared_parser.add_argument("--patterns", action="store", dest='patterns_file',default=False)
+        vmnf_shared_parser.add_argument("--view-name", action="store", dest='view_name',default=False)
+        
+        return vmnf_shared_parser
+
+    def shared_help(self):
+        
+        '''
+    target  
+
+    --target            set a single target scope
+    --file              use a file with a target list
+    --ip-range          set ip range scope
+    --cidr-range        set cidr range scope
+    --target-list       set a target list (comma-separeted) scope 
+        
+    port
+
+    --port              set a single port scope
+    --port-list         set a port list scope
+    --port-range        set port range scope
+    --ignore-state      ignore port status
+        
+    general
+
+    --debug             enable debug information
+    --verbose           enable verbose mode (incremental)
+    --random            enable randominez for suported steps
+    --wait              wait 'n' seconds between steps
+    --threads           set number of threads 
+    --timeout           set timeout 
+    --pause-steps       pause between steps 
+    --auto              assume yes for all subtasks
+    '''        
+ 
