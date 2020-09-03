@@ -6,11 +6,9 @@ Vimana is a modular security framework designed to audit Python web applications
 1. [ Framework Structure. ](#struct)
 2. [ Starting with Vimana. ](#starting)
 3. [ About this Version. ](#about)
-4. [ Curiosities. ](#curio)
-5. [ Vimana is not](#vin)
-6. [ Acknowledgment. ](#ack)
-7. [ Wiki. ](#wiki)
-8. [ Disclaimer. ](#disc)
+4. [ Vimana is not](#vin)
+5. [ Acknowledgment. ](#ack)
+6. [ Disclaimer. ](#disc)
 
 
 <a name="struct"></a>
@@ -99,18 +97,6 @@ In addition to the general improvements in the entire framework structure and in
 * Logging
 * Siddhis to test service according with leak contexts (abduct)
 
-
-<a name="curio"></a>
-### Curiosities
-
-**The genesis of the tool**
-
-The idea for the tool came up in 2010 during an intrusion test where (in those typical scenarios without many relevant vulnerabilities) I found numerous IPs on the internal network, with some python applications also exposed to the internet running with Django framework, WSGI and Flask, some with DEBUG true, well, it was a scenario with a lot of relevant information that could enable me to compromise the company's internal communication channels, services and developer accounts. However, I was unable, within the stipulated period, to analyze, collect and test everything that was leaked, so (in the height of despair) I imagined a ship abducting all that and putting together a report to save the project, but I didn't have one dedicated to such a purpose, so I decided to start a new one in the way I imagined.
-
-**About the name**
-
-According to Sanskrit texts the ancients had several types of airships called vimanas. These vehicles were used to fly through the air from city to city; to conduct aerial surveys of uncharted lands; and as delivery vehicles for awesome weapons.
-
 <a name="vin"></a>
 ### Vimana is not
 
@@ -124,11 +110,6 @@ And so on, what this framework is I don't know yet, it's early, but I can alread
 ### Acknowledgment
 
 Special thanks to the guys from [AlligatorCon](https://alligatorcon.com) and [NullByte](https://nullbyte-con.org) conferences who gave me the opportunity to show a little bit about the research that resulted in the tool.
-
-
-<a name="wiki"></a>
-### Wiki
-Soon we will have a wiki with exploration scenarios using the framework.
 
 <a name="disc"></a>
 ### Disclaimer
