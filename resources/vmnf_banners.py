@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from . colors import *
-import os
 from random import choice
 from time import sleep
 from termcolor import cprint,colored
@@ -158,7 +157,7 @@ def s4dhu0nv1m4n4(vmnf_about=''):
     return about
 
 def load_viwec():
-    os.system('clear')
+    print("\033c", end="")
     print("""{}
       .   .   .
     . ^ . ^ . ^ .     
@@ -183,7 +182,7 @@ def load_viwec():
 def default_vmn_banner(mode_uvb = False):
     
     if not mode_uvb:
-       os.system('clear')                                 
+        print("\033c", end="")
     
     banner = colored('VIMANA FR4MEWORK', 'blue', attrs=['bold','blink'])
     print(r"""{}
@@ -212,7 +211,7 @@ o   o   o-O-o  oo o-o   oo
     """)
 
 def vmn_abduct():
-    os.system('clear')
+    print("\033c", end="")
     print(r"""{}
       .__                              {}    ___    {}
 ___  _|__| _____ _____    ____ _____   {}___´_'_`___{}        
@@ -225,7 +224,7 @@ ___  _|__| _____ _____    ____ _____   {}___´_'_`___{}
 
 
 def default_vmn_banner1():
-    os.system('clear')
+    print("\033c", end="")
     print("""{}
       .__                              
 ___  _|__| _____ _____    ____ _____   
@@ -272,8 +271,8 @@ def load(target=''):
         d7 = choice(colors)
         d8 = choice(colors)
         d9 = choice(colors) 
-        os.system('clear')
         
+        print("\033c", end="")
         print(r"""{}
         *                        {}~{}|{}~{}
                    _^_               .

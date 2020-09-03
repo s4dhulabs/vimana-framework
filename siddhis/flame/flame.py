@@ -28,7 +28,6 @@ from time import sleep
 from bs4 import BeautifulSoup
 import sys
 import re
-import os
 
 import pygments
 from pygments.lexers import PythonLexer
@@ -248,7 +247,7 @@ class siddhi:
                 ]
             )
         
-            os.system('clear')
+            print("\033c", end="")
             print(self.current_module)
             print()
 
@@ -286,8 +285,7 @@ class siddhi:
         )
     
         exception_count +=1
-
-        os.system('clear')
+        print("\033c", end="")
         print('---------------------------')
         print('{}  Target Information {}   '.format(C_c,D_c))
         print('---------------------------')
