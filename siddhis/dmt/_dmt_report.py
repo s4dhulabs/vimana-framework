@@ -222,7 +222,7 @@ class resultParser:
                     django_version = '.'.join(django_version.split('.')[:-1])
 
                 # **** fakefortests *** 
-                django_version = '2.2'
+                # django_version = '2.2'
 
                 # - Get CVEs and security tickets for abducted framework version-
                 security_tickets = tictrac.siddhi(django_version).start()
@@ -397,7 +397,7 @@ class resultParser:
             k = (k.replace('_',' ')).capitalize()
 
             # fakefortests
-            if v == '1.11.21': v = '2.2.0'
+            # if v == '1.11.21': v = '2.2.0'
 
             print('{}{}:\t   {}'.format(
                 (' ' * int(5-len(k) + 15)),
