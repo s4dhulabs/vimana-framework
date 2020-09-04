@@ -222,7 +222,7 @@ class resultParser:
                     django_version = '.'.join(django_version.split('.')[:-1])
 
                 # **** fakefortests *** 
-                # django_version = '2.2'
+                django_version = '2.2'
 
                 # - Get CVEs and security tickets for abducted framework version-
                 security_tickets = tictrac.siddhi(django_version).start()
@@ -274,14 +274,13 @@ class resultParser:
                 len(self._issues_['exceptions']) + \
                 len(self._issues_['configuration'])),
             'security_tickets': len(security_tickets),
-            'cve_ids': len(cves),
+            'cve_ids': len(cves) if cves else 0,
             'url_patterns': len(self.mu_patterns)
         }
 
         i_count = 1
         # >> load contexts 
         for k,v in self.contexts.items():
-            #if v:
                 self.envleak_tbl.add_row(
                     [
                         colored('LC{}'.format(str(i_count)), 'green'),

@@ -8,14 +8,15 @@ from datetime import datetime
 import socket
 from time import sleep
 from resources import colors
-
+from resources.session.vmnf_proxies import _set_socks_
 from siddhis._shared_settings_.__settings import common
 
 
 class CheckTargetScope:
 
-    def __init__(self,target=False,ports=False):
+    def __init__(self,target=False,ports=False,**vmnf_handler):
         
+        self.vmnf_handler = vmnf_handler
         if not ports:
             ports = common().homolog_ports
         
@@ -26,10 +27,11 @@ class CheckTargetScope:
         self.s = []
 
     def check_port_status(self):
-        
+        '''
+        '''
         socket_obj = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         socket_obj.settimeout(0.3)
-        result = socket_obj.connect_ex((self.target,int(self.port)))
+        result = socket_obj.connect_ex((self.target,int(self.port)))    # socks.SOCKS5Error - socket.timeout: timed out
         socket_obj.close()
         service = '*'
 

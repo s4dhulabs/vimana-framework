@@ -156,8 +156,10 @@ class VimanaParser:
             module_list     = False,
             module_args     = False,
             framework       = False,
-            urls_file       = False,
-            view_name       = False
+            url_conf        = False,
+            view_name       = False,
+            proxy           = False,
+            proxy_type      = False
         )
         
 
