@@ -90,6 +90,8 @@ In addition to the general improvements in the entire framework structure and in
 * Resources for automated SSTI tests (Server Side Template Injection)
 * New fuzzers rules for Django 
 * Some lib exploits
+* Rules support (semgrep-rules and others)
+* Proxy support (SOCKS, CONNECT, etc)
 * Resources to generate custom payloads on app context
 * New siddhis focused on other development frameworks such as Flask, Web2py, Bottle and so on)
 * App Crawler
