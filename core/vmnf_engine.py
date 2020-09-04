@@ -109,26 +109,7 @@ def abduct():
     
     # start fuzzer
     elif handler_ns.fuzzer:
-        print(vmnf_banners.circuits_banner('fuzzer'))       
         scope = handle_fuzz_scope(**vars(handler_ns))
-        for k,v in scope.items():
-            if k != 'patterns':
-                print('+ {}:\t{}'.format(k,v))
-                sleep(0.25)
-        sleep(1)
-
-        confirmation = False
-        while not confirmation:
-            confirmation = input('''\nWere detected {} unique URL Patterns, continue? (Y/n) > '''.format((scope['scope_size'])))
-            print()
-            if confirmation.lower() == 'y':
-                expanded_patterns = dmt_siddhi(**vars(handler_ns)).expand_UP(scope['patterns'])
-                #print(expanded_root_patterns)
-                
-                # send to fuzzer
-                # base_r = http_ + base_request + port_
-                Djunch(base_r, expanded_patterns, **vars(handler_ns)).start()
-        
     # start discovery
     elif handler_ns.discovery:
         print('Wait future releases for this feature. [:')

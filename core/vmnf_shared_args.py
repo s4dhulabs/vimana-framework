@@ -80,22 +80,27 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--port-range",action="store",dest='port_range',default=False)
         vmnf_shared_parser.add_argument('--ignore-state',action='store_true',dest='ignore_state',default=False)
         # -------------------------------------------------------------------------------
-        # > Analisys - [ configuration options ] 
+        # > Analysis - [ configuration options ] 
         # -------------------------------------------------------------------------------
         vmnf_shared_parser.add_argument("--debug",action="store_true",default=False)
         vmnf_shared_parser.add_argument("--verbose", '-v', action='count', default=False)
         vmnf_shared_parser.add_argument("--random", action="store_true",default=False)
-        vmnf_shared_parser.add_argument("--wait", action="store", type=int, default=0)
+        vmnf_shared_parser.add_argument("--wait", action="store", type=int, default=0)      # not in use yet
         vmnf_shared_parser.add_argument("--threads",action="store", type=int, default=3)
         vmnf_shared_parser.add_argument("--timeout", action="store", type=int, default=5)
-        vmnf_shared_parser.add_argument("--pause-steps", action="store_true",default=False)
-        vmnf_shared_parser.add_argument("--auto", action="store_true",default=False)
+        vmnf_shared_parser.add_argument("--pause-steps", action="store_true",default=False) # not in use yet
+        vmnf_shared_parser.add_argument("--auto", action="store_true",default=False)        # not in use yet
         # -------------------------------------------------------------------------------
         # > Scope setting - [ scope parser options ] 
         # -------------------------------------------------------------------------------
         vmnf_shared_parser.add_argument("--urlconf", action="store", dest='url_conf',default=False)
         vmnf_shared_parser.add_argument("--patterns", action="store", dest='patterns_file',default=False)
         vmnf_shared_parser.add_argument("--view-name", action="store", dest='view_name',default=False)
+        # -------------------------------------------------------------------------------
+        # > Connection setting - [ proxy options ] 
+        # -------------------------------------------------------------------------------
+        vmnf_shared_parser.add_argument("--proxy", action="store", default=False)
+        vmnf_shared_parser.add_argument("--proxy-type", action="store", dest='proxy_type', default=False)
         
         return vmnf_shared_parser
 

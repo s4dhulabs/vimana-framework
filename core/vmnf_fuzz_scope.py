@@ -5,6 +5,9 @@ import pathlib
 from time import sleep
 from pathlib import Path
 from core.vmnf_urls_parser import digest_scope
+from siddhis.dmt.dmt import siddhi as dmt_siddhi
+from siddhis.djunch.djunch import siddhi as Djunch
+from resources import vmnf_banners
 
         
 
@@ -12,6 +15,9 @@ from core.vmnf_urls_parser import digest_scope
 
 
 def handle_fuzz_scope(**fuzz_ns):
+    
+    # fuzz banner
+    print(vmnf_banners.circuits_banner('fuzzer'))
     
     view_name = '*'
     views = []
@@ -30,13 +36,11 @@ def handle_fuzz_scope(**fuzz_ns):
         scope_file  = fuzz_ns['url_conf']
         arg_type    = 'django_urls'
         argument    = '--urlconf'
-
     elif fuzz_ns['patterns_file']:
         scope_type  = 'Django URL patterns'
         scope_file  = fuzz_ns['patterns_file']
         arg_type    = 'django_patterns'
         argument    = '--patterns'
-
     else:
         print("[fuzzer_scope] Error: Missing scope file")
         sys.exit(1)
@@ -54,7 +58,6 @@ def handle_fuzz_scope(**fuzz_ns):
     # check if a valid scope file was given
     if arg_type == 'django_urls' \
         and not scope_file.split('.')[1] == 'py':
-        
         print('''
         \r[fuzz_scope] Error: {} argument requires a {} file.
         \rexample: vimana run --fuzzer --target http://mydjpyapp.com --port 8000 --urls-file urls.py
@@ -63,7 +66,6 @@ def handle_fuzz_scope(**fuzz_ns):
 
     elif arg_type == 'django_patterns' \
         and scope_file.split('.')[1] == 'py':
-        
         print('''
         \r[fuzzer_scope] Error: {} argument requires a {} file.
         \rexample: vimana run --fuzzer --target http://mydjpyapp.com --port 8000 --patterns patterns.txt
@@ -74,7 +76,7 @@ def handle_fuzz_scope(**fuzz_ns):
     if Path(scope_location).stat().st_size == 0:
         print('[fuzzer_scope] Error: Scope file is empty: {}\n'.format(scope_location))
         sys.exit(1)
-
+    
     if arg_type == 'django_urls':
         fuzz_scope = digest_scope(scope_location)
     else:
@@ -92,7 +94,6 @@ def handle_fuzz_scope(**fuzz_ns):
             patterns.append(pattern['url_pattern'])
 
     _scope_ = {
-        
         'location'  : scope_location,
         'scope_type': scope_type,
         'scope_size': len(patterns),
@@ -101,6 +102,30 @@ def handle_fuzz_scope(**fuzz_ns):
         'argument'  : argument,
         'patterns'  : patterns
     }
+
+    for k,v in _scope_.items():
+        if k != 'patterns':
+            print('+ {}:\t{}'.format(k,v))
+            sleep(0.25)
+    sleep(1)
+
+    confirmation = False
+    while not confirmation:
+        confirmation = input('''\nWere detected {} unique URL Patterns, continue? (Y/n) > '''.format(
+                (_scope_['scope_size'])
+            )
+        )
+        print()
+
+        if confirmation.lower() == 'y':
+            expanded_patterns = dmt_siddhi(**fuzz_ns).expand_UP(_scope_['patterns'])
+
+            # send to fuzzer
+            # base_r = http_ + base_request + port_
+            print(fuzz_ns)
+            input()
+            Djunch(base_r, expanded_patterns, **vars(handler_ns)).start()
+
 
     return _scope_
 

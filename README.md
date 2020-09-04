@@ -86,7 +86,6 @@ Another point about this alpha version is that the main features (siddhis) are f
 
 In addition to the general improvements in the entire framework structure and in the siddhis already available, there are other important points that are:
 
-* Proxy support (SOCKS4/5, HTTP)
 * Features for tracking and fingerprinting template engines (like Genshi, Jinja, Mako, etc.)  
 * Resources for automated SSTI tests (Server Side Template Injection)
 * New fuzzers rules for Django 

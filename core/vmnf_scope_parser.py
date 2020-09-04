@@ -57,16 +57,16 @@ class ScopeParser:
 
         for target in targets:
             self.port_status = None
-            self.port_status = CheckTargetScope(target,ports).start_scan()
+            self.port_status = CheckTargetScope(target,ports,**self.handler_ns).start_scan()
+            # here have to check in case of SOCKS settings failure (if False)
+
             if self.port_status and self.port_status is not None:
                 valid_scope_port = True
                 self.target_scope[str(target)] = self.port_status
 
         if self.target_defined and not valid_scope_port:
             arg = colored('--ignore-state', 'green', attrs=[])
-            print('''
-            \r{} No active port has been identified. Check the target's IP with a network scanner or use {} argument on vimana command line.
-            '''.format(self.scope_error,arg))
+            print('''{} No active port has been identified. Check the target's IP with a network scanner or use {} argument on vimana command line.'''.format(self.scope_error,arg))
 
             sys.exit(1)
 
