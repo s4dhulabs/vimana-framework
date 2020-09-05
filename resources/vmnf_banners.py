@@ -184,7 +184,7 @@ def default_vmn_banner(mode_uvb = False):
     if not mode_uvb:
         print("\033c", end="")
     
-    banner = colored('VIMANA FR4MEWORK', 'blue', attrs=['bold','blink'])
+    banner = colored('VIMANA FR4MEWORK', 'green', attrs=['bold','blink'])
     print(r"""{}
         *                       
                    _^_               .
