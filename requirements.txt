@@ -22,7 +22,7 @@ python-dateutil==2.6.1
 pythonping==1.0.8
 pytimeparse==1.1.5
 reportlab==3.4.0
-requests==2.18.4
+requests>=2.20.0
 requests-unixsocket==0.1.5
 scapy-python3==0.23
 sqlparse==0.3.1
