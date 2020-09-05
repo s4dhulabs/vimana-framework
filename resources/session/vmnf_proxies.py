@@ -9,60 +9,56 @@ class _set_socks_:
     For now, only PySocks is available (https://pypi.org/project/PySocks/). Soon new options.
     '''
 
-    def __init__(
-        self,
-        socks_ip=False,
-        socks_port=False):
-
-        if socks_ip and socks_port:
-            socks.set_default_proxy(
-                socks.SOCKS5, 
-                str(socks_ip), 
-                int(socks_port)
-            )
-            socket.socket = socks.socksocket
-
+    def __init__(self,**vmnf_handler):
+        
+        self.vmnf_handler = vmnf_handler
+        self.proxy_set = vmnf_handler['proxy']
+    
     def test_conn(self):
-        try:
-            conn_test = requests.get('https://ifconfig.me/ip')
-            if conn_test is not None:
-                return conn_test #print('[SOCKS5 OK] Exiting with IP {}'.format(str(conn_test.content)))
-        except requests.exceptions.ConnectionError as _ce_:
-            return None
+        # parse proxy
+
+        if self.proxy_set:
+            self.parse_proxy()
+
+            if self.proxy_ip and self.proxy_port:
+                socks.set_default_proxy(
+                    socks.SOCKS5, 
+                    str(self.proxy_ip), 
+                    int(self.proxy_port)
+                )
+                socket.socket = socks.socksocket
+
+                try:
+                    conn_test = requests.get('https://ifconfig.me/ip')
+                    if conn_test and conn_test is not None:
+                        return conn_test 
+                except requests.exceptions.ConnectionError as _ce_:
+                    return False
+        else:
+            return self.proxy_set
         
-    def parse_proxy(self, **vmnf_handler):
+    def parse_proxy(self):
         
-        # testing socks proxy support
-        ip = ''
-        port = ''
-        proxy_set = False
+        self.proxy_ip = False
+        self.proxy_port = False
 
-        proxy_set = vmnf_handler['proxy']
+        if self.proxy_set:
+            self.proxy_set = self.proxy_set.rstrip().lower()
+            if ':' in self.proxy_set:
+                self.proxy_ip, self.proxy_port = self.proxy_set.split(':')
 
-        if proxy_set:
-            proxy_set = proxy_set.rstrip().lower()
-            if ':' in proxy_set:
-                ip, port = proxy.set.split(':')
-
-                if not ip and not port:
+                if not self.proxy_ip and not self.proxy_port:
                     print('[scope_validate] Invalid proxy format. Enter as follows: --proxy ip:port')
                     return False
 
-            elif proxy_set.lower() == 'default':
-                ip = '127.0.0.1'
-                port = '9050'
+            elif self.proxy_set == 'default':
+                self.proxy_ip = '127.0.0.1'
+                self.proxy_port = '9050'
 
-            elif proxy_set \
-                and not ':' in proxy_set \
-                and proxy_set.count('.') == 3:
-                ip = proxy_set
-                port = '9050'
+            elif self.proxy_set \
+                and not ':' in self.proxy_set \
+                and self.proxy_set.count('.') == 3:
+                self.proxy_ip = self.proxy_set
+                self.proxy_port = '9050'
                 # also have to check it better - if a valid ip format
-        else:
-            return False
-
-        return (ip + ':' + port) 
-
-
-
 
