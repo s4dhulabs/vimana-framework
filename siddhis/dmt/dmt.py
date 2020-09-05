@@ -719,9 +719,9 @@ class siddhi:
  
                     break  # removing this break the dmt will continue testing target in other ports
                 else:
-                    cprint('\t[{}] => Nothing to do: {}'.format(datetime.now(),entry), 'blue')
+                    cprint('\n[{}] => Nothing to do: {}'.format(datetime.now(),entry), 'cyan')
                     if last_step:
-                        print("[+] Target seems to not be vulnerable\n")
+                        cprint('[{}] => the target does not appear to be vulnerable: {}'.format(datetime.now(),entry), 'cyan')
             
             elif status == 500:
                 '''This control will serve to define assertive points in the fuzzer stage, 
