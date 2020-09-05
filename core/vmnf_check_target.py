@@ -66,20 +66,17 @@ class CheckTargetScope:
         valid_scope = []
         closed_ports = []
         
-        '''It is certainly not the most elegant way to do this, but for now it does.'''
-        proxy_set = _set_socks_().parse_proxy(**self.vmnf_handler)
-
-        if proxy_set:
-            ip,port = proxy_set.split(':')
-            conn_test = _set_socks_(ip,port).test_conn()
+        '''It is certainly not the most elegant way to do this, but for now its enough.'''
+        proxy_set = _set_socks_(**self.vmnf_handler).test_conn()
         
-            if conn_test is not None:
-                exit_ip = str(conn_test.content).replace("b",'').replace("'",'')
-                status = colored('OK','green', attrs=['bold'])
-                msg = colored('Connection going out {}'.format(exit_ip),'cyan')
-                _s_ = colored('[SOCKS5 {}] {}'.format(status,msg),'cyan')
-                print('{} {}'.format(colored('⡯⠥','green', attrs=['bold']),_s_))
-                sleep(1)
+        if proxy_set:
+            exit_ip = str(proxy_set.content).replace("b",'').replace("'",'')
+            status = colored('OK','green', attrs=['bold'])
+            msg = colored('Connection going out {}'.format(exit_ip),'cyan')
+            _s_ = colored('[SOCKS5 {}] {}'.format(status,msg),'cyan')
+            
+            print('{} {}'.format(colored('⡯⠥','green', attrs=['bold']),_s_))
+            sleep(1)
         
         print("{} Validating port status for target {}{}{}...\n".format(
             colors.Gn_c + "⠿⠥" + colors.C_c,

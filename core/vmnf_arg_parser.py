@@ -126,7 +126,8 @@ class VimanaParser:
             '--port',
             '--port-list',
             '--port-range',
-            '--fuzzer'
+            '--fuzzer',
+            '--proxy'
         ]
 
         handler_ns  = argparse.Namespace(
