@@ -26,24 +26,6 @@ class _set_socks_:
         self.proxy_ports = settings.proxy_ports
         self.check_pub_ip= settings.check_pub_ip
 
-        '''
-        self.proxy_types = {
-            'SOCKS5':socks.SOCKS5,
-            'SOCKS4':socks.SOCKS4,
-            'HTTP'  :socks.HTTP
-        }
-        self.proxy_ports = {
-            'SOCKS5':'9050',
-            'SOCKS4':'9050',
-            'HTTP'  :'9080'
-        }
-        
-        self.cpips = [
-            'https://ifconfig.me/ip',
-            'https://api.ipify.org/',
-            'https://ident.me'
-        ]
-        '''
     def test_conn(self):
         # parse proxy
 
@@ -144,7 +126,6 @@ class _set_socks_:
                     self.proxy_port = '9050'
                     return True
                     
-
                 return True
             else:
                 print('\n[proxy_validate] Invalid proxy format. Enter as follows: --proxy ip:port')
