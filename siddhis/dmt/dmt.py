@@ -13,9 +13,6 @@
 
 """
 
-
-
-
 from . _dmt_report import resultParser
 from core.vmnf_shared_args import VimanaSharedArgs
 from core.vmnf_thread_handler import ThreadPool
@@ -25,7 +22,7 @@ from resources.session.vmn_session import createSession
 from resources.vmnf_validators import get_tool_scope
 
 from .. djunch.djunch import siddhi as Djunch 
-from .. _shared_settings_.__settings import api_auth as APIAuth
+from settings.siddhis_shared_settings import api_auth as APIAuth
 from resources import colors
 
 from pygments.formatters import TerminalFormatter
@@ -49,7 +46,6 @@ import collections
 import argparse
 import hashlib
 import pygments
-
 
 
     
@@ -132,8 +128,8 @@ class siddhi:
         self.debug_status = False
         self.mu_patterns = []
 
-    def random_value(self,stringLength=6):
-        extensions = ['.txt','.html','.php','.js', '.css']
+    def random_value(self, stringLength=6):
+        extensions = ['','.txt','.html','.','.js','.css',"_"]
         ext = str(random.choice(extensions))
         lettersAndDigits = string.ascii_letters + string.digits
         return ''.join(random.choice(lettersAndDigits) for i in range(stringLength)) + ext
@@ -150,10 +146,6 @@ class siddhi:
         sleep(0.07)
         
     def debug_is_true(self):
-        '''
-
-        '''
-        
         not_debug_status = True
         
         if not self.dmt_start_request:
@@ -199,9 +191,6 @@ class siddhi:
             pass
 
     def check_api_auth_points(self):
-        '''
-
-        '''
         api_auth = PrettyTable()
         api_auth.field_names = ['id', 'URL', 'status', 'methods']
         api_auth.align = "l"
@@ -585,11 +574,16 @@ class siddhi:
             self.target = 'http://' + entry
         
             dmt_start = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            c_target = colored(self.target,'green', attrs=['bold'])
-            cprint("[{0}] Starting DMT against {1}...".format(datetime.now(),c_target), 'green')
+            c_target = colored(self.target,'green')
+            cprint("[{0}] Starting DMT against {1}...".format(datetime.now(),c_target), 'cyan')
             sleep(1)
 
-            fakefile = "/_" + (self.random_value(10))
+            xvals = ['_','.','','','~']
+            fakefile = "/{}{}".format(
+                random.choice(xvals), 
+                self.random_value(random.choice(range(1,6)))
+            )
+
             base_r = self.target
             payload_ = base_r + fakefile  
 
@@ -734,4 +728,3 @@ class siddhi:
                 pass
             elif status == 200: 
                 pass
-

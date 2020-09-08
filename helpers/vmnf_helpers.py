@@ -31,6 +31,15 @@ class VimanaHelp():
 
         '''
 
+    def proxy(self):
+        '''
+        [proxy] 
+
+        --set-proxy         Enables the default proxy for all requests: SOCKS5://127.0.0.1:9050
+        --proxy             Configures the proxy specified by the ip:port string 
+        --proxy-type        Specify the proxy protocol to be used: SOCKS4, SOCKS5, HTTP (required --proxy option)
+        '''
+
     def about(self):
         s4dhu0nv1m4n4()
 
@@ -47,7 +56,6 @@ class VimanaHelp():
         --cidr-range         CIDR range of targets to check Django
         --target-list        List of targets (comma-separated)
        
-
     [port settings]
 
     Options to set port scope to test targets:
