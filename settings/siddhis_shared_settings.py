@@ -41,7 +41,6 @@ class common:
 
 class csrf_table:
     def __init__(self):
-
         index    = Wn_c + "#"        + D_c
         pattern  = Wn_c + "pattern"  + D_c
         status   = Wn_c + "status"   + D_c
@@ -84,7 +83,6 @@ class csrf_table:
 
 
 class set_header:
-    
     def __init__(
         self, 
         URL, 
@@ -108,7 +106,6 @@ class set_header:
         self.request_headers = request_headers
 
 class django_envvars:
-    
     def __init__(self):
         '''
             This method loads Django environment variable names to djxtri 
@@ -322,7 +319,6 @@ class django_envvars:
             'SSH_PASSWORD'
         ]
 
-
         self.SERVER_        = SERVER_
         self.ENVIRONMENT_   = ENVIRONMENT_
         self.EMAIL_         = EMAIL_
@@ -335,9 +331,7 @@ class django_envvars:
         self.CREDENTIALS_   = AUTHENTICATION_
         self.SERVICES_      = AUTHENTICATION_
 
-
 class payloads():
-
     def __init__(self):
 
         # simple unicode characteres (fell free to change for you needs)
