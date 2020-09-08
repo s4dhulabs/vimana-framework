@@ -7,7 +7,6 @@ from pygments.lexers import PythonLexer
 from termcolor import cprint, colored
 from prettytable import PrettyTable
 from collections import OrderedDict 
-#from resources.core.colors import *
 from pygments import highlight
 from bs4 import BeautifulSoup
 from netaddr import IPNetwork
@@ -17,12 +16,11 @@ import argparse
 import hashlib
 import pygments
 
-from .. _shared_settings_.__settings import django_envvars as djev
-from .. _shared_settings_.__settings import csrf_table as csrf
-from .. _shared_settings_.__settings import set_header 
-from .. _shared_settings_.__settings import api_auth
-from .. _shared_settings_.__settings import payloads
-
+from settings.siddhis_shared_settings import django_envvars as djev
+from settings.siddhis_shared_settings import csrf_table as csrf
+from settings.siddhis_shared_settings import set_header 
+from settings.siddhis_shared_settings import api_auth
+from settings.siddhis_shared_settings import payloads
 from core.vmnf_pshell import vmnfshell
 from core.vmnf_shared_args import VimanaSharedArgs
 from core.vmnf_thread_handler import ThreadPool
@@ -203,7 +201,6 @@ class resultParser:
             print(x)
             sleep(0.10)
 
-
         _prana_ = []
         cve_siddhi = colored('prana', 'green')
         tickets_siddhi = colored('tictrac', 'green') 
@@ -220,9 +217,6 @@ class resultParser:
             if django_version and django_version is not None:
                 if len(django_version.split('.')) >= 3:
                     django_version = '.'.join(django_version.split('.')[:-1])
-
-                # **** fakefortests *** 
-                django_version = '2.2'
 
                 # - Get CVEs and security tickets for abducted framework version-
                 security_tickets = tictrac.siddhi(django_version).start()
@@ -369,7 +363,6 @@ class resultParser:
                 )
         print()
         sleep(1)
-        
 
         ###########################
         ### target environment ####
@@ -395,9 +388,6 @@ class resultParser:
         for k,v in self.contexts['environment'].items():
             k = (k.replace('_',' ')).capitalize()
 
-            # fakefortests
-            # if v == '1.11.21': v = '2.2.0'
-
             print('{}{}:\t   {}'.format(
                 (' ' * int(5-len(k) + 15)),
                 k,
@@ -409,7 +399,6 @@ class resultParser:
         print()
         sleep(0.20)
 
-
         ##########################
         ### env leak contexts ####
         ##########################
@@ -420,18 +409,6 @@ class resultParser:
         )
 
         print(self.envleak_tbl)
-        '''
-        for k,v in self.contexts.items():
-            if v:
-                print('{}{}:\t   {}'.format(
-                    (' ' * int(5-len(k) + 15)),
-                    k,colored(str(len(self.contexts[k])),hl_color)
-                    )
-                )
-                sleep(0.10)
-        print()
-        sleep(1)
-        '''
 
         ##########################
         ### Application Issues ###

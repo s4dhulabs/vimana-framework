@@ -31,11 +31,11 @@ import argparse
 import hashlib
 import pygments
 
-from .. _shared_settings_.__settings import django_envvars as djev
-from .. _shared_settings_.__settings import csrf_table as csrf
-from .. _shared_settings_.__settings import set_header 
-from .. _shared_settings_.__settings import api_auth
-from .. _shared_settings_.__settings import payloads
+from settings.siddhis_shared_settings import django_envvars as djev
+from settings.siddhis_shared_settings import csrf_table as csrf
+from settings.siddhis_shared_settings import set_header 
+from settings.siddhis_shared_settings import api_auth
+from settings.siddhis_shared_settings import payloads
 
 from core.vmnf_shared_args import VimanaSharedArgs
 from core.vmnf_thread_handler import ThreadPool
@@ -69,7 +69,6 @@ class siddhi:
         "Brief":           "Django application fuzzer ",
         "Description":
         """
-
         \r  This tool was designed to audit applications running with the Django
         \r  framework. Acts as an input module for Vimana to collect base data. 
         \r  DMT works seamlessly with other framework tools such as Djonga, DJunch,
@@ -132,7 +131,6 @@ class siddhi:
         self.quiet_mode = True if not self.verbose else False
         self.catched_exceptions = []
 
-        
         # ==[ Main Fuzzer object - analysis issues by type ]==
         self._issues_ = {
             'exceptions': [],
@@ -165,7 +163,6 @@ class siddhi:
             colored(self.value, color))
         )
         sleep(0.07)
-
 
     def show_lsource(self):
         
@@ -253,8 +250,7 @@ class siddhi:
                 print()    
 
     def save_in_context(self):
-        ''' save exception data in right context'''
-        
+        ''' save exception data in right context'''        
 
         if self.header in djev().SECURITY_MIDDLEWARE.keys():
             self.contexts['security_middleware'][self.header] = self.value 
@@ -281,7 +277,6 @@ class siddhi:
         elif self.header in djev().SERVICES_:
             self.contexts['services'][self.header] = self.value
 
-
     def dxt_parser(self):
         
         # digest _trigger_ object values
@@ -293,23 +288,9 @@ class siddhi:
         self.context_filter = self._trigger_['context_filter']
         divisor = '-' * 100
 
-        # contexts - to change dicts above to these bellow (available to all methods)
-        #self._server_context_ = {}
-        #self._exception_context_ = {}
-        #self._environment_context_ = {}
-        #self._session_context_ = {}
-        #self._credentials_context_ = {}
-        #self._csrf_context_ = {}
-        #self._email_context_ = {} 
-        #self._upload_context_ = {}
-        #self._communication_context_ = {}
-        #self._authentication_context_ = {}
-        #self._authorization_context_ = {}
-
         # dummy verification - if not exception keyword in response 
         if not str(self.html).find('Exception'):
             return False
-
         try:
 	    # AttributeError: 'NoneType' object has no attribute 'findAll'
             soup = BeautifulSoup(self.html, 'html.parser')
@@ -372,7 +353,6 @@ class siddhi:
                     if Debug mode is enabled
 
                 '''
-
                 cprint('⣆⣇     Server    \t', 'white', 'on_red', attrs=['bold'])
                 print()
                 for k,v in self.contexts['server'].items():
@@ -485,7 +465,6 @@ class siddhi:
                     )
                    
                     sleep(0.50)
-
 
                 # update occ count (occurrences of same exception)
                 for issue in self._issues_['exceptions']:
@@ -608,7 +587,6 @@ class siddhi:
                             self.step_method
                         )
                     )
-                    
                     pass
 
                 # ~ RuntimeError Exception data
@@ -636,13 +614,10 @@ class siddhi:
 
                 # ~ If response status equal 'Internal Server Error'
                 if status == 500:
-
                     # set exception found flag (used by main_trigger)
                     self.loop_exception_found = True    # test: working
-
                     # if not UnicodeEncodeError [warning, no leak to parse]
                     if self.trigger_step != 2:
-                        
                         # create exception data object    
                         self._trigger_= {  
                             'html': fuzz_response,
@@ -666,9 +641,7 @@ class siddhi:
 
         return parser
 
-
     def start(self):
-        
         '''
         in fact most modules do not need to implement their own parser, 
         because vimana already sends the command line handler with all 

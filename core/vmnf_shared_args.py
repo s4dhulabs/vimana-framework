@@ -99,6 +99,7 @@ class VimanaSharedArgs:
         # -------------------------------------------------------------------------------
         # > Connection setting - [ proxy options ] 
         # -------------------------------------------------------------------------------
+        vmnf_shared_parser.add_argument("--set-proxy", action="store_true", dest='set_proxy', default=False)
         vmnf_shared_parser.add_argument("--proxy", action="store", default=False)
         vmnf_shared_parser.add_argument("--proxy-type", action="store", dest='proxy_type', default=False)
         
@@ -132,5 +133,11 @@ class VimanaSharedArgs:
     --timeout           set timeout 
     --pause-steps       pause between steps 
     --auto              assume yes for all subtasks
+
+    proxy 
+
+    --set-proxy         Enables the default proxy for all requests: SOCKS5: //127.0.0.1: 9055
+    --proxy             Configures the proxy specified by the ip:port string
+    --proxy-type        Specify the proxy protocol to be used (required --proxy option)
     '''        
  

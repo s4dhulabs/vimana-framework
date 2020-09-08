@@ -18,7 +18,7 @@ import sys
 import os
 import re
 
-from siddhis._shared_settings_.__settings import django_envvars as djev
+from settings.siddhis_shared_settings import django_envvars as djev
 from resources.vmnf_text_utils import text_wrap
 from siddhis.tictrac import tictrac
 from siddhis.prana import prana

@@ -117,6 +117,12 @@ class VimanaParser:
             4:'exploit'
         }
         
+        arg_help = {
+            '--proxy':  VimanaHelp.proxy.__doc__, 
+            '--proxy-type':  VimanaHelp.proxy.__doc__, 
+            '--target': VimanaHelp.set_scope.__doc__
+        }
+
         required_args = [
             '--target',
             '--file',
@@ -127,7 +133,8 @@ class VimanaParser:
             '--port-list',
             '--port-range',
             '--fuzzer',
-            '--proxy'
+            '--proxy',
+            '--proxy-type'
         ]
 
         handler_ns  = argparse.Namespace(
@@ -168,6 +175,11 @@ class VimanaParser:
             _cmd_ = sys.argv[1]
 
         if (sys.argv[-1]) in required_args:
+            
+            if sys.argv[-1] in arg_help.keys():
+                print(VimanaHelp().__doc__)
+                print(arg_help[sys.argv[-1]])
+
             print('[vmnf_argparser: {}] Missing a value for the argument {}'.format(
                 datetime.now().date(),
                 sys.argv[-1]
