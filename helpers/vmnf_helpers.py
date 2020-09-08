@@ -24,7 +24,7 @@ class VimanaHelp():
 
     start       Starts Vimana in a interactive mode
     list        Lists available modules
-    run         Run a specific module directly (non-interactive)
+    run         Runs a specific module directly (non-interactive)
     info        Shows information about modules
     args        Shows module arguments 
     about       About the framework 
@@ -63,7 +63,7 @@ class VimanaHelp():
         --port               Port where Django is running 
         --port-list          List of ports to check Django 
         --port-range         Port range to check Django         
-        --ignore-state       Disable IP and port status verifications 
+        --ignore-state       Disables IP and port status verifications 
         '''
 
     def general_options(self):
@@ -71,13 +71,13 @@ class VimanaHelp():
 
     [general settings]
 
-        --debug              Display debugging information and findings in realtime
-        --verbose            Enable verbose mode (incremental)
-        --random             Enable random mode for suported tasks
+        --debug              Displays debugging information and findings in realtime
+        --verbose            Enables verbose mode (incremental)
+        --random             Enables random mode for suported tasks
         --wait               Wait for 'n' seconds beetwen steps 
-        --threads            Set number of threads to use (default: 3)
-        --timeout            Set timeout for HTTP requests  (default: 5 seconds)
-        --pause-steps        Run tests pausing between steps
+        --threads            Sets number of threads to use (default: 3)
+        --timeout            Sets timeout for HTTP requests  (default: 5 seconds)
+        --pause-steps        Runs tests pausing between steps
         '''
 
     def fuzzer_args(self):
@@ -115,7 +115,7 @@ class VimanaHelp():
 
     [info]
     
-    Show information about siddhi module
+    Shows information about siddhi module
 
     → usage: vimana info --module <module name>
 
@@ -136,7 +136,7 @@ class VimanaHelp():
 
     → usage: list --modules <options>
 
-    Without arguments 'list' command will retrieve all modules available in
+    Without <option filters> 'list' command will retrieve all modules available in
     current version of Vimana Framework.
 
     options:
@@ -178,7 +178,7 @@ class VimanaHelp():
 
     -f  --framework <framework name>
 
-    This option allow to filter modules by framework or choose a generic type.
+    This option allows to filter modules by framework or choose a generic type.
     Supported types in this version:
 
         0   Django
@@ -192,16 +192,16 @@ class VimanaHelp():
     Below are shown some use cases with all the options of the list command together:
 
     vimana list
-        Retrieve all available modules
+        Lists all available modules
 
     vimana list --modules --type tracker --category framework -f django
-        Retrieve all tracker modules for Django applications
+        Lists all tracker modules for Django applications
 
     vimana list --modules -t fuzzer -c f
-        Retrieve all fuzzer modules for framework
+        Lists all fuzzer modules for framework
 
     vimana list --modules --type 2 -f flask
-        Retrieve all generic brute force modules for flask
+        Lists all generic brute force modules for flask
         '''
 
     def run(self):

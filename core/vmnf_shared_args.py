@@ -71,6 +71,7 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument('--ip-range',action='store',dest='ip_range', default=False)
         vmnf_shared_parser.add_argument('--cidr-range',action='store',dest='cidr_range', default=False)
         vmnf_shared_parser.add_argument('--target-list',action='store',dest='list_target', default=False)
+        vmnf_shared_parser.add_argument('--nmap-xml',action='store',dest='nmap_xml', default=False)
         # -------------------------------------------------------------------------------
         # > Scope setting - [ port parser ] 
         # -------------------------------------------------------------------------------
@@ -110,34 +111,35 @@ class VimanaSharedArgs:
         '''
     target  
 
-    --target            set a single target scope
-    --file              use a file with a target list
-    --ip-range          set ip range scope
-    --cidr-range        set cidr range scope
-    --target-list       set a target list (comma-separeted) scope 
+    --target            defines a single target scope
+    --file              defines a file with a target list
+    --ip-range          defines ip range scope
+    --cidr-range        defines cidr range scope
+    --target-list       defines a target list (comma-separeted) scope
+    --nmap-xml          defines the result of the nmap xml as a scope
         
     port
 
-    --port              set a single port scope
-    --port-list         set a port list scope
-    --port-range        set port range scope
+    --port              sets a single port scope
+    --port-list         sets a port list scope
+    --port-range        sets port range scope
     --ignore-state      ignore port status
         
     general
 
-    --debug             enable debug information
-    --verbose           enable verbose mode (incremental)
-    --random            enable randominez for suported steps
+    --debug             enables debug information
+    --verbose           enables verbose mode (incremental)
+    --random            enables randominez for suported steps
     --wait              wait 'n' seconds between steps
-    --threads           set number of threads 
-    --timeout           set timeout 
+    --threads           sets number of threads 
+    --timeout           sets timeout 
     --pause-steps       pause between steps 
     --auto              assume yes for all subtasks
 
     proxy 
 
-    --set-proxy         Enables the default proxy for all requests: SOCKS5: //127.0.0.1: 9055
-    --proxy             Configures the proxy specified by the ip:port string
-    --proxy-type        Specify the proxy protocol to be used (required --proxy option)
+    --set-proxy         enables the default proxy for all requests: SOCKS5: //127.0.0.1: 9055
+    --proxy             configures the proxy specified by the ip:port string
+    --proxy-type        specifies the proxy protocol to be used (required --proxy option)
     '''        
  
