@@ -1,6 +1,7 @@
 
 from core.vmnf_check_target import CheckTargetScope
 from netaddr.core import AddrFormatError
+from libnmap.parser import NmapParser
 from termcolor import colored, cprint
 from datetime import datetime
 from netaddr import valid_ipv4
@@ -23,8 +24,7 @@ class ScopeParser:
             or handler_ns['cidr_range'] \
             or handler_ns['list_target'] else False
 
-    def scope_validate(self):
-        
+    def scope_validate(self):        
         valid_scope_port = False
         targets = []
         ports   = []
@@ -74,15 +74,48 @@ class ScopeParser:
         _scope_ = {}
         self.target_list = []
         self.port_list = []
-        
+                
+        if self.handler_ns['nmap_xml']:
+            xml_scope_file = self.handler_ns['nmap_xml']
+            xml_location = str(pathlib.Path().absolute()) + '/' + xml_scope_file
+            
+            if not os.path.exists(xml_location):
+                print('''\r{} XML file not found: {}. Check the file location and try again.\n'''.format(
+                    self.scope_error,xml_location))    
+                
+                return False
+
+            # check if its a file
+            if not os.path.isfile(xml_location) \
+                or not xml_location.endswith('.xml'):
+                arg = colored('--nmap-xml', 'green')
+                print('''\r{} Invalid XML file: {}. {} argument requires an nmap results file with an .xml extension\n'''.format(
+                    self.scope_error, xml_scope_file, arg
+                    )
+                )
+                return False
+
+            #nmap_xml_file = str(pathlib.Path().absolute()) + '/' + scope_file
+            nmap_scan_result = NmapParser.parse_fromfile(xml_location)
+                        
+            for target in nmap_scan_result.hosts:
+                target_status = str(target).split('-')[1][+1:-1].rstrip()
+                if target_status == 'up':
+                    target_list = []
+                    for _ts_ in target.services:
+                        if _ts_.state == 'open':
+                            target_list.append(str(target.address) + ':' + str(_ts_.port))
+    
+                    if target_list:
+                        self.target_scope[str(target.address)] = target_list
+
         # ***   scope: single target   *** 
-        if self.handler_ns['single_target']:
+        elif self.handler_ns['single_target']:
             if "," in str(self.handler_ns['single_target']):
                 arg = colored('--target-list', 'green', attrs=[])
-                print('''\r{} Invalid format for the --target argument, try this with {} or specify a single target.\n'''.format(self.scope_error,arg))
-            
-                sys.exit(1)
-            
+                print('''\r{} Invalid format for the --target argument, try this with {} or specify a single target.\n'''.format(self.scope_error,arg)) 
+                sys.exit(1)  
+
             target = self.handler_ns['single_target']
             
             try:
@@ -188,15 +221,16 @@ class ScopeParser:
             #port_list = [int(port) for port in port_list.split(',')] 
             for port in plist.split(','):
                 self.port_list.append(port)
-
-        if not self.handler_ns['ignore_state']:
-            self.scope_validate()
-        else:
-            self.target_scope = {
-                'targets': self.target_list,
-                'ports'  : self.port_list
-            }
-
+        
+        # because nmap already tested
+        if not self.handler_ns['nmap_xml']:
+            if not self.handler_ns['ignore_state']:
+                self.scope_validate()
+            else:
+                self.target_scope = {
+                    'targets': self.target_list,
+                    'ports'  : self.port_list
+                }
 
         return self.target_scope
     

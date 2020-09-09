@@ -134,7 +134,8 @@ class VimanaParser:
             '--port-range',
             '--fuzzer',
             '--proxy',
-            '--proxy-type'
+            '--proxy-type',
+            '--nmap-xml'
         ]
 
         handler_ns  = argparse.Namespace(

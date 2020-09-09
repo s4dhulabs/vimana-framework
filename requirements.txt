@@ -1,3 +1,5 @@
+parse-nmap==0.2.0
+python-libnmap==0.7.0
 PySocks==1.7.1
 wheel==0.34.2
 beautifulsoup4==4.6.0
