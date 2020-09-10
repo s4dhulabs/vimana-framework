@@ -121,6 +121,14 @@ class siddhi:
             **vmnf_handler
         ):
     
+        self.pattern = '<dmt_trigger>'
+        self._trigger_= {
+            'html': False,
+            'rtxc_mode': False,
+            'trigger_start': False,
+            'context_filter': False
+        }
+
         self.vmnf_handler = vmnf_handler
         self.base_r = target
         self.up_collection = up_collection
@@ -152,6 +160,8 @@ class siddhi:
             'services':{},
             'security_middleware':{}
         }
+        self.FUZZ_TRACEBACK = {}
+        self.FUZZ_RESULT = []
 
     def print_it(self, tag, value, color='green'):
         self.tag    = tag
@@ -250,7 +260,9 @@ class siddhi:
                 print()    
 
     def save_in_context(self):
-        ''' save exception data in right context'''        
+        ''' save exception data in right context and feed traceback object'''        
+        
+        self.FUZZ_TRACEBACK[self.header] = self.value
 
         if self.header in djev().SECURITY_MIDDLEWARE.keys():
             self.contexts['security_middleware'][self.header] = self.value 
@@ -276,8 +288,12 @@ class siddhi:
             self.contexts['communication'][self.header] = self.value
         elif self.header in djev().SERVICES_:
             self.contexts['services'][self.header] = self.value
-
-    def dxt_parser(self):
+        
+    def dxt_parser(self,**dmt_trigger_mode):
+         
+        # if the parser is called by the DMT instead of the fuzzer itself
+        if dmt_trigger_mode:
+            self._trigger_ = dmt_trigger_mode
         
         # digest _trigger_ object values
         so_windows          = False
@@ -297,7 +313,7 @@ class siddhi:
             summary = soup.find("div", {"id": "summary"})
             summary = summary.findAll("table", {"class": "meta"}) # genneral information about event
             metainfo = soup.findAll("table", {"class": "req"})    # where goes the passwords
-
+            
             # catches traceback context
             self.raw_traceback = soup.find("div", {"id": "traceback"})
             self.traceback_context = self.raw_traceback.findAll("div", {"class": "context"})
@@ -311,7 +327,6 @@ class siddhi:
                     G_c + str(source_lenght) + D_c
                     ), end=''
                 )
-            
         except AttributeError:
             """ In this case we need to implement a generic parser to 
             digest exception traceback. 
@@ -319,8 +334,7 @@ class siddhi:
             pass
         except AttributeError:
             pass
-
-	# UnboundLocalError: local variable 'metainfo' referenced before assignment
+        
         for entry in metainfo:
             rows = ''
             rows = entry.findAll('tr')
@@ -376,15 +390,13 @@ class siddhi:
                 print()
                 sleep(1)
 
-                if str(self._environment_context_).find('.exe') \
-                    and str(self._environment_context_).find(r':\\') != -1:
+                if str(self.contexts['environment']).find('.exe') \
+                    and str(self.contexts['environment']).find(r':\\') != -1:
                         so_windows = True
                         _slash_ = '\\'
 	        
-
             # get exception traceback header
             _xpt_ = self.contexts['exception'] 
-
             exception_location = _xpt_.get('Exception Location').strip()
             exception_type = _xpt_.get('Exception Type').strip()
             exception_value = _xpt_.get('Exception Value').strip()
@@ -450,7 +462,6 @@ class siddhi:
 
             # if current exception hash is found in catched_exceptions so continue
             else:      
-
                 if self.debug:
                     print('''\r\r       [djunch().parser(): {}] ↓
                     \r\t  + caught_exception: {} 
@@ -463,7 +474,6 @@ class siddhi:
                         line_number
                         )
                     )
-                   
                     sleep(0.50)
 
                 # update occ count (occurrences of same exception)
@@ -471,16 +481,22 @@ class siddhi:
                     if issue['x_hash'] == exception_hash:
                         issue['occ'] = issue['occ'] + 1
                         break
-
                 continue 
-                
+
+        if dmt_trigger_mode:
+            self.FUZZ_RESULT = [
+                self.contexts,
+                self._issues_,
+                self.FUZZ_TRACEBACK
+            ]
+            return self.FUZZ_RESULT
         return True
 
     def get_csrftoken(self):
 
         #self.URL = URL
         self.CSRFTOKEN = False
-        self.TCSRFTOKEN= '0' * 100      # needs to implement some random chars instead numbers
+        self.TCSRFTOKEN= '0' * 100  # just junk / needs to implement some random chars instead numbers
 
         # ~ Try to get crsftoken from a given URL in application 
         try:
@@ -522,15 +538,13 @@ class siddhi:
         # [1] - empty 'payload' - Just request URL Patterns one by one (this could trigger IndexError Exceptions-like
         payload = ''
 
-        # test 
+        # test to debug some features 
         djunch_mode = True
         if djunch_mode:    
             # [2] - if UnicodeEncodeError-like step 
             if self.trigger_step == 2: 
-
                 # ~ get a random Unicode payload to check for UnicodeEncodeError Warning (serve side, no leak)
                 payload = payloads().get_random_unicode_payload()
-            
             # ~ constructs base target url
             self.target_url = "{}/{}".format(self.base_r, self.pattern)
             
@@ -547,7 +561,6 @@ class siddhi:
                     (Y_c  + self.pattern + D_c)
                     )
             )
-            
             sys.stdout.flush()
             sleep(0.05)
             #p_count += 1
@@ -555,14 +568,12 @@ class siddhi:
             # [3] - RuntimeError-like exception via Django APPEND_SLASH trigger 
             # [4] - CSRF_Failure_view  - config fail (doesnt need DEBUG true)
             if self.trigger_step == 3 or self.trigger_step == 4:
-                
                 # ~ Get crsftoken ~
                 self.get_csrftoken()
 
                 # [4] - CSRF_Failure_view tests 
                 if self.trigger_step == 4:
                     self.step_method = 'POST'
-
                     # use tainted crsftoken to trigger 403 template (if implemented) or a CSRF FAILURE VIEW warning
                     self.CSRFTOKEN = self.TCSRFTOKEN
                 
@@ -575,7 +586,6 @@ class siddhi:
                 
                 # ~ Set default request header from _shared_settings_
                 request_headers = set_header(fuzz_url, login_data, self.CSRFTOKEN).request_headers
-                
                 # ~ POST request with form login_data/csrftoken but without final slash '/'
                 try:
                     RuntimeData = self.client.post(fuzz_url, data=login_data, headers=request_headers)
@@ -642,13 +652,11 @@ class siddhi:
         return parser
 
     def start(self):
-        '''
-        in fact most modules do not need to implement their own parser, 
+        '''in fact most modules do not need to implement their own parser, 
         because vimana already sends the command line handler with all 
         the arguments for the modules executed with the 'run' command
+        so this is just a test'''
 
-        so this is just a test
-        '''
         djunch_handler= argparse.Namespace(
             ignore_state = False,       # ignore state - disable IP and port state verification
             single_target = False,      # single target scope
@@ -678,7 +686,6 @@ class siddhi:
             (G_c  + self.base_r + W_c), 
             (str(self.total_patterns) + D_c))
         )
-
         sleep(1)
 
         # ~ range in dxt_steps, starts in 1 defines how many steps to run with loop patterns (according with payloads)
@@ -698,12 +705,12 @@ class siddhi:
             #pool.wait_completion() # threading tests
 
         # final object results - used in dmt to show final result and inspect issues
-        result = [
+        self.FUZZ_RESULT = [
             self.contexts,
-            self._issues_
+            self._issues_,
+            self.FUZZ_TRACEBACK
         ]
-
-        return result
+        return self.FUZZ_RESULT
 
 
 

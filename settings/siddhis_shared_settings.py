@@ -285,6 +285,7 @@ class django_envvars:
         ]
         CREDENTIALS_ = [
             'USER', 
+            'SECRET',
             'SECRET_KEY', 
             'CLIENT_KEY', 
             'CLIENT_SECRET', 

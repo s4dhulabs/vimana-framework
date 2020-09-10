@@ -329,7 +329,6 @@ class resultParser:
                 ]
             )
             i_count +=1 
-
             
         ########################
         ########################
@@ -437,11 +436,12 @@ class resultParser:
         ###################
         ### URL patterns ##
         ###################
-        cprint('\nWere identified {} URL patterns that served as initial scope for fuzzing step'.format(
-            len(self.mu_patterns)),'cyan')
+        if self.mu_patterns:
+            cprint('\nWere identified {} URL patterns that served as initial scope for fuzzing step'.format(
+                len(self.mu_patterns)),'cyan')
 
-        # mapped URL patterns (reusing dmt construted table here)
-        print(self.xp_tbl)
+            # mapped URL patterns (reusing dmt construted table here)
+            print(self.xp_tbl)
         
         ##################
         ### exceptions ###
@@ -474,38 +474,37 @@ class resultParser:
 
         ''')
 
-
         ############################
         ### configuration issues ###
         ############################
-        status = ('\nWere identified {} configuration issues that make it possible to infer configurations and identify technologies.'.format(
-            len(self._issues_['configuration'])
+        if self._issues_['configuration']: 
+            status = ('\nWere identified {} configuration issues that make it possible to infer configurations and identify technologies.'.format(
+                len(self._issues_['configuration'])
+                )
             )
-        )
-        cprint(status, 'cyan', attrs=[])
-        print(self.config_issues_tbl)
+            cprint(status, 'cyan', attrs=[])
+            print(self.config_issues_tbl)
         
-        cwe = colored('CWE-209','blue',attrs=['bold'])
-        cwe_title = colored(": Generation of Error Message Containing Sensitive Information     ", "blue", attrs=[])
-        print('\n {}{}'.format(cwe,cwe_title))
-        print(''' 
-        \r The sensitive information may be valuable information on its own
-        \r (such as a password), or it may be useful for launching other, more
-        \r serious attacks. The error message may be created in different ways:
+            cwe = colored('CWE-209','blue',attrs=['bold'])
+            cwe_title = colored(": Generation of Error Message Containing Sensitive Information     ", "blue", attrs=[])
+            print('\n {}{}'.format(cwe,cwe_title))
+            print(''' 
+            \r The sensitive information may be valuable information on its own
+            \r (such as a password), or it may be useful for launching other, more
+            \r serious attacks. The error message may be created in different ways:
 
-        \r    * self-generated: the source code explicitly constructs the
-        \r      error message and delivers it 
+            \r    * self-generated: the source code explicitly constructs the
+            \r      error message and delivers it 
 
-        \r    * externally-generated: the external environment, such as a 
-        \r      language interpreter, handles the error and constructs its own message, 
-        \r      whose contents are not under direct control by the programmer. 
+            \r    * externally-generated: the external environment, such as a 
+            \r      language interpreter, handles the error and constructs its own message, 
+            \r      whose contents are not under direct control by the programmer. 
         
-        \r An attacker may use the contents of error messages to help launch another. 
+            \r An attacker may use the contents of error messages to help launch another. 
         
-        \r https://cwe.mitre.org/data/definitions/209.html
-        ''')
-        sleep(1)
-
+            \r https://cwe.mitre.org/data/definitions/209.html\n''')
+            
+            sleep(1)
 
         ################################
         ### Framework version issues ###
@@ -522,24 +521,16 @@ class resultParser:
         else:
             print('No security tickets identified for Django {}'.format(django_version))
 
-
-        # CVE IDs 
-        cprint(']]- CVE IDs ({})'.format(cve_siddhi), 'magenta')
+        # CVE IDs
         if cves:
+            cprint(']]- CVE IDs ({})'.format(cve_siddhi), 'magenta')
             print(self.cves_tbl)
-        else: 
-            print('No cves identified for Django {}'.format(django_version))
-       
+
+
         ''' s4dhu notes: There is some conceptual confusion here. 
         At this time I dont know exactly where to invoke vimana prompt, 
         because there are many result objects to parse and link to 
         vimana main commands and with specific siddhi commands.'''
-
-        # + djunch_result: list of [2] dicts
-        # |- self.contexts 
-        # |- self._issues_  
-             #|- _issues_['configuration']
-             #|- _issues_['exception']
 
         report_tables = {
             'summary': self.summary_tbl,
@@ -560,8 +551,3 @@ class resultParser:
             _prana_,
             **report_tables
         )
-
-       
-
-
-
