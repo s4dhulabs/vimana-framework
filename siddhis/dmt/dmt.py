@@ -238,7 +238,6 @@ class siddhi:
                      auth_path = path
                	  api_auth.add_row([count, auth_path, status_c, methods_c])
                   count +=1
-            
         print() 
         if ef:
             print(api_auth)
@@ -265,10 +264,10 @@ class siddhi:
         
         if not found_admin_flag:
             if found_admin_pattern:
-                print("   {0} Django Administration: no-default path...").format(vrf)
+                print("   {0} Django Administration: no-default path...".format(vrf))
                 django_adm_path = "/" + found_admin_pattern + rel_path
             else:
-                print("   {0} Django Admin path not found").format(fail)
+                print("   {0} Django Admin path not found".format(fail))
                 return False
         else:
             django_adm_path = "/admin" + rel_path
@@ -288,9 +287,9 @@ class siddhi:
             if status == 200:
 
                 print("   {0} Django administration: seems to be available...".format(ok))
-                sleep(0.25)
+                sleep(0.10)
                 print("   {0} Django administration: Checking...".format(ok))
-                sleep(0.50)
+                sleep(0.10)
               
                 soup = BeautifulSoup(djadmin_response, 'lxml')
                 try:
@@ -298,24 +297,22 @@ class siddhi:
                     check = str((soup.find("h1", {"id": "site-name"})).find("a"))
                     adm_pattern = (check[check.find("<a"):check.find("</a>")]).split(">")[1]
                 except AttributeError as AE:
-                    print("[+] Fail: {}".format(AE))
                     return False
              
                 if adm_pattern == "Django administration":
                     print("   {0} Django administration: {1}".format(ok, str(P_c + adm_path + D_c)))
-                    sleep(0.50)
+                    sleep(0.10)
                     return True
 	      
 	        # Django 管理 
                 elif (adm_pattern.split()[0]) == fmwk_:
                     print("   {0} Django administration: abducting {1}...".format(ok, adm_pattern.split()[1]))
-                    sleep(0.50)
+                    sleep(0.10)
                     print("   {0} Django administration: {1}".format(ok, str(Gn_c + adm_path + D_c)))
                 elif (soup.title.string).find('Django') > -1:
                     print("   {0} Django administration: {1}".format(ok, str(Gn_c + adm_path + D_c)))
                 else: 
                     return False		
-
             elif status == 404:
                 print('[+] DMTSTATUS {}:{}'.format(len(dadmp_request),status))
             elif status == 500:
@@ -327,6 +324,7 @@ class siddhi:
         login_flags =['login', 'auth', 'logout',' loggedin', 'signup']            
         login_flag_count = 0
 
+        # yeap this is uggly, soon I will fix it 
         global found_admin_flag
         global found_admin_pattern
         global found_api_flag
@@ -389,7 +387,6 @@ class siddhi:
                     self.xlp_tbl.add_row([tag_count, url_pattern, name])
                     tag_count += 1
             else:
-
                 if url_pattern \
                     and not url_pattern in self.expanded_patterns:
 
@@ -413,7 +410,6 @@ class siddhi:
            print(self.xlp_tbl)
     
     def djmimic(
-        
         self, 
         x_pattern=None, 
         expanded_patterns=None
@@ -516,13 +512,24 @@ class siddhi:
     
     def parse_args(self):
         ''' ~ siddhi needs only shared arguments from VimanaSharedArgs() ~'''
-
         parser = argparse.ArgumentParser(
                 add_help=False,
                 parents=[VimanaSharedArgs().args()]
         )
 
         return parser
+
+    def issues_presentation(self):
+        # create instance of dmt reporter
+        result = resultParser(
+            self.xlp_tbl_x,
+            self.mu_patterns,
+            self.fuzz_result,
+            **self.vmnf_handler
+        )
+
+        # call reporter
+        result.show_issues()
 
     def start(self):
 
@@ -572,13 +579,14 @@ class siddhi:
         for entry in targets_ports_set:
             ''' have to change this to auto choose the right scheme'''
             self.target = 'http://' + entry
+            port   = entry.split(':')[1].strip()
         
             dmt_start = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             c_target = colored(self.target,'green')
             cprint("[{0}] Starting DMT against {1}...".format(datetime.now(),c_target), 'cyan')
             sleep(1)
 
-            xvals = ['_','.','','','~']
+            xvals = ['_','.','','','~','?']
             fakefile = "/{}{}".format(
                 random.choice(xvals), 
                 self.random_value(random.choice(range(1,6)))
@@ -600,7 +608,6 @@ class siddhi:
                         request_fail = 0	
                         print("\nHi, sadhu! Too many fails in this process, try to discovery host before!")
                 
-                
                 cprint('''[{}] DMT did not receive a valid response from the target, nothing to do.
                 '''.format(datetime.now()), 'red', attrs=[])
                
@@ -609,20 +616,15 @@ class siddhi:
                     continue
                 else:
                     break
-
             else: 
-                ''' 
-                    if there is a response from request could be indicate
-                    check it better 
-
-                '''
+                ''' if there is a response from request could be indicatecheck it better'''
                 from resources.session.vmn_session import status, request
             
+            found_exception_flag = True if 'Exception Type' in current_request else False
+
             if start or not server_flag_found:
-                '''
-                    just to check if there is any known django/python keyword
-                    in response headers
-                '''
+                '''just to check if there is any known django/python keyword in response headers'''
+
                 start = False
                 # just a test to blackbox fingerprint...
                 flags = [
@@ -645,16 +647,33 @@ class siddhi:
                             print("\n")
                             self.print_it(header, value)
             
+            
+            self.expanded_response  = current_request
+            self.dmt_start_request  = current_request
+            self.dmt_start_base_r   = base_r
+            self.dmt_start_port     = port 
+            self.dmt_start_last_step= last_step
+
             if status == 400:
-                print('[dmt: {}]: The target does not appear to be vulnerable. Make sure that the analysis settings are correct:'.format(
-                    datetime.now()
+                if found_exception_flag:
+                    self.handle_discovery_xt()
+                else:
+                    print('''\n[dmt: {}]: The target does not appear to be vulnerable.
+                            \rMake sure that the analysis settings are correct:\n'''.format(
+                        datetime.now()
+                        )
                     )
-                )
-
-                print(self.target)
-                
-                sys.exit(1)
-
+                    for set_k, set_v in (self.vmnf_handler.items()):
+                        if set_k != 'scope' and set_v:
+                            print('{}{}:\t{}'.format(
+                                (' ' * int(5-len(set_k) + 10)),set_k,
+                                colored(set_v, 'blue')
+                                )
+                            )
+                    print()
+                    sleep(1)
+                    sys.exit(1)
+            
             if status == 404:
                 # Check if last step 
                 if (targets_ports_set.index(entry) + 1) == (len(targets_ports_set)):
@@ -663,7 +682,7 @@ class siddhi:
                 self.expanded_response  = current_request
                 self.dmt_start_request  = current_request
                 self.dmt_start_base_r   = base_r
-                self.dmt_start_port     = entry.split(':')[1].strip()
+                self.dmt_start_port     = port 
                 self.dmt_start_last_step= last_step
 
                 if self.debug_is_true():
@@ -677,8 +696,9 @@ class siddhi:
                     
                     # extending DMT: Call DJunch fuzzer and create instances of object result
                     # this result, a list of dictionaries (2) will be used to resultParser 
-                    fuzz_result = Djunch(
-                        base_r, self.expanded_patterns,**self.vmnf_handler).start()
+                    self.fuzz_result = Djunch(
+                        base_r, self.expanded_patterns,
+                        **self.vmnf_handler).start()
                     
                     # Parse siddhis results
                     ''' ~ [ DMT result parser ] ~ 
@@ -701,16 +721,7 @@ class siddhi:
 
                     '''
                     # create instance of dmt reporter
-                    result = resultParser(
-                        self.xlp_tbl_x, 
-                        self.mu_patterns, 
-                        fuzz_result,
-                        **self.vmnf_handler
-                    )
-                    
-                    # call reporter
-                    result.show_issues()
- 
+                    self.issues_presentation()
                     break  # removing this break the dmt will continue testing target in other ports
                 else:
                     cprint('\n[{}] => Nothing to do: {}'.format(datetime.now(),entry), 'cyan')
@@ -720,11 +731,43 @@ class siddhi:
             elif status == 500:
                 '''This control will serve to define assertive points in the fuzzer stage, 
                 since it is making an exception during the discovery phase.'''
-                
-                # if found some exception during this step
-		#self.dxt_parser(current_request, True)
-                continue
+                if not found_exception_flag:
+                    continue
+                self.handle_discovery_xt()                
             elif status == 503: 
                 pass
             elif status == 200: 
                 pass
+    
+    def handle_discovery_xt(self):
+        status = False
+        while not status:
+            signal = colored('█', 'red',attrs=['bold', 'blink'])
+            s_msg = colored('''DMT identified an exception during the discovery phase,
+                        \r  Would you like to forward it for analysis? (Y/n) > ''','cyan')
+
+            status = input(colored('\n{} {}'.format(signal, s_msg)))
+            if status.lower() == 'y':
+                dmt_trigger = {
+                    'html': self.dmt_start_request,
+                    'rtxc_mode': False,
+                    'trigger_start': True,
+                    'context_filter': False
+                }
+
+                patterns=[]
+                self.vmnf_handler['verbose'] = True
+                self.vmnf_handler['debug'] = True
+
+                # in this case call just Djunch.parser method (because its not fuzzer step yet)
+                self.fuzz_result = Djunch(
+                    self.dmt_start_base_r, patterns,
+                    **self.vmnf_handler).dxt_parser(**dmt_trigger)
+
+                # create instance of dmt reporter and show analysis report
+                ipress = self.issues_presentation()
+
+                return ipress
+            
+            return False
+
