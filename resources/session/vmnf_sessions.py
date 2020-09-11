@@ -22,7 +22,7 @@ def createSession(**vmnf_handler):
     try:
         User_Agent = switchAgent()
         if debug:
-            header = '{}→{}'.format(Gn, D_c) 
+            header = '{}→{}'.format(Gn_c, D_c) 
             ua = '{}{}{}'.format(Y_c, User_Agent, D_c)
             print("\n{} Using random user-agent: {}".format(header, ua))
 
@@ -52,9 +52,9 @@ def createSession(**vmnf_handler):
         if debug:
             target = target_url[:60]
             print("-"*(len(target)+30))
-            print("Response: {} / Target: {}"%(status, target))
-            print("-"*(len(target)+30))
-            for k,v in request.headers.items():
+            print("Response: {} / Target: {}".format(response.status_code, target_url))
+            print("-"*(len(target_url)+30))
+            for k,v in response.headers.items():
                 print("{}: {}".format(k,v))
             print("-"*(len(target)+30) + "\n")
 
