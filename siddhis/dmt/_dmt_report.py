@@ -25,7 +25,7 @@ from core.vmnf_pshell import vmnfshell
 from core.vmnf_shared_args import VimanaSharedArgs
 from core.vmnf_thread_handler import ThreadPool
 
-from resources.session.vmn_session import createSession
+from resources.session.vmnf_sessions import createSession
 from resources.vmnf_text_utils import format_text
 from resources.vmnf_pxh import exception_hierarchy
 from resources import vmnf_banners
