@@ -18,7 +18,7 @@ from core.vmnf_shared_args import VimanaSharedArgs
 from core.vmnf_thread_handler import ThreadPool
 from core.vmnf_thread_handler import Worker
 
-from resources.session.vmn_session import createSession
+from resources.session.vmnf_sessions import createSession
 from resources.vmnf_validators import get_tool_scope
 
 from .. djunch.djunch import siddhi as Djunch 
@@ -143,7 +143,6 @@ class siddhi:
         if not self.dmt_start_request:
             print("[+] Something went wrong in Rama Empire, bro...")
             return False
-
         try:
             soup = BeautifulSoup(self.dmt_start_request, "lxml")
             status = str((soup.find("div", {"id": "explanation"})).find("p"))
@@ -159,9 +158,7 @@ class siddhi:
                info = str((soup.find("div", {"id": "info"})).find("p"))
                URLConf = info[info.find("<code>")+6:info.find("</")]
                self.print_it('   → ROOT_URLCONF:', URLConf)  
-
                return True
-
             else:
                 if not_debug_status and self.last_step:
                    print("{}-{} Django {}DEBUG{} seems to be disabled".format(
@@ -169,13 +166,10 @@ class siddhi:
                        )
                     )
                    return False 	
-
         except AttributeError:
             if not_debug_status and self.last_step:
                print("{}-{} Django {}DEBUG{} seems to be disabled".format(
-                   Pn_c, D_c, Rn_c, D_c
-                   )
-                ) 
+                   Pn_c, D_c, Rn_c, D_c)) 
                return False 	
         except TypeError: 
             pass
@@ -214,7 +208,8 @@ class siddhi:
         count = 1
         for path in APIAuthUrls:
             auth_path = self.dmt_start_base_r + '/' + path
-            api_test_response = createSession(auth_path, False, False, True)
+            self.vmnf_handler['target_url'] = auth_path
+            api_test_response = createSession(**self.vmnf_handler)
             response = self.get_unescape_html(api_test_response.text)        
             response_status = api_test_response.status_code
 
@@ -231,7 +226,6 @@ class siddhi:
                     auth_path = path
                	api_auth.add_row([count, auth_path, status_c, methods_c])
                 count +=1
-
         print() 
         if ef:
             print(api_auth)
@@ -269,16 +263,15 @@ class siddhi:
 	    #/api/admin/login/?next=/api/admin/
 	    #/admin/login
 	
-        adm_path = (self.dmt_start_base_r + django_adm_path)  	
-        response = createSession(adm_path, False, False, True)
+        adm_path = (self.dmt_start_base_r + django_adm_path) 
+        self.vmnf_handler['target_url'] = adm_path
+        response = createSession(**self.vmnf_handler)
         djadmin_response = self.get_unescape_html(response.text)
         response_status = response.status_code
 
         if not djadmin_response:
             print("  {0} Django administration interface seems to be disabled".format(fail))
             return False
-     
-        #from resources.session.vmn_session import status
              
         if response_status == 200:
             print("   {0} Django administration: seems to be available...".format(ok))
@@ -485,12 +478,12 @@ class siddhi:
             up_c += 1
            
             # up request
-            response = createSession(expanded_pattern, False, False, True)
+            self.vmnf_handler['target_url'] = expanded_pattern
+            response = createSession(**self.vmnf_handler)
             self.expanded_response = self.get_unescape_html(response.text)
             response_status = response.status_code
 
             if self.expanded_response:
-                #from resources.session.vmn_session import status
                 if response_status == 404:
                     self.get_url_patterns()
                     
@@ -586,7 +579,8 @@ class siddhi:
             base_r = self.target
             payload_ = base_r + fakefile  
 
-            response = createSession(payload_, False, False, True)
+            self.vmnf_handler['target_url'] = payload_
+            response = createSession(**self.vmnf_handler)
             current_response = self.get_unescape_html(response.text)
             response_status = response.status_code
 
@@ -608,11 +602,9 @@ class siddhi:
                     continue
                 else:
                     break
-            #else: 
-            #    ''' if there is a response from request could be indicatecheck it better'''
-            #    from resources.session.vmn_session import status, request
             
-            found_exception_flag = True if 'Exception Type' in current_response else False
+            found_exception_flag = True if 'Exception Type' \
+                in current_response else False
 
             if start or not server_flag_found:
                 '''just to check if there is any known django/python keyword in response headers'''
@@ -668,12 +660,6 @@ class siddhi:
                 if (targets_ports_set.index(entry) + 1) == (len(targets_ports_set)):
                     last_step = True 
                       
-                #self.expanded_response  = current_request
-                #self.dmt_start_request  = current_request
-                #self.dmt_start_base_r   = base_r
-                #self.dmt_start_port     = port 
-                #self.dmt_start_last_step= last_step
-
                 if self.debug_is_true():
                     '''status is 404 and DEBUG is True so run another tests'''
 

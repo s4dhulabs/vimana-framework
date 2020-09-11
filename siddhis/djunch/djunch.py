@@ -41,7 +41,7 @@ from settings.siddhis_shared_settings import payloads
 from core.vmnf_shared_args import VimanaSharedArgs
 from core.vmnf_thread_handler import ThreadPool
 
-from resources.session.vmn_session import createSession
+from resources.session.vmnf_sessions import createSession
 from resources.vmnf_text_utils import format_text
 from resources import vmnf_banners
 
@@ -579,7 +579,8 @@ class siddhi:
                 fuzz_url = '{}{}'.format(self.target_url, payload)
              
                 # ~ If GET request via createSession() module steps 1,2
-                response = createSession(fuzz_url, False, False, True)
+                self.vmnf_handler['target_url'] = fuzz_url
+                response = createSession(**self.vmnf_handler)
                 fuzz_response = self.get_unescape_html(response.text)
                 response_status = response.status_code
 

@@ -1,19 +1,19 @@
 from resources.colors import *
+import requests
+from time import sleep
+from html.parser import HTMLParser
+from . vmn_ua import switchAgent   
+from requests import Session
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
-global status
 
+def createSession(**vmnf_handler):
+    
+    target_url = vmnf_handler['target_url']
+    random_ua = vmnf_handler['random']
+    debug = vmnf_handler['debug']
 
-
-def createSession(target_url, random_ua = False, debug = False, d2t_mode = False):
-
-    import requests
-    from time import sleep
-    from html.parser import HTMLParser
-    from . vmn_ua import switchAgent   
-    from requests import Session
-    from requests.adapters import HTTPAdapter
-    from requests.packages.urllib3.util.retry import Retry
-	
     retries = 3
     b_factor = 0.3
     force_list = (500, 502, 504)
@@ -34,7 +34,7 @@ def createSession(target_url, random_ua = False, debug = False, d2t_mode = False
             connect = retries, 
             backoff_factor   = b_factor, 
             status_forcelist = force_list,
-            raise_on_status  = False       #without this flag exceptions in Django will be passed out with 500 status
+            raise_on_status  = False       
         )
         adapter = HTTPAdapter(max_retries=retry)
         session.mount('http://', adapter)
@@ -45,8 +45,7 @@ def createSession(target_url, random_ua = False, debug = False, d2t_mode = False
             stream=True, 
             timeout=timeout
         )
-        #HParser = HTMLParser()
-        #raw_html = HParser.unescape(request.text)
+        
         # ------------------------------------
         # debug settings 
         # ------------------------------------
@@ -55,7 +54,6 @@ def createSession(target_url, random_ua = False, debug = False, d2t_mode = False
             print("-"*(len(target)+30))
             print("Response: {} / Target: {}"%(status, target))
             print("-"*(len(target)+30))
-            #for header in request.headers:
             for k,v in request.headers.items():
                 print("{}: {}".format(k,v))
             print("-"*(len(target)+30) + "\n")
@@ -89,10 +87,3 @@ def createSession(target_url, random_ua = False, debug = False, d2t_mode = False
             print("-> Something went wrong"%(RE))
             sleep(0.25)
             return False
-
-
-
-
-
-
-
