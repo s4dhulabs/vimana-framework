@@ -33,13 +33,13 @@ import sys, re, os, random, string, platform
 from lxml.html.soupparser import fromstring
 from termcolor import colored, cprint
 from prettytable import PrettyTable
-from collections import OrderedDict 
+from collections import OrderedDict
+from html.parser import HTMLParser
 from urllib.parse import urlsplit
 from resources.colors import *
 from tldextract import extract
 from bs4 import BeautifulSoup
 from netaddr import IPNetwork
-from datetime import datetime
 from datetime import datetime
 from time import sleep
 import collections
@@ -95,15 +95,7 @@ class siddhi:
     def __init__(self, **vmnf_handler):
 
         self.vmnf_handler = vmnf_handler
-        global plugin_information
-        global trigger_start 
-        
         self.fuzz_mode = False
-
-        datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-        fmwk_ = "Django"
-        version_ = "1.0"
         
         # root URL patterns
         self.xlp_tbl = PrettyTable()
@@ -178,7 +170,6 @@ class siddhi:
                     )
                    return False 	
 
-        #|---> AttributeError: 'NoneType' object has no attribute 'find'  [status,info] 
         except AttributeError:
             if not_debug_status and self.last_step:
                print("{}-{} Django {}DEBUG{} seems to be disabled".format(
@@ -186,9 +177,12 @@ class siddhi:
                    )
                 ) 
                return False 	
-        #|---> TypeError: object of type 'bool' has no len() [soup]
         except TypeError: 
             pass
+
+    def get_unescape_html(self, raw_content):        
+        HParser = HTMLParser()
+        return (HParser.unescape(raw_content))
 
     def check_api_auth_points(self):
         api_auth = PrettyTable()
@@ -217,27 +211,27 @@ class siddhi:
                if not pattern in APIAuthUrls:
                   APIAuthUrls.append(pattern)   
            
-        #self.print_it('\nAPI Auth:', len(APIAuthUrls))
         count = 1
         for path in APIAuthUrls:
             auth_path = self.dmt_start_base_r + '/' + path
-            current_request = createSession(auth_path, False, False, True)
-            if not current_request:
-               pass
+            api_test_response = createSession(auth_path, False, False, True)
+            response = self.get_unescape_html(api_test_response.text)        
+            response_status = api_test_response.status_code
 
-            else:
-               from resources.session.vmn_session import status, request
-
-               if status == 405:
-                  ef = True
-                  methods   = str(request.headers['Allow'])
-                  methods_c = colored(methods, 'green')
-                  status_c  = colored(status, 'yellow')
+            if not response:
+               continue
+              
+            if response_status == 405:
+                ef = True
+                methods   = str(api_test_response.headers['Allow'])
+                methods_c = colored(methods, 'green')
+                status_c  = colored(response_status, 'yellow')
                   
-                  if len(auth_path) > 45:
-                     auth_path = path
-               	  api_auth.add_row([count, auth_path, status_c, methods_c])
-                  count +=1
+                if len(auth_path) > 45:
+                    auth_path = path
+               	api_auth.add_row([count, auth_path, status_c, methods_c])
+                count +=1
+
         print() 
         if ef:
             print(api_auth)
@@ -249,6 +243,7 @@ class siddhi:
     
     def check_django_adm(self):
         
+        _fmwk_ = "Django"
         ok    = str(Gn_c + "→" + D_c)
         vrf   = str(Yn_c + "→" + D_c)
         fail  = str(Rn_c + "→" + D_c)
@@ -275,49 +270,49 @@ class siddhi:
 	    #/admin/login
 	
         adm_path = (self.dmt_start_base_r + django_adm_path)  	
-        #|---> createSession(target_url, random_ua = False, debug = False, d2t_mode = False):
-        djadmin_response = createSession(adm_path, False, False, True)
-        
+        response = createSession(adm_path, False, False, True)
+        djadmin_response = self.get_unescape_html(response.text)
+        response_status = response.status_code
+
         if not djadmin_response:
             print("  {0} Django administration interface seems to be disabled".format(fail))
             return False
-        else: 
-            from resources.session.vmn_session import status
+     
+        #from resources.session.vmn_session import status
              
-            if status == 200:
-
-                print("   {0} Django administration: seems to be available...".format(ok))
-                sleep(0.10)
-                print("   {0} Django administration: Checking...".format(ok))
-                sleep(0.10)
+        if response_status == 200:
+            print("   {0} Django administration: seems to be available...".format(ok))
+            sleep(0.10)
+            print("   {0} Django administration: Checking...".format(ok))
+            sleep(0.10)
               
-                soup = BeautifulSoup(djadmin_response, 'lxml')
-                try:
-                    r_check = ''	
-                    check = str((soup.find("h1", {"id": "site-name"})).find("a"))
-                    adm_pattern = (check[check.find("<a"):check.find("</a>")]).split(">")[1]
-                except AttributeError as AE:
-                    return False
+            soup = BeautifulSoup(djadmin_response, 'lxml')
+            try:
+                r_check = ''	
+                check = str((soup.find("h1", {"id": "site-name"})).find("a"))
+                adm_pattern = (check[check.find("<a"):check.find("</a>")]).split(">")[1]
+            except AttributeError as AE:
+                return False
              
-                if adm_pattern == "Django administration":
-                    print("   {0} Django administration: {1}".format(ok, str(P_c + adm_path + D_c)))
-                    sleep(0.10)
-                    return True
+            if adm_pattern == "Django administration":
+                print("   {0} Django administration: {1}".format(ok, str(P_c + adm_path + D_c)))
+                sleep(0.10)
+                return True
 	      
-	        # Django 管理 
-                elif (adm_pattern.split()[0]) == fmwk_:
-                    print("   {0} Django administration: abducting {1}...".format(ok, adm_pattern.split()[1]))
-                    sleep(0.10)
-                    print("   {0} Django administration: {1}".format(ok, str(Gn_c + adm_path + D_c)))
-                elif (soup.title.string).find('Django') > -1:
-                    print("   {0} Django administration: {1}".format(ok, str(Gn_c + adm_path + D_c)))
-                else: 
-                    return False		
-            elif status == 404:
-                print('[+] DMTSTATUS {}:{}'.format(len(dadmp_request),status))
-            elif status == 500:
-                self.dxt_parser(dadmp_request, True)
-            else: return False  		      
+	    # Django 管理 
+            elif (adm_pattern.split()[0]) == _fmwk_:
+                print("   {0} Django administration: abducting {1}...".format(ok, adm_pattern.split()[1]))
+                sleep(0.10)
+                print("   {0} Django administration: {1}".format(ok, str(Gn_c + adm_path + D_c)))
+            elif (soup.title.string).find('Django') > -1:
+                print("   {0} Django administration: {1}".format(ok, str(Gn_c + adm_path + D_c)))
+            else: 
+                return False		
+        elif response_status == 404:
+            print('[+] DMTSTATUS {}:{}'.format(len(dadmp_request),status))
+        elif response_status == 500:
+            self.dxt_parser(dadmp_request, True)
+        else: return False  		      
     
     def get_url_patterns(self):
 
@@ -490,21 +485,20 @@ class siddhi:
             up_c += 1
            
             # up request
-            self.expanded_response = createSession(expanded_pattern, False, False, True)
-    
+            response = createSession(expanded_pattern, False, False, True)
+            self.expanded_response = self.get_unescape_html(response.text)
+            response_status = response.status_code
+
             if self.expanded_response:
-                from resources.session.vmn_session import status
-                if status == 404:
+                #from resources.session.vmn_session import status
+                if response_status == 404:
                     self.get_url_patterns()
                     
-                    if self.vmnf_handler['debug']: # esse handler foi adicionado por conta do parser do urls.py 010420 
+                    if self.vmnf_handler['debug']: 
                         self.djmimic(x_pattern, self.expanded_patterns)
-                elif status == 500:
-	            #print "500 during expassion...";raw_input()
+                elif response_status == 500:
                     self.dxt_parser(self.expanded_response, False, True)
         
-        #self.print_it(' \nURL Patterns:', xp_count)  
-        sleep(1)
         print()
         print(self.xlp_tbl_x)
         
@@ -516,7 +510,6 @@ class siddhi:
                 add_help=False,
                 parents=[VimanaSharedArgs().args()]
         )
-
         return parser
 
     def issues_presentation(self):
@@ -527,7 +520,6 @@ class siddhi:
             self.fuzz_result,
             **self.vmnf_handler
         )
-
         # call reporter
         result.show_issues()
 
@@ -591,14 +583,14 @@ class siddhi:
                 random.choice(xvals), 
                 self.random_value(random.choice(range(1,6)))
             )
-
             base_r = self.target
             payload_ = base_r + fakefile  
 
-            #|---> createSession(target_url, random_ua = False, debug = False, d2t_mode = False):
-            current_request = createSession(payload_, False, False, True)
+            response = createSession(payload_, False, False, True)
+            current_response = self.get_unescape_html(response.text)
+            response_status = response.status_code
 
-            if not current_request:
+            if not current_response:
                 # because with target --port will be just one port, doesnt need such control like request_fail
                 
                 if not self.vmnf_handler['single_port']:
@@ -616,11 +608,11 @@ class siddhi:
                     continue
                 else:
                     break
-            else: 
-                ''' if there is a response from request could be indicatecheck it better'''
-                from resources.session.vmn_session import status, request
+            #else: 
+            #    ''' if there is a response from request could be indicatecheck it better'''
+            #    from resources.session.vmn_session import status, request
             
-            found_exception_flag = True if 'Exception Type' in current_request else False
+            found_exception_flag = True if 'Exception Type' in current_response else False
 
             if start or not server_flag_found:
                 '''just to check if there is any known django/python keyword in response headers'''
@@ -633,11 +625,11 @@ class siddhi:
                     'Flask','web2py', 'mod_wsgi', 'APACHE'
                 ]
                    
-                for header in request.headers:
+                for header in response.headers:
                     for flag in flags:
                         flag = flag.lower()
                         try:	
-                            value = (request.headers[header])
+                            value = (response.headers[header])
                         except KeyError:
                             continue 
                         
@@ -647,14 +639,13 @@ class siddhi:
                             print("\n")
                             self.print_it(header, value)
             
-            
-            self.expanded_response  = current_request
-            self.dmt_start_request  = current_request
+            self.expanded_response  = current_response
+            self.dmt_start_request  = current_response
             self.dmt_start_base_r   = base_r
             self.dmt_start_port     = port 
             self.dmt_start_last_step= last_step
 
-            if status == 400:
+            if response_status == 400:
                 if found_exception_flag:
                     self.handle_discovery_xt()
                 else:
@@ -670,20 +661,18 @@ class siddhi:
                                 colored(set_v, 'blue')
                                 )
                             )
-                    print()
-                    sleep(1)
                     sys.exit(1)
             
-            if status == 404:
+            if response_status == 404:
                 # Check if last step 
                 if (targets_ports_set.index(entry) + 1) == (len(targets_ports_set)):
                     last_step = True 
                       
-                self.expanded_response  = current_request
-                self.dmt_start_request  = current_request
-                self.dmt_start_base_r   = base_r
-                self.dmt_start_port     = port 
-                self.dmt_start_last_step= last_step
+                #self.expanded_response  = current_request
+                #self.dmt_start_request  = current_request
+                #self.dmt_start_base_r   = base_r
+                #self.dmt_start_port     = port 
+                #self.dmt_start_last_step= last_step
 
                 if self.debug_is_true():
                     '''status is 404 and DEBUG is True so run another tests'''
@@ -726,17 +715,18 @@ class siddhi:
                 else:
                     cprint('\n[{}] => Nothing to do: {}'.format(datetime.now(),entry), 'cyan')
                     if last_step:
-                        cprint('[{}] => the target does not appear to be vulnerable: {}'.format(datetime.now(),entry), 'cyan')
+                        cprint('[{}] => the target does not appear to be vulnerable: {}'.format(
+                            datetime.now(),entry), 'cyan')
             
-            elif status == 500:
+            elif response_status == 500:
                 '''This control will serve to define assertive points in the fuzzer stage, 
                 since it is making an exception during the discovery phase.'''
                 if not found_exception_flag:
                     continue
                 self.handle_discovery_xt()                
-            elif status == 503: 
-                pass
-            elif status == 200: 
+            elif response_status == 503: 
+                continue
+            elif response_status == 200: 
                 pass
     
     def handle_discovery_xt(self):

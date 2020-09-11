@@ -20,6 +20,7 @@ from pygments.lexers import PythonLexer
 from termcolor import cprint, colored
 from prettytable import PrettyTable
 from collections import OrderedDict 
+from html.parser import HTMLParser
 from resources.colors import *
 from pygments import highlight
 from bs4 import BeautifulSoup
@@ -511,7 +512,11 @@ class siddhi:
         if self.CSRFTOKEN: 
             # ~ just creates a simple tampered token from a legitimate one: CSRFTOKEN + '!'
             self.TCSRFTOKEN = self.CSRFTOKEN + '!' 
-    
+   
+    def get_unescape_html(self, raw_content):
+        HParser = HTMLParser()
+        return (HParser.unescape(raw_content))
+
     def fuzz_loop_patterns(self):
         ''' This method just do a loop in expanded URL patterns (patterns inside patterns)
             changing request payload to trigger exceptions. Isnot a exactly process
@@ -527,6 +532,9 @@ class siddhi:
             
             New stages and distinct tests will be added in the next version'''
         
+        step_oot = True if self.trigger_step == 1 \
+            or self.trigger_step == 2 else False
+
         # ~ Create client request instance
         self.client = requests.session()
         self.step_method = 'GET'
@@ -534,23 +542,10 @@ class siddhi:
         # ~ dict to store current exception /one per time, if exception is found, so data to parser will be here
         self.x_trigger = {}
         self.loop_exception_found = False
-        
-        # [1] - empty 'payload' - Just request URL Patterns one by one (this could trigger IndexError Exceptions-like
-        payload = ''
 
         # test to debug some features 
         djunch_mode = True
-        if djunch_mode:    
-            # [2] - if UnicodeEncodeError-like step 
-            if self.trigger_step == 2: 
-                # ~ get a random Unicode payload to check for UnicodeEncodeError Warning (serve side, no leak)
-                payload = payloads().get_random_unicode_payload()
-            # ~ constructs base target url
-            self.target_url = "{}/{}".format(self.base_r, self.pattern)
-            
-            # [steps 1,2] create fuzz url
-            fuzz_url = '{}{}'.format(self.target_url, payload)
-            
+        if djunch_mode:   
             # ~ General fuzzing status when loop_patterns [all steps]
             sys.stdout.write('\r   {0} Fuzzing: step ({1}/{2}) | Patterns: ({3}/{4}): {5}'.format(
                     (Gn_c  + "→" + C_c),
@@ -564,10 +559,34 @@ class siddhi:
             sys.stdout.flush()
             sleep(0.05)
             #p_count += 1
+            
+            # ~ constructs base target url
+            self.target_url = "{}/{}".format(self.base_r, self.pattern)
+            
+            # [1] - empty 'payload' - Just request URL Patterns one by one (this could trigger IndexError Exceptions-like
+            if step_oot:
+                if self.trigger_step == 1:
+                    payload = ''
+                # [2] - if UnicodeEncodeError-like step 
+                elif self.trigger_step == 2: 
+                    # ~ get a random Unicode payload to check for UnicodeEncodeError Warning (serve side, no leak)
+                    payload = payloads().get_random_unicode_payload()
+                
+                # ~ constructs base target url
+                # self.target_url = "{}/{}".format(self.base_r, self.pattern)
+            
+                # [steps 1,2] create fuzz url
+                fuzz_url = '{}{}'.format(self.target_url, payload)
+             
+                # ~ If GET request via createSession() module steps 1,2
+                response = createSession(fuzz_url, False, False, True)
+                fuzz_response = self.get_unescape_html(response.text)
+                response_status = response.status_code
 
             # [3] - RuntimeError-like exception via Django APPEND_SLASH trigger 
             # [4] - CSRF_Failure_view  - config fail (doesnt need DEBUG true)
-            if self.trigger_step == 3 or self.trigger_step == 4:
+            if self.trigger_step == 3 \
+                or self.trigger_step == 4:
                 # ~ Get crsftoken ~
                 self.get_csrftoken()
 
@@ -585,10 +604,10 @@ class siddhi:
                 )
                 
                 # ~ Set default request header from _shared_settings_
-                request_headers = set_header(fuzz_url, login_data, self.CSRFTOKEN).request_headers
+                request_headers = set_header(self.target_url, login_data, self.CSRFTOKEN).request_headers
                 # ~ POST request with form login_data/csrftoken but without final slash '/'
                 try:
-                    RuntimeData = self.client.post(fuzz_url, data=login_data, headers=request_headers)
+                    RuntimeData = self.client.post(self.target_url, data=login_data, headers=request_headers)
                 except requests.exceptions.ConnectionError:
                     print('[djunch:{}] Connection Error in fuzzer step {} / loop_patterns: {} / method: {}'.format(
                             datetime.now(),
@@ -597,33 +616,29 @@ class siddhi:
                             self.step_method
                         )
                     )
+                    #return False
                     pass
 
                 # ~ RuntimeError Exception data
                 fuzz_response = RuntimeData.content
-                status = RuntimeData.status_code
-            else:
-                # ~ If GET request via createSession() module steps 1,2
-                fuzz_response = createSession(fuzz_url, False, False, True)
-                from resources.session.vmn_session import status, request
-            
+                response_status = RuntimeData.status_code
+
             # ~ Check response (any step)
             if fuzz_response: 
-                if status == 403:
+                if response_status == 403:
                     # save configuration issues
                     _config_issue_ = {
                         'iid': 'CI{}'.format(len(self._issues_['configuration']) + 1),
-                        'status': status,
+                        'status': response_status,
                         'pattern': self.pattern,
                         'method': self.step_method,
                         'issue': 'csrf_failure_view',
                         'reference': 'CWE-209'
                     }
-
                     self._issues_['configuration'].append(_config_issue_)
 
                 # ~ If response status equal 'Internal Server Error'
-                if status == 500:
+                if response_status == 500:
                     # set exception found flag (used by main_trigger)
                     self.loop_exception_found = True    # test: working
                     # if not UnicodeEncodeError [warning, no leak to parse]
@@ -710,6 +725,11 @@ class siddhi:
             self._issues_,
             self.FUZZ_TRACEBACK
         ]
+
+        for k,v in self.FUZZ_TRACEBACK.items():
+            print('\t{}:    {}'.format(k,v))
+            sleep(0.5)
+        input()
         return self.FUZZ_RESULT
 
 

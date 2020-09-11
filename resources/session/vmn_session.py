@@ -13,8 +13,6 @@ def createSession(target_url, random_ua = False, debug = False, d2t_mode = False
     from requests import Session
     from requests.adapters import HTTPAdapter
     from requests.packages.urllib3.util.retry import Retry
-    global request
-    global status
 	
     retries = 3
     b_factor = 0.3
@@ -41,15 +39,14 @@ def createSession(target_url, random_ua = False, debug = False, d2t_mode = False
         adapter = HTTPAdapter(max_retries=retry)
         session.mount('http://', adapter)
         session.mount('https://', adapter)
-        request = session.get(
+        
+        response = session.get(
             target_url, 
             stream=True, 
             timeout=timeout
         )
-        HParser = HTMLParser()
-        raw_html = HParser.unescape(request.text)
-        status = request.status_code
-
+        #HParser = HTMLParser()
+        #raw_html = HParser.unescape(request.text)
         # ------------------------------------
         # debug settings 
         # ------------------------------------
@@ -63,12 +60,7 @@ def createSession(target_url, random_ua = False, debug = False, d2t_mode = False
                 print("{}: {}".format(k,v))
             print("-"*(len(target)+30) + "\n")
 
-
-        # needs to retrieve not only with 200 status code
-        # not found page in Django its important to check 404 
-        return raw_html 
-        #if status == 200 or d2t_mode:       
-        #   return raw_html 
+        return response 
     
     except requests.exceptions.HTTPError as HE:
         if debug:
