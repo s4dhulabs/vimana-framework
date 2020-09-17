@@ -81,11 +81,9 @@ class ScopeParser:
             
             if not os.path.exists(xml_location):
                 print('''\r{} XML file not found: {}. Check the file location and try again.\n'''.format(
-                    self.scope_error,xml_location))    
-                
+                    self.scope_error,xml_location))            
                 return False
 
-            # check if its a file
             if not os.path.isfile(xml_location) \
                 or not xml_location.endswith('.xml'):
                 arg = colored('--nmap-xml', 'green')
@@ -95,6 +93,7 @@ class ScopeParser:
                 )
                 return False
 
+            count = 1
             nmap_scan_result = NmapParser.parse_fromfile(xml_location)
             for target in nmap_scan_result.hosts:
                 target_status = str(target).split('-')[1][+1:-1].rstrip()
@@ -102,9 +101,15 @@ class ScopeParser:
                     target_list = []
                     for _ts_ in target.services:
                         if _ts_.state == 'open':
+                            entry = str(target.address) + ':' + str(_ts_.port)
+                            print('[{}] Nmap xml target: {}'.format(count, entry))
+
                             target_list.append(str(target.address) + ':' + str(_ts_.port))
+                            count +=1
                     if target_list:
                         self.target_scope[str(target.address)] = target_list
+            print()
+
 
         # ***   scope: single target   *** 
         elif self.handler_ns['single_target']:
