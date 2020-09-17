@@ -39,6 +39,8 @@ class vmnfshell:
         self._fuzz_ = djunch_result
         self.contexts = self._fuzz_[0]
         self._issues_ = self._fuzz_[1]
+        self.traceback = self._fuzz_[2]
+        self.rawp_traceback = self._fuzz_[3]
         self.report_items = report_tables
         self.security_tickets = security_tickets
         self.cves = _cves_[0]
@@ -113,9 +115,11 @@ class vmnfshell:
             3:'cves',
             4:'contexts',
             5:'patterns',
-            6:'config'
+            6:'config',
+            7:'applications',
+            8:'middlewares',
+            9:'envs'
         }
-
 
         # ==[ UX - EXCEPTIONS ]==
         self.sec_midd_tbl = PrettyTable()
@@ -132,7 +136,6 @@ class vmnfshell:
             "white",
             attrs=['bold']
         )
-
 
         while True:
             try:
@@ -152,17 +155,7 @@ class vmnfshell:
                         sys.exit(0)
 
                     elif r_cmd == 'show':
-                        print('''\nMissing issue category argument. Supported options:
-                        
-                        \r  0:  summary      shows issues summary
-                        \r  1:  exceptions   shows identified exceptions
-                        \r  2:  tickets      shows security tickets
-                        \r  3:  cves         shows related cve ids
-                        \r  4:  contexts     shows env leak contexts
-                        \r  5:  patterns     shows mapped url patterns
-                        \r  6:  config       shows configuration issues
-
-                        ''')
+                        self.handle_show_options()
                     elif r_cmd == 'inspect':
                         print('''[{}:inspect] Missing issue id (iid)'''.format(
                             self.siddhi
@@ -170,13 +163,12 @@ class vmnfshell:
                         )
                     else:
                         self.vmnf_mng_cmds()
-                    
                     continue
 
                 # command, argument: inspect ST901819 / show exceptions
                 elif cmd_len == 2:
                     cmd,arg = r_cmd.lower().split()     # cmd, arg
-                    cmd = cmd.rstrip()
+                    cmd = cmd.rstrip().strip()
                     arg = arg.rstrip()
                     arg_len = len(str(arg))
 
@@ -188,22 +180,26 @@ class vmnfshell:
                     # ~ show ~ #
                     ############ 
                     # (exceptions, tickets, config issues, url patterns, etc, all tables available)
-                    elif cmd == 'show':
+                    elif cmd.strip() == 'show':
                         # to handler issue category by id 
-                        if arg_len == 1:
-                            vsol = len(valid_show_options)
+                        if arg_len >= 1 and arg_len <=2:
+                            vsol = len(valid_show_options) - 1
+
+                            if arg == '?':
+                                self.handle_show_options()
+                                continue
 
                             try:
                                 cat_id = int(arg)
                             except ValueError:
-                                print('[{}:show] Invalid type. Category id must be an one digit number between 0 and {}.'.format(
+                                print('[{}:show] Invalid category type. Id must be an one digit number between 0 and {}.'.format(
                                     self.siddhi,
-                                    vsol
+                                    vsol 
                                     )
                                 )
                                 continue
                                 
-                            if cat_id in range(vsol):
+                            if cat_id in valid_show_options.keys(): #range(vsol):
                                 # get the right category value by id 
                                 arg = str(valid_show_options[cat_id]).rstrip()
                             else:
@@ -223,7 +219,6 @@ class vmnfshell:
                                     opt
                                 )
                             )
-
                             continue
 
                         elif arg == 'summary':
@@ -247,9 +242,19 @@ class vmnfshell:
                         elif arg == 'cves':
                             cprint("\n→ CVE ID's (by framework version)", 'cyan')
                             print(self.report_items['cves'])
-
+                        elif arg == 'applications':
+                            cprint("\n→ Applications enabled in this Django installation", 'cyan')
+                            print()
+                            for app in self.rawp_traceback['Installed Applications']:
+                                print('   {}'.format(app))
+                            print()
+                        elif arg == 'middlewares':
+                            cprint("\n→ Enabled Django middlewares", 'cyan')
+                            print()
+                            for mid in self.rawp_traceback['Installed Middleware']:
+                                print('   {}'.format(mid))
+                            print()
                         continue
-
                     
                     elif cmd == 'abduct':
                         print('''
@@ -265,7 +270,7 @@ class vmnfshell:
                     ###############
 
                     # inspect iid (issue id)
-                    elif cmd == 'inspect':
+                    elif cmd.rstrip() == 'inspect':
                         self._reason_ = False
                         _iid_ = r_cmd.split()[1].strip()
                         #_iid_ = arg                    # raw cmd arg
@@ -277,14 +282,12 @@ class vmnfshell:
                         if not _issue_:
                             self._reason_ = 'Invalid iid format'
                             self.handle_inspect_msg()
-
                             continue 
                         
                         if _type_ not in self.issue_categories.keys():
                             self._type_ = 'corresponding'
                             self._reason_ = 'Invalid issue identifier'
                             self.handle_inspect_msg()
-
                             continue
 
                         # inspect security tickets
@@ -305,7 +308,6 @@ class vmnfshell:
                             else:  
                                 self._reason_ = 'Ticket not found'
                                 self.handle_inspect_msg()
-                                
                                 continue
 
                         # inspect unhandled exceptions
@@ -352,12 +354,10 @@ class vmnfshell:
                                                 print(line)
                                                 sleep(0.10)
                                             print()
-
                                 continue
                             else:
                                 self._reason_ = 'Exception not found'
                                 self.handle_inspect_msg()
-                                
                                 continue
                         
                         # inspect leaked [env] contexts 
@@ -396,7 +396,6 @@ class vmnfshell:
                                                 i_count +=1
                                             
                                         print(self.sec_midd_tbl)
-
                                         continue
 
 
@@ -409,7 +408,6 @@ class vmnfshell:
                             if lc_not_found:
                                 self._reason_ = 'Context not found'
                                 self.handle_inspect_msg()
-
                                 continue
                         
                         elif _type_ == 'SM': 
@@ -426,7 +424,6 @@ class vmnfshell:
                                     cprint(' ⠦ ' + str(ENV), 'blue', attrs=['bold'])
                                     print(djev().SECURITY_MIDDLEWARE.get(ENV))
                                     print()
-
                                 continue
                             else:
                                 i_count = 1
@@ -438,7 +435,6 @@ class vmnfshell:
                                         print(djev().SECURITY_MIDDLEWARE.get(ENV))
                                         print()
                                     i_count +=1
-
                                 continue
 
                         # inspect a given related cve id / using CVE keyword as identifier of issue CV
@@ -448,13 +444,11 @@ class vmnfshell:
                             if not (re.search('(CVE-\d{4}-\d{4})',_iid_)):
                                 self._reason_ = 'Invalid CVE Id'
                                 self.handle_inspect_msg()
-                                
                                 continue
 
                             if _iid_ not in str(self.cves):
                                 self._reason_ = 'Unrelated CVE Id'
                                 self.handle_inspect_msg()
-
                                 continue
 
                             print('Retrieving details for CVE ID {}...\n'.format(_iid_))   
@@ -466,7 +460,6 @@ class vmnfshell:
                             # os.system('clear')
                             for cve in self.cves:
                                 if cve['id'].rstrip() == _iid_:
-                    
                                     # if cve details, so show a new set of info
                                     if cve_details:
                                         #print()
@@ -486,7 +479,6 @@ class vmnfshell:
                                         print(' {}'.format(cve['full_description']))
                                         print(' {}'.format(cve['references']))
                                         print()
-
                                         break
                                     
                                     # else not print default cve info text
@@ -495,7 +487,6 @@ class vmnfshell:
                                     print('\nReferences:\n{}\n'.format(cve['references']))
                             
                             continue 
-
 
                         # inspect configuration issues
                         elif _type_ == 'CI':
@@ -517,7 +508,6 @@ class vmnfshell:
 
                             continue
                     
-
     def handle_inspect_msg(self):
         '''handle inspect messages'''
 
@@ -541,5 +531,20 @@ class vmnfshell:
         \r  show        shows analysis items by category
         \r  options     this help
         \r  exit        exits framework
+        ''')
+
+    def handle_show_options(self):
+        print('''\nMissing issue category argument. Supported options:
+                        
+        \r  0:  summary         shows issues summary
+        \r  1:  exceptions      shows identified exceptions
+        \r  2:  tickets         shows security tickets
+        \r  3:  cves            shows related cve ids
+        \r  4:  contexts        shows env leak contexts
+        \r  5:  patterns        shows mapped url patterns
+        \r  6:  configuration   shows configuration issues
+        \r  7:  applications    shows installed applications
+        \r  8:  middlewares     shows installed middlewares
+
         ''')
 

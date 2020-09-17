@@ -162,7 +162,8 @@ class siddhi:
             'security_middleware':{}
         }
         self.FUZZ_TRACEBACK = {}
-        self.FUZZ_RESULT = []
+        self.FUZZ_RESULT    = []
+        self.RAWP_TRACEBACK = {}
 
     def print_it(self, tag, value, color='green'):
         self.tag    = tag
@@ -289,9 +290,54 @@ class siddhi:
             self.contexts['communication'][self.header] = self.value
         elif self.header in djev().SERVICES_:
             self.contexts['services'][self.header] = self.value
+   
+    def strip_blank_entries(self,_tcb_):
+        return [line for line in _tcb_.split('\n') if line.strip()][1:]
+
+    def parse_paste_traceback(self):
+        t = self.raw_pb_traceback
+
+        env_traceback_dict  = {} 
+        apps_traceback_list = []
+        mids_traceback_list = []
+        
+        pb_traceback_env    = self.strip_blank_entries(
+            t[t.find('Environment:'):t.find('Installed Applications:')]
+        )
+        pb_traceback_apps   = self.strip_blank_entries(
+            t[t.find('Installed Applications:'):t.find('Installed Middleware:')]
+        )
+        pb_traceback_mids   = self.strip_blank_entries(
+            t[t.find('Installed Middleware:'):t.find('Traceback:')]
+        )
+
+        '''
+        pb_traceback_env    = t[t.find('Environment:'):t.find('Installed Applications:')]
+        pb_traceback_apps   = t[t.find('Installed Applications:'):t.find('Installed Middleware:')]
+        pb_traceback_mids   = t[t.find('Installed Middleware:'):t.find('Traceback:')]
+        pb_traceback_env    = strip_blank_entries(pb_traceback_env)
+        pb_traceback_apps   = strip_blank_entries(pb_traceback_apps)
+        pb_traceback_mids   = strip_blank_entries(pb_traceback_mids)
+        '''
+        for line in pb_traceback_env:
+            k,v = line.split(": ")
+            env_traceback_dict[k] = v
+        
+        for app in pb_traceback_apps:
+            app = app.replace("['",'').replace("']",'').replace("'",'').replace(",",'').strip()
+            apps_traceback_list.append(app)
+
+        for mid in pb_traceback_mids:
+            mid = mid.replace("['",'').replace("']",'').replace("'",'').replace(",",'').strip()
+            mids_traceback_list.append(mid)
+
+        self.RAWP_TRACEBACK = {
+            'Environment': env_traceback_dict,
+            'Installed Applications': apps_traceback_list,
+            'Installed Middleware': mids_traceback_list
+        }
         
     def dxt_parser(self,**dmt_trigger_mode):
-         
         # if the parser is called by the DMT instead of the fuzzer itself
         if dmt_trigger_mode:
             self._trigger_ = dmt_trigger_mode
@@ -308,12 +354,13 @@ class siddhi:
         # dummy verification - if not exception keyword in response 
         if not str(self.html).find('Exception'):
             return False
+        
         try:
-	    # AttributeError: 'NoneType' object has no attribute 'findAll'
             soup = BeautifulSoup(self.html, 'html.parser')
+            self.raw_pb_traceback = soup.find("div", {"id": "pastebinTraceback"}).find("textarea", {"id": "traceback_area"}).text
             summary = soup.find("div", {"id": "summary"})
-            summary = summary.findAll("table", {"class": "meta"}) # genneral information about event
-            metainfo = soup.findAll("table", {"class": "req"})    # where goes the passwords
+            summary = summary.findAll("table", {"class": "meta"}) 
+            metainfo = soup.findAll("table", {"class": "req"})    
             
             # catches traceback context
             self.raw_traceback = soup.find("div", {"id": "traceback"})
@@ -328,6 +375,7 @@ class siddhi:
                     G_c + str(source_lenght) + D_c
                     ), end=''
                 )
+
         except AttributeError:
             """ In this case we need to implement a generic parser to 
             digest exception traceback. 
@@ -335,6 +383,8 @@ class siddhi:
             pass
         except AttributeError:
             pass
+
+        self.parse_paste_traceback()
         
         for entry in metainfo:
             rows = ''
@@ -488,9 +538,11 @@ class siddhi:
             self.FUZZ_RESULT = [
                 self.contexts,
                 self._issues_,
-                self.FUZZ_TRACEBACK
+                self.FUZZ_TRACEBACK,
+                self.RAWP_TRACEBACK
             ]
             return self.FUZZ_RESULT
+
         return True
 
     def get_csrftoken(self):
@@ -724,7 +776,8 @@ class siddhi:
         self.FUZZ_RESULT = [
             self.contexts,
             self._issues_,
-            self.FUZZ_TRACEBACK
+            self.FUZZ_TRACEBACK,
+            self.RAWP_TRACEBACK
         ]
 
         for k,v in self.FUZZ_TRACEBACK.items():

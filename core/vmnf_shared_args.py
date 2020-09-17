@@ -87,7 +87,7 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--verbose", '-v', action='count', default=False)
         vmnf_shared_parser.add_argument("--random", action="store_true",default=False)
         vmnf_shared_parser.add_argument("--wait", action="store", type=int, default=0)      # not in use yet
-        vmnf_shared_parser.add_argument("--threads",action="store", type=int, default=3)
+        vmnf_shared_parser.add_argument("--threads",action="store", type=int, default=5)
         vmnf_shared_parser.add_argument("--timeout", action="store", type=int, default=5)
         vmnf_shared_parser.add_argument("--pause-steps", action="store_true",default=False) # not in use yet
         vmnf_shared_parser.add_argument("--auto", action="store_true",default=False)        # not in use yet

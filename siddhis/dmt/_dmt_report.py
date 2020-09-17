@@ -61,8 +61,10 @@ class resultParser:
         # results from djunch fuzzer 
         if results:
             self.djunch_result = results 
-            self.contexts = results[0]
-            self._issues_ = results[1]
+            self.contexts   = results[0]
+            self._issues_   = results[1]
+            self.traceback  = results[2]
+            self.raw_traceback = results[3]
         else:
             ''' In which cases would we not have the result of the fuzzer 
                 at this point in the result parser? I don't know exactly yet, 
@@ -141,13 +143,7 @@ class resultParser:
             'title'
         ]
         self.tickets_tbl.align = "c"
-        '''
-        self.tickets_tbl.title = colored(
-            "Security Tickets",
-            "white",
-            attrs=['bold']
-        )
-        '''
+        
         # ==[ ENV leak contexts table ]==
         self.envleak_tbl = PrettyTable()
         self.envleak_tbl.field_names = [
@@ -170,13 +166,6 @@ class resultParser:
             'date'
         ]
         self.cves_tbl.align = "c"
-        '''
-        self.cves_tbl.title = colored(
-            "CVE IDs for Django {}",
-            "white",
-            attrs=['bold']
-        )
-        '''
 
     def show_issues(self):
         
@@ -269,7 +258,9 @@ class resultParser:
                 len(self._issues_['configuration'])),
             'security_tickets': len(security_tickets),
             'cve_ids': len(cves) if cves else 0,
-            'url_patterns': len(self.mu_patterns)
+            'url_patterns': len(self.mu_patterns),
+            'applications': len(self.raw_traceback['Installed Applications']),
+            'middlewares' : len(self.raw_traceback['Installed Middleware'])
         }
 
         i_count = 1
@@ -351,7 +342,6 @@ class resultParser:
         hl_color = 'green'
         sg = colored('→', hl_color, attrs=['bold'])
         
-        # 'abduct' is a set of command and options specified to run the chosen module
         for _abd_k, _abd_v in (self.vmnf_handler.items()):
             if _abd_v:
                 print('{}{}:\t   {}'.format(
