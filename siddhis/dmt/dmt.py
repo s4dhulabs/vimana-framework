@@ -17,6 +17,7 @@ from . _dmt_report import resultParser
 from core.vmnf_shared_args import VimanaSharedArgs
 from core.vmnf_thread_handler import ThreadPool
 from core.vmnf_thread_handler import Worker
+from core.vmnf_thread_handler import ThreadPool
 
 from resources.session.vmnf_sessions import createSession
 from resources.vmnf_validators import get_tool_scope
@@ -95,8 +96,11 @@ class siddhi:
     def __init__(self, **vmnf_handler):
 
         self.vmnf_handler = vmnf_handler
+        self.threads = vmnf_handler['threads'] 
+        self.num_threads = self.threads if self.threads <= 10 else 10
         self.fuzz_mode = False
-        
+        self.pool = ThreadPool(self.num_threads)
+
         # root URL patterns
         self.xlp_tbl = PrettyTable()
         self.xlp_tbl.field_names = [' # ', 'URL Pattern', 'View name']
@@ -121,10 +125,16 @@ class siddhi:
         self.mu_patterns = []
 
     def random_value(self, stringLength=6):
-        extensions = ['','.txt','.html','.','.js','.css',"_"]
-        ext = str(random.choice(extensions))
-        lettersAndDigits = string.ascii_letters + string.digits
-        return ''.join(random.choice(lettersAndDigits) for i in range(stringLength)) + ext
+        extensions = ['','.txt','.html','.','.js','.css',"_","~"]
+        ext = ''
+        if int(str(datetime.now())[-3]) % 2:
+            ext = str(random.choice(extensions))
+            _p_ = string.ascii_letters + string.digits
+        else: 
+            ext = ''
+            _p_ = string.ascii_letters
+        
+        return ''.join(random.choice(_p_) for i in range(stringLength)) + ext
 
     def print_it(self, tag, value, color='green'):
         self.tag    = tag
@@ -398,31 +408,27 @@ class siddhi:
            sleep(2)
            print(self.xlp_tbl)
     
-    def djmimic(
-        self, 
-        x_pattern=None, 
-        expanded_patterns=None
-        ):
+    def djmimic(self):
 
-        if not expanded_patterns:
-            return 
+        if not self.expanded_patterns:
+            return False
 
         # Django setting files mimic: urls.py
         # Should be a separated function
-        print("\n\n{}/urls.py".format(x_pattern))
-        print("app_name= '{0}'\n".format(colored(x_pattern, 'yellow')))
+        print("\n\n{}/urls.py".format(self.x_pattern))
+        print("app_name= '{0}'\n".format(colored(self.x_pattern, 'yellow')))
         print('urlpatterns = [')
-        for pattern in expanded_patterns:
-            if pattern.startswith(x_pattern): 
+        for pattern in self.expanded_patterns:
+            if pattern.startswith(self.x_pattern): 
                 url = pattern[pattern.find('/')+1:]
                 if len(url) > 0 and url[-1] == '/':
                     url = url[:-1]
                 view = url
                 name = view
                 if len(url) == 0:
-                    view = x_pattern
+                    view = self.x_pattern
                     name = view
-                if url != x_pattern:
+                if url != self.x_pattern:
                     print(colored("    url(r'^{0}',\n        views.{1},\n        name='{2}'),".format(
                                             url, view, name), 'white')
                             )
@@ -460,6 +466,7 @@ class siddhi:
         trick_name = colors.bn_c + 'NoReverseMatch' + colors.D_c
 
         for x_pattern in self.root_url_patterns: 
+            self.x_pattern = x_pattern
             if x_pattern.endswith('/'):
                 x_pattern = x_pattern[:-1].strip()
 
@@ -489,7 +496,7 @@ class siddhi:
                     self.get_url_patterns()
                     
                     if self.vmnf_handler['debug']: 
-                        self.djmimic(x_pattern, self.expanded_patterns)
+                        self.djmimic()
                 elif response_status == 500:
                     self.dxt_parser(self.expanded_response, False, True)
         
@@ -572,7 +579,7 @@ class siddhi:
             cprint("[{0}] Starting DMT against {1}...".format(datetime.now(),c_target), 'cyan')
             sleep(1)
 
-            xvals = ['_','.','','','~','?']
+            xvals = ['_','.','','^','~','-']
             fakefile = "/{}{}".format(
                 random.choice(xvals), 
                 self.random_value(random.choice(range(1,6)))
@@ -583,12 +590,6 @@ class siddhi:
             self.vmnf_handler['target_url'] = payload_
             response = createSession(**self.vmnf_handler)
             
-            #AttributeError: 'NoneType' object has no attribute 'text'
-            #if response is None:
-            #
-            #current_response = self.get_unescape_html(response.text)
-            #response_status = response.status_code
-
             if response is None:
                 # because with target --port will be just one port, doesnt need such control like request_fail
                 
@@ -637,7 +638,7 @@ class siddhi:
                             header = str('   → ' + header + ":    ")
                             print("\n")
                             self.print_it(header, value)
-            
+
             self.expanded_response  = current_response
             self.dmt_start_request  = current_response
             self.dmt_start_base_r   = base_r

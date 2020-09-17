@@ -12,7 +12,8 @@ def createSession(**vmnf_handler):
     
     target_url = vmnf_handler['target_url']
     random_ua = vmnf_handler['random']
-    debug = vmnf_handler['debug']
+    #debug = vmnf_handler['debug']
+    debug = False
 
     retries = 3
     b_factor = 0.3
