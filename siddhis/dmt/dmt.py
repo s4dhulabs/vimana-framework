@@ -157,6 +157,7 @@ class siddhi:
                # extracts URLConf file
                info = str((soup.find("div", {"id": "info"})).find("p"))
                URLConf = info[info.find("<code>")+6:info.find("</")]
+               URLConf = 'empl_cms.urls'
                self.print_it('   → ROOT_URLCONF:', URLConf)  
                return True
             else:
@@ -581,10 +582,14 @@ class siddhi:
 
             self.vmnf_handler['target_url'] = payload_
             response = createSession(**self.vmnf_handler)
-            current_response = self.get_unescape_html(response.text)
-            response_status = response.status_code
+            
+            #AttributeError: 'NoneType' object has no attribute 'text'
+            #if response is None:
+            #
+            #current_response = self.get_unescape_html(response.text)
+            #response_status = response.status_code
 
-            if not current_response:
+            if response is None:
                 # because with target --port will be just one port, doesnt need such control like request_fail
                 
                 if not self.vmnf_handler['single_port']:
@@ -602,7 +607,9 @@ class siddhi:
                     continue
                 else:
                     break
-            
+           
+            current_response = self.get_unescape_html(response.text)
+            response_status = response.status_code
             found_exception_flag = True if 'Exception Type' \
                 in current_response else False
 

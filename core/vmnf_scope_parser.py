@@ -12,6 +12,7 @@ import socket
 import sys
 import os
 
+
 class ScopeParser:
     def __init__(self, **handler_ns):
         self.handler_ns = handler_ns
@@ -45,7 +46,6 @@ class ScopeParser:
             except AddrFormatError:
                 continue
             except socket.gaierror as sge:
-                #print(sge)
                 continue 
 
         for port in self.port_list:
@@ -95,9 +95,7 @@ class ScopeParser:
                 )
                 return False
 
-            #nmap_xml_file = str(pathlib.Path().absolute()) + '/' + scope_file
             nmap_scan_result = NmapParser.parse_fromfile(xml_location)
-                        
             for target in nmap_scan_result.hosts:
                 target_status = str(target).split('-')[1][+1:-1].rstrip()
                 if target_status == 'up':
@@ -105,7 +103,6 @@ class ScopeParser:
                     for _ts_ in target.services:
                         if _ts_.state == 'open':
                             target_list.append(str(target.address) + ':' + str(_ts_.port))
-    
                     if target_list:
                         self.target_scope[str(target.address)] = target_list
 
@@ -115,9 +112,7 @@ class ScopeParser:
                 arg = colored('--target-list', 'green', attrs=[])
                 print('''\r{} Invalid format for the --target argument, try this with {} or specify a single target.\n'''.format(self.scope_error,arg)) 
                 sys.exit(1)  
-
             target = self.handler_ns['single_target']
-            
             try:
                 if (valid_ipv4(target)):
                     self.target_list.append(target)
@@ -128,7 +123,6 @@ class ScopeParser:
                     return False
             except socket.gaierror:
                 print('[parse_scope] Target validation failure: {}'.format(target))
-                
                 return False
 
         # ***   scope: target list  *** 
@@ -146,7 +140,6 @@ class ScopeParser:
             if not os.path.exists(scope_location):
                 arg = colored('--file-scope', 'green', attrs=[])
                 print('''\r{} File scope not found: {}\n'''.format(self.scope_error, scope_location))
-            
                 sys.exit(1)
 
             # check if a valid scope file
@@ -190,9 +183,7 @@ class ScopeParser:
             if "," in str(self.handler_ns['single_port']):
                 arg = colored('--target-list', 'green', attrs=[])
                 print('''\r{} Invalid format for the --port argument,try this with {} or specify a single port.\n'''.format(self.scope_error,arg))
-
                 sys.exit(1)
-                
             self.port_list.append(self.handler_ns['single_port'])
 
         # ***   scope: port range    ****
@@ -200,7 +191,6 @@ class ScopeParser:
             if not "-" in str(self.handler_ns['port_range']):
                 arg = colored('--port-range', 'green', attrs=[])
                 print('''\r{} Invalid format for the {} argument. Range must be separated by dash: 8000-8010\n'''.format(self.scope_error,arg))
-                
                 sys.exit(1)
             
             plist = []
@@ -214,15 +204,12 @@ class ScopeParser:
             if not "," in str(self.handler_ns['port_list']):
                 arg = colored('--port-list', 'green', attrs=[])
                 print('''\r{} Invalid format for the {} argument. Ports must be separated by a comma.\n'''.format(self.scope_error,arg))
-                
                 sys.exit(1)
             
             plist = ' '.join(self.handler_ns['port_list'])
-            #port_list = [int(port) for port in port_list.split(',')] 
             for port in plist.split(','):
                 self.port_list.append(port)
         
-        # because nmap already tested
         if not self.handler_ns['nmap_xml']:
             if not self.handler_ns['ignore_state']:
                 self.scope_validate()

