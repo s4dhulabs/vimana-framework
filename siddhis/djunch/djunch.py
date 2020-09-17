@@ -31,26 +31,21 @@ from time import sleep
 import argparse
 import hashlib
 import pygments
-
 from settings.siddhis_shared_settings import django_envvars as djev
 from settings.siddhis_shared_settings import csrf_table as csrf
 from settings.siddhis_shared_settings import set_header 
 from settings.siddhis_shared_settings import api_auth
 from settings.siddhis_shared_settings import payloads
-
 from core.vmnf_shared_args import VimanaSharedArgs
 from core.vmnf_thread_handler import ThreadPool
-
 from resources.session.vmnf_sessions import createSession
 from resources.vmnf_text_utils import format_text
 from resources import vmnf_banners
-
 import requests.exceptions
 from requests import exceptions
 from random import choice
 import collections
 import requests
-
 from siddhis.prana import prana
 from siddhis.tictrac import tictrac
 
@@ -134,7 +129,7 @@ class siddhi:
         self.base_r = target
         self.up_collection = up_collection
         self.total_patterns = len(up_collection)
-        
+        self.threads = self.vmnf_handler['threads']
         self.debug = self.vmnf_handler['debug'] 
         self.verbose = self.vmnf_handler['verbose']
         self.quiet_mode = True if not self.verbose else False
@@ -311,14 +306,6 @@ class siddhi:
             t[t.find('Installed Middleware:'):t.find('Traceback:')]
         )
 
-        '''
-        pb_traceback_env    = t[t.find('Environment:'):t.find('Installed Applications:')]
-        pb_traceback_apps   = t[t.find('Installed Applications:'):t.find('Installed Middleware:')]
-        pb_traceback_mids   = t[t.find('Installed Middleware:'):t.find('Traceback:')]
-        pb_traceback_env    = strip_blank_entries(pb_traceback_env)
-        pb_traceback_apps   = strip_blank_entries(pb_traceback_apps)
-        pb_traceback_mids   = strip_blank_entries(pb_traceback_mids)
-        '''
         for line in pb_traceback_env:
             k,v = line.split(": ")
             env_traceback_dict[k] = v
@@ -375,14 +362,10 @@ class siddhi:
                     G_c + str(source_lenght) + D_c
                     ), end=''
                 )
-
         except AttributeError:
             """ In this case we need to implement a generic parser to 
             digest exception traceback. 
             """
-            pass
-        except AttributeError:
-            pass
 
         self.parse_paste_traceback()
         
@@ -742,16 +725,17 @@ class siddhi:
         djunch_handler.args = options.parse_known_args(
             namespace=djunch_handler)[1]
 
-        num_threads = 3
+        num_threads = self.threads if self.threads <= 10 else 10
         self.dxt_steps = 5
         self.trigger_start = True
         count_step = 1
         self.trigger_step = 1   
         pool = ThreadPool(num_threads)
 
-        print('{0} Starting DJunch fuzzer against {1} / {2} URL Patterns'.format(
+        print('{} Starting DJunch fuzzer against {} / {} threads / {} URL Patterns'.format(
             (Gn_c  + "⠿⠥" + C_c), 
             (G_c  + self.base_r + W_c), 
+            str(num_threads),
             (str(self.total_patterns) + D_c))
         )
         sleep(1)
@@ -767,10 +751,13 @@ class siddhi:
                     pattern = pattern[1:]
 
                 self.pattern = pattern.strip('\n').rstrip()
-                #pool.add_task(self.fuzz_loop_patterns) # threading tests 
-                self.fuzz_loop_patterns()
+                try:
+                    pool.add_task(self.fuzz_loop_patterns) # threading tests 
+                    sleep(0.01)
+                except KeyboardInterrupt as _ki_:
+                    pass
+
                 self.p_count +=1
-            #pool.wait_completion() # threading tests
 
         # final object results - used in dmt to show final result and inspect issues
         self.FUZZ_RESULT = [
@@ -779,11 +766,7 @@ class siddhi:
             self.FUZZ_TRACEBACK,
             self.RAWP_TRACEBACK
         ]
-
-        for k,v in self.FUZZ_TRACEBACK.items():
-            print('\t{}:    {}'.format(k,v))
-            sleep(0.5)
-        input()
+        
         return self.FUZZ_RESULT
 
 
