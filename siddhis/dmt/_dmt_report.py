@@ -176,7 +176,9 @@ class resultParser:
         status_msg = colored('Consolidating analysis result...', 'blue')
         print('\n {} {}'.format(mark_status, status_msg))
         sleep(1)
-
+        
+        security_tickets = []
+        cves = []
         found_exceptions = []
         for exception in self._issues_['exceptions']:
             found_exceptions.append(exception['type'].rstrip())
@@ -189,6 +191,7 @@ class resultParser:
                 x = x.replace(x_ref,x_c)
             print(x)
             sleep(0.10)
+        sleep(1)
 
         _prana_ = []
         cve_siddhi = colored('prana', 'green')
@@ -362,26 +365,25 @@ class resultParser:
                 'cyan', attrs=[]
         )
 
-        #for k,v in self._server_context_.items():
         for k,v in self.contexts['server'].items():
             k = (k.replace('_',' ')).capitalize()
             print('{}{}:\t   {}'.format(
                 (' ' * int(5-len(k) + 15)),
-                k,
-                colored(v, hl_color)
-                )
+                k,colored(v, hl_color))
             )
             sleep(0.10)
 
-        #for k,v in self._environment_context_.items():
+        self.contexts['environment']['EXCEPTION_REPORTER'] = \
+                self.contexts['environment'].pop('DEFAULT_EXCEPTION_REPORTER_FILTER')
+        self.contexts['environment']['DJANGO_SETTINGS'] = \
+                self.contexts['environment'].pop('DJANGO_SETTINGS_MODULE')
+
         for k,v in self.contexts['environment'].items():
             k = (k.replace('_',' ')).capitalize()
 
             print('{}{}:\t   {}'.format(
                 (' ' * int(5-len(k) + 15)),
-                k,
-                colored(v, hl_color)
-                )
+                k,colored(v, hl_color))
             )
             sleep(0.10)
 
@@ -396,7 +398,6 @@ class resultParser:
         cprint("\tEnvironment variables leaked by context.\n",
                 'cyan', attrs=[]
         )
-
         print(self.envleak_tbl)
 
         ##########################

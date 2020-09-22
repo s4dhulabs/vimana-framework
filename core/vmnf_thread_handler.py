@@ -15,8 +15,10 @@ class Worker(Thread):
     def run(self):
         while True:
             func, args, kwargs = self.tasks.get()
-            try: func(*args, **kwargs)
-            except Exception as e: print(e)
+            try: 
+                func(*args, **kwargs)
+            except Exception as e: 
+                print(e)
             self.tasks.task_done()
 
 class ThreadPool:
