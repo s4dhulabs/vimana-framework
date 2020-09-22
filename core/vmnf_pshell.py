@@ -118,7 +118,7 @@ class vmnfshell:
             6:'config',
             7:'applications',
             8:'middlewares',
-            9:'envs'
+            9:'databases'
         }
 
         # ==[ UX - EXCEPTIONS ]==
@@ -154,13 +154,20 @@ class vmnfshell:
                         sleep(1)
                         sys.exit(0)
 
-                    elif r_cmd == 'show':
+                    elif r_cmd == 'show' or r_cmd == 'show ':
                         self.handle_show_options()
                     elif r_cmd == 'inspect':
                         print('''[{}:inspect] Missing issue id (iid)'''.format(
                             self.siddhi
                             )
                         )
+                    elif r_cmd == 'abduct':
+                        print('''
+                        \rThis command will analyze the different information obtained by all the siddhis
+                        \rexecuted during the target assessment to try to infer exploitable scenarios.
+
+                        \tNot available in this version yet [:.
+                        ''')
                     else:
                         self.vmnf_mng_cmds()
                     continue
@@ -185,7 +192,7 @@ class vmnfshell:
                         if arg_len >= 1 and arg_len <=2:
                             vsol = len(valid_show_options) - 1
 
-                            if arg == '?':
+                            if arg == '?' or arg == ' ':
                                 self.handle_show_options()
                                 continue
 
@@ -221,7 +228,7 @@ class vmnfshell:
                             )
                             continue
 
-                        elif arg == 'summary':
+                        if arg == 'summary':
                             cprint('\n→ Issues summary', 'cyan')
                             print(self.report_items['summary'])
                         elif arg == 'exceptions':
@@ -254,6 +261,13 @@ class vmnfshell:
                             for mid in self.rawp_traceback['Installed Middleware']:
                                 print('   {}'.format(mid))
                             print()
+                        elif arg == 'databases':
+                            cprint("\n→ Available databases", 'cyan')
+                            print()
+                            for k,v in self.rawp_traceback['Databases'].items():
+                                print('   {}: {}'.format(k,v))
+                            print()
+
                         continue
                     
                     elif cmd == 'abduct':
@@ -545,6 +559,7 @@ class vmnfshell:
         \r  6:  configuration   shows configuration issues
         \r  7:  applications    shows installed applications
         \r  8:  middlewares     shows installed middlewares
+        \r  9:  databases       shows available databases
 
         ''')
 

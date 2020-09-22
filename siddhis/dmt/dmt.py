@@ -97,6 +97,8 @@ class siddhi:
 
         self.vmnf_handler = vmnf_handler
         self.threads = vmnf_handler['threads'] 
+        self.debug = vmnf_handler['debug']
+        self.auto_mode = vmnf_handler['auto']
         self.num_threads = self.threads if self.threads <= 10 else 10
         self.fuzz_mode = False
         self.pool = ThreadPool(self.num_threads)
@@ -388,7 +390,6 @@ class siddhi:
             else:
                 if url_pattern \
                     and not url_pattern in self.expanded_patterns:
-
                     xp_count += 1
                     self.expanded_patterns.append(url_pattern)
                     
@@ -397,7 +398,6 @@ class siddhi:
                         'pattern': url_pattern,
                         'view': name
                     }
-                    
                     self.mu_patterns.append(current_pattern)
                     self.xlp_tbl_x.add_row([tag_count_x, url_pattern, name])
                     tag_count_x += 1
@@ -437,7 +437,7 @@ class siddhi:
         print("\n]")
         #sleep(1)
                     
-    def expand_UP(self, up_fuzz_scope = False):
+    def expand_UP(self, up_fuzz_scope=False):
        
         self.exp_mode = True
         up_c = 1
@@ -725,33 +725,58 @@ class siddhi:
     
     def handle_discovery_xt(self):
         status = False
-        while not status:
-            signal = colored('█', 'red',attrs=['bold', 'blink'])
-            s_msg = colored('''DMT identified an exception during the discovery phase,
-                        \r  Would you like to forward it for analysis? (Y/n) > ''','cyan')
+        patterns=[]
 
-            status = input(colored('\n{} {}'.format(signal, s_msg)))
-            if status.lower() == 'y':
-                dmt_trigger = {
-                    'html': self.dmt_start_request,
-                    'rtxc_mode': False,
-                    'trigger_start': True,
-                    'context_filter': False
-                }
+        # to show extra information during parser step
+        self.vmnf_handler['verbose'] = True
+        self.vmnf_handler['debug']   = True
 
-                patterns=[]
-                self.vmnf_handler['verbose'] = True
-                self.vmnf_handler['debug'] = True
+        if not self.auto_mode:
+            while not status:
+                signal = colored('█', 'white',attrs=['bold', 'blink'])
+                s_msg  = colored('''DMT identified an exception during the discovery phase,
+                        \r  would you like to forward it for analysis? (Y/n) > ''','cyan')
 
-                # in this case call just Djunch.parser method (because its not fuzzer step yet)
-                self.fuzz_result = Djunch(
-                    self.dmt_start_base_r, patterns,
-                    **self.vmnf_handler).dxt_parser(**dmt_trigger)
+                status = input(colored('\n{} {}'.format(signal, s_msg)))
+                if status == '':
+                    status = 'Y'
+                if status.lower() != 'y':
+                    return False
+        else:
+            signal = colored('█', 'green',attrs=['bold', 'blink'])
+            s_msg  = colored('DMT identified an exception during the discovery phase.', 'cyan')
+            print(colored('\n{} {}'.format(signal, s_msg)))
+            try:
+                for c in range(3,0,-1):
+                    c_c = colored(str(c),'green')
+                    s_msg = colored('''  Sending for parser analysis in {0}... '''.format(c_c),'cyan')
+                    print(s_msg.ljust(os.get_terminal_size().columns - 1), end="\r")
+                    sleep(1)
+            except KeyboardInterrupt:
+                print()
+                parser_cancel = input(colored('\nWould you like to cancel parser analysis? (y/N) > ', 'cyan'))
+                print()                
+                if parser_cancel == '':
+                    parser_cancel = 'N'
+                if parser_cancel is None \
+                    or not parser_cancel \
+                    or parser_cancel.lower() == 'y':
+                    return False
 
-                # create instance of dmt reporter and show analysis report
-                ipress = self.issues_presentation()
+        dmt_trigger = {
+            'html': self.dmt_start_request,
+            'rtxc_mode': False,
+            'trigger_start': True,
+            'context_filter': False
+        }
+        
+        # in this case call just Djunch.parser method (because its not fuzzer step yet)
+        # fuzz result object to dmt_report
+        self.fuzz_result = Djunch(
+            self.dmt_start_base_r, patterns,
+            **self.vmnf_handler).dxt_parser(**dmt_trigger)
 
-                return ipress
-            
-            return False
+        # create instance of dmt reporter and show analysis report
+        ipress = self.issues_presentation()
+        return ipress
 

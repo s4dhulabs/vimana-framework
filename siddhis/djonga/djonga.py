@@ -165,21 +165,7 @@ class siddhi:
             token = R_c + csrftoken + D_c
 
         print(" {:<25} {:<20} {:<19} {:<40} {:>10}".format(runtime, http_status, status, userpass, token))
-
-    def worker(self):
-        name = threading.currentThread().getName()
-        #print('+ Thread: {}'.format(name))
-        while True:
-            self.username = self.q.get()
-            if self.username is None:
-                self.q.task_done()
-                break
-            for password in self.passwords:
-                self.password = password.strip()
-                self.run_brute_force()
-                self.djonga_start = False
-            self.q.task_done()
-
+    
     def ThreadHandler(self):
         max_workers = 20
         self.djonga_start = True

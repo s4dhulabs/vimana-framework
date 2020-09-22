@@ -130,6 +130,7 @@ class siddhi:
         self.up_collection = up_collection
         self.total_patterns = len(up_collection)
         self.threads = self.vmnf_handler['threads']
+        self.default_threads = 4
         self.debug = self.vmnf_handler['debug'] 
         self.verbose = self.vmnf_handler['verbose']
         self.quiet_mode = True if not self.verbose else False
@@ -199,7 +200,6 @@ class siddhi:
 
             hl_function = colored(function, 'white', "on_green", attrs=['bold'])
             for tag in frame.findAll("ol", recursive=True):
-
                 count = 0
                 match_text = str(tag)
                 line_number = int(match_text[match_text.find('start')+7:match_text.find('">')])
@@ -288,22 +288,56 @@ class siddhi:
    
     def strip_blank_entries(self,_tcb_):
         return [line for line in _tcb_.split('\n') if line.strip()][1:]
+    
+    def clean_entry(self,item):
+        return item.replace("['",'').replace("']",'').replace("'",'').replace(",",'').strip()
+
+    def get_db_settings(self):
+        db_settings = {}
+        k_list = []
+
+        if not self.FUZZ_TRACEBACK['DATABASES']:
+            print('[djunch.db_parser] Database settings not found')
+            self.RAWP_TRACEBACK['Databases'] = False    
+            return False
+
+        for entry in (self.FUZZ_TRACEBACK['DATABASES']).split('\n')[1:]:
+            entry = str(entry).rstrip().strip().replace('}','').replace('{','').replace(',','').split(':')
+            k = entry[0]
+            v = entry[1]
+            if k.rstrip().strip() == 'TEST':
+                dbt_dict = {}
+                t = str(self.FUZZ_TRACEBACK['DATABASES']).strip().rstrip()
+                t = t[t.find('TEST: ') + 7:]
+                db_test_values = (t[:t.find('}')]).split('\n')
+                for i in db_test_values:
+                    i = i.rstrip().strip().replace(',','')
+                    tk,tv = i.split(':')
+                    dbt_dict[tk.strip()]=tv.strip()
+                v=dbt_dict
+            
+            if k not in k_list:
+                k_list.append(k)
+                db_settings[k]=v
+
+        self.RAWP_TRACEBACK['Databases'] = db_settings
+        return True
 
     def parse_paste_traceback(self):
-        t = self.raw_pb_traceback
+        p_t = self.raw_pb_traceback
 
         env_traceback_dict  = {} 
         apps_traceback_list = []
         mids_traceback_list = []
         
         pb_traceback_env    = self.strip_blank_entries(
-            t[t.find('Environment:'):t.find('Installed Applications:')]
+            p_t[p_t.find('Environment:'):p_t.find('Installed Applications:')]
         )
         pb_traceback_apps   = self.strip_blank_entries(
-            t[t.find('Installed Applications:'):t.find('Installed Middleware:')]
+            p_t[p_t.find('Installed Applications:'):p_t.find('Installed Middleware:')]
         )
         pb_traceback_mids   = self.strip_blank_entries(
-            t[t.find('Installed Middleware:'):t.find('Traceback:')]
+            p_t[p_t.find('Installed Middleware:'):p_t.find('Traceback:')]
         )
 
         for line in pb_traceback_env:
@@ -311,11 +345,11 @@ class siddhi:
             env_traceback_dict[k] = v
         
         for app in pb_traceback_apps:
-            app = app.replace("['",'').replace("']",'').replace("'",'').replace(",",'').strip()
+            app = self.clean_entry(app)
             apps_traceback_list.append(app)
 
         for mid in pb_traceback_mids:
-            mid = mid.replace("['",'').replace("']",'').replace("'",'').replace(",",'').strip()
+            mid = self.clean_entry(mid)
             mids_traceback_list.append(mid)
 
         self.RAWP_TRACEBACK = {
@@ -344,7 +378,8 @@ class siddhi:
         
         try:
             soup = BeautifulSoup(self.html, 'html.parser')
-            self.raw_pb_traceback = soup.find("div", {"id": "pastebinTraceback"}).find("textarea", {"id": "traceback_area"}).text
+            pb_t = soup.find("div", {"id": "pastebinTraceback"})
+            self.raw_pb_traceback = pb_t.find("textarea", {"id": "traceback_area"}).text
             summary = soup.find("div", {"id": "summary"})
             summary = summary.findAll("table", {"class": "meta"}) 
             metainfo = soup.findAll("table", {"class": "req"})    
@@ -366,8 +401,6 @@ class siddhi:
             """ In this case we need to implement a generic parser to 
             digest exception traceback. 
             """
-
-        self.parse_paste_traceback()
         
         for entry in metainfo:
             rows = ''
@@ -383,7 +416,7 @@ class siddhi:
         for div in summary:
             rows = ''
             rows = div.findAll('tr')
-            print('\n')
+            #print('\n')
             for entry in rows: 
                 entry = str(entry.text).replace(':\\','_dmt_').split(':')
                 self.header = str(entry[0]).strip('\n')
@@ -401,7 +434,8 @@ class siddhi:
                     if Debug mode is enabled
 
                 '''
-                cprint('⣆⣇     Server    \t', 'white', 'on_red', attrs=['bold'])
+                print() 
+                cprint('\n⣆⣇     Server    \t', 'white', 'on_red', attrs=['bold'])
                 print()
                 for k,v in self.contexts['server'].items():
                     print(" {}: {}".format(
@@ -420,7 +454,6 @@ class siddhi:
                         colored(v, 'green')
                         )
                     )
-
                 print()
                 sleep(1)
 
@@ -428,7 +461,11 @@ class siddhi:
                     and str(self.contexts['environment']).find(r':\\') != -1:
                         so_windows = True
                         _slash_ = '\\'
-	        
+	   
+            # parse django items
+            self.parse_paste_traceback()
+            self.get_db_settings()
+
             # get exception traceback header
             _xpt_ = self.contexts['exception'] 
             exception_location = _xpt_.get('Exception Location').strip()
@@ -525,7 +562,7 @@ class siddhi:
                 self.RAWP_TRACEBACK
             ]
             return self.FUZZ_RESULT
-
+        
         return True
 
     def get_csrftoken(self):
@@ -567,6 +604,7 @@ class siddhi:
             
             New stages and distinct tests will be added in the next version'''
         
+        payload = ''
         step_oot = True if self.trigger_step == 1 \
             or self.trigger_step == 2 else False
 
@@ -581,19 +619,28 @@ class siddhi:
         # test to debug some features 
         djunch_mode = True
         if djunch_mode:   
-            # ~ General fuzzing status when loop_patterns [all steps]
-            sys.stdout.write('\r   {0} Fuzzing: step ({1}/{2}) | Patterns: ({3}/{4}): {5}'.format(
+            if self.debug:
+                print('   {0} Fuzzing: step ({1}/{2}) | Patterns: ({3}/{4}): {5}'.format(
                     (Gn_c  + "→" + C_c),
                     (R_c  + str(self.trigger_step) + D_c), 
                     (R_c  + str(self.dxt_steps -1) + D_c), 
                     (Wn_c + str(self.p_count)), 
                     (str(self.total_patterns) + C_c), 
-                    (Y_c  + self.pattern + D_c)
+                    (Y_c  + self.pattern + D_c),end="\r"
                     )
-            )
-            sys.stdout.flush()
+                )
+            else:
+                fzz_msg=('   {0} Fuzzing: step ({1}/{2}) | Patterns: ({3}/{4}): {5}'.format(
+                    (Gn_c  + "→" + C_c),
+                    (R_c  + str(self.trigger_step) + D_c),
+                    (R_c  + str(self.dxt_steps -1) + D_c),
+                    (Wn_c + str(self.p_count)),
+                    (str(self.total_patterns) + C_c),
+                    (Y_c  + self.pattern + D_c),end="\r"
+                    )
+                )
+                print(fzz_msg.ljust(os.get_terminal_size().columns - 1), end="\r")
             sleep(0.05)
-            #p_count += 1
             
             # ~ constructs base target url
             self.target_url = "{}/{}".format(self.base_r, self.pattern)
@@ -601,7 +648,7 @@ class siddhi:
             # [1] - empty 'payload' - Just request URL Patterns one by one (this could trigger IndexError Exceptions-like
             if step_oot:
                 if self.trigger_step == 1:
-                    payload = ''
+                    pass
                 # [2] - if UnicodeEncodeError-like step 
                 elif self.trigger_step == 2: 
                     # ~ get a random Unicode payload to check for UnicodeEncodeError Warning (serve side, no leak)
@@ -686,21 +733,32 @@ class siddhi:
                             'trigger_start': self.trigger_start,
                             'context_filter': False
                         }
-
                         exception = self.dxt_parser() 
-                        
                         # disable trigger start status (used by parser to show a detailed output of current exception)
                         self.trigger_start = False
 
     def parse_args(self):
         ''' ~ siddhi needs only shared arguments from VimanaSharedArgs() ~'''
-
         parser = argparse.ArgumentParser(
                 add_help=False,
                 parents=[VimanaSharedArgs().args()]
         )
-
         return parser
+
+    def th_handler(self):
+        pool = ThreadPool(self.num_threads)
+        self.p_count = 0
+        for pattern in self.up_collection:
+            if pattern.startswith('/'):
+                pattern = pattern[1:]
+            self.pattern = pattern.strip('\n').rstrip()
+            self.p_count +=1
+            try:
+                pool.add_task(self.fuzz_loop_patterns) # threading tests
+                sleep(0.01)
+            except KeyboardInterrupt as _ki_:
+                pass
+        pool.wait_completion()
 
     def start(self):
         '''in fact most modules do not need to implement their own parser, 
@@ -725,39 +783,27 @@ class siddhi:
         djunch_handler.args = options.parse_known_args(
             namespace=djunch_handler)[1]
 
-        num_threads = self.threads if self.threads <= 10 else 10
         self.dxt_steps = 5
         self.trigger_start = True
         count_step = 1
         self.trigger_step = 1   
-        pool = ThreadPool(num_threads)
 
+        self.num_threads = self.threads \
+            if self.threads <= self.default_threads \
+            else self.default_threads
+        
         print('{} Starting DJunch fuzzer against {} / {} threads / {} URL Patterns'.format(
             (Gn_c  + "⠿⠥" + C_c), 
             (G_c  + self.base_r + W_c), 
-            str(num_threads),
+            str(self.num_threads),
             (str(self.total_patterns) + D_c))
         )
         sleep(1)
 
         # ~ range in dxt_steps, starts in 1 defines how many steps to run with loop patterns (according with payloads)
         for _ts_ in range(1, self.dxt_steps):
-            self.p_count= 1
             self.trigger_step = _ts_
-            
-            '''this fuzzing steps needs some threads, but in recente tests things goes wrong'''
-            for pattern in self.up_collection:
-                if pattern.startswith('/'):
-                    pattern = pattern[1:]
-
-                self.pattern = pattern.strip('\n').rstrip()
-                try:
-                    pool.add_task(self.fuzz_loop_patterns) # threading tests 
-                    sleep(0.01)
-                except KeyboardInterrupt as _ki_:
-                    pass
-
-                self.p_count +=1
+            self.th_handler()
 
         # final object results - used in dmt to show final result and inspect issues
         self.FUZZ_RESULT = [
@@ -766,7 +812,7 @@ class siddhi:
             self.FUZZ_TRACEBACK,
             self.RAWP_TRACEBACK
         ]
-        
+
         return self.FUZZ_RESULT
 
 
