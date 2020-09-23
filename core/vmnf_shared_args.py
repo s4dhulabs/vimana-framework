@@ -86,11 +86,11 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--debug",action="store_true",default=False)
         vmnf_shared_parser.add_argument("--verbose", '-v', action='count', default=False)
         vmnf_shared_parser.add_argument("--random", action="store_true",default=False)
-        vmnf_shared_parser.add_argument("--wait", action="store", type=int, default=0)      # not in use yet
+        vmnf_shared_parser.add_argument("--wait", action="store", default=False)      
         vmnf_shared_parser.add_argument("--threads",action="store", type=int, default=3)
         vmnf_shared_parser.add_argument("--timeout", action="store", type=int, default=5)
-        vmnf_shared_parser.add_argument("--pause-steps", action="store_true",default=False) # not in use yet
-        vmnf_shared_parser.add_argument("--auto", action="store_true",default=False)        # not in use yet
+        vmnf_shared_parser.add_argument("--pause-steps", action="store_true",default=False) 
+        vmnf_shared_parser.add_argument("--auto", action="store_true",default=False)        
         # -------------------------------------------------------------------------------
         # > Scope setting - [ scope parser options ] 
         # -------------------------------------------------------------------------------
@@ -109,7 +109,7 @@ class VimanaSharedArgs:
     def shared_help(self):
         
         '''
-    target  
+    [target]  
 
     --target            defines a single target scope
     --file              defines a file with a target list
@@ -118,14 +118,14 @@ class VimanaSharedArgs:
     --target-list       defines a target list (comma-separeted) scope
     --nmap-xml          defines the result of the nmap xml as a scope
         
-    port
+    [port]
 
     --port              sets a single port scope
     --port-list         sets a port list scope
     --port-range        sets port range scope
     --ignore-state      ignore port status
         
-    general
+    [general]
 
     --debug             enables debug information
     --verbose           enables verbose mode (incremental)
@@ -136,10 +136,11 @@ class VimanaSharedArgs:
     --pause-steps       pause between steps 
     --auto              assume yes for all subtasks
 
-    proxy 
+    [proxy] 
 
-    --set-proxy         enables the default proxy for all requests: SOCKS5: //127.0.0.1: 9055
+    --set-proxy         enables the default proxy for all requests: SOCKS5://127.0.0.1:9050
     --proxy             configures the proxy specified by the ip:port string
     --proxy-type        specifies the proxy protocol to be used (required --proxy option)
+
     '''        
  
