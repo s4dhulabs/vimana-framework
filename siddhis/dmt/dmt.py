@@ -15,9 +15,6 @@
 
 from . _dmt_report import resultParser
 from core.vmnf_shared_args import VimanaSharedArgs
-from core.vmnf_thread_handler import ThreadPool
-from core.vmnf_thread_handler import Worker
-from core.vmnf_thread_handler import ThreadPool
 
 from resources.session.vmnf_sessions import createSession
 from resources.vmnf_validators import get_tool_scope
@@ -30,6 +27,7 @@ from pygments.formatters import TerminalFormatter
 from pygments.lexers import PythonLexer
 from pygments import highlight
 
+import concurrent.futures
 import sys, re, os, random, string, platform
 from lxml.html.soupparser import fromstring
 from termcolor import colored, cprint
@@ -96,12 +94,23 @@ class siddhi:
     def __init__(self, **vmnf_handler):
 
         self.vmnf_handler = vmnf_handler
+        self.wait = 0.02
+        if vmnf_handler['wait']:
+            try:
+                self.wait = int(vmnf_handler['wait'].strip()) 
+            except ValueError:
+                self.wait = float(vmnf_handler['wait'].strip())
+        
+        self.auto_mode = vmnf_handler['auto']
         self.threads = vmnf_handler['threads'] 
         self.debug = vmnf_handler['debug']
-        self.auto_mode = vmnf_handler['auto']
-        self.num_threads = self.threads if self.threads <= 10 else 10
+        self.timeout = vmnf_handler['timeout']
+        self.max_workers = 5
+        self.num_threads = self.threads \
+                if self.threads <= self.max_workers \
+                else self.max_workers
+
         self.fuzz_mode = False
-        self.pool = ThreadPool(self.num_threads)
 
         # root URL patterns
         self.xlp_tbl = PrettyTable()
@@ -432,8 +441,7 @@ class siddhi:
                     print(colored("    url(r'^{0}',\n        views.{1},\n        name='{2}'),".format(
                                             url, view, name), 'white')
                             )
-                    sleep(0.07)
-        
+                    sleep(self.wait)
         print("\n]")
         #sleep(1)
                     
@@ -464,44 +472,241 @@ class siddhi:
 
         url_model = {}
         trick_name = colors.bn_c + 'NoReverseMatch' + colors.D_c
+       
+        with concurrent.futures.ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+            for x_pattern in self.root_url_patterns:
+                if x_pattern.endswith('/'):
+                    x_pattern = x_pattern[:-1].strip()
+                self.x_pattern = x_pattern
 
-        for x_pattern in self.root_url_patterns: 
-            self.x_pattern = x_pattern
-            if x_pattern.endswith('/'):
-                x_pattern = x_pattern[:-1].strip()
+                app_name = ("app_name = '" + x_pattern + "'")
+                expanded_pattern = '{}/{}/_._x'.format(self.dmt_start_base_r, x_pattern)
 
-            app_name = ("app_name = '" + x_pattern + "'")
-            expanded_pattern = '{}/{}/_._x'.format(self.dmt_start_base_r, x_pattern)
-            
-            sys.stdout.write("\r{0} Mapping URL pattern via {1} ({2}/{3}) -> {4}".format(
-                    colors.Gn_c + "⠿⠥" + colors.C_c,
-                    trick_name,
-                    up_c, n_up, 
-                    colors.Y_c + x_pattern + colors.D_c,
-                    colors.Y_c + app_name + colors.D_c
-                    )
-            )
-            sys.stdout.flush()
-            sleep(self.vmnf_handler['wait']) 
-            up_c += 1
-           
-            # up request
-            self.vmnf_handler['target_url'] = expanded_pattern
-            response = createSession(**self.vmnf_handler)
-            self.expanded_response = self.get_unescape_html(response.text)
-            response_status = response.status_code
+                sys.stdout.write("\r{0} Mapping URL pattern via {1} ({2}/{3}) -> {4}".format(
+                        colors.Gn_c + "⠿⠥" + colors.C_c,
+                        trick_name,
+                        up_c, n_up,
+                        colors.Y_c + x_pattern + colors.D_c,
+                        colors.Y_c + app_name + colors.D_c
+                        )
+                )
+                sys.stdout.flush()
+                sleep(self.wait)
 
-            if self.expanded_response:
-                if response_status == 404:
-                    self.get_url_patterns()
-                    
-                    if self.vmnf_handler['debug']: 
-                        self.djmimic()
-                elif response_status == 500:
-                    self.dxt_parser(self.expanded_response, False, True)
-        
+                self.vmnf_handler['target_url'] = expanded_pattern
+                future = executor.submit(createSession, **self.vmnf_handler)
+                up_c += 1
+
+                response = (future.result())
+                self.expanded_response = self.get_unescape_html(response.text)
+                response_status = response.status_code
+
+                if self.expanded_response:
+                    if response_status == 404:
+                        self.get_url_patterns()
+                        if self.vmnf_handler['debug']:
+                            self.djmimic()
+                    elif response_status == 500:
+                        self.dxt_parser(self.expanded_response, False, True)
+
         print()
         print(self.xlp_tbl_x)
+        
+        return self.expanded_patterns
+    
+    def parse_args(self):
+        ''' ~ siddhi needs only shared arguments from VimanaSharedArgs() ~'''
+        parser = argparse.ArgumentParser(
+                add_help=False,
+                parents=[VimanaSharedArgs().args()]
+        )
+        return parser
+
+    def issues_presentation(self):
+        # create instance of dmt reporter
+        result = resultParser(
+            self.xlp_tbl_x,
+            self.mu_patterns,
+            self.fuzz_result,
+            **self.vmnf_handler
+        )
+        # call reporter
+        result.show_issues()
+
+    def start(self):
+
+        _scope_   = {}
+        target_list = []
+        port_list   = []
+        invalid_targets = []
+        port_step = ''
+
+        dmt_handler= argparse.Namespace(
+            ignore_state = False,       # ignore state - disable IP and port state verification 
+            single_target = False,      # single target scope
+            scope  = False,             # file with a list of targets
+            range  = False,             # ip range, 192.168.12.0-20 
+            cidr   = False,             # cidr range: 192.168.32.0/26
+            port   = False,             # single port verification
+            single_port   = None,       # single port verification
+            portr  = False,             # port range: 8000-8010
+            portl  = False,             # port list: 8999, 5001, 9000, 7120
+            debug  = False              # debug mode
+        ) 
+
+        options = self.parse_args()
+        dmt_handler.args = options.parse_known_args(
+            namespace=dmt_handler)[1]
+        
+        if not self.vmnf_handler['scope']:
+            print(VimanaSharedArgs().shared_help.__doc__)
+            sys.exit(1)
+
+        # here we just need to get a list of valid scope
+        targets_ports_set = get_tool_scope(**self.vmnf_handler)
+        self.tps = targets_ports_set
+
+        ports = []
+        for p in targets_ports_set:
+            ports.append(p.split(':')[1].strip())
+
+        self.last_step  = False
+        self.debug      = dmt_handler.debug
+        self.exp_mode = False
+        start = True 
+        last_step = False
+        server_flag_found = False
+        request_fail = 0
+
+        for entry in targets_ports_set:
+            ''' have to change this to auto choose the right scheme'''
+            self.target = 'http://' + entry
+            port   = entry.split(':')[1].strip()
+        
+            dmt_start = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            c_target = colored(self.target,'green')
+            cprint("[{0}] Starting DMT against {1}...".format(datetime.now(),c_target), 'cyan')
+            sleep(1)
+
+            xvals = ['_','.','','^','~','-']
+            fakefile = "/{}{}".format(
+                random.choice(xvals), 
+                self.random_value(random.choice(range(1,6)))
+            )
+            base_r = self.target
+            payload_ = base_r + fakefile  
+
+            self.vmnf_handler['target_url'] = payload_
+            response = createSession(**self.vmnf_handler)
+            
+            if response is None:
+                # because with target --port will be just one port, doesnt need such control like request_fail
+                
+                if not self.vmnf_handler['single_port']:
+                    # control request fails to improve consistence of module
+                    request_fail += 1
+                    if request_fail > 3:
+                        request_fail = 0	
+                        print("\nHi, sadhu! Too many fails in this process, try to discovery host before!")
+                
+                cprint('''[{}] DMT did not receive a valid response from the target, nothing to do.
+                '''.format(datetime.now()), 'red', attrs=[])
+               
+                # to continue testing other ports
+                if (len(targets_ports_set) > 1):
+                    continue
+                else:
+                    break
+           
+            current_response = self.get_unescape_html(response.text)
+            response_status = response.status_code
+            found_exception_flag = True if 'Exception Type' \
+                in current_response else False
+
+            if start or not server_flag_found:
+                '''just to check if there is any known django/python keyword in response headers'''
+
+                start = False
+                # just a test to blackbox fingerprint...
+                flags = [
+		    'Python','WSGIServer', 'CPython', 
+                    'Django', 'CherryPy', 'gunicorn', 
+                    'Flask','web2py', 'mod_wsgi', 'APACHE'
+                ]
+                   
+                for header in response.headers:
+                    for flag in flags:
+                        flag = flag.lower()
+                        try:	
+                            value = (response.headers[header])
+                        except KeyError:
+                            continue 
+                        
+                        if flag in header.lower() or flag in value.lower():
+                            server_flag_found = True
+                            header = str('   → ' + header + ":    ")
+                            print("\n")
+                            self.print_it(header, value)
+
+            self.expanded_response  = current_response
+            self.dmt_start_request  = current_response
+            self.dmt_start_base_r   = base_r
+            self.dmt_start_port     = port 
+            self.dmt_start_last_step= last_step
+
+            if response_status == 400:
+                if found_exception_flag:
+                    self.handle_discovery_xt()
+                else:
+                    print('''\n[dmt: {}]: The target does not appear to be vulnerable.
+                            \rMake sure that the analysis settings are correct:\n'''.format(
+                        datetime.now()
+                        )
+                    )
+                    for set_k, set_v in (self.vmnf_handler.items()):
+                        if set_k != 'scope' and set_v:
+                            print('{}{}:\t{}'.format(
+                                (' ' * int(5-len(set_k) + 10)),set_k,
+                                colored(set_v, 'blue')
+                                )
+                            )
+                    sys.exit(1)
+            
+            if response_status == 404:
+                # Check if last step 
+                if (targets_ports_set.index(entry) + 1) == (len(targets_ports_set)):
+                    last_step = True 
+                      
+                if self.debug_is_true():
+                    '''status is 404 and DEBUG is True so run another tests'''
+
+                    # Basic DMT actions
+                    self.get_url_patterns()
+                    self.expand_UP()
+                    self.check_api_auth_points()
+                    self.check_django_adm()
+                    
+                    # extending DMT: Call DJunch fuzzer and create instances of object result
+                    # this result, a list of dictionaries (2) will be used to resultParser 
+                    self.fuzz_result = Djunch(
+                        base_r, self.expanded_patterns,
+                        **self.vmnf_handler).start()
+                    
+                response = (future.result())
+                self.expanded_response = self.get_unescape_html(response.text)
+                response_status = response.status_code
+
+        # print("\nThreaded time:", time.time() - threaded_start)
+                if self.expanded_response:
+                    if response_status == 404:
+                        self.get_url_patterns()
+                        if self.vmnf_handler['debug']: 
+                            self.djmimic()
+                    elif response_status == 500:
+                        self.dxt_parser(self.expanded_response, False, True)
+        
+            print()
+            print(self.xlp_tbl_x)
         
         return self.expanded_patterns
     
