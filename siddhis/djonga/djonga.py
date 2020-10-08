@@ -150,7 +150,7 @@ class siddhi:
             http_status = Gn_c + str(status_code) + D_c
             status = Gn_c + 'Success' + D_c
             token = Gn_c + csrftoken + D_c
-            userpass = Gn_c + str(username + ':' + password) + D_c
+            userpass = Gn_c + str(self.username + ':' + self.password) + D_c
             
             self.get_csrf_token(self.LOGOUT_URL)
             sucess_login = True
