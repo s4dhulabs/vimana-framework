@@ -60,13 +60,14 @@ class VimanaParser:
         list_cmd = subparsers.add_parser('list', 
             help='List available resources'
         )
+        list_cmd.add_argument('--payloads', action='store_true',dest='list_payloads')
         list_cmd.add_argument('--modules', action='store_true',dest='module_list')
         list_cmd.add_argument('-t', '--type', action='store')
         list_cmd.add_argument('-c', '--category', action='store', dest='category')
         list_cmd.add_argument('-f', '--framework', action='store', dest='framework')
         list_cmd.add_argument('-x', '--exploits', action='store_true')
         list_cmd.add_argument('-p', '--payload',action='store',
-	    choices=('reverse-shell', 'bind-port', 'backdoor', 'exfiltration')
+	    choices=('reverse-shell', 'bind-port', 'backdoor', 'exfiltration-server')
         )
 
         # -----------------------------------------------------------------
@@ -112,7 +113,7 @@ class VimanaParser:
         mod_type_by_id = {
             0:'tracker',
             1:'fuzzer',
-            2:'brute',
+            2:'attack',
             3:'leaker',
             4:'exploit'
         }
@@ -163,6 +164,7 @@ class VimanaParser:
             module_info     = False,
             module_run      = False,
             module_list     = False,
+            list_payloads   = False,
             module_args     = False,
             framework       = False,
             url_conf        = False,

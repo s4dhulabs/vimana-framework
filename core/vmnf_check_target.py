@@ -46,7 +46,7 @@ class CheckTargetScope:
                 _status_ = colored('Open', 'green', attrs=['bold'])
             else:
                 self.closed_ports.append(port)
-                _status_ = colored('Closed', 'red', attrs=['bold'])
+                _status_ = colored('Closed', 'red', attrs=[])
 
             _target_ = colored(self.target.strip(), 'yellow')
             _port_   = colored(port, 'yellow')

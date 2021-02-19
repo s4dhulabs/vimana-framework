@@ -4,6 +4,7 @@
 import sys
 sys.path.insert(0, '../../../')
 
+from termcolor import colored, cprint
 from pathlib import Path
 from time import sleep
 import pathlib
@@ -11,13 +12,16 @@ import argparse
 import os
 
 # vimana core modules
+from siddhis.dmt.dmt import siddhi as dmt_siddhi
 from siddhis.djunch.djunch import siddhi as Djunch
+
 from core.vmnf_fuzz_scope import handle_fuzz_scope
 from core.vmnf_scope_parser import ScopeParser
 from core.vmnf_urls_parser import digest_scope
 from core.vmnf_arg_parser import VimanaParser
+from core.vmnf_payloads import  VMNFPayloads 
 from core.vmnf_manager import vmng
-from siddhis.dmt.dmt import siddhi as dmt_siddhi
+
 
 # vimana helpers 
 from helpers.vmnf_helpers import VimanaHelp
@@ -25,7 +29,7 @@ from helpers.vmnf_helpers import VimanaHelp
 # vimana resources
 from resources import vmnf_banners 
 from resources.vmnf_banners import s4dhu0nv1m4n4
-
+from resources.colors import *
 
 def abduct():
     # commands that require --module argument
@@ -107,12 +111,38 @@ def abduct():
     elif handler_ns.module_info:
         vmng(**vars(handler_ns))  
     
-    # start fuzzer
+    # start only fuzzer directly
     elif handler_ns.fuzzer:
         scope = handle_fuzz_scope(**vars(handler_ns))
+    
     # start discovery
     elif handler_ns.discovery:
         print('Wait future releases for this feature. [:')
 
-    
+    # list available payloads
+    elif handler_ns.list_payloads:
+        VMNFPayloads()._vmnfp_payload_types_(False,True)
 
+        
+        """
+        vmnf_payloads = {}
+        [vmnf_payloads.__setitem__(payload, getattr(_payloads_, payload).__doc__) \
+            for payload in [attr for attr in dir(_payloads_) \
+                if not attr.startswith('_')
+	    ]
+        ]
+        
+        print("\033c", end="") 
+        print('\n\t {}'.format(
+            colored('⣷⣒⠂    ', 'green')) + colored(' Vimana Payloads (v0.1)', 'magenta', attrs=[]) +\
+            colored('    ⣸⣼⡀', 'green') + '\n\n'
+        )
+
+        for k,v in vmnf_payloads.items():
+            print('{}{}:\t   \x1B[3m{}\x1B[23m'.format(
+                    (' ' * int(5-len(k) + 14)),
+                    colored(k,'cyan'),colored(v, 'green')
+                )
+            )
+        print('\n\n')
+        """

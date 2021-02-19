@@ -13,7 +13,7 @@
 
 """
 
-from . _dmt_report import resultParser
+#from . _dmt_report import resultParser
 from core.vmnf_shared_args import VimanaSharedArgs
 
 from resources.session.vmnf_sessions import createSession
@@ -415,6 +415,13 @@ class siddhi:
            self.print_it('   → URL Patterns:', (tag_count - 1))  
            self.print_it('   → Login URLs:', login_flag_count)  
            sleep(2)
+           
+           confirm_step = input(colored('\n[DMT] The target is vulnerable, would you like to continue? (Y/n) → ', 'cyan'))
+           if confirm_step.lower() == 'n':
+               cprint('See you Sadhu! Leaving the ship...', 'green')
+               sleep(2)
+               sys.exit(0)
+
            print(self.xlp_tbl)
     
     def djmimic(self):
@@ -521,36 +528,6 @@ class siddhi:
                 parents=[VimanaSharedArgs().args()]
         )
         return parser
-
-    def issues_presentation(self):
-        # create instance of dmt reporter
-        result = resultParser(
-            self.xlp_tbl_x,
-            self.mu_patterns,
-            self.fuzz_result,
-            **self.vmnf_handler
-        )
-        # call reporter
-        result.show_issues()
-
-    def parse_args(self):
-        ''' ~ siddhi needs only shared arguments from VimanaSharedArgs() ~'''
-        parser = argparse.ArgumentParser(
-                add_help=False,
-                parents=[VimanaSharedArgs().args()]
-        )
-        return parser
-
-    def issues_presentation(self):
-        # create instance of dmt reporter
-        result = resultParser(
-            self.xlp_tbl_x,
-            self.mu_patterns,
-            self.fuzz_result,
-            **self.vmnf_handler
-        )
-        # call reporter
-        result.show_issues()
 
     def start(self):
 
@@ -707,33 +684,14 @@ class siddhi:
                     
                     # extending DMT: Call DJunch fuzzer and create instances of object result
                     # this result, a list of dictionaries (2) will be used to resultParser 
-                    self.fuzz_result = Djunch(
-                        base_r, self.expanded_patterns,
-                        **self.vmnf_handler).start()
+                    self.vmnf_handler['patterns'] = self.expanded_patterns
+                    self.vmnf_handler['patterns_table'] = self.xlp_tbl_x
+                    self.vmnf_handler['patterns_views'] = self.mu_patterns
+                    self.vmnf_handler['target_url'] = base_r 
                     
-                    # Parse siddhis results
-                    ''' ~ [ DMT result parser ] ~ 
-                    
-                        Consolidates the results of the DMT and the modules invoked by it 
-                        for the presentation of a final report in the terminal.
-                        
-                        Basically DMT will consolidate the results of the tests 
-                        themselves and the following siddhis:
-
-                        * Djonga:     Brute force utility
-                        * Djunch:     Django application fuzzer
-                        * TicTrac:    Django security ticket tracker
-                        * Prana:      Django CVE search utility 
-                             
-                        In this first version, DMT integrates with a limited number 
-                        of other modules, but as other modules for Django appear, 
-                        its functionality can be integrated with DMT to extend the 
-                        available resources.
-
-                    '''
-                    # create instance of dmt reporter
-                    self.issues_presentation()
-                    break  # removing this break the dmt will continue testing target in other ports
+                    # call new djunch engine
+                    self.fuzz_result = Djunch(**self.vmnf_handler).start()
+                
                 else:
                     cprint('\n[{}] => Nothing to do: {}'.format(datetime.now(),entry), 'cyan')
                     if last_step:

@@ -25,9 +25,6 @@ def audit_report_banner(module=False):
 
     module = colored(module, 'blue', attrs=['bold'])
 
-    #report_type = colored('   Audit Report  ', 'white', 'on_red', attrs=['bold'])
-    #mark = colored('█', 'green',attrs=['bold', 'blink'])
-    
     report_type = colored(report_type, 'white', 'on_red', attrs=['bold'])
     mark = colored('█', m_color,attrs=r_attrs)
     print(r"""
@@ -178,13 +175,39 @@ def load_viwec():
         Wn_c, Rn_c,D_c ))
     sleep(1)
 
+def vmnf_calvins():
+    '''
+    ┬  ┬┬┌┬┐┌─┐┌┐┌┌─┐┌─┐┬─┐┌─┐┌┬┐┌─┐┬ ┬┌─┐┬─┐┬┌─
+    └┐┌┘││││├─┤│││├─┤├┤ ├┬┘├─┤│││├┤ ││││ │├┬┘├┴┐
+     └┘ ┴┴ ┴┴ ┴┘└┘┴ ┴└  ┴└─┴ ┴┴ ┴└─┘└┴┘└─┘┴└─┴ ┴
+    '''
 
 def default_vmn_banner(mode_uvb = False):
-    
+    from core.vmnf_manager import vmng
+    from core.vmnf_payloads import VMNFPayloads
+
+    stat = {'_vmnf_stats_': True}
+    siddhis_info = vmng(**stat)
+    payloads = VMNFPayloads()._vmnfp_payload_types_(True,False)
+
     if not mode_uvb:
         print("\033c", end="")
     
-    banner = colored('VIMANA FR4MEWORK', 'blue', attrs=['blink'])
+    hl_v = colored('''\r
+            _ _              
+            \\\\/''', 'green', attrs=['bold'])
+    hl_f = colored('''\r
+              __
+            [|-''','green', attrs=['bold'])
+
+    banner = colored('vimana framework', 'blue', attrs=['blink'])
+    banner=colored('''\r      
+            _ _           __        
+            \\\\/imana  [|-ramew0rk ''', 'blue')            
+
+    banner=colored('''\r      
+            {}imana  {}ramew0rk '''.format(hl_v,hl_f), 'blue')            
+
     print(r"""{}
         *                       
                    _^_               .
@@ -196,9 +219,13 @@ def default_vmn_banner(mode_uvb = False):
          `*´    .      . xce   .pt      -o-        .
             *               *         io>
             {}
-  
     """.format(Rn_c,P_c,Rn_c,Pn_c,Rn_c,P_c,Rn_c,P_c,banner))
-    print("\n")
+    
+    for k,v in siddhis_info.items():
+        print('{}{}:   {}'.format((' ' * int(5-len(k) + 14)),colored(k,'cyan'),colored(v, 'green')))
+        
+    print('{}{}:   {}'.format((' ' * int(5-len('payloads') + 14)),colored('payloads','cyan'),colored(len(payloads), 'green')))
+    print("\n\n")
 
 def vmn_progress():
     print("""

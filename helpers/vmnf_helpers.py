@@ -157,7 +157,7 @@ class VimanaHelp():
 
         0   tracker
         1   fuzzer
-        2   brute
+        2   attack
         3   leaker
         4   exploit
 

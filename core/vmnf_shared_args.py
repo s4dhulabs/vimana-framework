@@ -66,6 +66,9 @@ class VimanaSharedArgs:
         # > Scope setting - [ Target parser ] 
         # -------------------------------------------------------------------------------
         #target = parser.add_mutually_exclusive_group()
+        vmnf_shared_parser.add_argument('--target-dir',action='store',dest='target_dir',default=False)
+        vmnf_shared_parser.add_argument('--target-url',action='store',dest='target_url',default=False)
+        vmnf_shared_parser.add_argument('--filename',action='store',dest='filename',default=False)
         vmnf_shared_parser.add_argument('--target',action='store',dest='single_target',default=False)
         vmnf_shared_parser.add_argument('--file',action='store',dest='file_scope',default=False)
         vmnf_shared_parser.add_argument('--ip-range',action='store',dest='ip_range', default=False)
@@ -103,8 +106,17 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--set-proxy", action="store_true", dest='set_proxy', default=False)
         vmnf_shared_parser.add_argument("--proxy", action="store", default=False)
         vmnf_shared_parser.add_argument("--proxy-type", action="store", dest='proxy_type', default=False)
+        # -------------------------------------------------------------------------------
+        # > Payload settings
+        # -------------------------------------------------------------------------------
+        vmnf_shared_parser.add_argument("--local-port",action="store",dest='local_port',default=False)
+        vmnf_shared_parser.add_argument("--remote-port",action="store",dest='remote_port',default=False)
+        vmnf_shared_parser.add_argument("--local-host",action="store",dest='local_host',default=False)
+        vmnf_shared_parser.add_argument("--payload",action="store",dest='payload_type',default=False)
         
         return vmnf_shared_parser
+
+
 
     def shared_help(self):
         

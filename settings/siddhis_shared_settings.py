@@ -320,6 +320,12 @@ class django_envvars:
             'SSH_PASSWORD'
         ]
 
+        self.EXCEPTION_RELVARS = {
+            'RequestDataTooBig':'DATA_UPLOAD_MAX_MEMORY_SIZE',
+            'DisallowedHost': 'ALLOWED_HOSTS',
+            'RuntimeError':'APPEND_SLASH'
+        }
+
         self.SERVER_        = SERVER_
         self.ENVIRONMENT_   = ENVIRONMENT_
         self.EMAIL_         = EMAIL_
