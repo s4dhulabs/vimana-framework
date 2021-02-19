@@ -51,7 +51,7 @@ class siddhi:
         "Info":            "Utility to brute force forms in Django applications",
         "Category":        "Framework",
         "Framework":       "Django",
-        "Type":            "Brute",
+        "Type":            "Attack",
         "Module":          "siddhis/djonga",
         "Author":          "s4dhu <s4dhul4bs[at]prontonmail.ch",
         "Brief":           "Utility to brute force forms in Django applications",

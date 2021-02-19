@@ -22,7 +22,7 @@ from settings.siddhis_shared_settings import django_envvars as djev
 from resources.vmnf_text_utils import text_wrap
 from siddhis.tictrac import tictrac
 from siddhis.prana import prana
-
+from siddhis.djunch.engines._dju_utils import DJUtils
 
 
 class vmnfshell:
@@ -35,15 +35,15 @@ class vmnfshell:
         **report_tables
         ):
 
-        self.siddhi = siddhi
-        self._fuzz_ = djunch_result
-        self.contexts = self._fuzz_[0]
-        self._issues_ = self._fuzz_[1]
-        self.traceback = self._fuzz_[2]
-        self.rawp_traceback = self._fuzz_[3]
+        self.siddhi   = siddhi
+        self._issues_ = djunch_result
+        self.sampler  = djunch_result['EXCEPTIONS'][0]
+        self.contexts = self.sampler['CONTEXTS']
+
         self.report_items = report_tables
         self.security_tickets = security_tickets
-        self.cves = _cves_[0]
+        self.installed_items = self.sampler['INSTALLED_ITEMS']
+        self.cves = _cves_
 
         # general supported options in this alpha version
         vmnf_commands= [
@@ -118,7 +118,8 @@ class vmnfshell:
             6:'config',
             7:'applications',
             8:'middlewares',
-            9:'databases'
+            9:'databases',
+            10:'objects'
         }
 
         # ==[ UX - EXCEPTIONS ]==
@@ -252,22 +253,25 @@ class vmnfshell:
                         elif arg == 'applications':
                             cprint("\n→ Applications enabled in this Django installation", 'cyan')
                             print()
-                            for app in self.rawp_traceback['Installed Applications']:
+                            for app in self.installed_items['Installed Applications']:
                                 print('   {}'.format(app))
                             print()
                         elif arg == 'middlewares':
                             cprint("\n→ Enabled Django middlewares", 'cyan')
                             print()
-                            for mid in self.rawp_traceback['Installed Middleware']:
+                            for mid in self.installed_items['Installed Middlewares']:
                                 print('   {}'.format(mid))
                             print()
                         elif arg == 'databases':
                             cprint("\n→ Available databases", 'cyan')
                             print()
-                            for k,v in self.rawp_traceback['Databases'].items():
+                            for k,v in self.sampler['DB_SETTINGS'].items():
                                 print('   {}: {}'.format(k,v))
                             print()
-
+                        elif arg == 'objects':
+                            cprint("\n→ Parsed traceback objects", 'cyan')
+                            print(self.report_items['objects'])
+                            print()
                         continue
                     
                     elif cmd == 'abduct':
@@ -333,41 +337,37 @@ class vmnfshell:
                                 'source_snippet'
                             ]
 
+                            '''
+                            _EXCEPTION_ = ExceptionItem()
+                                ↓
+                                + IID 
+                                + ISSUE_TYPE
+                                + EXCEPTION_COUNT
+                                + EXCEPTION_ID
+                                + EXCEPTION_TYPE
+                                + EXCEPTION_ENV_VAR
+                                + EXCEPTION_ENV_VALUE
+                                + EXCEPTION_REASON
+                                + EXCEPTION_TRACEBACK
+                                + ENVIRONMENT
+                                + EXCEPTION_SUMMARY
+                                + KEY_ENV_CONTEXTS
+                                + REQUEST_HEADERS
+                                + FUZZ_URLS_SCOPE
+                                + INSTALLED_ITEMS
+                                + DB_SETTINGS
+                                + CONTEXTS
+                            ''' 
                             # if a choosen exception in exceptions pool
-                            if _iid_ in str(self._issues_['exceptions']):
-                                for exception in self._issues_['exceptions']:
+                            if _iid_ in str(self._issues_['EXCEPTIONS']):
+                                for exception in self._issues_['EXCEPTIONS']:
                                     # show exception details
-                                    if exception['iid'] == _iid_:
+                                    if exception['IID'] == _iid_:
                                         found_exception = True
                                         print()
 
-                                        # basica exception information
-                                        for k,v in exception.items():
-                                            if k not in trace_flags:
-                                                print('→ {}: {}'.format(
-                                                    colored(k,'cyan'),v
-                                                    )
-                                                )
-                                        print()
-    
-                                        # traceback items only except source code in this time
-                                        for x_entry in exception['traceback']:
-                                            for k,v in x_entry.items():
-                                                if k not in trace_flags:
-                                                    print('→ {}: {}'.format(
-                                                        colored(k,'cyan'),v
-                                                        )
-                                                    )
-                                            print()
-                                            
-                                            # input(colored('█', 'green',attrs=['bold', 'blink']))
-                                            sleep(0.10)
-
-                                            # show only source code snipets...
-                                            for line in x_entry['source_snippet']:
-                                                print(line)
-                                                sleep(0.10)
-                                            print()
+                                        DJUtils(False,False).show_exception(**exception)
+                                        break
                                 continue
                             else:
                                 self._reason_ = 'Exception not found'
@@ -474,6 +474,7 @@ class vmnfshell:
                             # os.system('clear')
                             for cve in self.cves:
                                 if cve['id'].rstrip() == _iid_:
+
                                     # if cve details, so show a new set of info
                                     if cve_details:
                                         #print()
@@ -505,8 +506,8 @@ class vmnfshell:
                         # inspect configuration issues
                         elif _type_ == 'CI':
                             # if a choosen exception in exceptions pool
-                            if _iid_ in str(self._issues_['configuration']):
-                                for c_issue in self._issues_['configuration']:
+                            if _iid_ in str(self._issues_['CONFIGURATION']):
+                                for c_issue in self._issues_['CONFIGURATION']:
                                     # show exception details
                                     if c_issue['iid'] == _iid_:
                                         found_issue = True
@@ -560,6 +561,6 @@ class vmnfshell:
         \r  7:  applications    shows installed applications
         \r  8:  middlewares     shows installed middlewares
         \r  9:  databases       shows available databases
-
+        \r 10:  objects         shows traceback objects
         ''')
 

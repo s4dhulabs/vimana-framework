@@ -38,33 +38,34 @@ import requests
 
 from siddhis.prana import prana
 from siddhis.tictrac import tictrac
-
-
-
+from . _dju_utils import DJUtils
+from . _dju_settings import table_models
 
 class resultParser:   
 
-    def __init__(
-            self,
-            xp_tbl,
-            mapped_patterns,
-            results, 
-            **vmnf_handler
-        ):
+    def __init__(self, results, **vmnf_handler):
     
+        tables = DJUtils(False,False).get_report_tables()
+        self.exceptions_tbl = tables['exceptions']
+        self.config_issues_tbl = tables['configuration']
+        self.summary_tbl = tables['summary']
+        self.tickets_tbl = tables['tickets']
+        self.envleak_tbl = tables['envleak']
+        self.cves_tbl = tables['cves']
+        self.traceback_objects_tbl = tables['objects']
+
         # siddhi name
+        self.vmnf_handler = vmnf_handler 
         self.siddhi = vmnf_handler['module_run'].lower()
 
         # dmt mapped url patterns
-        self.xp_tbl = xp_tbl
+        self.xp_tbl = vmnf_handler['patterns_table']
 
         # results from djunch fuzzer 
         if results:
-            self.djunch_result = results 
-            self.contexts   = results[0]
-            self._issues_   = results[1]
-            self.traceback  = results[2]
-            self.raw_traceback = results[3]
+            self.fuzz_report = results 
+            self.sampler = results['EXCEPTIONS'][0]
+            self.general_objects = results['GENERAL_OBJECTS']
         else:
             ''' In which cases would we not have the result of the fuzzer 
                 at this point in the result parser? I don't know exactly yet, 
@@ -79,93 +80,11 @@ class resultParser:
             return False
         
         # mapped (expanded url patterns from DMT)
-        self.mu_patterns = mapped_patterns
+        self.mu_patterns = self.vmnf_handler['patterns_views']
 
         # dmt handler (argparser namespace) 
         self.vmnf_handler = vmnf_handler
         self.catched_exceptions = []
-
-        # ==[ UX - EXCEPTIONS ]==
-        self.exceptions_tbl = PrettyTable()
-        self.exceptions_tbl.field_names = [
-            'iid', 
-            'type', 
-            'function', 
-            'location', 
-            'line', 
-            'lines',
-            'triggers',
-            'reference',
-            'occurrences'
-        ]
-        self.exceptions_tbl.align = "l"
-        self.exceptions_tbl.title = colored(
-            "Exceptions", 
-            "white", 
-            attrs=['bold']
-        )       
-
-        # ==[ CI - CONFIGURATION issues ]==
-        self.config_issues_tbl = PrettyTable()
-        self.config_issues_tbl.field_names = [
-            'iid',
-            'status', 
-            'pattern', 
-            'method', 
-            'issue', 
-            'reference', 
-        ]
-        self.config_issues_tbl.align = "l"
-        self.config_issues_tbl.title = colored(
-            "Configuration issues", 
-            "white", 
-            attrs=['bold']
-        )       
-
-        # ==[ SUMMARY tbl (not used in this version) ]==
-        self.summary_tbl = PrettyTable()
-        self.summary_tbl.field_names = [
-            'Issues',
-            'Security Tickets',
-            'CVEs'
-        ]
-        self.summary_tbl.align = "l"
-        self.summary_tbl.title = colored(
-            "Summary",
-            "white",
-            attrs=['bold']
-        )
-
-        # ==[ TICKETS Table ]==
-        self.tickets_tbl = PrettyTable()
-        self.tickets_tbl.field_names = [
-            'iid',
-            'title'
-        ]
-        self.tickets_tbl.align = "c"
-        
-        # ==[ ENV leak contexts table ]==
-        self.envleak_tbl = PrettyTable()
-        self.envleak_tbl.field_names = [
-            'iid',
-            'context',
-            'variables'
-        ]
-        self.envleak_tbl.align = "c"
-        self.envleak_tbl.title = colored(
-            "Envleak Contexts",
-            "white",
-            attrs=['bold']
-        )
-
-        # ==[ CVE Table ]==
-        self.cves_tbl = PrettyTable()
-        self.cves_tbl.field_names = [
-            'iid',
-            'title',
-            'date'
-        ]
-        self.cves_tbl.align = "c"
 
     def show_issues(self):
         
@@ -179,9 +98,10 @@ class resultParser:
         
         security_tickets = []
         cves = []
-        found_exceptions = []
-        for exception in self._issues_['exceptions']:
-            found_exceptions.append(exception['type'].rstrip())
+        found_exceptions = [] 
+
+        for exception in self.fuzz_report['EXCEPTIONS']:
+            found_exceptions.append(exception['EXCEPTION_TYPE'].rstrip())
 
         pxh = exception_hierarchy()
         for x in pxh.split('\n'):
@@ -196,24 +116,27 @@ class resultParser:
         _prana_ = []
         cve_siddhi = colored('prana', 'green')
         tickets_siddhi = colored('tictrac', 'green') 
+        
+        if self.sampler['EXCEPTION_SUMMARY'].get('Django Version'):
+            x_summary = self.sampler['EXCEPTION_SUMMARY']
+            django_version = x_summary.get('Django Version').strip()
+            x_loc_full = x_summary['Exception Location']
+            x_location = '/'+'/'.join(x_loc_full.split()[0].split('/')[-3:])
+            x_line_number = x_loc_full.split()[-1]
+            x_function = x_loc_full.split()[-3].replace(',','')
+            installed_items = self.sampler['INSTALLED_ITEMS']
 
-        if 'django version' or 'django_version' \
-            in str(self.contexts['environment'].keys()).lower():
-
-            django_version = self.contexts['environment'].get('DJANGO_VERSION')
-            
-            if not django_version or django_version is None:
-                django_version = self.contexts['environment'].get('Django Version')
-
+            django_version = '3.0.1'
             # if Django Versions is found in Djunch 'environment_context'
             if django_version and django_version is not None:
                 if len(django_version.split('.')) >= 3:
                     django_version = '.'.join(django_version.split('.')[:-1])
-
+                
+                    
                 # - Get CVEs and security tickets for abducted framework version-
                 security_tickets = tictrac.siddhi(django_version).start()
                 cves = prana.siddhi(django_version).start()
-                _prana_.append(cves)
+                #_prana_.append(cves)
                
                 # Security Tickets table
                 for ticket in security_tickets:
@@ -253,31 +176,42 @@ class resultParser:
 
                             ]
                         )
-        
+                
         # issues overview
         self.issues_overview = {
             'total_issues': (
-                len(self._issues_['exceptions']) + \
-                len(self._issues_['configuration'])),
-            'security_tickets': len(security_tickets),
+                len(self.fuzz_report['EXCEPTIONS']) + \
+                len(self.fuzz_report['CONFIGURATION'])),
+            'objects': len(self.general_objects),
+            'security_tickets': len(security_tickets) if security_tickets else 0,
             'cve_ids': len(cves) if cves else 0,
-            'url_patterns': len(self.mu_patterns),
-            'applications': len(self.raw_traceback['Installed Applications']),
-            'middlewares' : len(self.raw_traceback['Installed Middleware'])
+            'url_patterns': len(self.mu_patterns),   
+            'applications': len(installed_items.get('Installed Applications')),
+            'middlewares' : len(installed_items.get('Installed Middlewares'))
         }
+
+        for tb_object in self.general_objects:
+            self.traceback_objects_tbl.add_row(
+                [
+                    tb_object['variable'],
+                    tb_object['object'],
+                    colored(tb_object['address'], 'blue')
+                ]
+            )
 
         i_count = 1
         # >> load contexts 
+        self.contexts = self.sampler['CONTEXTS']
         for k,v in self.contexts.items():
-                self.envleak_tbl.add_row(
-                    [
-                        colored('LC{}'.format(str(i_count)), 'green'),
-                        k.strip(),
-                        str(len(self.contexts[k]))
-                    ]
-                )
+            self.envleak_tbl.add_row(
+                [
+                    colored('LC{}'.format(str(i_count)), 'green'),
+                    k.strip(),
+                    str(len(self.contexts[k]))
+                ]
+            )
 
-                i_count +=1
+            i_count +=1
 
         # dmt isnot using this table yet
         # >> load issues summary
@@ -291,35 +225,45 @@ class resultParser:
 
         i_count = 1
         # >> load exceptions into table 
-        for exception in self._issues_['exceptions']:
+        for exception in self.fuzz_report['EXCEPTIONS']:
+            x_traceback = exception['EXCEPTION_TRACEBACK']
+            env_count = len(exception['ENVIRONMENT'])
+            occ_count = exception['EXCEPTION_COUNT']
+            lines_count = 0
+            triggers_count = 0
+            vars_count = 0
+
+            for item in x_traceback:
+                lines_count = lines_count + len(item['RAW_CODE_SNIPPET'])
+                triggers_count = triggers_count + len(item['MODULE_TRIGGERS'])
+                vars_count = vars_count + len(item['MODULE_ARGS']) 
+            
             self.exceptions_tbl.add_row(
                 [ 
-                    #colored('UX' + str(i_count),'green'),
-                    colored(exception['iid'], 'green'),
-                    exception['type'],
-                    exception['function'],
-                    exception['lmodule'],
-                    exception['line'],
-                    exception['lines'],
-                    len(exception['triggers']),
-                    exception['reference'],
-                    exception['occ']
+                    colored(exception['IID'], 'green'),
+                    exception['EXCEPTION_TYPE'],
+                    x_function,
+                    x_location,
+                    x_line_number,
+                    lines_count,
+                    triggers_count,
+                    env_count,
+                    vars_count,
+                    occ_count
                 ]
             )    
             i_count +=1
         
         i_count = 1
         # >> load configuration issues into table 
-        for issue in self._issues_['configuration']:
+        for issue in self.fuzz_report['CONFIGURATION']:
             self.config_issues_tbl.add_row(
                 [
                     #colored('CI' + str(i_count), 'green'),
-                    colored(issue['iid'], 'green'),
-                    issue['status'],
-                    issue['pattern'],
-                    issue['method'],
-                    issue['issue'],
-                    issue['reference']
+                    colored(issue['IID'], 'green'),
+                    issue['STATUS'],
+                    issue['METHOD'],
+                    issue['ISSUE']
                 ]
             )
             i_count +=1 
@@ -345,8 +289,14 @@ class resultParser:
         hl_color = 'green'
         sg = colored('→', hl_color, attrs=['bold'])
         
+        pass_flags = ['patterns_table', 'patterns_views', 'fuzz_settings',
+            'meta','download_timeout','method','headers','cookie']
+
         for _abd_k, _abd_v in (self.vmnf_handler.items()):
-            if _abd_v:
+            if _abd_v and _abd_k not in pass_flags:
+                if isinstance(_abd_v,(list,dict)):
+                    _abd_v = len(_abd_v)
+
                 print('{}{}:\t   {}'.format(
                     (' ' * int(5-len(_abd_k) + 15)), 
                     _abd_k, 
@@ -437,8 +387,8 @@ class resultParser:
         ##################
         ### exceptions ###
         ##################
-        cprint('\nWere triggered {} exceptions that lead to CWE-215 allowing information ex1posure'.format(
-            len(self._issues_['exceptions'])),'cyan')
+        cprint('\nWere triggered {} exceptions that lead to CWE-215 allowing information exposure'.format(
+            len(self.fuzz_report['EXCEPTIONS'])),'cyan')
 
         #cprint(status, 'cyan', attrs=[])
         
@@ -468,9 +418,9 @@ class resultParser:
         ############################
         ### configuration issues ###
         ############################
-        if self._issues_['configuration']: 
+        if self.fuzz_report['CONFIGURATION']: 
             status = ('\nWere identified {} configuration issues that make it possible to infer configurations and identify technologies.'.format(
-                len(self._issues_['configuration'])
+                len(self.fuzz_report['CONFIGURATION'])
                 )
             )
             cprint(status, 'cyan', attrs=[])
@@ -530,15 +480,16 @@ class resultParser:
             'exceptions': self.exceptions_tbl,
             'configuration': self.config_issues_tbl,
             'contexts': self.envleak_tbl,
-            'patterns': self.xp_tbl
+            'patterns': self.xp_tbl,
+            'objects': self.traceback_objects_tbl
 
         }
 
         # + security_tickets: collected security tickets [list of dicts]
         vmnfshell(
             self.siddhi,
-            self.djunch_result,
+            self.fuzz_report,
             security_tickets,
-            _prana_,
+            cves,
             **report_tables
         )

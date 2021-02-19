@@ -38,7 +38,7 @@ def handler_filter_id(mod_filter, filter_by):
     mod_type_by_id = {
         0:'tracker',
         1:'fuzzer',
-        2:'brute',
+        2:'attack',
         3:'leaker',
         4:'exploit'
     }
@@ -90,132 +90,130 @@ def handler_filter_id(mod_filter, filter_by):
 def vmng(**handler_ns):
     
     # framework debug argument (not available in this version)
-
-    vmnf_debug = False
-    tbl_pool = []
-    filter_pool = []
-    modules_table = PrettyTable()    
-    modules_table.field_names = [
-        str(Y_c +   'name'        + D_c), 
-        str(Y_c +   'type'        + D_c), 
-        str(Y_c +   'category'    + D_c), 
-        str(Y_c +   'description' + D_c)
-    ]
-
-    modules_table.align = "l"
-    modules_table.title = colored(
-        "siddhis",
-        "blue"
-    )
-
-    module_match = False
-    found_modules = []
-    run_module = False
-    search_module_name  = False
-    search_module_type  = False
-    search_module_category = False
-    framework_target = False
-
-    module_info = handler_ns['module_info']
-    module_list = handler_ns['module_list']
-    module_run  = handler_ns['module_run']
-    module_args = handler_ns['module_args']
-
-    # set choosen module name to info and run commands
-    if module_run: 
-        search_module_name  = module_run.strip().lower()
-    elif module_info:
-        search_module_name  = module_info.strip().lower()
-    elif module_list:
-        if handler_ns['type']:
-            smt = handler_ns['type'].rstrip().lower()
-            search_module_type = handler_filter_id(smt, 'type')
-            filter_pool.append('type: ' + search_module_type)
-        if handler_ns['category']:
-            smc = handler_ns['category'].rstrip().lower()
-            search_module_category = handler_filter_id(smc, 'category')
-            filter_pool.append('category: ' + search_module_category)
-        if handler_ns['framework']:
-            smf = handler_ns['framework'].rstrip().lower()
-            framework_target = handler_filter_id(smf, 'framework')
-            filter_pool.append('framework: ' + framework_target)
-
-    '''In this alpha version we're just searching modules in this way
-    with values in module information dict and checking via python
-    In future versions, with more plugins maybe it should be better 
-    via database query'''
     
-    # set full filters search
-    all_filters = True if search_module_type \
-    and search_module_category \
-    and framework_target else False
+    _vmnf_stats_ = handler_ns.get('_vmnf_stats_')
+    vmnf_debug = False
 
-    # type category filters
-    type_cat_filters = True if search_module_type \
-    and search_module_category \
-    and not framework_target else False
+    if not _vmnf_stats_:
+        tbl_pool = []
+        filter_pool = []
+        modules_table = PrettyTable()    
+        modules_table.field_names = [
+            str(Y_c +   'name'        + D_c), 
+            str(Y_c +   'type'        + D_c), 
+            str(Y_c +   'category'    + D_c), 
+            str(Y_c +   'description' + D_c)
+        ]
 
-    # only type filter
-    type_filter = True if search_module_type \
-    and not search_module_category \
-    and not framework_target else False
+        modules_table.align = "l"
+        modules_table.title = colored(
+            "siddhis","blue")
 
-    # only category filter
-    cat_filter = True if search_module_category \
-    and not search_module_type \
-    and not framework_target else False
+        module_match = False
+        found_modules = []
+        run_module = False
+        search_module_name  = False
+        search_module_type  = False
+        search_module_category = False
+        framework_target = False
 
-    # if no filter list all modules
-    list_all = True if not framework_target \
+        module_info = handler_ns['module_info']
+        module_list = handler_ns['module_list']
+        module_run  = handler_ns['module_run']
+        module_args = handler_ns['module_args']
+
+        # set choosen module name to info and run commands
+        if module_run: 
+            search_module_name  = module_run.strip().lower()
+        elif module_info:
+            search_module_name  = module_info.strip().lower()
+        elif module_list:
+            if handler_ns['type']:
+                smt = handler_ns['type'].rstrip().lower()
+                search_module_type = handler_filter_id(smt, 'type')
+                filter_pool.append('type: ' + search_module_type)
+            if handler_ns['category']:
+                smc = handler_ns['category'].rstrip().lower()
+                search_module_category = handler_filter_id(smc, 'category')
+                filter_pool.append('category: ' + search_module_category)
+            if handler_ns['framework']:
+                smf = handler_ns['framework'].rstrip().lower()
+                framework_target = handler_filter_id(smf, 'framework')
+                filter_pool.append('framework: ' + framework_target)
+
+        '''In this alpha version we're just searching modules in this way
+        with values in module information dict and checking via python
+        In future versions, with more plugins maybe it should be better 
+        via database query'''
+    
+        # set full filters search
+        all_filters = True if search_module_type \
+        and search_module_category \
+        and framework_target else False
+
+        # type category filters
+        type_cat_filters = True if search_module_type \
+        and search_module_category \
+        and not framework_target else False
+
+        # only type filter
+        type_filter = True if search_module_type \
+        and not search_module_category \
+        and not framework_target else False
+
+        # only category filter
+        cat_filter = True if search_module_category \
+        and not search_module_type \
+        and not framework_target else False
+
+        # if no filter list all modules
+        list_all = True if not framework_target \
+            and not all_filters \
+            and not type_cat_filters \
+            and not type_filter \
+            and not cat_filter else False
+
+        # only framework filter
+        fmwk_filter = True if framework_target \
         and not all_filters \
         and not type_cat_filters \
         and not type_filter \
         and not cat_filter else False
 
-    # only framework filter
-    fmwk_filter = True if framework_target \
-    and not all_filters \
-    and not type_cat_filters \
-    and not type_filter \
-    and not cat_filter else False
-
-    # framework and type 
-    fmwk_type_filters = True if framework_target \
-    and search_module_type else False
-    '''
-    and not cat_filter \
-    and not type_cat_filters \
-    and not all_filters else False
-    '''
+        # framework and type 
+        fmwk_type_filters = True if framework_target \
+        and search_module_type else False
     
-    # vmnf debug will be part of resource to debug the framework itself in future versions
-    # default is False in this version
-    if vmnf_debug:
-        list_filter_ops = {
-	    'All filters': all_filters,
-	    'Type and Category': type_cat_filters,
-	    'Only type filter': type_filter,
-	    'Only category': cat_filter,
-	    'No filter': list_all,
-	    'Only framework filter': fmwk_filter,
-	    'Framework and typo filters': fmwk_type_filters
-        }
+        # vmnf debug will be part of resource to debug the framework itself in future versions
+        # default is False in this version
+        if vmnf_debug and vmnf_debug['auto']:
+            list_filter_ops = {
+	        'All filters': all_filters,
+	        'Type and Category': type_cat_filters,
+	        'Only type filter': type_filter,
+	        'Only category': cat_filter,
+	        'No filter': list_all,
+	        'Only framework filter': fmwk_filter,
+	        'Framework and typo filters': fmwk_type_filters
+            }
 
-        for k,v in list_filter_ops.items():
-            print(' + {}: {}'.format(k,v))
+            for k,v in list_filter_ops.items():
+                print(' + {}: {}'.format(k,v))
 
-        print()
+            print()
     
     current_directory = os.path.dirname(os.path.realpath(__file__))
     modules_dir = ','.join(current_directory.split('/')[:-1]).replace(',','/') 
 
     found_module = False
+    module_stats_types = {}
+
     for root, directories, files in os.walk('{}/siddhis'.format(modules_dir)):
         module_name = os.path.basename(root)
         relpath = os.path.relpath(root)
-
+        
         for file in files:
-            if file and not file.startswith('__') and file[-3:] == ".py":
+            if file and not file.startswith('_') and file[-3:] == ".py":
                 module_path = '{}/{}'.format(relpath, file)
                 module_path = (module_path.replace('/', '.').replace('\\', '.'))[:-3]
 	       
@@ -236,6 +234,16 @@ def vmng(**handler_ns):
                         _ex_().template_atribute_error(AEX,module_name)
                         continue
                     pass
+
+                #~ statistics about available siddhis types / load info
+                if _vmnf_stats_:
+                    m_type = module_type_.lower()
+                    
+                    if m_type in module_stats_types.keys():
+                        module_stats_types[m_type] += 1
+                    else:
+                        module_stats_types[m_type] = 1
+                    continue
 
                 #~ module arguments
                 if module_args \
@@ -307,7 +315,6 @@ def vmng(**handler_ns):
                         if framework_target == module_framework_:
                             found_module = True
 
-
                     else:
                         continue
                     
@@ -326,6 +333,9 @@ def vmng(**handler_ns):
                                     module_brief_
                                 ]
                             )
+
+    if _vmnf_stats_:
+        return module_stats_types
 
     #if modules_table:
     if module_match:
