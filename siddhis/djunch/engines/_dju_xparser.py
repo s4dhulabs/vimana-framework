@@ -154,7 +154,7 @@ class DJEngineParser(scrapy.Spider):
             hl_color = 'white'
             f_hl_fuzz = hl_color
             
-            for target_url in fuzz_urls[:100]:
+            for target_url in fuzz_urls:
 
                 # to avoid make request to outofscope targets parsed in test response
                 if not self.target in target_url:
@@ -428,7 +428,8 @@ class DJEngineParser(scrapy.Spider):
         INSTALLED_ITEMS = DJUtils(PASTEBIN_TRACEBACK,False).parse_raw_tb()
         DB_SETTINGS = DJUtils(False,KEY_ENV_CONTEXTS).parse_db_settings()
         CONTEXTS = DJUtils(False, False).parse_contexts(**ENVIRONMENT)
-
+        
+        print()
         cprint(' {} {} Django applications identified on host {} with {}'.format(
             stage,colored(len(INSTALLED_ITEMS['Installed Applications']),'green'),
             colored(CONTEXTS['server'].get('SERVER_NAME'), 'green'),

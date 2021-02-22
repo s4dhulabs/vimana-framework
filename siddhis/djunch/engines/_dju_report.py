@@ -126,7 +126,9 @@ class resultParser:
             x_function = x_loc_full.split()[-3].replace(',','')
             installed_items = self.sampler['INSTALLED_ITEMS']
 
-            django_version = '3.0.1'
+            # test 
+            # django_version = '3.0.1'
+            
             # if Django Versions is found in Djunch 'environment_context'
             if django_version and django_version is not None:
                 if len(django_version.split('.')) >= 3:
