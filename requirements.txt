@@ -12,7 +12,7 @@ lxml==4.2.1
 netaddr==0.7.19
 netifaces==0.10.4
 numpy==1.13.3
-Pillow==5.1.0
+Pillow==8.2.0
 prettytable==0.7.2
 prompt-toolkit==3.0.3
 psutil==5.4.2
