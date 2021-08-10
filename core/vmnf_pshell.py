@@ -1,3 +1,15 @@
+"""
+             _   _   _   _   _   _  
+            / \ / \ / \ / \ / \ / \ 
+        ((-( V | 1 | M | 4 | N | 4 )-))
+            \_/ \_/ \_/ \_/ \_/ \_/ 
+
+                    - 2PACX -
+
+    PSHELL v1: Prompt shell for Vimana Framework
+    s4dhu <s4dhul4bs[at]prontonmail[dot]ch
+
+"""
 
 
 from __future__ import unicode_literals
@@ -39,7 +51,7 @@ class vmnfshell:
         self._issues_ = djunch_result
         self.sampler  = djunch_result['EXCEPTIONS'][0]
         self.contexts = self.sampler['CONTEXTS']
-
+        self.keyenv_contexts = self.sampler['KEY_ENV_CONTEXTS']
         self.report_items = report_tables
         self.security_tickets = security_tickets
         self.installed_items = self.sampler['INSTALLED_ITEMS']
@@ -50,6 +62,7 @@ class vmnfshell:
             'abduct',
             'inspect', 
             'show', 
+            'search',
             'exit', 
             'options',
             '?',
@@ -183,7 +196,32 @@ class vmnfshell:
                     if cmd not in vmnf_commands:
                         print('[vmnfpshell] Invalid command, use options')
                         continue
-                    
+                
+                    ##############
+                    # ~ search ~ #
+                    ############## 
+                    if cmd == 'search':
+                        arg = arg.upper().strip("'").strip('"').strip(',')
+                        if arg not in self.keyenv_contexts:
+                            c_arg = colored(arg, 'red')
+                            cprint('[{}] Variable {} not found in environment / Available categories:\n'.format(cmd, c_arg), 'white')
+                            x=[str(key) for key in self.keyenv_contexts.keys()]
+                            cprint(str(x).replace(
+                                '[','').replace(
+                                    ']','').replace(
+                                        '"','').replace(
+                                            "'",''), 'green')
+                            print()
+                            continue
+            
+                        num_vars = colored(str(len(self.keyenv_contexts.get(arg))), 'white')
+                        cprint("[{}]→ Found {} variables for keyword \"{}\"\n".format(cmd, num_vars, arg),"cyan")
+
+                        for env_match in self.keyenv_contexts.get(arg):
+                            print('\t+ {}'.format(env_match))
+                        print()
+                        continue
+
                     ############
                     # ~ show ~ #
                     ############ 
@@ -337,27 +375,6 @@ class vmnfshell:
                                 'source_snippet'
                             ]
 
-                            '''
-                            _EXCEPTION_ = ExceptionItem()
-                                ↓
-                                + IID 
-                                + ISSUE_TYPE
-                                + EXCEPTION_COUNT
-                                + EXCEPTION_ID
-                                + EXCEPTION_TYPE
-                                + EXCEPTION_ENV_VAR
-                                + EXCEPTION_ENV_VALUE
-                                + EXCEPTION_REASON
-                                + EXCEPTION_TRACEBACK
-                                + ENVIRONMENT
-                                + EXCEPTION_SUMMARY
-                                + KEY_ENV_CONTEXTS
-                                + REQUEST_HEADERS
-                                + FUZZ_URLS_SCOPE
-                                + INSTALLED_ITEMS
-                                + DB_SETTINGS
-                                + CONTEXTS
-                            ''' 
                             # if a choosen exception in exceptions pool
                             if _iid_ in str(self._issues_['EXCEPTIONS']):
                                 for exception in self._issues_['EXCEPTIONS']:
@@ -513,7 +530,7 @@ class vmnfshell:
                                         found_issue = True
                                         print()
 
-                                        # basica exception information
+                                        # basic exception information
                                         for k,v in c_issue.items():
                                             print('→ {}: {}'.format(colored(k,'cyan'),v))
                                         print()
@@ -544,6 +561,7 @@ class vmnfshell:
         \r  abduct      evaluates exploitable scenarios (not available yet)
         \r  inspect     inspects a given issue id (iid)
         \r  show        shows analysis items by category
+        \r  search      search environment variables by keyword
         \r  options     this help
         \r  exit        exits framework
         ''')

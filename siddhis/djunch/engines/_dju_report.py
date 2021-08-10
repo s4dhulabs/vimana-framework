@@ -96,9 +96,9 @@ class resultParser:
         print('\n {} {}'.format(mark_status, status_msg))
         sleep(1)
         
-        security_tickets = []
-        cves = []
-        found_exceptions = [] 
+        security_tickets=None
+        cves=None
+        found_exceptions= [] 
 
         for exception in self.fuzz_report['EXCEPTIONS']:
             found_exceptions.append(exception['EXCEPTION_TYPE'].rstrip())
@@ -134,35 +134,40 @@ class resultParser:
                 if len(django_version.split('.')) >= 3:
                     django_version = '.'.join(django_version.split('.')[:-1])
                 
-                    
+                
                 # - Get CVEs and security tickets for abducted framework version-
                 security_tickets = tictrac.siddhi(django_version).start()
                 cves = prana.siddhi(django_version).start()
+                
                 #_prana_.append(cves)
-               
-                # Security Tickets table
-                for ticket in security_tickets:
-                    title = ticket['title']
+                if security_tickets is not None:
+                    #and security_tickets is not None: 
+                
+                    # Security Tickets table
+                    for ticket in security_tickets:
+                        title = ticket['title']
                     
-                    # max text len to pretty result
-                    if len(title) > 100:
-                        title = str(title[:100]) + '...'
+                        # max text len to pretty result
+                        if len(title) > 100:
+                            title = str(title[:100]) + '...'
                     
-                    # >> load security tickets 
-                    self.tickets_tbl.title = colored(
-                        "Security tickets for Django {}".format(django_version),
-                        "white", attrs=['bold']
-                    )
+                        # >> load security tickets 
+                        self.tickets_tbl.title = colored(
+                            "Security tickets for Django {}".format(django_version),
+                            "white", attrs=['bold']
+                        )
 
-                    self.tickets_tbl.add_row(
-                        [
-                            colored('ST{}'.format(ticket['id']),'green'),
-                            title
-                        ]
-                    )
-        
+                        self.tickets_tbl.add_row(
+                            [
+                                colored('ST{}'.format(ticket['id']),'green'),
+                                title
+                            ]
+                        )
+                else:
+                    self.tickets_tbl = '?'
+                    
                 # CVE table
-                if cves:
+                if cves is not None:
                     for entry in cves:
                         # >> load cve ids
                         self.cves_tbl.title = colored(
@@ -178,7 +183,8 @@ class resultParser:
 
                             ]
                         )
-                
+                else:self.cves_tbl = '?'
+
         # issues overview
         self.issues_overview = {
             'total_issues': (
@@ -325,10 +331,19 @@ class resultParser:
             )
             sleep(0.10)
 
-        self.contexts['environment']['EXCEPTION_REPORTER'] = \
+        try:
+            self.contexts['environment']['EXCEPTION_REPORTER'] = \
                 self.contexts['environment'].pop('DEFAULT_EXCEPTION_REPORTER_FILTER')
-        self.contexts['environment']['DJANGO_SETTINGS'] = \
-                self.contexts['environment'].pop('DJANGO_SETTINGS_MODULE')
+        except KeyError:
+            self.contexts['environment']['EXCEPTION_REPORTER'] = '?'
+
+        try:
+            self.contexts['environment']['DJANGO_SETTINGS'] = \
+                self.contexts['environment'].pop('DJANGO_SETTINGS_MODULE')\
+                if 'DJANGO_SETTINGS_MODULE' in self.contexts['environment'] \
+                    else self.contexts['environment'].pop('SETTINGS_MODULE') 
+        except KeyError:
+            self.contexts['environment']['DJANGO_SETTINGS'] = '?'
 
         for k,v in self.contexts['environment'].items():
             k = (k.replace('_',' ')).capitalize()
@@ -468,12 +483,6 @@ class resultParser:
         if cves:
             cprint(']]- CVE IDs ({})'.format(cve_siddhi), 'magenta')
             print(self.cves_tbl)
-
-
-        ''' s4dhu notes: There is some conceptual confusion here. 
-        At this time I dont know exactly where to invoke vimana prompt, 
-        because there are many result objects to parse and link to 
-        vimana main commands and with specific siddhi commands.'''
 
         report_tables = {
             'summary': self.summary_tbl,

@@ -17,6 +17,7 @@
 
 
 import requests
+import argparse
 from termcolor import cprint,colored
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
@@ -36,10 +37,8 @@ from pygments import highlight
 from resources.colors import *
 import collections
 
-
-
-
-
+from core.vmnf_shared_args import VimanaSharedArgs
+from resources.vmnf_validators import get_tool_scope
 
 
 class siddhi:
@@ -63,16 +62,11 @@ class siddhi:
         """
     }
 
-    def __init__(self,target):
+    def __init__(self,**vmnf_handler):
         
+        self.vmnf_handler = vmnf_handler
         self.debug_msg = 'Werkzeug Debugger'
         self.debug_confirmation = 'friendly Werkzeug powered traceback interpreter.'
-        self.pin_test_url = "{}/?__debugger__=yes&cmd=pinauth&pin={}&s={}"
-        
-        self.target = target
-
-        #pin = '000000000000000000000'
-        #print('[+] Debug console URL: {}'.format(pin_test_url.format(target,pin,head['SECRET'])))
 
         exception_table = PrettyTable()
         exception_table.field_names = (
@@ -356,7 +350,7 @@ class siddhi:
         session.mount('https://', adapter)
     
         try:
-            self.conn_response = (session.get(self.target, verify=False, timeout=10))
+            self.conn_response = (session.get('http://' + self.target, verify=False, timeout=10))
             self.conn_status = self.conn_response.status_code
         except ConnectTimeout:
             return False
@@ -364,9 +358,31 @@ class siddhi:
             return False
         else:
             return False
+    
+    def parse_args(self):
+        ''' ~ siddhi needs only shared arguments from VimanaSharedArgs() ~'''
+        parser = argparse.ArgumentParser(
+                add_help=False,
+                parents=[VimanaSharedArgs().args()]
+        )
+        return parser
 
 
     def start(self):
+        handler_ns  = argparse.Namespace(
+            target          = False,
+            port            = False,
+            scope           = False
+        )
+
+        options = self.parse_args()
+        handler_ns.args = options.parse_known_args(
+        namespace=handler_ns)[1]
+        if not self.vmnf_handler['scope']:
+            print(VimanaSharedArgs().shared_help.__doc__)
+            sys.exit(1)
+
+        targets_ports_set = get_tool_scope(**self.vmnf_handler)
 
         print('''{}
          (     (                *          
@@ -382,6 +398,7 @@ class siddhi:
         '''.format(Rn_c, D_c))
 
         # test target connection ~~
+        self.target = targets_ports_set[0]
         self.test_target_connection()
 
         if self.conn_status == 500:
@@ -389,13 +406,6 @@ class siddhi:
         
             self.get_html_content()
 
-            '''
-            try:
-                self.html_content = self.get_html_content(self.conn_response)
-            except TypeError:
-                print('[flame] Failure to connect to target: {}'.format(self.target))
-                sys.exit()
-            '''
             if (self.debug_msg) in self.page_title \
                 and (self.debug_confirmation) in str(self.html_content):
 
