@@ -185,9 +185,9 @@ class DJUtils:
                         )
                     )
                     self.int_type_urls.append(url.replace(url_p, str(self._vmnfp_.get_random_int())))
-                    #self.float_type_urls.append(url.replace(url_p, str(self._vmnfp_.get_random_float())))
+                    self.float_type_urls.append(url.replace(url_p, str(self._vmnfp_.get_random_float())))
                     self.os_random_type_urls.append(url.replace(url_p, str(self._vmnfp_.get_os_urandom())))
-                    #self.sec_random_type_urls.append(url.replace(url_p, str(self._vmnfp_.get_secure_random_string())))
+                    self.sec_random_type_urls.append(url.replace(url_p, str(self._vmnfp_.get_secure_random_string())))
                     count +=1
 
         self.full_scope = list(
@@ -203,16 +203,16 @@ class DJUtils:
 
         # These segmentations and scope types will be worked on in future versions of engine
         self._FuzzURLsPool_ = {
-            #'FUZZ_HEADERS': self.raw_urls,
-            #'RAW_URLS': self.raw_urls,
-            #'UNICODE_URLS': self.unicode_urls,
-            #'INT_TYPE_URLS': self.int_type_urls,
-            #'FLOAT_TYPE_URLS': self.float_type_urls,
-            #'OS_RANDOM_TYPE_URLS': self.os_random_type_urls,
-            #'SEC_RANDOM_TYPE_URLS':self.sec_random_type_urls,
+            'FUZZ_HEADERS': self.raw_urls,
+            'RAW_URLS': self.raw_urls,
+            'UNICODE_URLS': self.unicode_urls,
+            'INT_TYPE_URLS': self.int_type_urls,
+            'FLOAT_TYPE_URLS': self.float_type_urls,
+            'OS_RANDOM_TYPE_URLS': self.os_random_type_urls,
+            'SEC_RANDOM_TYPE_URLS':self.sec_random_type_urls,
             'FULL_SCOPE':self.full_scope
         }
-
+        
         return self._FuzzURLsPool_
     
     def get_pretty_table(self, **config):

@@ -147,11 +147,11 @@ class siddhi:
         headers['Origin']   = self.vmnf_handler['target_url']
         headers['Referer']  = self.vmnf_handler['target_url']
         self.vmnf_handler['fuzz_settings'] = settings
-        self.vmnf_handler['meta'] = {"max_retry_times": 3,'dont_merge_cookies': False}
+        self.vmnf_handler['meta'] = {"max_retry_times": 3,'dont_merge_cookies': True}
         self.vmnf_handler['download_timeout'] = 3
         self.vmnf_handler['method'] = 'GET'
         self.vmnf_handler['headers'] = headers
-        self.vmnf_handler['cookie'] = {'csrftoken':''}
+        self.vmnf_handler['cookie'] = {'csrftoken':'    '}
 
         # call djunch engine v2
         process = CrawlerProcess(dict(settings))

@@ -113,7 +113,7 @@ class DJEngineParser(scrapy.Spider):
         self._ISSUES_POOL['GENERAL_OBJECTS'] = self.General_Traceback_Objects
 
         if not self._ISSUES_POOL:
-            cprint("No exception found with given settings", 'cyan')
+            cprint("→ No exception found with given settings", 'cyan')
             for k,v in self.headers.items():
                 print('→ {}: {}'.format(k,v))
 
@@ -123,7 +123,7 @@ class DJEngineParser(scrapy.Spider):
 
             return False
         
-        # create instance of dmt reporter to issues presentation
+        # create instance of dju_reporter to issues presentation
         result = resultParser(self._ISSUES_POOL, **self.vmnf_handler).show_issues()
  
     def start_requests(self):
@@ -153,17 +153,17 @@ class DJEngineParser(scrapy.Spider):
             t_count = 1
             hl_color = 'white'
             f_hl_fuzz = hl_color
-            
+           
             for target_url in fuzz_urls:
-
+                
                 # to avoid make request to outofscope targets parsed in test response
                 if not self.target in target_url:
                     continue
-
+                
                 self.headers['Host'] = '127.0.0.1'
                 self.headers['Content-Length'] = 0
                 self.step_method = 'GET'
-
+                
                 if self.fuzz_step == 'raw_urls':
                     self.step_method = 'POST'
                     if target_url.endswith('/'):
@@ -175,22 +175,20 @@ class DJEngineParser(scrapy.Spider):
                 if f_count == self.fuzz_rounds:
                     # this could be used as redundance in future releases / loopdangerous 
                     #filter_mode = True
+                    
                     self.step_method = choice(['GET','POST'])
                     self.meta["max_retry_times"] = choice(range(1,3))
                     self.meta["download_timeout"] = choice(range(1,3))
-                    self.headers['Content-Length'] = str((self._vmnfp_.get_random_int()) * 2000)
+                    self.headers['Content-Length'] = str(self._vmnfp_.get_random_int())
                     self.headers['Host'] = choice(
                         [
-                            urlparse(self.target).netloc, 
-                            self.GenObj.internet.ip_v4(),  
-                            ' ' * choice(range(255)),
-                            str(self._vmnfp_.get_random_float())
+                            self.GenObj.internet.ip_v4() 
                         ]
                     )
+                    
                     f_hl_fuzz = 'green'
-
+                    
                 if t_count == step_urls:
-                    #self.step_method = choice(['GET','POST'])
                     hl_color = 'green'
                     step_mark = colored('✔', hl_color)
                 
@@ -248,7 +246,7 @@ class DJEngineParser(scrapy.Spider):
             print()
         
         cprint('    → Waiting for threads...', 'cyan') 
-        sleep(3)
+        sleep(2)
 
     def failure_handler(self, failure):
         self._ISSUES_POOL['FUZZ_STATUS_LOG'].append(
@@ -299,7 +297,8 @@ class DJEngineParser(scrapy.Spider):
                 response,
                 formdata=self._vmnfp_.get_random_credential(),
                 callback=self.status_handler,
-                errback=self.failure_handler
+                errback=self.failure_handler,
+                method='POST'
             )
             pass
 
@@ -336,14 +335,15 @@ class DJEngineParser(scrapy.Spider):
         elif response.status in self.x_trigger_status:
             self.EXCEPTION_PATTERN = (response.xpath('//div[@id="summary"]//tr')) 
             self.EXCEPTION_MATCH = self.EXCEPTION_PATTERN.xpath('.//td/text()').getall()[2:-1]
-            
-            # IndexError: pop from empty list
+
             if self.EXCEPTION_MATCH:
                 self.EXCEPTION_ID = hashlib.sha256(str(self.EXCEPTION_MATCH).encode('utf-8')).hexdigest()[:10]
             
             if len(self.EXCEPTION_PATTERN) == 0:
-                print("[djunch().status_handler({})] The application's response does not match with an expected exception. Maybe a server issue: \n  → '{}'".format(
+                status_msg=colored("The application's response does not match with an expected exception. Maybe a server issue:", 'yellow')
+                print("[djunch().status_handler({})] {} \n{}".format(
                     response.status,
+                    status_msg,
                     response_data
                     )
                 )
@@ -417,10 +417,15 @@ class DJEngineParser(scrapy.Spider):
         for ROW in TABLES_ROWS:
             key, value = (ROW.xpath('td//text()').getall())
             ENVIRONMENT[key] = value
-            k_ref = key
-
+            k_ref = key.upper()
+            
+            # consider this case wsgi.file_wrapper - split by '.' not only _ !ctp: handler this cases
             if '_' in k_ref:
-                k_ref = key.split('_')[0]
+                k_ref = k_ref.split('_')[0]
+            elif '.' in k_ref \
+                and not '_' in k_ref:
+                k_ref = k_ref.split('.')[0]
+
             if KEY_ENV_CONTEXTS.get(k_ref) is None:
                 KEY_ENV_CONTEXTS[k_ref] = list()
             KEY_ENV_CONTEXTS[k_ref].append(key + ':' + value)
@@ -436,6 +441,7 @@ class DJEngineParser(scrapy.Spider):
             colored(CONTEXTS['server'].get('SERVER_SOFTWARE'), 'green')
             )
         )
+        print()
         sleep(1)
         
         EXCEPTION_SUMMARY = {}
@@ -444,9 +450,18 @@ class DJEngineParser(scrapy.Spider):
             values = []
             key = (s.xpath('.//th/text()').get()).strip(':')
             value = (s.xpath('.//td/text()').get())
-            EXCEPTION_SUMMARY[key] = value
+            value_base = (s.xpath('.//td//span').get())
+            span_flag = True if value_base\
+                    and value_base is not None else False
+            
+            if span_flag:
+                v = (s.xpath('.//td').get())
+                v = v[v.find('class="fname">')+14:]
+                value = v.replace('</span>','').replace('</td>','').strip()
 
-            if value is None:
+            #EXCEPTION_SUMMARY[key] = value # !ctp: commented
+
+            if not value or value is None:
                 value = (s.xpath('.//td//pre/text()').get())
 
                 if len(value.split('\n')) > 1:
@@ -456,9 +471,10 @@ class DJEngineParser(scrapy.Spider):
                         )
                     value = values
                 
-                EXCEPTION_SUMMARY[key] = value
-                continue
+                #EXCEPTION_SUMMARY[key] = value # !ctp: commented
+                #continue !ctp: disabled 
 
+            EXCEPTION_SUMMARY[key]=value
             if key == 'Exception Type':
                 hl_color = 'magenta'
 
@@ -503,9 +519,22 @@ class DJEngineParser(scrapy.Spider):
             highlight_code_snippets = []
             raw_code_snippets = []
             object_mapping = {}
-
             trace_count +=1
-            module, function = (entry.xpath('.//code/text()').getall())
+
+            try:
+                ''' Django Version: 1.*.* (p:1.4.5)
+                    Python Version: 2.*.* (p:2.6.6)
+                    [module_path, function()]
+                '''
+                module, function = (entry.xpath('.//code/text()').getall())
+            except ValueError:
+                ''' Django Version: 3.*.* (p:3.1.12)
+                    Python Version: 3.*.* (p:3.6.9)
+                    [module_path]
+                '''
+                module = entry.xpath('.//code/text()').getall()[0].strip().replace(',','')      
+                function = entry.xpath('.//text()').getall()[2].strip().replace(',','').replace('in ','').split()[-1]
+
             code_snippet = [l for l in entry.xpath('.//div[@class="context"]//ol//li//pre').getall()]
             context_line_number = int(entry.xpath('.//div//ol[@class="context-line"][1]').get()[11:20].split()[0].strip('"'))
             context_line = entry.xpath('.//div//ol[@class="context-line"]//li//pre/text()').get()
@@ -516,7 +545,7 @@ class DJEngineParser(scrapy.Spider):
             module_args = dict(zip(args_keys,args_values))
             
             trigger = {"Module": module, "Function":function,"Line trigger":trigger_point}
-            
+
             cs_count = 0
             for l in code_snippet:
                 cs_count +=1
@@ -580,7 +609,6 @@ class DJEngineParser(scrapy.Spider):
 
         self.LAST_EXCEPTION = _EXCEPTION_ 
         self._ISSUES_POOL['EXCEPTIONS'].append(_EXCEPTION_)
-
         DJUtils(False,False).show_exception(**_EXCEPTION_)
         sleep(1)
 

@@ -199,6 +199,8 @@ class django_envvars:
             'HOME', 
             'DJANGO_SETTINGS_MODULE', 
             'DJANGO_VERSION', 
+            'SETTINGS_MODULE',
+            'DJANGO_SETTINGS',
             'Django Version', 
             'Python Executable', 
             'Python Version', 

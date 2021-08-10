@@ -6,7 +6,7 @@ headers = {
     'Accept-Language': "en-US,en;q=0.5",
     'Accept-Encoding': "gzip, deflate",
     'Content-Type': "application/x-www-form-urlencoded",
-    'Content-Length': 0,
+    #'Content-Length': 1,
     'Origin': "http://127.0.0.1:8000",
     'Connection': "close",
     'Referer': False,

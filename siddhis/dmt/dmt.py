@@ -326,7 +326,9 @@ class siddhi:
         elif response_status == 404:
             print('[+] DMTSTATUS {}:{}'.format(len(dadmp_request),status))
         elif response_status == 500:
-            self.dxt_parser(dadmp_request, True)
+            #self.dxt_parser(dadmp_request, True)
+            # self.fuzz_result = Djunch(**self.vmnf_handler).start()
+            pass
         else: return False  		      
     
     def get_url_patterns(self):
