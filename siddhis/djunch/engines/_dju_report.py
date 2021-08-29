@@ -44,7 +44,12 @@ from . _dju_settings import table_models
 class resultParser:   
 
     def __init__(self, results, **vmnf_handler):
-    
+        
+        # dmt handler (argparser namespace) 
+        self.vmnf_handler = vmnf_handler
+        self.catched_exceptions = []
+
+        self.fuzz_report=False
         tables = DJUtils(False,False).get_report_tables()
         self.exceptions_tbl = tables['exceptions']
         self.config_issues_tbl = tables['configuration']
@@ -62,36 +67,35 @@ class resultParser:
         self.xp_tbl = vmnf_handler['patterns_table']
 
         # results from djunch fuzzer 
-        if results:
-            self.fuzz_report = results 
-            self.sampler = results['EXCEPTIONS'][0]
-            self.general_objects = results['GENERAL_OBJECTS']
-        else:
-            ''' In which cases would we not have the result of the fuzzer 
-                at this point in the result parser? I don't know exactly yet, 
-                but it is good to leave it mapped for future treatments. '''
-                
+        if (len(results['EXCEPTIONS'])) == 0:
+            return None
+        
+        # instance of djunch results
+        self.fuzz_report = results 
+        
+        # exception sampler: to use shared information between exceptions
+        self.sampler = results['EXCEPTIONS'][0]
+
+        # general analysis objects
+        self.general_objects = results['GENERAL_OBJECTS']
+        
+        # mapped (expanded url patterns from DMT)
+        self.mu_patterns = self.vmnf_handler['patterns_views']
+        
+    def show_issues(self):
+        print("\033c", end="")
+        vmnf_banners.audit_report_banner()
+        
+        if not self.fuzz_report:
             print('[result_parser: {}] Missing fuzzing result after {} execution'.format(
                 datetime.now(),
                 self.siddhi
                 )
             )
-            
+    
             return False
-        
-        # mapped (expanded url patterns from DMT)
-        self.mu_patterns = self.vmnf_handler['patterns_views']
 
-        # dmt handler (argparser namespace) 
-        self.vmnf_handler = vmnf_handler
-        self.catched_exceptions = []
-
-    def show_issues(self):
-        
-        print("\033c", end="")
-        vmnf_banners.audit_report_banner()
-
-        mark_status = colored('●', 'green', attrs=['bold', 'blink'])
+        mark_status = colored(' ● ', 'green', attrs=['bold', 'blink'])
         status_msg = colored('Consolidating analysis result...', 'blue')
         print('\n {} {}'.format(mark_status, status_msg))
         sleep(1)
@@ -120,12 +124,16 @@ class resultParser:
         if self.sampler['EXCEPTION_SUMMARY'].get('Django Version'):
             x_summary = self.sampler['EXCEPTION_SUMMARY']
             django_version = x_summary.get('Django Version').strip()
+            
+            '''
             x_loc_full = x_summary['Exception Location']
             x_location = '/'+'/'.join(x_loc_full.split()[0].split('/')[-3:])
             x_line_number = x_loc_full.split()[-1]
             x_function = x_loc_full.split()[-3].replace(',','')
+            '''
             installed_items = self.sampler['INSTALLED_ITEMS']
-
+            
+            
             # test 
             # django_version = '3.0.1'
             
@@ -135,11 +143,12 @@ class resultParser:
                     django_version = '.'.join(django_version.split('.')[:-1])
                 
                 
+                '''
                 # - Get CVEs and security tickets for abducted framework version-
                 security_tickets = tictrac.siddhi(django_version).start()
                 cves = prana.siddhi(django_version).start()
-                
                 #_prana_.append(cves)
+                '''
                 if security_tickets is not None:
                     #and security_tickets is not None: 
                 
@@ -166,6 +175,7 @@ class resultParser:
                 else:
                     self.tickets_tbl = '?'
                     
+                  
                 # CVE table
                 if cves is not None:
                     for entry in cves:
@@ -193,7 +203,7 @@ class resultParser:
             'objects': len(self.general_objects),
             'security_tickets': len(security_tickets) if security_tickets else 0,
             'cve_ids': len(cves) if cves else 0,
-            'url_patterns': len(self.mu_patterns),   
+            'url_patterns': len(self.mu_patterns) if self.mu_patterns else 0,   
             'applications': len(installed_items.get('Installed Applications')),
             'middlewares' : len(installed_items.get('Installed Middlewares'))
         }
@@ -237,6 +247,14 @@ class resultParser:
             x_traceback = exception['EXCEPTION_TRACEBACK']
             env_count = len(exception['ENVIRONMENT'])
             occ_count = exception['EXCEPTION_COUNT']
+    
+            x_summary = exception['EXCEPTION_SUMMARY']
+            x_loc_full = x_summary['Exception Location']
+            x_location = '/'+'/'.join(x_loc_full.split()[0].split('/')[-3:])
+            x_line_number = x_loc_full.split()[-1]
+            x_function = x_loc_full.split()[-3].replace(',','')
+            installed_items = exception['INSTALLED_ITEMS']
+
             lines_count = 0
             triggers_count = 0
             vars_count = 0
