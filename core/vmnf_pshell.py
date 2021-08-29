@@ -11,7 +11,6 @@
 
 """
 
-
 from __future__ import unicode_literals
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.completion import WordCompleter
@@ -117,7 +116,8 @@ class vmnfshell:
             'CI': "Configuration Issues",
             'LC': "EnvLeak Contexts",
             'UP': "URL Patterns",
-            'SM': "Security Middleware"
+            'SM': "Security Middleware",
+            '??': "Issues"
         }
 
         # show cmd options 
@@ -334,18 +334,18 @@ class vmnfshell:
                         _issue_ = _iid_[2:].strip()     # issue id without type identifier ST/UX/CI/LC
                         self._type_ = _type_            # for handler
 
+                        if _type_ not in self.issue_categories.keys():
+                            self._type_ = '??'
+                            self._reason_ = 'Invalid issue identifier'
+                            self.handle_inspect_msg()
+                            continue
+                        
                         # to handle inspect iid 'without' number identifier
                         if not _issue_:
                             self._reason_ = 'Invalid iid format'
                             self.handle_inspect_msg()
                             continue 
                         
-                        if _type_ not in self.issue_categories.keys():
-                            self._type_ = 'corresponding'
-                            self._reason_ = 'Invalid issue identifier'
-                            self.handle_inspect_msg()
-                            continue
-
                         # inspect security tickets
                         if _type_ == 'ST':
                             # if a choosen iid in current tickets pool
@@ -558,27 +558,27 @@ class vmnfshell:
 
         print('''\nBasic commands for interacting with the analysis result
 
-        \r  abduct      evaluates exploitable scenarios (not available yet)
-        \r  inspect     inspects a given issue id (iid)
-        \r  show        shows analysis items by category
+        \r  abduct      evaluate exploitable scenarios (not available yet)
+        \r  inspect     inspect a given issue id (iid)
+        \r  show        show analysis items by category
         \r  search      search environment variables by keyword
         \r  options     this help
-        \r  exit        exits framework
+        \r  exit        exit framework
         ''')
 
     def handle_show_options(self):
         print('''\nMissing issue category argument. Supported options:
                         
-        \r  0:  summary         shows issues summary
-        \r  1:  exceptions      shows identified exceptions
-        \r  2:  tickets         shows security tickets
-        \r  3:  cves            shows related cve ids
-        \r  4:  contexts        shows env leak contexts
-        \r  5:  patterns        shows mapped url patterns
-        \r  6:  configuration   shows configuration issues
-        \r  7:  applications    shows installed applications
-        \r  8:  middlewares     shows installed middlewares
-        \r  9:  databases       shows available databases
-        \r 10:  objects         shows traceback objects
+        \r  0:  summary         show issues summary
+        \r  1:  exceptions      show identified exceptions
+        \r  2:  tickets         show security tickets
+        \r  3:  cves            show related cve ids
+        \r  4:  contexts        show env leak contexts
+        \r  5:  patterns        show mapped url patterns
+        \r  6:  configuration   show configuration issues
+        \r  7:  applications    show installed applications
+        \r  8:  middlewares     show installed middlewares
+        \r  9:  databases       show available databases
+        \r 10:  objects         show traceback objects
         ''')
 

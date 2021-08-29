@@ -1,11 +1,11 @@
-from random import randint, choice
-from datetime import datetime
-from termcolor import colored
-from mimesis import Generic
-import base64
-import secrets
-import random
 import os
+import random
+import secrets
+from datetime import datetime
+from random import randint, choice
+from mimesis import Generic
+from termcolor import colored
+import base64
 
 
 class VMNFPayloads:
@@ -91,6 +91,6 @@ class VMNFPayloads:
             )
         )
         
-        
+
 
 

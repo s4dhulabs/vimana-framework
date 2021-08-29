@@ -112,11 +112,8 @@ class DJEngineParser(scrapy.Spider):
     def closed(self,reason):
         self._ISSUES_POOL['GENERAL_OBJECTS'] = self.General_Traceback_Objects
 
-        if not self._ISSUES_POOL:
-            cprint("→ No exception found with given settings", 'cyan')
-            for k,v in self.headers.items():
-                print('→ {}: {}'.format(k,v))
-
+        if not self._ISSUES_POOL['EXCEPTIONS']:
+            cprint("\n[{}]→ No exception found with given settings.\n".format(datetime.now()), 'cyan')
             if self.debug_is_on:
                 for request_status in self._ISSUES_POOL['FUZZ_STATUS_LOG']:
                     print(request_status)
@@ -127,14 +124,20 @@ class DJEngineParser(scrapy.Spider):
         result = resultParser(self._ISSUES_POOL, **self.vmnf_handler).show_issues()
  
     def start_requests(self):
-        
         # This will be used in future versions to configure the fuzzer options: full, fast, etc.
         scope = DJUtils(False,False)
         self._FuzzURLsPool_ = scope.get_scope(self.target, self.patterns, self._vmnfp_)
         self.fuzz_scope_size = len(self._FuzzURLsPool_['FULL_SCOPE'])
         self.fuzz_rounds = len(self._FuzzURLsPool_) 
         step_mark = colored('↪', 'white', attrs=['bold'])
+       
+        ssti_p = self._vmnfp_.get_ssti_payloads()
+        xss_p = self._vmnfp_.get_xss_payloads()
         
+        if not self.target or self.target is None:
+            print('[{}:{}]→ Missing target'.format(self.vmnf_handler['module_run'], datetime.now()))
+            return False
+
         print(' {} Starting DJunch against {} | {} rounds / {} URL variations'.format(
             colored("✔", 'green'),
             (G_c  + self.target + W_c),
@@ -161,31 +164,37 @@ class DJEngineParser(scrapy.Spider):
                     continue
                 
                 self.headers['Host'] = '127.0.0.1'
-                self.headers['Content-Length'] = 0
+                self.headers['Content-Length'] = 123
                 self.step_method = 'GET'
                 
                 if self.fuzz_step == 'raw_urls':
                     self.step_method = 'POST'
                     if target_url.endswith('/'):
                         target_url = target_url[:-1]
-                    else:
-                        self.headers['Content-Length'] = -1
                 
                 # all urls in current scope - last step
                 if f_count == self.fuzz_rounds:
                     # this could be used as redundance in future releases / loopdangerous 
                     #filter_mode = True
                     
+                    # randomize UA (this could be change in following step or not/random v to random h
+                    self.headers['User-Agent'] = self.GenObj.internet.user_agent()
+                    
+                    # random payloads
+                    payloads = ssti_p if (f_count % 2) == 0 else xss_p
+
+                    # random set to a random header
+                    self.headers[choice([k for k in self.headers.keys()])] = choice(payloads)
+
+                    # random setup unreal header and change content-type for whatever
+                    if self.fuzz_rounds - f_count < 10:
+                        self.headers[self.GenObj.person.name()]= choice(range(1000))  
+                        self.headers['Content-Type'] = self.GenObj.internet.content_type()
+
+                    # random method 2
                     self.step_method = choice(['GET','POST'])
                     self.meta["max_retry_times"] = choice(range(1,3))
                     self.meta["download_timeout"] = choice(range(1,3))
-                    self.headers['Content-Length'] = str(self._vmnfp_.get_random_int())
-                    self.headers['Host'] = choice(
-                        [
-                            self.GenObj.internet.ip_v4() 
-                        ]
-                    )
-                    
                     f_hl_fuzz = 'green'
                     
                 if t_count == step_urls:
@@ -293,22 +302,29 @@ class DJEngineParser(scrapy.Spider):
         )
         
         if response.status in self.follow_responses:
-            yield scrapy.FormRequest.from_response(
-                response,
-                formdata=self._vmnfp_.get_random_credential(),
-                callback=self.status_handler,
-                errback=self.failure_handler,
-                method='POST'
-            )
-            pass
+            try:
+                yield scrapy.FormRequest.from_response(
+                    response,
+                    formdata=self._vmnfp_.get_random_credential(),
+                    callback=self.status_handler,
+                    errback=self.failure_handler,
+                    method='POST'
+                )
+                pass
+            except ValueError:
+                pass
 
         if response.status == 403:
             for p in _csrf_().expected_status:
                 if response_data.find(p) != -1:
                     debug_step = "CSRF_FAILURE_VIEW warning"
-                    print("\n[djunch().parser({})] Triggered a Django forbidden warning: {} \n  → '{}'".format(
-                        response.status,p,debug_step))
-                    
+                    flag_status = colored(" djunch().parser({}) ".format(response.status),'red', 'on_cyan',attrs=['dark'])
+                    status_msg=colored('Triggered a Django forbidden warning:','cyan')
+                    cprint("\n{} {} {} \n  → '{}'".format(flag_status,status_msg,p,debug_step))
+                    '''
+                    cprint("\n[djunch().parser({})] Triggered a Django forbidden warning: {} \n  → '{}'".format(
+                        response.status,p,debug_step),'yellow')
+                    '''
                     self._ISSUE_ = ConfigIssuesItem()
                     self._ISSUE_['ISSUE_TYPE'] = 'CONFIGURATION'
                     self._ISSUE_['IID'] = 'CI{}'.format(len(self._ISSUES_POOL['CONFIGURATION']) + 1)
@@ -480,6 +496,12 @@ class DJEngineParser(scrapy.Spider):
 
             print('{}{}:\t   {}'.format((' ' * int(5-len(key) + 14)),key,colored(value, hl_color)))
         
+        x = input('aaa')
+        sys.exit(1)
+        print(AAAAA)
+        return False
+        input('----------------------')
+
         # link exception type with related environment variable (if exists)
         EXCEPTION_TYPE = EXCEPTION_SUMMARY['Exception Type']
         EXCEPTION_REASON = False
@@ -514,7 +536,7 @@ class DJEngineParser(scrapy.Spider):
         trace_count = 0
         EXCEPTION_PARSED_TRACEBACK = []
         MODULE_TRIGGER_INFO = {}
-
+        
         for entry in EXCEPTION_TRACEBACK:
             highlight_code_snippets = []
             raw_code_snippets = []
@@ -610,5 +632,6 @@ class DJEngineParser(scrapy.Spider):
         self.LAST_EXCEPTION = _EXCEPTION_ 
         self._ISSUES_POOL['EXCEPTIONS'].append(_EXCEPTION_)
         DJUtils(False,False).show_exception(**_EXCEPTION_)
+        
         sleep(1)
 

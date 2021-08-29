@@ -8,12 +8,12 @@ from resources.vmnf_fuzz_data import VMNFPayloads
 from termcolor import colored, cprint
 from resources.colors import *
 from itertools import chain
-
+from random import choice
 from pygments.formatters import TerminalFormatter
 from pygments.lexers import PythonLexer
 from termcolor import colored,cprint
 from pygments import highlight
-
+from mimesis import Generic
 from prettytable import PrettyTable
 
 
@@ -146,8 +146,10 @@ class DJUtils:
     def get_scope(self, target, patterns, payloads):
         self._FuzzURLsPool_ = FuzzURLsPool()
         self._vmnfp_ = payloads
-        self.target = target
-
+        
+        self.target = 'http://' + target \
+            if not target.startswith('http') else target
+         
         status = colored('building scope from', 'green')
         hl_pattern = colored('{} patterns'.format(len(patterns)), 'white')
         print('\n{} Starting DJunch | {} {}'.format(
@@ -158,13 +160,17 @@ class DJUtils:
         )
         sleep(1)
 
-        self.full_scope = []
-        self.raw_urls = []
-        self.unicode_urls = []
-        self.int_type_urls = []
-        self.float_type_urls = []
-        self.os_random_type_urls = []
-        self.sec_random_type_urls = []
+        self.full_scope=[]
+        self.raw_urls=[]
+        self.unicode_urls=[]
+        self.int_type_urls=[]
+        self.float_type_urls=[]
+        self.random_xss_payloads=[]
+        self.random_param_values=[]
+        self.sec_random_type_urls=[]
+        self.random_path_traversal=[]
+        self.random_ssti_payloads=[]
+        self.random_sqli_payloads=[]
 
         if patterns is not None:
             self.raw_urls = [urljoin(self.target, pattern) \
@@ -173,6 +179,31 @@ class DJUtils:
             ]
 
             self.raw_urls.insert(0,self.target)
+
+            g = Generic()
+            random_types = [
+                g.person.password(), 
+                g.person.locale, 
+                g.person.username(), 
+                g.person.title(),
+                g.person.blood_type(),
+                g.person.age(), 
+                g.person.height(),
+                g.hardware.resolution(), 
+                g.hardware.cpu_frequency(),
+                g.business.cryptocurrency_symbol(),
+                g.food.vegetable()
+            ]
+
+            ssti_payloads= self._vmnfp_.get_ssti_payloads()
+            xss_payloads= self._vmnfp_.get_xss_payloads()
+            sqli_payloads= self._vmnfp_.get_sqli_payloads()
+            common_params= [
+                'add','cmd','alterar',
+                'consultar','remove','delete', 
+                'config','edit','set','change'
+            ]
+
             count = 1
             for url in self.raw_urls[1:]:
                 url_path = urlparse(url).path
@@ -184,32 +215,70 @@ class DJUtils:
                         urljoin(self.target,url_path.replace(url_p, str(self._vmnfp_.get_random_unicode()))
                         )
                     )
-                    self.int_type_urls.append(url.replace(url_p, str(self._vmnfp_.get_random_int())))
-                    self.float_type_urls.append(url.replace(url_p, str(self._vmnfp_.get_random_float())))
-                    self.os_random_type_urls.append(url.replace(url_p, str(self._vmnfp_.get_os_urandom())))
-                    self.sec_random_type_urls.append(url.replace(url_p, str(self._vmnfp_.get_secure_random_string())))
+                    self.int_type_urls.append(
+                        url.replace(url_p, str(self._vmnfp_.get_random_int()))
+                    )
+                    self.float_type_urls.append(
+                        url.replace(url_p, str(self._vmnfp_.get_random_float()))
+                    )
+                    self.random_xss_payloads.append(
+                        url.replace(url_p, str(choice(xss_payloads)))
+                    )
+                    self.sec_random_type_urls.append(
+                        url.replace(url_p, str(self._vmnfp_.get_secure_random_string()))
+                    )
+                    self.random_path_traversal.append(
+                        urljoin(self.target, 
+                            str('/' + url_p + '/' + '%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd'))
+                    )
+                    self.random_param_values.append(
+                        urljoin(self.target, 
+                            str(url_p + '?{}={}'.format(
+                                choice(common_params), 
+                                choice(random_types))
+                            )
+                        )
+                    )
+                    self.random_ssti_payloads.append(
+                        urljoin(self.target,url_path.replace(url_p, str(choice(ssti_payloads)))
+                        )
+                    )
+                    self.random_sqli_payloads.append(
+                        urljoin(self.target,url_path.replace(url_p, str(choice(sqli_payloads)))
+                        )
+                    )
+
                     count +=1
 
+        
         self.full_scope = list(
             chain(
-                self.raw_urls,
-                self.unicode_urls,
-                self.int_type_urls,
-                self.float_type_urls,
-                self.os_random_type_urls,
-                self.sec_random_type_urls
+                set(self.raw_urls),
+                set(self.unicode_urls),
+                set(self.int_type_urls),
+                set(self.float_type_urls),
+                set(self.random_xss_payloads),
+                set(self.sec_random_type_urls),
+                set(self.random_path_traversal),
+                set(self.random_param_values),
+                set(self.random_ssti_payloads),
+                set(self.random_sqli_payloads)
             )
         )
 
-        # These segmentations and scope types will be worked on in future versions of engine
+        # These segmentations and scope types will be used to set fuzzer mode
         self._FuzzURLsPool_ = {
             'FUZZ_HEADERS': self.raw_urls,
             'RAW_URLS': self.raw_urls,
             'UNICODE_URLS': self.unicode_urls,
             'INT_TYPE_URLS': self.int_type_urls,
             'FLOAT_TYPE_URLS': self.float_type_urls,
-            'OS_RANDOM_TYPE_URLS': self.os_random_type_urls,
+            'RANDOM_XSS_PAYLOADS': self.random_xss_payloads,
             'SEC_RANDOM_TYPE_URLS':self.sec_random_type_urls,
+            'RANDOM_PATH_TRAVERSAL':self.random_path_traversal,
+            'RANDOM_PARAM_VALUES':self.random_param_values,
+            'RANDOM_SSTI_PAYLOADS':self.random_ssti_payloads,
+            'RANDOM_SQLI_PAYLOADS':self.random_sqli_payloads,
             'FULL_SCOPE':self.full_scope
         }
         

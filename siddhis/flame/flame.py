@@ -67,6 +67,12 @@ class siddhi:
         self.vmnf_handler = vmnf_handler
         self.debug_msg = 'Werkzeug Debugger'
         self.debug_confirmation = 'friendly Werkzeug powered traceback interpreter.'
+        self.pin_test_url = "{}/?__debugger__=yes&cmd=pinauth&pin={}&s={}"
+        
+        #self.target = target
+
+        #pin = '000000000000000000000'
+        #print('[+] Debug console URL: {}'.format(pin_test_url.format(target,pin,head['SECRET'])))
 
         exception_table = PrettyTable()
         exception_table.field_names = (

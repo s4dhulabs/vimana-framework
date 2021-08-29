@@ -124,25 +124,3 @@ def abduct():
         VMNFPayloads()._vmnfp_payload_types_(False,True)
 
         
-        """
-        vmnf_payloads = {}
-        [vmnf_payloads.__setitem__(payload, getattr(_payloads_, payload).__doc__) \
-            for payload in [attr for attr in dir(_payloads_) \
-                if not attr.startswith('_')
-	    ]
-        ]
-        
-        print("\033c", end="") 
-        print('\n\t {}'.format(
-            colored('⣷⣒⠂    ', 'green')) + colored(' Vimana Payloads (v0.1)', 'magenta', attrs=[]) +\
-            colored('    ⣸⣼⡀', 'green') + '\n\n'
-        )
-
-        for k,v in vmnf_payloads.items():
-            print('{}{}:\t   \x1B[3m{}\x1B[23m'.format(
-                    (' ' * int(5-len(k) + 14)),
-                    colored(k,'cyan'),colored(v, 'green')
-                )
-            )
-        print('\n\n')
-        """

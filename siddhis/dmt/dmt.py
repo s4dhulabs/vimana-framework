@@ -484,6 +484,7 @@ class siddhi:
        
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.max_workers) as executor:
             for x_pattern in self.root_url_patterns:
+
                 if x_pattern.endswith('/'):
                     x_pattern = x_pattern[:-1].strip()
                 self.x_pattern = x_pattern
@@ -507,7 +508,11 @@ class siddhi:
                 up_c += 1
 
                 response = (future.result())
+                if response is None:
+                    continue
+
                 self.expanded_response = self.get_unescape_html(response.text)
+                
                 response_status = response.status_code
 
                 if self.expanded_response:
@@ -521,7 +526,7 @@ class siddhi:
         print()
         print(self.xlp_tbl_x)
         
-        return self.expanded_patterns
+        return self.expanded_patterns, self.xlp_tbl_x
     
     def parse_args(self):
         ''' ~ siddhi needs only shared arguments from VimanaSharedArgs() ~'''

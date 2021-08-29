@@ -1,16 +1,14 @@
-
 import os
 import sys
 import pathlib
 from time import sleep
 from pathlib import Path
+from core.vmnf_scope_parser import ScopeParser
 from core.vmnf_urls_parser import digest_scope
 from siddhis.dmt.dmt import siddhi as dmt_siddhi
 from siddhis.djunch.djunch import siddhi as Djunch
 from resources import vmnf_banners
-
-        
-
+from resources.vmnf_validators import get_tool_scope
 
 
 
@@ -105,29 +103,32 @@ def handle_fuzz_scope(**fuzz_ns):
 
     for k,v in _scope_.items():
         if k != 'patterns':
-            print('+ {}:\t{}'.format(k,v))
+            print('|+| {}:\t{}'.format(k,v))
             sleep(0.25)
     sleep(1)
 
     confirmation = False
     while not confirmation:
-        confirmation = input('''\nWere detected {} unique URL Patterns, continue? (Y/n) > '''.format(
+        confirmation = input('''\nWere detected {} input URL Patterns, continue? (Y/n) > '''.format(
                 (_scope_['scope_size'])
             )
         )
         print()
 
         if confirmation.lower() == 'y':
-            expanded_patterns = dmt_siddhi(**fuzz_ns).expand_UP(_scope_['patterns'])
+            expanded_patterns,xlp_tbl_x = dmt_siddhi(**fuzz_ns).expand_UP(_scope_['patterns'])
+            
+            fuzz_ns['scope'] = ScopeParser(**fuzz_ns).parse_scope()
+            targets_ports_set = get_tool_scope(**fuzz_ns)
+            
+            for entry in targets_ports_set:
+                fuzz_ns['target_url']= 'http://' + entry
+                fuzz_ns['patterns']= expanded_patterns
+                fuzz_ns['patterns_table']= xlp_tbl_x
+                fuzz_ns['patterns_views']=False
+                fuzz_ns['module_run']= 'djunch'
+                fuzz_result=Djunch(**fuzz_ns).start()
 
-            # send to fuzzer
-            # base_r = http_ + base_request + port_
-            print(fuzz_ns)
-            input()
-            Djunch(base_r, expanded_patterns, **vars(handler_ns)).start()
-
-
-    return _scope_
 
 
 
