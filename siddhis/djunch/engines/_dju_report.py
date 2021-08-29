@@ -124,15 +124,7 @@ class resultParser:
         if self.sampler['EXCEPTION_SUMMARY'].get('Django Version'):
             x_summary = self.sampler['EXCEPTION_SUMMARY']
             django_version = x_summary.get('Django Version').strip()
-            
-            '''
-            x_loc_full = x_summary['Exception Location']
-            x_location = '/'+'/'.join(x_loc_full.split()[0].split('/')[-3:])
-            x_line_number = x_loc_full.split()[-1]
-            x_function = x_loc_full.split()[-3].replace(',','')
-            '''
             installed_items = self.sampler['INSTALLED_ITEMS']
-            
             
             # test 
             # django_version = '3.0.1'
@@ -143,12 +135,11 @@ class resultParser:
                     django_version = '.'.join(django_version.split('.')[:-1])
                 
                 
-                '''
                 # - Get CVEs and security tickets for abducted framework version-
                 security_tickets = tictrac.siddhi(django_version).start()
                 cves = prana.siddhi(django_version).start()
                 #_prana_.append(cves)
-                '''
+                
                 if security_tickets is not None:
                     #and security_tickets is not None: 
                 
