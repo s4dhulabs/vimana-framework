@@ -496,12 +496,6 @@ class DJEngineParser(scrapy.Spider):
 
             print('{}{}:\t   {}'.format((' ' * int(5-len(key) + 14)),key,colored(value, hl_color)))
         
-        x = input('aaa')
-        sys.exit(1)
-        print(AAAAA)
-        return False
-        input('----------------------')
-
         # link exception type with related environment variable (if exists)
         EXCEPTION_TYPE = EXCEPTION_SUMMARY['Exception Type']
         EXCEPTION_REASON = False
