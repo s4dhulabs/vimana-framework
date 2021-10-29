@@ -284,7 +284,7 @@ class vmnfshell:
                             print(self.report_items['contexts'])
                         elif arg == 'patterns':
                             cprint('\n→ Mapped URL patterns', 'cyan')
-                            print(self.report_items['patterns'])
+                            print(self.report_items['raw_patterns'])
                         elif arg == 'cves':
                             cprint("\n→ CVE ID's (by framework version)", 'cyan')
                             print(self.report_items['cves'])

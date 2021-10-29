@@ -18,25 +18,23 @@ import sys
 sys.path.insert(0, '../')
 
 from random import random, choice, randint
-from datetime import datetime
 from urllib.parse import urlparse
-
+from datetime import datetime
 from mimesis import Internet
 from mimesis import Generic
-
-from . _dju_report import resultParser
-from . _dju_utils import DJUtils
-
-import os
+import urllib3.exceptions
 import scrapy
 import twisted
 import hashlib
 import random
-import urllib3.exceptions
+import os
+
+from . _dju_report import resultParser
+from . _dju_utils import DJUtils
+
 import inspect
 import secrets
 from itertools import chain
-from mimesis import Generic
 
 from scrapy import signals
 from scrapy.shell import inspect_response
@@ -73,7 +71,7 @@ class DJEngineParser(scrapy.Spider):
 
     def __init__(self, *args, **vmnf_handler):
         super(DJEngineParser, self).__init__(*args,**vmnf_handler)
-        
+       
         self._vmnfp_ = VMNFPayloads(**vmnf_handler)
         self.cookies = {}
         self.djx_def = {}
@@ -91,7 +89,7 @@ class DJEngineParser(scrapy.Spider):
         self.patterns = vmnf_handler.get('patterns')
         self.fuzz_step = vmnf_handler.get('fuzz_step')
         self.caught_exceptions = []
-
+        
         _ISSUES_ = IssuesPool()
         _ISSUES_['ISSUES'] = {
             'EXCEPTIONS': [],
@@ -124,6 +122,7 @@ class DJEngineParser(scrapy.Spider):
         result = resultParser(self._ISSUES_POOL, **self.vmnf_handler).show_issues()
  
     def start_requests(self):
+
         # This will be used in future versions to configure the fuzzer options: full, fast, etc.
         scope = DJUtils(False,False)
         self._FuzzURLsPool_ = scope.get_scope(self.target, self.patterns, self._vmnfp_)
@@ -321,10 +320,7 @@ class DJEngineParser(scrapy.Spider):
                     flag_status = colored(" djunch().parser({}) ".format(response.status),'red', 'on_cyan',attrs=['dark'])
                     status_msg=colored('Triggered a Django forbidden warning:','cyan')
                     cprint("\n{} {} {} \n  → '{}'".format(flag_status,status_msg,p,debug_step))
-                    '''
-                    cprint("\n[djunch().parser({})] Triggered a Django forbidden warning: {} \n  → '{}'".format(
-                        response.status,p,debug_step),'yellow')
-                    '''
+                    
                     self._ISSUE_ = ConfigIssuesItem()
                     self._ISSUE_['ISSUE_TYPE'] = 'CONFIGURATION'
                     self._ISSUE_['IID'] = 'CI{}'.format(len(self._ISSUES_POOL['CONFIGURATION']) + 1)
@@ -475,8 +471,6 @@ class DJEngineParser(scrapy.Spider):
                 v = v[v.find('class="fname">')+14:]
                 value = v.replace('</span>','').replace('</td>','').strip()
 
-            #EXCEPTION_SUMMARY[key] = value # !ctp: commented
-
             if not value or value is None:
                 value = (s.xpath('.//td//pre/text()').get())
 
@@ -487,15 +481,12 @@ class DJEngineParser(scrapy.Spider):
                         )
                     value = values
                 
-                #EXCEPTION_SUMMARY[key] = value # !ctp: commented
-                #continue !ctp: disabled 
-
             EXCEPTION_SUMMARY[key]=value
             if key == 'Exception Type':
                 hl_color = 'magenta'
 
-            print('{}{}:\t   {}'.format((' ' * int(5-len(key) + 14)),key,colored(value, hl_color)))
-        
+            # print('{}{}:\t   {}'.format((' ' * int(5-len(key) + 14)),key,colored(value, hl_color)))
+       
         # link exception type with related environment variable (if exists)
         EXCEPTION_TYPE = EXCEPTION_SUMMARY['Exception Type']
         EXCEPTION_REASON = False

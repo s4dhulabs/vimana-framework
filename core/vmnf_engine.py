@@ -7,8 +7,9 @@ sys.path.insert(0, '../../../')
 from termcolor import colored, cprint
 from pathlib import Path
 from time import sleep
-import pathlib
 import argparse
+import pathlib
+import yaml
 import os
 
 # vimana core modules
@@ -22,9 +23,10 @@ from core.vmnf_arg_parser import VimanaParser
 from core.vmnf_payloads import  VMNFPayloads 
 from core.vmnf_manager import vmng
 
-
 # vimana helpers 
 from helpers.vmnf_helpers import VimanaHelp
+import resources.vmnf_validators as validator
+
 
 # vimana resources
 from resources import vmnf_banners 
@@ -81,7 +83,7 @@ def abduct():
     
     vmn_parser = VimanaParser()
     handler_ns = vmn_parser.start_handler()
-    
+
     if not handler_ns:
         print('[vmnf_engine] Something went wrong during scope validation. Check syntax and try again')
         sys.exit(1)
@@ -95,11 +97,31 @@ def abduct():
         vmng(**vars(handler_ns))  
 
     # run module
-    elif handler_ns.module_run:
-        if sys.argv[-1] != handler_ns.module_run:
-            vmnf_banners.load()
-            vmnf_banners.default_vmn_banner()
+    elif handler_ns.module_run\
+        or handler_ns.abduct_file:
         
+        if sys.argv[-1] != handler_ns.module_run:
+            if not handler_ns.session_mode:
+                vmnf_banners.load()
+                vmnf_banners.default_vmn_banner()
+        
+        # loading settings from abduct file
+        if handler_ns.abduct_file:
+            if not validator.check_file(handler_ns.abduct_file):
+                return False
+
+            with open(handler_ns.abduct_file) as file:
+                abd_set = yaml.load(file, Loader=yaml.FullLoader)
+                
+                try:
+                    vars(handler_ns).update(abd_set.get('abduct'))
+                except TypeError:
+                    print('\n[abduct]→ Malformed abd file: {}. Check it out and try again.\n'.format(
+                        handler_ns.abduct_file
+                        )
+                    )
+                    sys.exit(1)
+
         handler_ns.scope = ScopeParser(**vars(handler_ns)).parse_scope()
         vmng(**vars(handler_ns))  
 

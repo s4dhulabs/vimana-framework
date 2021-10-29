@@ -249,7 +249,6 @@ class DJUtils:
                     )
 
                     count +=1
-
         
         self.full_scope = list(
             chain(
@@ -322,14 +321,14 @@ class DJUtils:
         request_headers = exception['REQUEST_HEADERS']
         environment = exception['ENVIRONMENT']
         summary = exception['EXCEPTION_SUMMARY']
+        hl_x_type = colored(summary.get('Exception Type'), 'red', attrs=['bold'])
         traceback = exception['EXCEPTION_TRACEBACK']
         environment = exception['ENVIRONMENT']
         traceback_objects = exception['OBJECTS']
         #module_args = exception_items['EXCEPTION_TRACEBACK']
-        
 
         print()
-        print('\n      {}'.format(colored('    REQUEST   ', 'red', 'on_white', attrs=['bold'])))
+        print('\n      {}'.format(colored('    REQUEST   ', 'white', 'on_red', attrs=['bold'])))
         print()
         for k,v in (request_headers.items()):
             k = k.decode()
@@ -338,7 +337,7 @@ class DJUtils:
         print()
         sleep(1)
 
-        print('\n      {}'.format(colored('    SERVER    ', 'red', 'on_white', attrs=['bold'])))
+        print('\n      {}'.format(colored('    SERVER    ', 'white', 'on_red', attrs=['bold'])))
         print()
         for key,value in environment.items():
             if key.strip() in djev().SERVER_:
@@ -352,6 +351,7 @@ class DJUtils:
         values = []
         for key, value in summary.items():
             hl_color = 'green'
+            attr=[]
             if isinstance(value, (list)):
                 print('{}{}:'.format((' ' * int(5-len(key) + 14)),key))
                 for v in value:
@@ -360,9 +360,10 @@ class DJUtils:
                 continue
 
             if key == 'Exception Type':
-                hl_color = 'magenta'
+                hl_color = 'red'
+                attr=['bold']
 
-            print('{}{}:\t   {}'.format((' ' * int(5-len(key) + 14)),key,colored(value, hl_color)))
+            print('{}{}:\t   {}'.format((' ' * int(5-len(key) + 14)),key,colored(value, hl_color,attrs=attr)))
 
         sleep(1)
 
@@ -372,29 +373,43 @@ class DJUtils:
                 ' Exception reason',colored(exception['EXCEPTION_REASON'], 'green')
                 )
             )
- 
-
         print()
-        sleep(1)
+        sleep(0.30)
         
         print('\n   {}'.format(colored('    TRACEBACK    ', 'white', 'on_red', attrs=['bold'])))
         print()
         
         mark = colored(' ⠶ ', 'green', attrs=['bold'])
-        print()
+        #print()
+
+        tp_count = 0
+        total_triggers = len(traceback)
         for entry in traceback:
-            print('   {} {}'.format(mark, colored('Trigger point', 'cyan')))
+            tp_count +=1
+            hl_tpc = colored(tp_count, 'white', attrs=['bold'])
+
+            print('   {} {}'.format(
+                mark, colored('Trigger Point {}/{}: {}'.format(
+                    hl_tpc,
+                    total_triggers,
+                    hl_x_type), 'cyan')
+                )
+            )
+            
+            
             print()
             for key,value in entry['MODULE_TRIGGERS'].items():
                 print('{}{}:\t   {}'.format((' ' * int(5-len(key) + 14)),key,
                     highlight(value,PythonLexer(),TerminalFormatter()).strip()
                     )
                 )
-            print('\n\n')
+            print('\n')
 
             for line in entry['HL_CODE_SNIPPET']:
                 print(line)
+                sleep(0.1)
 
+            sleep(0.20)
 
             print('\n\n')
             print('   {} {}'.format(mark,colored('Local variables', 'cyan')))
@@ -406,8 +421,8 @@ class DJUtils:
                     )
                 )
 
-            print("=" * 100)
-            print()
+            print("-" * 100)
+            #print()
 
         #print('\n\n')
         print('   {} {}'.format(mark,colored('Traceback Objects', 'cyan')))

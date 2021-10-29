@@ -14,7 +14,7 @@
 """
 
 
-import sys, re, os, random, string, platform
+import sys, re, os, random, string, platform,signal
 from datetime import datetime
 from time import sleep
 import argparse
@@ -29,8 +29,8 @@ from .engines._crawler_settings import headers
 from .engines._dju_xparser import DJEngineParser as _djuep_
 
 from scrapy.crawler import CrawlerProcess
-
-
+#from twisted.internet.error import ReactorAlreadyRunning
+import twisted
 
 class siddhi:   
     module_information = collections.OrderedDict()
@@ -156,5 +156,6 @@ class siddhi:
         # call djunch engine v2
         process = CrawlerProcess(dict(settings))
         process.crawl(_djuep_, **self.vmnf_handler)
-        process.start()
-
+        try:
+            process.start()
+        except:pass
