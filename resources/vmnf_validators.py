@@ -1,5 +1,36 @@
+import os
+from termcolor import colored,cprint
 
 
+def check_file(file):
+    scope_error = colored(' - scope_error - ', 'white', 'on_red', attrs=['bold'])
+
+    if not os.path.exists(file):
+        print('''\r{} File not found: {}. Check the file location and try again.\n'''.format(
+            scope_error, file
+            )
+        )
+        return False
+
+    if not os.path.isfile(file) \
+        or not file.endswith('.yaml'):
+        
+        arg_msg=''
+        arg_msg = 'Requires a configuration file with .yaml extension\n'
+        print('''\r{} Invalid YAML file: {}. {}'''.format(
+            scope_error, file, arg_msg
+            )
+        )
+        return False
+
+    if os.path.getsize(file) == 0:
+        print('''\r{} The file is empty: {}\n'''.format(
+            scope_error, file
+            )
+        )
+        return False
+
+    return True
 
 def get_tool_scope(**args):
 

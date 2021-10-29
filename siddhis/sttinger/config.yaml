@@ -1,0 +1,26 @@
+# sttatinger v1 for vimana framework:
+# https://github.com/s4dhulabs/vimana-framework
+# configuration file
+
+sttg_conf:
+    version: '1.0'
+    debug: False
+    verbose: False
+    quit_mode: True
+    sttg_patterns: {
+        'base':[
+                '/static/admin/css/base.css',
+                '/admin/media/css/base.css'],
+        'actions':[
+                '/static/admin/js/actions.js',
+                '/admin/media/js/actions.js']
+        }
+    headers: {
+        "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:90.0) Gecko/20100101 Firefox/90.0",
+        "Accept": "application/json, text/javascript, */*; q=0.01",
+        "Accept-Language": "en-US,en;q=0.5",
+        "Accept-Encoding": "gzip, deflate",
+        "X-Requested-With": "XMLHttpRequest",
+        "Connection": "close",
+        }
+

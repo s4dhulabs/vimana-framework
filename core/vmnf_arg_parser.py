@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from termcolor import colored,cprint
 from datetime import datetime
 import argparse
 from time import sleep
@@ -80,10 +81,11 @@ class VimanaParser:
             add_help=False
         )
         # add aditional arguments to complement shared args
+        run_cmd.add_argument('--abduct', action='store', dest='abduct_file')
         run_cmd.add_argument('--module', action='store', dest='module_run')
         run_cmd.add_argument('--fuzzer', action='store_true')
         run_cmd.add_argument('--discovery', action='store_true')
-        run_cmd.add_argument('--framework', action='store')
+        run_cmd.add_argument('--fingerprint', action='store_true')
         
         # -----------------------------------------------------------------
         # 'info' command overview 
@@ -119,6 +121,7 @@ class VimanaParser:
         }
         
         arg_help = {
+            '--abduct': VimanaHelp.abduct.__doc__,
             '--proxy':  VimanaHelp.proxy.__doc__, 
             '--proxy-type':  VimanaHelp.proxy.__doc__, 
             '--target': VimanaHelp.set_scope.__doc__
@@ -136,7 +139,8 @@ class VimanaParser:
             '--fuzzer',
             '--proxy',
             '--proxy-type',
-            '--nmap-xml'
+            '--nmap-xml',
+            '--abduct'
         ]
 
         handler_ns  = argparse.Namespace(
@@ -150,6 +154,7 @@ class VimanaParser:
             port_range      = False,
             single_port     = False,
             start           = False,
+            abduct_file     = False,
             interactive     = False,
             type            = False,
             category        = False,
@@ -178,17 +183,16 @@ class VimanaParser:
             _cmd_ = sys.argv[1]
 
         if (sys.argv[-1]) in required_args:
-            
             if sys.argv[-1] in arg_help.keys():
                 print(VimanaHelp().__doc__)
                 print(arg_help[sys.argv[-1]])
-
+            
             print('[vmnf_argparser: {}] Missing a value for the argument {}'.format(
-                datetime.now().date(),
+                datetime.now(),
                 sys.argv[-1]
                 )
             )
-           
+            
             tools = [
                 '--fuzzer',
                 '--discovery'
@@ -215,7 +219,7 @@ class VimanaParser:
 
         handler_ns.args = vmn_options.parse_known_args(
             namespace=handler_ns)[1]
-
+        
         return handler_ns
 
 

@@ -88,9 +88,7 @@ def handler_filter_id(mod_filter, filter_by):
 
 
 def vmng(**handler_ns):
-    
-    # framework debug argument (not available in this version)
-    
+    # framework debug argument (not available in this version) 
     _vmnf_stats_ = handler_ns.get('_vmnf_stats_')
     vmnf_debug = False
 
@@ -125,6 +123,7 @@ def vmng(**handler_ns):
         # set choosen module name to info and run commands
         if module_run: 
             search_module_name  = module_run.strip().lower()
+
         elif module_info:
             search_module_name  = module_info.strip().lower()
         elif module_list:
@@ -259,8 +258,6 @@ def vmng(**handler_ns):
                     if not status_ok:
                         '''this is not usefull in this version, but will be [control other siddhi aspects]'''
                         pass
-                        #print('Something went wrong during {} execution'.format(module_name_))
-                        #sys.exit(1)
 
                     return True
                 
@@ -289,7 +286,6 @@ def vmng(**handler_ns):
                             found_module = True
                     
                     elif fmwk_type_filters:
-                        print('yes right here in "fmwk_type_filters"')
                         if module_type_ == search_module_type \
                             and framework_target == module_framework_:
                             found_module = True
@@ -336,16 +332,10 @@ def vmng(**handler_ns):
 
     if _vmnf_stats_:
         return module_stats_types
-
+    
     #if modules_table:
     if module_match:
         print(modules_table)
-    else:
-        print('''\n@-> No results found with filters: {}. 
-        \rFeel free to code the first: https://github.com/s4dhul4bs/vimana-framework\n'''.format(
-            filter_pool
-            )
-        )
-
-        return False
+        return True
+    return False
 

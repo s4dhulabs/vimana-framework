@@ -63,9 +63,6 @@ class resultParser:
         self.vmnf_handler = vmnf_handler 
         self.siddhi = vmnf_handler['module_run'].lower()
 
-        # dmt mapped url patterns
-        self.xp_tbl = vmnf_handler['patterns_table']
-
         # results from djunch fuzzer 
         if (len(results['EXCEPTIONS'])) == 0:
             return None
@@ -80,8 +77,11 @@ class resultParser:
         self.general_objects = results['GENERAL_OBJECTS']
         
         # mapped (expanded url patterns from DMT)
-        self.mu_patterns = self.vmnf_handler['patterns_views']
-        
+        self.raw_patterns = self.vmnf_handler['raw_patterns']
+       
+        # passive fingerprint results
+        self.fingerprint = self.vmnf_handler['fingerprint']
+
     def show_issues(self):
         print("\033c", end="")
         vmnf_banners.audit_report_banner()
@@ -124,21 +124,26 @@ class resultParser:
         if self.sampler['EXCEPTION_SUMMARY'].get('Django Version'):
             x_summary = self.sampler['EXCEPTION_SUMMARY']
             django_version = x_summary.get('Django Version').strip()
-            installed_items = self.sampler['INSTALLED_ITEMS']
             
-            # test 
-            # django_version = '3.0.1'
+            installed_items = self.sampler['INSTALLED_ITEMS']
             
             # if Django Versions is found in Djunch 'environment_context'
             if django_version and django_version is not None:
                 if len(django_version.split('.')) >= 3:
                     django_version = '.'.join(django_version.split('.')[:-1])
-                
-                
-                # - Get CVEs and security tickets for abducted framework version-
-                security_tickets = tictrac.siddhi(django_version).start()
-                cves = prana.siddhi(django_version).start()
-                #_prana_.append(cves)
+                    
+                # if dmt already retrieve sec issues through passive fingerprint
+                if django_version == self.fingerprint.get('flag_version'):
+                    if self.fingerprint.get('cves'):
+                        cves = self.fingerprint.get('cves')
+                    
+                    if self.fingerprint.get('tcts'):
+                        security_tickets = self.fingerprint.get('tcts')
+               
+                else:
+                    # - Get CVEs and security tickets for abducted framework version-
+                    security_tickets = tictrac.siddhi(django_version).start()
+                    cves = prana.siddhi(django_version).start()
                 
                 if security_tickets is not None:
                     #and security_tickets is not None: 
@@ -194,7 +199,7 @@ class resultParser:
             'objects': len(self.general_objects),
             'security_tickets': len(security_tickets) if security_tickets else 0,
             'cve_ids': len(cves) if cves else 0,
-            'url_patterns': len(self.mu_patterns) if self.mu_patterns else 0,   
+            'url_patterns': len(self.raw_patterns) if self.raw_patterns else 0,   
             'applications': len(installed_items.get('Installed Applications')),
             'middlewares' : len(installed_items.get('Installed Middlewares'))
         }
@@ -403,12 +408,14 @@ class resultParser:
         ###################
         ### URL patterns ##
         ###################
-        if self.mu_patterns:
+        if self.raw_patterns:
             cprint('\nWere identified {} URL patterns that served as initial scope for fuzzing step'.format(
-                len(self.mu_patterns)),'cyan')
+                len(self.raw_patterns)),'cyan')
 
             # mapped URL patterns (reusing dmt construted table here)
-            print(self.xp_tbl)
+            for pattern in self.raw_patterns:
+                print('   + {}'.format(pattern))
+                sleep(0.05)
         
         ##################
         ### exceptions ###
@@ -500,7 +507,7 @@ class resultParser:
             'exceptions': self.exceptions_tbl,
             'configuration': self.config_issues_tbl,
             'contexts': self.envleak_tbl,
-            'patterns': self.xp_tbl,
+            'raw_patterns': self.raw_patterns,
             'objects': self.traceback_objects_tbl
 
         }

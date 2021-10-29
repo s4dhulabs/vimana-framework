@@ -3,14 +3,18 @@ from core.vmnf_check_target import CheckTargetScope
 from netaddr.core import AddrFormatError
 from libnmap.parser import NmapParser
 from termcolor import colored, cprint
+from core.vmnf_manager import vmng
 from datetime import datetime
 from netaddr import valid_ipv4
 from netaddr import IPNetwork
 from time import sleep
+import argparse
 import pathlib
 import socket
+import yaml
 import sys
 import os
+
 
 
 class ScopeParser:
@@ -18,7 +22,7 @@ class ScopeParser:
         self.handler_ns = handler_ns
         self.target_scope = {}
 
-        self.scope_error = colored(' - scope_error - ', 'red', 'on_white', attrs=['bold'])
+        self.scope_error = colored(' - scope_error - ', 'white', 'on_red', attrs=['bold'])
         self.target_defined = True if handler_ns['single_target'] \
             or handler_ns['file_scope'] \
             or handler_ns['ip_range'] \
@@ -74,7 +78,8 @@ class ScopeParser:
         _scope_ = {}
         self.target_list = []
         self.port_list = []
-                
+        
+        # nmap xml scope file
         if self.handler_ns['nmap_xml']:
             xml_scope_file = self.handler_ns['nmap_xml']
             xml_location = str(pathlib.Path().absolute()) + '/' + xml_scope_file
@@ -117,6 +122,7 @@ class ScopeParser:
                 arg = colored('--target-list', 'green', attrs=[])
                 print('''\r{} Invalid format for the --target argument, try this with {} or specify a single target.\n'''.format(self.scope_error,arg)) 
                 sys.exit(1)  
+
             target = self.handler_ns['single_target']
             try:
                 if (valid_ipv4(target)):

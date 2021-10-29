@@ -1,7 +1,7 @@
 # encoding=utf8
 
 from resources.vmnf_banners import s4dhu0nv1m4n4
-
+from termcolor import colored, cprint
 
 class VimanaHelp():
     '''
@@ -11,7 +11,7 @@ class VimanaHelp():
      \   /|  |  Y Y  \\/ __ \\|   |  \\/ __ \\_
       \_/ |__|__|_|__(____  /___|  (____  /
                          \\/      \\/     \\/   
-        @s4dhul4bs                 Alpha
+        @s4dhulabs           v0.4
         
         '''
 
@@ -22,11 +22,11 @@ class VimanaHelp():
         '''
     Commands:
 
-    start       Starts Vimana in a interactive mode
-    list        Lists available modules
-    run         Runs a specific module directly (non-interactive)
-    info        Shows information about modules
-    args        Shows module arguments 
+    start       Start Vimana in a interactive mode
+    list        List available modules
+    run         Run a specific module directly (non-interactive)
+    info        Show information about modules
+    args        Show module arguments 
     about       About the framework 
 
         '''
@@ -35,8 +35,8 @@ class VimanaHelp():
         '''
         [proxy] 
 
-        --set-proxy         Enables the default proxy for all requests: SOCKS5://127.0.0.1:9050
-        --proxy             Configures the proxy specified by the ip:port string 
+        --set-proxy         Enable the default proxy for all requests: SOCKS5://127.0.0.1:9050
+        --proxy             Configure the proxy specified by the ip:port string 
         --proxy-type        Specify the proxy protocol to be used: SOCKS4, SOCKS5, HTTP (required --proxy option)
         '''
 
@@ -63,21 +63,33 @@ class VimanaHelp():
         --port               Port where Django is running 
         --port-list          List of ports to check Django 
         --port-range         Port range to check Django         
-        --ignore-state       Disables IP and port status verifications 
+        --ignore-state       Disable IP and port status verifications 
         '''
 
+    def abduct(self):
+        '''
+
+    [abduct]
+
+        this option allows an analysis to be performed from the settings of the specified yaml file. 
+        The expected model can be seen in the abd.yaml example.
+        
+        example: vimana run --abduct abd.yaml
+
+        '''
+    
     def general_options(self):
         '''
 
     [general settings]
 
-        --debug              Displays debugging information and findings in realtime
-        --verbose            Enables verbose mode (incremental)
-        --random             Enables random mode for suported tasks
+        --debug              Display debugging information and findings in realtime
+        --verbose            Enable verbose mode (incremental)
+        --random             Enable random mode for suported tasks
         --wait               Wait for 'n' seconds beetwen steps 
-        --threads            Sets number of threads to use (default: 3)
-        --timeout            Sets timeout for HTTP requests  (default: 5 seconds)
-        --pause-steps        Runs tests pausing between steps
+        --threads            Set number of threads to use (default: 3)
+        --timeout            Set timeout for HTTP requests  (default: 5 seconds)
+        --pause-steps        Run tests pausing between steps
         '''
 
     def fuzzer_args(self):

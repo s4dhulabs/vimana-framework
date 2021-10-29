@@ -83,6 +83,7 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--port-list",action="store",nargs='+',dest='port_list',default=False)
         vmnf_shared_parser.add_argument("--port-range",action="store",dest='port_range',default=False)
         vmnf_shared_parser.add_argument('--ignore-state',action='store_true',dest='ignore_state',default=False)
+        vmnf_shared_parser.add_argument('--search-issues',action='store_true',dest='search_issues',default=False)
         # -------------------------------------------------------------------------------
         # > Analysis - [ configuration options ] 
         # -------------------------------------------------------------------------------
@@ -110,9 +111,13 @@ class VimanaSharedArgs:
         # > Payload settings
         # -------------------------------------------------------------------------------
         vmnf_shared_parser.add_argument("--local-port",action="store",dest='local_port',default=False)
-        vmnf_shared_parser.add_argument("--remote-port",action="store",dest='remote_port',default=False)
         vmnf_shared_parser.add_argument("--local-host",action="store",dest='local_host',default=False)
+        vmnf_shared_parser.add_argument("--remote-port",action="store",dest='remote_port',default=False)
+        vmnf_shared_parser.add_argument("--remote-host",action="store",dest='remote_port',default=False)
         vmnf_shared_parser.add_argument("--payload",action="store",dest='payload_type',default=False)
+        vmnf_shared_parser.add_argument("--forward",action="store",dest='foward_session',default=False)
+        vmnf_shared_parser.add_argument("--siddhi-call",action="store_true",dest='siddhi_call',default=False)
+        vmnf_shared_parser.add_argument("--session",action="store_true",dest='session_mode',default=False)
         
         return vmnf_shared_parser
 
