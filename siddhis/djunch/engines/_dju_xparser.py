@@ -125,7 +125,7 @@ class DJEngineParser(scrapy.Spider):
 
         # This will be used in future versions to configure the fuzzer options: full, fast, etc.
         scope = DJUtils(False,False)
-        self._FuzzURLsPool_ = scope.get_scope(self.target, self.patterns, self._vmnfp_)
+        self._FuzzURLsPool_ = scope.get_scope(self.target, self._vmnfp_, **self.vmnf_handler)
         self.fuzz_scope_size = len(self._FuzzURLsPool_['FULL_SCOPE'])
         self.fuzz_rounds = len(self._FuzzURLsPool_) 
         step_mark = colored('↪', 'white', attrs=['bold'])
