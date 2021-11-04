@@ -1,20 +1,21 @@
 # DJunch utils 
 
-from time import sleep
-from urllib.parse import urlparse, urljoin
 from settings.siddhis_shared_settings import django_envvars as djev
-from . exceptions._items import FuzzURLsPool
 from resources.vmnf_fuzz_data import VMNFPayloads
+from pygments.formatters import TerminalFormatter
+from . exceptions._items import FuzzURLsPool
+from urllib.parse import urlparse, urljoin
+from pygments.lexers import PythonLexer
 from termcolor import colored, cprint
+from termcolor import colored,cprint
+from prettytable import PrettyTable
+from pygments import highlight
 from resources.colors import *
+from mimesis import Generic
 from itertools import chain
 from random import choice
-from pygments.formatters import TerminalFormatter
-from pygments.lexers import PythonLexer
-from termcolor import colored,cprint
-from pygments import highlight
-from mimesis import Generic
-from prettytable import PrettyTable
+from time import sleep
+import os
 
 
 
@@ -143,15 +144,18 @@ class DJUtils:
 
         return env_contexts
     
-    def get_scope(self, target, patterns, payloads):
+    def get_scope(self, target, payloads, **handler):
         self._FuzzURLsPool_ = FuzzURLsPool()
         self._vmnfp_ = payloads
-        
+        patterns = handler.get('patterns')
+        regex_patterns = handler.get('fuzz_regex_flags',False)
+
         self.target = 'http://' + target \
             if not target.startswith('http') else target
          
         status = colored('building scope from', 'green')
         hl_pattern = colored('{} patterns'.format(len(patterns)), 'white')
+        
         print('\n{} Starting DJunch | {} {}'.format(
             (Gn_c  + "⠿" + C_c),
             status,
@@ -171,8 +175,10 @@ class DJUtils:
         self.random_path_traversal=[]
         self.random_ssti_payloads=[]
         self.random_sqli_payloads=[]
-
+        self.regex_patterns_payloads=[]
+        
         if patterns is not None:
+            # build scope from clean patterns
             self.raw_urls = [urljoin(self.target, pattern) \
                 for pattern in patterns \
                     if patterns is not None
@@ -198,6 +204,7 @@ class DJUtils:
             ssti_payloads= self._vmnfp_.get_ssti_payloads()
             xss_payloads= self._vmnfp_.get_xss_payloads()
             sqli_payloads= self._vmnfp_.get_sqli_payloads()
+            
             common_params= [
                 'add','cmd','alterar',
                 'consultar','remove','delete', 
@@ -205,6 +212,7 @@ class DJUtils:
             ]
 
             count = 1
+            # build scope from initial raw patterns (dmt input)
             for url in self.raw_urls[1:]:
                 url_path = urlparse(url).path
                 for url_p in (url_path.split('/')):
@@ -250,6 +258,27 @@ class DJUtils:
 
                     count +=1
         
+        # altough the main idea here is to set contextual fuzzer according to regex (oposite)
+        # at this time we're just playing a little bit with this to enrich fuzzer scope
+        if regex_patterns:
+            for view,rgx_patterns in regex_patterns.items():
+                hl_view = colored(view,'red') 
+                rgx_msg = ('   |- Building scope from fuzz_regex_patterns / view: {} ({} patterns)...'.format(
+                    hl_view,len(rgx_patterns)
+                    )
+                )
+                print(rgx_msg.ljust(os.get_terminal_size().columns - 1), end="\r")
+                sleep(0.10)
+
+                for pattern in rgx_patterns:
+                    self.regex_patterns_payloads.extend(
+                        [
+                            urljoin(self.target, pattern.replace('{{fuzz_flag}}',str(choice(range(9000))))),
+                            urljoin(self.target, pattern.replace('{{fuzz_flag}}',g.text.word())),
+                            urljoin(self.target, pattern.replace('{{fuzz_flag}}',str(g.numbers.float_number())))
+                        ]
+                    )
+
         self.full_scope = list(
             chain(
                 set(self.raw_urls),
@@ -261,11 +290,12 @@ class DJUtils:
                 set(self.random_path_traversal),
                 set(self.random_param_values),
                 set(self.random_ssti_payloads),
-                set(self.random_sqli_payloads)
+                set(self.random_sqli_payloads),
+                set(self.regex_patterns_payloads)
             )
         )
 
-        # These segmentations and scope types will be used to set fuzzer mode
+        # These segmentations and scope types will be used to set fuzzer mode in future versions
         self._FuzzURLsPool_ = {
             'FUZZ_HEADERS': self.raw_urls,
             'RAW_URLS': self.raw_urls,
@@ -278,6 +308,7 @@ class DJUtils:
             'RANDOM_PARAM_VALUES':self.random_param_values,
             'RANDOM_SSTI_PAYLOADS':self.random_ssti_payloads,
             'RANDOM_SQLI_PAYLOADS':self.random_sqli_payloads,
+            'REGEX_PATTERNS_URLS': self.regex_patterns_payloads,
             'FULL_SCOPE':self.full_scope
         }
         

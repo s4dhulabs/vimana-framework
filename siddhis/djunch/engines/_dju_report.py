@@ -144,7 +144,7 @@ class resultParser:
                     # - Get CVEs and security tickets for abducted framework version-
                     security_tickets = tictrac.siddhi(django_version).start()
                     cves = prana.siddhi(django_version).start()
-                
+
                 if security_tickets is not None:
                     #and security_tickets is not None: 
                 
@@ -409,9 +409,9 @@ class resultParser:
         ### URL patterns ##
         ###################
         if self.raw_patterns:
-            cprint('\nWere identified {} URL patterns that served as initial scope for fuzzing step'.format(
+            cprint('\nWere identified {} URL patterns that served as initial scope for fuzzing step\n'.format(
                 len(self.raw_patterns)),'cyan')
-
+            
             # mapped URL patterns (reusing dmt construted table here)
             for pattern in self.raw_patterns:
                 print('   + {}'.format(pattern))

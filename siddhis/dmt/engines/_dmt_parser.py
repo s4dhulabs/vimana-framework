@@ -69,6 +69,7 @@ class DMTEngine(scrapy.Spider):
         self.meta = vmnf_handler.get('meta')
         self.patterns = vmnf_handler.get('patterns')
         self.auto_mode = vmnf_handler.get('auto')
+        self.found_version = False
         self.GenObj = Generic()
 
         self.only_patterns=[]
@@ -170,7 +171,7 @@ class DMTEngine(scrapy.Spider):
         for k,v in response.headers.items():
             print('   - {}: {}'.format(k.decode(),v[0].decode()))
         
-        # passive framework version fingerprint
+        # passive framework version fingerprint - sttinger
         self.run_passive_fingerprint()
 
         cprint('\n{}Checking DEBUG status...'.format(self.f_start),'cyan')
@@ -187,16 +188,20 @@ class DMTEngine(scrapy.Spider):
 
             print('{} {} mode is activated.\n'.format(self.f_map,d))
             sleep(1)
-
-            confirm_step = 'n'
-            confirm_step = input(colored('[DMT] The target is vulnerable, would you like to continue? (Y/n) → ', 'cyan'))
             
-            if not confirm_step\
-                or confirm_step.lower() == 'n':
-                self.exit_step=True 
-                cprint('See you Sadhu! Leaving the ship...', 'green')
-                cprint('\tHit CTRL+C to exit the engine', 'green')
-                sys.exit(0)
+            if not self.auto_mode:
+                confirm_step = 'n'
+                confirm_step = input(colored('[DMT] The target is vulnerable, would you like to continue? (Y/n) → ', 'cyan'))
+            
+                if not confirm_step\
+                    or confirm_step.lower() == 'n':
+                    
+                    self.exit_step=True 
+                    
+                    cprint('See you Sadhu! Leaving the ship...', 'green')
+                    cprint('\tHit CTRL+C to exit the engine', 'green')
+                    
+                    sys.exit(0)
 
             self.URLconf=(response.xpath('//div[@id="info"]//p//code/text()').get()).strip()
             
@@ -243,7 +248,7 @@ class DMTEngine(scrapy.Spider):
  
     def set_flag_regex_patterns(self):
         
-        fuzz_flag = '{{fuzz_flag:int}}'
+        fuzz_flag = '{{fuzz_flag}}'
         self.fuzz_flags_context = {}
         total_views = len(self.p_context.keys())
         tv_hl = colored(total_views, 'white')
