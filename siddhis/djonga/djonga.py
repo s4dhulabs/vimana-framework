@@ -81,7 +81,7 @@ class siddhi:
         self.client = requests.session()
         self.token_cache = []
 
-    def get_csrf_token(self, URL =False):
+    def get_csrf_token(self, URL=False):
         
         if not URL:
             request_url = self.URL
@@ -107,7 +107,6 @@ class siddhi:
         return(csrftoken)
 
     def run_brute_force(self):
-        
         users_len = Yn_c + str(len(self.usernames)) + D_c
         pass_len  = Yn_c + str(len(self.passwords)) + D_c
         csrftoken = False
@@ -165,7 +164,7 @@ class siddhi:
             token = R_c + csrftoken + D_c
 
         print(" {:<25} {:<20} {:<19} {:<40} {:>10}".format(runtime, http_status, status, userpass, token))
-    
+
     def ThreadHandler(self):
         max_workers = 20
         self.djonga_start = True
@@ -181,6 +180,7 @@ class siddhi:
                 self.username = username.strip()
                 self.password = password.strip()
                 pool.add_task(self.run_brute_force)
+                sleep(0.05)
         pool.wait_completion()
 
     def parse_args(self):
@@ -216,8 +216,8 @@ class siddhi:
             self.URL = self.target + self.login_path
             self.LOGOUT_URL = self.target + self.logout_path
             djonga_start = G_c + str(datetime.now().strftime('%Y-%m-%d %H:%M:%S')) + D_c
-            print("\nø {}Starting Dj0nga at {}\n".format(Wn_c, djonga_start, D_c))
-            sleep(1)
+            print("\nø {}Starting Dj0nga at {}\n".format(W_c, djonga_start, D_c))
+            sleep(0.30)
 
             print('''- Target:    {}\n- Usernames: {}\n- Passwords: {}\n- Threads:   {}\n- Randomize: {}\n'''.format(
                 handler_ns.target, 
@@ -227,7 +227,7 @@ class siddhi:
                 handler_ns.random
                 )
             )
-            sleep(2)
+            sleep(0.30)
             
             # initial test to check if URL is accessible
             try:

@@ -131,7 +131,7 @@ class resultParser:
             if django_version and django_version is not None:
                 if len(django_version.split('.')) >= 3:
                     django_version = '.'.join(django_version.split('.')[:-1])
-                    
+                 
                 # if dmt already retrieve sec issues through passive fingerprint
                 if django_version == self.fingerprint.get('flag_version'):
                     if self.fingerprint.get('cves'):
@@ -139,12 +139,12 @@ class resultParser:
                     
                     if self.fingerprint.get('tcts'):
                         security_tickets = self.fingerprint.get('tcts')
-               
                 else:
                     # - Get CVEs and security tickets for abducted framework version-
-                    security_tickets = tictrac.siddhi(django_version).start()
-                    cves = prana.siddhi(django_version).start()
-
+                    #security_tickets = tictrac.siddhi(django_version).start()
+                    #cves = prana.siddhi(django_version).start()
+                    pass
+                
                 if security_tickets is not None:
                     #and security_tickets is not None: 
                 
