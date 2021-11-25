@@ -4,7 +4,7 @@
         ((-( V | 1 | M | 4 | N | 4 )-))
             \_/ \_/ \_/ \_/ \_/ \_/ 
 
-                    - 2PACX -
+                    - PSHELL -
 
     PSHELL v1: Prompt shell for Vimana Framework
     s4dhu <s4dhul4bs[at]prontonmail[dot]ch
@@ -132,7 +132,8 @@ class vmnfshell:
             7:'applications',
             8:'middlewares',
             9:'databases',
-            10:'objects'
+            10:'objects',
+            11:'variables'
         }
 
         # ==[ UX - EXCEPTIONS ]==
@@ -310,6 +311,19 @@ class vmnfshell:
                             cprint("\n→ Parsed traceback objects", 'cyan')
                             print(self.report_items['objects'])
                             print()
+                        elif arg == 'variables':
+                            print()
+                            for exception in self._issues_.get('EXCEPTIONS'):
+                                
+                                cprint('\t  ' + exception['EXCEPTION_SUMMARY'].get('Exception Type') + '   ', 
+                                        'white', 'on_red', attrs=['bold'])
+                                print()
+                                sleep(0.1)
+
+                                DJUtils(False,False).show_module_args(
+                                    *exception['EXCEPTION_TRACEBACK']
+                                )
+
                         continue
                     
                     elif cmd == 'abduct':
@@ -580,5 +594,6 @@ class vmnfshell:
         \r  8:  middlewares     show installed middlewares
         \r  9:  databases       show available databases
         \r 10:  objects         show traceback objects
+        \r 11:  variables       show leaked app variables
         ''')
 

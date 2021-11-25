@@ -211,6 +211,7 @@ class DJUtils:
                 'config','edit','set','change'
             ]
 
+            
             count = 1
             # build scope from initial raw patterns (dmt input)
             for url in self.raw_urls[1:]:
@@ -346,6 +347,26 @@ class DJUtils:
             'objects': self.get_pretty_table(**table_models().traceback_tbl_set)
         }
 
+    def show_module_args(self,*except_objs):
+        for module_trigger_info in except_objs:
+            for key, value in module_trigger_info['MODULE_TRIGGERS'].items():
+                print('{}{}:\t   {}'.format((' ' + ' ' * int(5-len(key) + 14)),
+                    colored(key, 'blue', attrs=['bold']),
+                    highlight(value,PythonLexer(),TerminalFormatter()).strip()
+                    )
+                )
+
+            print()
+            for key,value in module_trigger_info['MODULE_ARGS'].items():
+                print('{}{}:\t   {}'.format((' ' * int(5-len(key) + 14)),
+                    colored(key, 'magenta'),
+                    highlight(value,PythonLexer(),TerminalFormatter()).strip()
+                    )
+                )
+                sleep(0.05)
+
+            print('-'*100)
+            sleep(0.10)
 
     def show_exception(self, **exception):
 
@@ -426,8 +447,7 @@ class DJUtils:
                     hl_x_type), 'cyan')
                 )
             )
-            
-            
+             
             print()
             for key,value in entry['MODULE_TRIGGERS'].items():
                 print('{}{}:\t   {}'.format((' ' * int(5-len(key) + 14)),key,
