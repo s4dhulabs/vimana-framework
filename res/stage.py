@@ -1,5 +1,5 @@
 import yaml
-import resources.vmnf_validators as val
+import res.vmnf_validators as val
 
 class stager:
     def __init__(self,**session):

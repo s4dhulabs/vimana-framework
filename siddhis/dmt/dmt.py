@@ -22,7 +22,7 @@ from time import sleep
 import argparse
 
 from core.vmnf_shared_args import VimanaSharedArgs
-from resources import vmnf_banners
+from res import vmnf_banners
 
 import collections
 

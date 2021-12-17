@@ -1,8 +1,8 @@
-from resources.session.vmnf_proxies import _set_socks_
+from res.session.vmnf_proxies import _set_socks_
 from settings.siddhis_shared_settings import common
 from termcolor import colored,cprint
 import threading, socket, sys, time
-from resources import colors
+from res import colors
 from time import sleep
 from queue import Queue
 

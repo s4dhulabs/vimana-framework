@@ -1,0 +1,102 @@
+_issues__:
+   - id: CWE-248
+     title:  Uncaught Exception
+     desc: |
+        An exception is thrown from a function, but it is not caught.
+     x_desc: | 
+        An uncaught exception could cause the system to be placed in a state 
+        that could lead to a crash, exposure of sensitive information 
+        or other unintended behaviors. In addition, it could also impact
+        application or even server availabiltity. 
+
+     ref: https://cwe.mitre.org/data/definitions/248.html
+     rel: False
+
+   - id: CWE-703
+     title:  Improper Check or Handling of Exceptional Conditions
+     desc: | 
+        The software does not properly anticipate or handle exceptional 
+        conditions that rarely occur during normal operation of the software.
+     x_desc: False
+     ref: https://cwe.mitre.org/data/definitions/703.html
+     rel: False
+
+   - id: CWE-215
+     title:  Insertion of Sensitive Information Into Debugging Code
+     desc: |
+        The application inserts sensitive information into debugging code, 
+        which could expose this information if the debugging code is not 
+        disabled in production.
+     x_desc: | 
+        When debugging, it may be necessary to report detailed information
+        to the programmer. However, if the debugging code is not disabled
+        when the application is operating in a production environment,
+        then this sensitive information may be exposed to attackers.
+
+     ref: https://cwe.mitre.org/data/definitions/215.html     
+     rel:
+        - https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2002-0918
+        - https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2003-1078
+        - https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2004-2268
+        - https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2013-2006
+        - https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2015-5306
+        - https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2018-1999007
+
+   - id: CWE-209
+     title:  Generation of Error Message Containing Sensitive Information
+     desc: |
+        The software generates an error message that includes sensitive 
+        information about its environment, users, or associated data.
+     x_desc: | 
+        The sensitive information may be valuable information on its own
+        (such as a password), or it may be useful for launching other, more
+        serious attacks. The error message may be created in different ways:
+
+           * self-generated: the source code explicitly constructs the
+             error message and delivers it 
+
+           * externally-generated: the external environment, such as a 
+             language interpreter, handles the error and constructs its own message, 
+             whose contents are not under direct control by the programmer. 
+
+        An attacker may use the contents of error messages to help launch another.
+
+     ref: https://cwe.mitre.org/data/definitions/209.html
+     rel: False
+
+   - id: CWE-756
+     title:  Missing Custom Error Page
+     desc: |
+        The software does not return custom error pages to the user, 
+        possibly exposing sensitive information.
+     x_desc: | 
+        Attackers can leverage the additional information provided by 
+        a default error page to mount attacks targeted on the framework, 
+        database, or other resources used by the application.
+
+     ref: https://cwe.mitre.org/data/definitions/756.html
+     rel: False
+
+   - id: CWE-1295
+     title:  Debug Messages Revealing Unnecessary Information
+     desc: |
+        The product fails to adequately prevent the revealing of 
+        unnecessary and potentially sensitive system information 
+        within debugging messages.
+     x_desc: | 
+        Debug messages are messages that help troubleshoot an issue 
+        by revealing the internal state of the system. 
+        For example, debug data in design can be exposed through internal 
+        memory array dumps or boot logs through interfaces like UART via TAP commands, 
+        scan chain, etc. Thus, the more information contained in a debug message, 
+        the easier it is to debug. 
+        
+        However, there is also the risk of revealing information that could help an attacker 
+        either decipher a vulnerability, and/or gain a better understanding of the system. 
+        Thus, this extra information could lower the “security by obscurity” factor. 
+        While “security by obscurity” alone is insufficient, 
+        it can help as a part of “Defense-in-depth”.
+
+     ref: https://cwe.mitre.org/data/definitions/1295.html
+     rel: False
+

@@ -1,4 +1,4 @@
-from resources import colors
+from res import colors
 import sys
 
 

@@ -34,11 +34,11 @@ import pygments
 from pygments.lexers import PythonLexer
 from pygments.formatters import TerminalFormatter
 from pygments import highlight
-from resources.colors import *
+from res.colors import *
 import collections
 
 from core.vmnf_shared_args import VimanaSharedArgs
-from resources.vmnf_validators import get_tool_scope
+from res.vmnf_validators import get_tool_scope
 
 
 class siddhi:

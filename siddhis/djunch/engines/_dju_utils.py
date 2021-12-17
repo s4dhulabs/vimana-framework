@@ -1,26 +1,29 @@
 # DJunch utils 
 
 from settings.siddhis_shared_settings import django_envvars as djev
-from resources.vmnf_fuzz_data import VMNFPayloads
 from pygments.formatters import TerminalFormatter
 from . exceptions._items import FuzzURLsPool
+from res.vmnf_fuzz_data import VMNFPayloads
 from urllib.parse import urlparse, urljoin
+import settings.vmnf_settings as settings
 from pygments.lexers import PythonLexer
 from termcolor import colored, cprint
 from termcolor import colored,cprint
 from prettytable import PrettyTable
 from pygments import highlight
-from resources.colors import *
+from res import vmnf_banners
 from mimesis import Generic
 from itertools import chain
 from random import choice
+from res.colors import *
 from time import sleep
+import yaml
 import os
 
 
 
 class DJUtils:
-    def __init__(self, raw_traceback, items):
+    def __init__(self, raw_traceback=False, items=False):
         self.traceback = raw_traceback
         self.items = items
 
@@ -143,7 +146,23 @@ class DJUtils:
                 env_contexts['services'][env] = value
 
         return env_contexts
-    
+   
+    def get_random_data_list(self):
+        g = Generic()
+        return [
+            g.person.password(),
+            g.person.locale,
+            g.person.username(),
+            g.person.title(),
+            g.person.blood_type(),
+            g.person.age(),
+            g.person.height(),
+            g.hardware.resolution(),
+            g.hardware.cpu_frequency(),
+            g.business.cryptocurrency_symbol(),
+            g.food.vegetable()
+        ]
+
     def get_scope(self, target, payloads, **handler):
         self._FuzzURLsPool_ = FuzzURLsPool()
         self._vmnfp_ = payloads
@@ -185,22 +204,8 @@ class DJUtils:
             ]
 
             self.raw_urls.insert(0,self.target)
-
-            g = Generic()
-            random_types = [
-                g.person.password(), 
-                g.person.locale, 
-                g.person.username(), 
-                g.person.title(),
-                g.person.blood_type(),
-                g.person.age(), 
-                g.person.height(),
-                g.hardware.resolution(), 
-                g.hardware.cpu_frequency(),
-                g.business.cryptocurrency_symbol(),
-                g.food.vegetable()
-            ]
-
+           
+            random_types = self.get_random_data_list()
             ssti_payloads= self._vmnfp_.get_ssti_payloads()
             xss_payloads= self._vmnfp_.get_xss_payloads()
             sqli_payloads= self._vmnfp_.get_sqli_payloads()
@@ -275,8 +280,8 @@ class DJUtils:
                     self.regex_patterns_payloads.extend(
                         [
                             urljoin(self.target, pattern.replace('{{fuzz_flag}}',str(choice(range(9000))))),
-                            urljoin(self.target, pattern.replace('{{fuzz_flag}}',g.text.word())),
-                            urljoin(self.target, pattern.replace('{{fuzz_flag}}',str(g.numbers.float_number())))
+                            urljoin(self.target, pattern.replace('{{fuzz_flag}}',Generic().text.word())),
+                            urljoin(self.target, pattern.replace('{{fuzz_flag}}',str(Generic().numbers.float_number())))
                         ]
                     )
 
@@ -368,6 +373,89 @@ class DJUtils:
             print('-'*100)
             sleep(0.10)
 
+    def consolidate_issues(self, _issues_, report_items):
+        issues_count = _issues_.get('_count_issues_')
+
+        t_x = (R_c + issues_count.get('total_exceptions') + g_c)
+        u_x = (R_c + str(len(_issues_.get('EXCEPTIONS')))  + g_c)
+        t_l = (R_c + issues_count.get('total_lines') + g_c)
+        t_v = (R_c + issues_count.get('total_vars')  + g_c)
+        t_e = (R_c + issues_count.get('total_env')   + g_c)
+        t_c = (R_c + str(len(_issues_.get('CONFIGURATION')))  + g_c)
+        f_v = (Y_c + 'CSRF_FAILURE_VIEW' + g_c)
+
+        print("\033c", end="")
+        vmnf_banners.audit_report_banner('issues references')
+
+        print('''{}
+        \r   Were identified {} exception occurrences related to {} unique
+        \r   exception types.
+        \r'''.format(g_c,t_x,u_x))
+        
+        print(report_items['exceptions'])
+
+        print('''{}
+        \r   This unhandled exceptions issue led to exposure of {} lines of
+        \r   source code, {} application variables, and also server environment
+        \r   with {} variables.
+
+        \r   In addition was identified {} occurrences of {},
+        \r   which doesn't depend on DEBUG enabled, and led to information leakage
+        \r   that could allow identification of technologies and versions.
+
+        \r   These issues are related to the following CWE IDs, described in
+        \r   detail below:{}
+        '''.format(g_c,t_l,t_v,t_e,t_c,f_v,D_c))
+
+        self.get_cwe_references(mode='full')
+
+    def get_cwe_references(self, quiet=False, mode='brief'):
+        # load related cwe references: exceptions/configuration issues
+
+        with open(settings.issues_ref) as f:
+            issues_ref = yaml.load(f, Loader=yaml.FullLoader)
+
+        if quiet:
+            return issues_ref
+
+        if mode == 'brief':
+            for ref in issues_ref.get('_issues__'):
+                print(' {}: {}'.format(
+                    colored(ref['id'],'white'),
+                    colored(ref['title'], 'blue')
+                    )
+                )
+            
+                sleep(0.10)
+            return 
+        
+        # full details
+        for item in issues_ref.get('_issues__'):
+            print('\n   {} {}: {}\n'.format(
+                colored('+', 'red', attrs=['bold']), 
+                colored(item['id'],'white', attrs=['bold']),
+                colored(item['title'], 'cyan', attrs=['bold'])
+                )
+            )
+            
+            for line in item['desc'].split('\n'):
+                cprint("     \x1B[3m{}\x1B[0m".format(line), 'white')
+
+            if item['x_desc']:
+                for line in item['x_desc'].split('\n'):
+                    cprint('     ' + line, 'blue')
+
+            cprint('     ' + item['ref'], 'blue', attrs=['bold'])
+
+            if item['rel']:
+                cprint('\n     related vulnerabilities:', 'cyan')
+
+                for link in item['rel']:
+                    print('\t + {}'.format(link))        
+            
+            print()
+            sleep(0.20)
+    
     def show_exception(self, **exception):
 
         request_headers = exception['REQUEST_HEADERS']
@@ -377,7 +465,6 @@ class DJUtils:
         traceback = exception['EXCEPTION_TRACEBACK']
         environment = exception['ENVIRONMENT']
         traceback_objects = exception['OBJECTS']
-        #module_args = exception_items['EXCEPTION_TRACEBACK']
 
         print()
         print('\n      {}'.format(colored('    REQUEST   ', 'white', 'on_red', attrs=['bold'])))
@@ -458,8 +545,7 @@ class DJUtils:
 
             for line in entry['HL_CODE_SNIPPET']:
                 print(line)
-                sleep(0.1)
-
+                sleep(0.10)
             sleep(0.20)
 
             print('\n\n')

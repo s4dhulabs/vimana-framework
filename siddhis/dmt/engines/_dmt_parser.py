@@ -46,11 +46,11 @@ from scrapy.http.headers import Headers
 from termcolor import colored,cprint
 from pygments import highlight
 
-from resources.vmnf_validators import get_tool_scope as get_scope
+from res.vmnf_validators import get_tool_scope as get_scope
 from siddhis.sttinger.sttinger import siddhi as sttinger
 from core.vmnf_shared_args import VimanaSharedArgs
 from siddhis.djunch.djunch import siddhi as Djunch
-from resources import colors
+from res import colors
 
 
 class DMTEngine(scrapy.Spider):

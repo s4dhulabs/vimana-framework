@@ -16,12 +16,12 @@
 
 import sys
 sys.path.insert(0, '../../../')
-from resources.colors import *
-from resources.vmnf_validators import get_tool_scope
+from res.colors import *
+from res.vmnf_validators import get_tool_scope
 from core.vmnf_thread_handler import ThreadPool
 from core.vmnf_thread_handler import Worker
 from core.vmnf_shared_args import VimanaSharedArgs
-from resources.colors import *
+from res.colors import *
 from requests import exceptions 
 from datetime import datetime
 from bs4 import BeautifulSoup

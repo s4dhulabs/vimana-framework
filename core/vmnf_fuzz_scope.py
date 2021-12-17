@@ -7,8 +7,8 @@ from core.vmnf_scope_parser import ScopeParser
 from core.vmnf_urls_parser import digest_scope
 from siddhis.dmt.dmt import siddhi as dmt_siddhi
 from siddhis.djunch.djunch import siddhi as Djunch
-from resources import vmnf_banners
-from resources.vmnf_validators import get_tool_scope
+from res import vmnf_banners
+from res.vmnf_validators import get_tool_scope
 
 
 
