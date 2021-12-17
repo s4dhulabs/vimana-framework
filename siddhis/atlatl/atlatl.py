@@ -2,7 +2,7 @@ from core.vmnf_payloads import VMNFPayloads
 from random import randint,random,choice
 from requests.utils import requote_uri
 from termcolor import colored,cprint
-from resources.stage import stager
+from res.stage import stager
 from urllib.parse import quote
 from datetime import datetime
 from bs4 import BeautifulSoup

@@ -1,7 +1,10 @@
 import socks
 
 
-
+ssti_p = 'res/attack/payloads/ssti.txt'
+xss_p  = 'res/attack/payloads/xss.txt'
+sqli_p = 'res/attack/payloads/sqli.txt'
+issues_ref = 'res/issues_dref.yaml' 
 
 proxy_settings = {
     'default_proxy_type': 'SOCKS5',

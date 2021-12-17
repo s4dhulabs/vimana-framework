@@ -14,7 +14,7 @@ import time
 import traceback
 from prettytable import PrettyTable
 from termcolor import colored, cprint
-from resources.colors import *
+from res.colors import *
 
 from core.vmnf_engine_exceptions import engineExceptions as _ex_
 from helpers.vmnf_helpers import VimanaHelp

@@ -20,12 +20,7 @@ import sys
 import re
 from time import sleep
 from prettytable import PrettyTable
-from resources import colors
-
-
-
-
-
+from res import colors
 
 
 

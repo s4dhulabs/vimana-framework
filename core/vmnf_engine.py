@@ -25,13 +25,12 @@ from core.vmnf_manager import vmng
 
 # vimana helpers 
 from helpers.vmnf_helpers import VimanaHelp
-import resources.vmnf_validators as validator
-
+import res.vmnf_validators as validator
 
 # vimana resources
-from resources import vmnf_banners 
-from resources.vmnf_banners import s4dhu0nv1m4n4
-from resources.colors import *
+from res import vmnf_banners 
+from res.vmnf_banners import s4dhu0nv1m4n4
+from res.colors import *
 
 def abduct():
     # commands that require --module argument

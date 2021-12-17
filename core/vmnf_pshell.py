@@ -23,6 +23,7 @@ from prompt_toolkit.styles import Style
 from termcolor import colored, cprint
 from prettytable import PrettyTable
 from time import sleep
+from res.colors import *
 import textwrap
 import getpass
 import sys
@@ -30,10 +31,11 @@ import os
 import re
 
 from settings.siddhis_shared_settings import django_envvars as djev
-from resources.vmnf_text_utils import text_wrap
+from siddhis.djunch.engines._dju_utils import DJUtils
+from res.vmnf_text_utils import text_wrap
 from siddhis.tictrac import tictrac
 from siddhis.prana import prana
-from siddhis.djunch.engines._dju_utils import DJUtils
+
 
 
 class vmnfshell:
@@ -121,19 +123,21 @@ class vmnfshell:
         }
 
         # show cmd options 
-        valid_show_options = {
-            0:'summary',
-            1:'exceptions',
-            2:'tickets',
-            3:'cves',
-            4:'contexts',
-            5:'patterns',
-            6:'config',
-            7:'applications',
-            8:'middlewares',
-            9:'databases',
-            10:'objects',
-            11:'variables'
+        self.valid_show_options = {
+            0:'summary      |show issues summary',
+            1:'exceptions   |show identified exceptions',
+            2:'tickets      |show security tickets',
+            3:'cves         |show related cve ids',
+            4:'contexts     |show env leak contexts',
+            5:'patterns     |show mapped url patterns',
+            6:'config       |show configuration issues',
+            7:'applications |show installed applications',
+            8:'middlewares  |show installed middlewares',
+            9:'databases    |show available databases',
+            10:'objects     |show traceback objects',
+            11:'variables   |show leaked app variables',
+            12:'log         |show fuzzer logs',
+            13:'references  |show related cwe entries'
         }
 
         # ==[ UX - EXCEPTIONS ]==
@@ -230,7 +234,7 @@ class vmnfshell:
                     elif cmd.strip() == 'show':
                         # to handler issue category by id 
                         if arg_len >= 1 and arg_len <=2:
-                            vsol = len(valid_show_options) - 1
+                            vsol = len(self.valid_show_options) - 1
 
                             if arg == '?' or arg == ' ':
                                 self.handle_show_options()
@@ -246,9 +250,9 @@ class vmnfshell:
                                 )
                                 continue
                                 
-                            if cat_id in valid_show_options.keys(): #range(vsol):
+                            if cat_id in self.valid_show_options.keys(): 
                                 # get the right category value by id 
-                                arg = str(valid_show_options[cat_id]).rstrip()
+                                arg = str(self.valid_show_options[cat_id]).split('|')[0].rstrip()
                             else:
                                 print('[{}:show] Invalid issue category id. Id should be between 0 and {}'.format(
                                         self.siddhi,
@@ -258,12 +262,13 @@ class vmnfshell:
                                 continue
                         
                         # if a valid show option
-                        if arg not in valid_show_options.values():
+                        show_cats = [val.split('|')[0].strip() for val in self.valid_show_options.values()]
+
+                        #if arg not in self.valid_show_options.values():
+                        if arg not in show_cats:
                             opt = colored("show ?", 'green')
                             print('[{}:show] Invalid argument: {}. Use {} for more information.'.format(
-                                    self.siddhi,
-                                    arg,
-                                    opt
+                                    self.siddhi,arg,opt
                                 )
                             )
                             continue
@@ -323,7 +328,16 @@ class vmnfshell:
                                 DJUtils(False,False).show_module_args(
                                     *exception['EXCEPTION_TRACEBACK']
                                 )
-
+                        elif arg == 'log':
+                            for entry in self._issues_.get('FUZZ_STATUS_LOG'):
+                                for k,v in entry.items():
+                                    print('\t + {}: {}'.format(k,colored(v,'blue')))
+                                    sleep(0.01)
+                                cprint('-'*100,'magenta',attrs=['dark'])
+                        
+                        elif arg == 'references':
+                            DJUtils().consolidate_issues(self._issues_,self.report_items)
+                            
                         continue
                     
                     elif cmd == 'abduct':
@@ -411,9 +425,6 @@ class vmnfshell:
                             i_count = 1
 
                             for env_ctx in self.contexts:
-                                # inspect LC
-                                # ValueError: invalid literal for int() with base 10: ''
-                 
                                 if i_count == int(_issue_):
                                     lc_not_found = False
                                     context = colored(env_ctx, 'cyan', attrs=['bold'])
@@ -581,19 +592,16 @@ class vmnfshell:
         ''')
 
     def handle_show_options(self):
-        print('''\nMissing issue category argument. Supported options:
-                        
-        \r  0:  summary         show issues summary
-        \r  1:  exceptions      show identified exceptions
-        \r  2:  tickets         show security tickets
-        \r  3:  cves            show related cve ids
-        \r  4:  contexts        show env leak contexts
-        \r  5:  patterns        show mapped url patterns
-        \r  6:  configuration   show configuration issues
-        \r  7:  applications    show installed applications
-        \r  8:  middlewares     show installed middlewares
-        \r  9:  databases       show available databases
-        \r 10:  objects         show traceback objects
-        \r 11:  variables       show leaked app variables
-        ''')
+        print("\nMissing issue category argument. Supported options:\n")
+        
+        for k,v in self.valid_show_options.items():
+            cat,desc = v.split('|')
+
+            print('  {:15s}{:25s}{:25s}'.format(
+                colored(str(k) + ': ','blue'),
+                colored(cat.strip(), 'green'),
+                colored("\x1B[3m{}\x1B[0m".format(desc.strip()),'white')
+                )
+            )
+        print()
 

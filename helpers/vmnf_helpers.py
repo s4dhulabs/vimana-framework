@@ -1,6 +1,6 @@
 # encoding=utf8
 
-from resources.vmnf_banners import s4dhu0nv1m4n4
+from res.vmnf_banners import s4dhu0nv1m4n4
 from termcolor import colored, cprint
 
 class VimanaHelp():

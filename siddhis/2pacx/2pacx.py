@@ -14,8 +14,8 @@
 
 from core.vmnf_payloads import VMNFPayloads
 from core.vmnf_shared_args import VimanaSharedArgs
-from resources import colors
-from resources.stage import stager
+from res import colors
+from res.stage import stager
 
 import sys, re, os, random, string, platform
 from mimesis import Generic

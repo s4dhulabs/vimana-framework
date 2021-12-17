@@ -5,6 +5,7 @@ from datetime import datetime
 from random import randint, choice
 import mimesis
 import base64
+import settings.vmnf_settings as settings
 
 
 class VMNFPayloads:
@@ -29,11 +30,11 @@ class VMNFPayloads:
         gen = mimesis.Generic(choice([loc for loc in mimesis.locales.LIST_OF_LOCALES]))
         return {'username':gen.person.username(),'password':gen.person.password()}
     def get_ssti_payloads(self):
-        with open('resources/attack/payloads/ssti.txt') as f:
+        with open(settings.ssti_p) as f:
             return [p.strip() for p in f.readlines()[1:]]
     def get_xss_payloads(self):
-        with open('resources/attack/payloads/xss.txt') as f:
+        with open(settings.xss_p) as f:
             return [p.strip() for p in f.readlines()[1:]]
     def get_sqli_payloads(self):
-        with open('resources/attack/payloads/sqli.txt') as f:
+        with open(settings.sqli_p) as f:
             return [p.strip() for p in f.readlines()[1:]]

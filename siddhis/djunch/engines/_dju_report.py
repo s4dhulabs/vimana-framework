@@ -12,45 +12,48 @@ from bs4 import BeautifulSoup
 from netaddr import IPNetwork
 from datetime import datetime
 from time import sleep
+import pygments
 import argparse
 import hashlib
-import pygments
+import yaml
+
 
 from settings.siddhis_shared_settings import django_envvars as djev
 from settings.siddhis_shared_settings import csrf_table as csrf
 from settings.siddhis_shared_settings import set_header 
 from settings.siddhis_shared_settings import api_auth
 from settings.siddhis_shared_settings import payloads
-from core.vmnf_pshell import vmnfshell
 from core.vmnf_shared_args import VimanaSharedArgs
 from core.vmnf_thread_handler import ThreadPool
+import settings.vmnf_settings as settings
+from core.vmnf_pshell import vmnfshell
 
-from resources.session.vmnf_sessions import createSession
-from resources.vmnf_text_utils import format_text
-from resources.vmnf_pxh import exception_hierarchy
-from resources import vmnf_banners
-from resources import colors
+from res.session.vmnf_sessions import createSession
+from res.vmnf_text_utils import format_text
+from res.vmnf_pxh import exception_hierarchy
+from res import vmnf_banners
+from res import colors
 
 from requests import exceptions
 from random import choice
 import collections
 import requests
 
-from siddhis.prana import prana
+from . _dju_settings import table_models
 from siddhis.tictrac import tictrac
 from . _dju_utils import DJUtils
-from . _dju_settings import table_models
+from siddhis.prana import prana
+
 
 class resultParser:   
-
     def __init__(self, results, **vmnf_handler):
-        
         # dmt handler (argparser namespace) 
         self.vmnf_handler = vmnf_handler
         self.catched_exceptions = []
 
         self.fuzz_report=False
-        tables = DJUtils(False,False).get_report_tables()
+        tables = DJUtils().get_report_tables()
+        
         self.exceptions_tbl = tables['exceptions']
         self.config_issues_tbl = tables['configuration']
         self.summary_tbl = tables['summary']
@@ -131,7 +134,7 @@ class resultParser:
             if django_version and django_version is not None:
                 if len(django_version.split('.')) >= 3:
                     django_version = '.'.join(django_version.split('.')[:-1])
-                 
+                    
                 # if dmt already retrieve sec issues through passive fingerprint
                 if django_version == self.fingerprint.get('flag_version'):
                     if self.fingerprint.get('cves'):
@@ -238,11 +241,21 @@ class resultParser:
         )
 
         i_count = 1
+        
         # >> load exceptions into table 
+        env_pool = []
+        count_lines = False
+        count_vars  = False
+        count_triggers = False
+        total_xocc = False
+
         for exception in self.fuzz_report['EXCEPTIONS']:
             x_traceback = exception['EXCEPTION_TRACEBACK']
             env_count = len(exception['ENVIRONMENT'])
             occ_count = exception['EXCEPTION_COUNT']
+
+            env_pool.append(env_count)
+            total_xocc = total_xocc + occ_count
     
             x_summary = exception['EXCEPTION_SUMMARY']
             x_loc_full = x_summary['Exception Location']
@@ -260,6 +273,10 @@ class resultParser:
                 triggers_count = triggers_count + len(item['MODULE_TRIGGERS'])
                 vars_count = vars_count + len(item['MODULE_ARGS']) 
             
+            count_lines = count_lines + lines_count
+            count_vars  = count_vars + vars_count 
+            count_triggers = count_triggers + triggers_count
+
             self.exceptions_tbl.add_row(
                 [ 
                     colored(exception['IID'], 'green'),
@@ -399,10 +416,6 @@ class resultParser:
                 colored(v, hl_color)
                 )
             )
-
-        #cprint("\t{} Critical: {}".format(sg,len(self._issues_['exceptions'])), 'red')
-        #cprint("\t{} Low: {}".format(sg,len(self._issues_['configuration'])), 'red')
-        #print()
         sleep(1)
 
         ###################
@@ -422,32 +435,12 @@ class resultParser:
         ##################
         cprint('\nWere triggered {} exceptions that lead to CWE-215 allowing information exposure'.format(
             len(self.fuzz_report['EXCEPTIONS'])),'cyan')
-
-        #cprint(status, 'cyan', attrs=[])
         
         print(self.exceptions_tbl)
-        cwe = colored('CWE-215','blue',attrs=['bold'])
-        cwe_title = colored(": Insertion of Sensitive Information Into Debugging Code           ", "blue",  attrs=[])
-        print('\n {}{}'.format(cwe,cwe_title))
-        print('''
-        \r When debugging, it may be necessary to report detailed information
-        \r to the programmer. However, if the debugging code is not disabled
-        \r when the application is operating in a production environment,
-        \r then this sensitive information may be exposed to attackers.
         
-        \r https://cwe.mitre.org/data/definitions/215.html
-        ''')
-        sleep(1)
-
-        # basic vuln reference
-        cprint('\n\rRelated vulnerabilities:', 'blue')
-        print('''
-        \r  https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2018-1999007
-        \r  https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2015-5306
-        \r  https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2013-2006
-
-        ''')
-
+        # get external issues references
+        DJUtils().get_cwe_references()
+        
         ############################
         ### configuration issues ###
         ############################
@@ -458,28 +451,7 @@ class resultParser:
             )
             cprint(status, 'cyan', attrs=[])
             print(self.config_issues_tbl)
-        
-            cwe = colored('CWE-209','blue',attrs=['bold'])
-            cwe_title = colored(": Generation of Error Message Containing Sensitive Information     ", "blue", attrs=[])
-            print('\n {}{}'.format(cwe,cwe_title))
-            print(''' 
-            \r The sensitive information may be valuable information on its own
-            \r (such as a password), or it may be useful for launching other, more
-            \r serious attacks. The error message may be created in different ways:
-
-            \r    * self-generated: the source code explicitly constructs the
-            \r      error message and delivers it 
-
-            \r    * externally-generated: the external environment, such as a 
-            \r      language interpreter, handles the error and constructs its own message, 
-            \r      whose contents are not under direct control by the programmer. 
-        
-            \r An attacker may use the contents of error messages to help launch another. 
-        
-            \r https://cwe.mitre.org/data/definitions/209.html\n''')
             
-            sleep(1)
-
         ################################
         ### Framework version issues ###
         ################################
@@ -513,6 +485,14 @@ class resultParser:
         }
 
         # + security_tickets: collected security tickets [list of dicts]
+        self.fuzz_report['_count_issues_'] = {
+            'total_lines': str(count_lines),
+            'total_vars': str(count_vars),
+            'total_triggers': str(count_triggers),
+            'total_exceptions': str(total_xocc),
+            'total_env': str(max(env_pool))
+        } 
+        
         vmnfshell(
             self.siddhi,
             self.fuzz_report,

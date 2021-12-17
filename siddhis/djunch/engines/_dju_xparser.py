@@ -23,6 +23,7 @@ from datetime import datetime
 from mimesis import Internet
 from mimesis import Generic
 import urllib3.exceptions
+import copy
 import scrapy
 import twisted
 import hashlib
@@ -61,8 +62,8 @@ from . exceptions._items import ConfigIssuesItem
 from . exceptions._items import IssuesPool
 
 from siddhis.djunch.engines._dju_utils import DJUtils
-from resources.vmnf_fuzz_data import VMNFPayloads 
-from resources.colors import *
+from res.vmnf_fuzz_data import VMNFPayloads 
+from res.colors import *
 
 
 
@@ -129,6 +130,7 @@ class DJEngineParser(scrapy.Spider):
         self.fuzz_scope_size = len(self._FuzzURLsPool_['FULL_SCOPE'])
         self.fuzz_rounds = len(self._FuzzURLsPool_) 
         step_mark = colored('↪', 'white', attrs=['bold'])
+        ramdata = scope.get_random_data_list()
        
         ssti_p = self._vmnfp_.get_ssti_payloads()
         xss_p = self._vmnfp_.get_xss_payloads()
@@ -148,6 +150,7 @@ class DJEngineParser(scrapy.Spider):
 
         f_count = 1
         for url_step_type, fuzz_urls in self._FuzzURLsPool_.items():
+            _fzz_headers_ = copy.copy(self.headers)
             filter_mode = False
             self.fuzz_step = url_step_type.lower()
             hl_url_step_type = colored(self.fuzz_step, 'cyan')
@@ -161,11 +164,11 @@ class DJEngineParser(scrapy.Spider):
                 # to avoid make request to outofscope targets parsed in test response
                 if not self.target in target_url:
                     continue
-                
-                self.headers['Host'] = '127.0.0.1'
-                self.headers['Content-Length'] = 123
+                 
+                _fzz_headers_['Host'] = '127.0.0.1'
+                _fzz_headers_['Content-Length'] = 123
                 self.step_method = 'GET'
-                
+
                 if self.fuzz_step == 'raw_urls':
                     self.step_method = 'POST'
                     if target_url.endswith('/'):
@@ -177,22 +180,22 @@ class DJEngineParser(scrapy.Spider):
                     #filter_mode = True
                     
                     # randomize UA (this could be change in following step or not/random v to random h
-                    self.headers['User-Agent'] = self.GenObj.internet.user_agent()
+                    _fzz_headers_['User-Agent'] = self.GenObj.internet.user_agent()
                     
                     # random payloads
                     payloads = ssti_p if (f_count % 2) == 0 else xss_p
 
                     # random set to a random header
-                    self.headers[choice([k for k in self.headers.keys()])] = choice(payloads)
+                    _fzz_headers_[choice([k for k in self.headers.keys()])] = choice(payloads)
 
                     # random setup unreal header and change content-type for whatever
                     if self.fuzz_rounds - f_count < 10:
-                        self.headers[self.GenObj.person.name()]= choice(range(1000))  
-                        self.headers['Content-Type'] = self.GenObj.internet.content_type()
+                        _fzz_headers_[self.GenObj.person.name()]= choice(range(1000))  
+                        _fzz_headers_['Content-Type'] = self.GenObj.internet.content_type()
 
                     # random method 2
-                    self.step_method = choice(['GET','POST'])
-                    self.meta["max_retry_times"] = choice(range(1,3))
+                    self.step_method = choice(['GET','POST','PUT','PATCH'])
+                    self.meta["max_retry_times"] = choice(range(1,5))
                     self.meta["download_timeout"] = choice(range(1,3))
                     f_hl_fuzz = 'green'
                     
@@ -228,7 +231,7 @@ class DJEngineParser(scrapy.Spider):
                     yield scrapy.Request(
                         target_url, 
                         callback=self.status_handler,
-                        headers=self.headers,
+                        headers=_fzz_headers_,
                         meta=self.meta,
                         errback=self.failure_handler,
                         dont_filter = filter_mode
@@ -240,7 +243,7 @@ class DJEngineParser(scrapy.Spider):
                         method=self.step_method, 
                         formdata=self.data,
                         cookies=self.cookies,
-                        headers=self.headers,
+                        headers=_fzz_headers_,
                         meta=self.meta,
                         errback=self.failure_handler,
                         dont_filter = filter_mode

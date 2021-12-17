@@ -1,9 +1,10 @@
-from resources.colors import *
+
 import requests
+from res.colors import *
 from time import sleep
+from requests import Session
 from html.parser import HTMLParser
 from . vmn_ua import switchAgent   
-from requests import Session
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
