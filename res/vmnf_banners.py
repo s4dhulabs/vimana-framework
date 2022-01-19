@@ -1,14 +1,40 @@
 # -*- coding: utf-8 -*-
 
 from . colors import *
+import random
 from random import choice
 from time import sleep
 from termcolor import cprint,colored
+                         
 
+def sample_mode(mod_stat,_attrs_=['bold','blink']):
+    c = ['green','cyan','blue']
 
-
-def audit_report_banner(module=False):
+    vmn=colored("""
+         └┐┌┘││
+         │││├─┤
+         └┐┌┘││
+          ││││       
+    """, 'blue', attrs=['blink', 'bold'])
     
+    fversion = colored('v0.5', 'red')
+    banner = '''
+    ┬  ┬┬┌┬┐┌─┐┌┐┌┌─┐
+    ┬  ┬┬┌┬┐┌─┐┌┐┌┌─┐
+    └┐┌┘││││├─┤│││├─┤{}
+    └┐┌┘││││├─┤│││├─┤
+    └┐┌┘││││├─┤│││├─┤
+     └┘ ┴┴ ┴┴ ┴┘└┘┴ ┴
+     └┘ ┴┴ ┴┴ ┴┘└┘┴ ┴'''.format(fversion)
+       
+    for i in banner.split('\n'):
+        cprint(i,choice(c), attrs=[choice(['bold','dark'])])
+    print('     '+ mod_stat)
+    if 'sample' in mod_stat or 'caught' in mod_stat:
+        for i in vmn.split('\n'):
+            cprint(i,choice(c),attrs=_attrs_)
+    
+def audit_report_banner(module='', report_type='',cl=Wn_c):
     vmc = Rn_c
     bmc = Wn_c
     m_color = 'green'
@@ -35,9 +61,6 @@ def audit_report_banner(module=False):
     {}    |||    {}   └┘ ┴┴ ┴┴ ┴┘└┘┴ ┴
     {}    '''    {}  {}
     {}     '     {}         {}
-
-
-
     """.format(
             vmc,bmc, mark,
             vmc,bmc,
@@ -49,28 +72,6 @@ def audit_report_banner(module=False):
             module
         )
     )
-
-def circuits_banner(proc_type=False):
-    proc_type = colored(proc_type, 'red') if proc_type else ''
-    banner = colored('''
-    ┬  ┬┬┌┬┐┌─┐┌┐┌┌─┐
-    └┐┌┘││││├─┤│││├─┤  
-     └┘ ┴┴ ┴┴ ┴┘└┘┴ ┴
-            {0}
-    '''.format(proc_type), 'green', attrs=['blink', 'bold'])
-
-    return banner
-
-def ansi_banner():
-    banner = '''
-    ██╗   ██╗██╗███╗   ███╗ █████╗ ███╗   ██╗ █████╗
-    ██║   ██║██║████╗ ████║██╔══██╗████╗  ██║██╔══██╗
-    ██║   ██║██║██╔████╔██║███████║██╔██╗ ██║███████║
-    ╚██╗ ██╔╝██║██║╚██╔╝██║██╔══██║██║╚██╗██║██╔══██║
-     ╚████╔╝ ██║██║ ╚═╝ ██║██║  ██║██║ ╚████║██║  ██║
-      ╚═══╝  ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝
-    '''
-    return banner
 
 def about_text():
 
@@ -94,15 +95,14 @@ def about_text():
       left out (for now) since the idea of the tool came about 10
       years ago, however, the framework is still very early and
       considering that until then it was only a sadhu (who is not a
-      developer) coding the crazy ideas, certainly a lot needs to be
+      developer) coding the crazy ideas, certainly, a lot needs to be
       improved, as well as many new features can be added (soon).
 
       So feel free to get in touch, suggest ideas and improvements.
-                https://github.com/s4dhul4bs/vimana-framework
+                https://github.com/s4dhulabs/vimana-framework
 
                                                 s4dhu
     '''
-
     return msg
 
 
@@ -175,13 +175,6 @@ def load_viwec():
         Wn_c, Rn_c,D_c ))
     sleep(1)
 
-def vmnf_calvins():
-    '''
-    ┬  ┬┬┌┬┐┌─┐┌┐┌┌─┐┌─┐┬─┐┌─┐┌┬┐┌─┐┬ ┬┌─┐┬─┐┬┌─
-    └┐┌┘││││├─┤│││├─┤├┤ ├┬┘├─┤│││├┤ ││││ │├┬┘├┴┐
-     └┘ ┴┴ ┴┴ ┴┘└┘┴ ┴└  ┴└─┴ ┴┴ ┴└─┘└┴┘└─┘┴└─┴ ┴
-    '''
-
 def default_vmn_banner(mode_uvb = False):
     from core.vmnf_manager import vmng
     from core.vmnf_payloads import VMNFPayloads
@@ -227,45 +220,7 @@ def default_vmn_banner(mode_uvb = False):
     print('{}{}:   {}'.format((' ' * int(5-len('payloads') + 14)),colored('payloads','cyan'),colored(len(payloads), 'green')))
     print("\n\n")
 
-def vmn_progress():
-    print("""
-
-      o                    
-o   o   o-O-o  oo o-o   oo 
- \ /  | | | | | | |  | | | 
-  o   | o o o o-o-o  o o-o-
-                            
-    """)
-
-def vmn_abduct():
-    print("\033c", end="")
-    print(r"""{}
-      .__                              {}    ___    {}
-___  _|__| _____ _____    ____ _____   {}___´_'_`___{}        
-\  \/ /  |/     \\__  \  /    \\__  \  {}   ``-´´   {} 
- \   /|  |  Y Y  \/ __ \|   |  \/ __ \_{}    |||    {}
-  \_/ |__|__|_|  (____  /___|  (____  /{}    '''    {}
-               \/     \/     \/     \/ {}     '     {} 
-                   {}Abducting ...{}             
-    """.format(Cn_c,Rn_c,Cn_c,Rn_c,Cn_c,Rn_c,Cn_c,Rn_c,Cn_c,Rn_c,Cn_c,Rn_c,Cn_c,Yn_c,D_c))          
-
-
-def default_vmn_banner1():
-    print("\033c", end="")
-    print("""{}
-      .__                              
-___  _|__| _____ _____    ____ _____   
-\  \/ /  |/     \\\\__  \  /    \\\\__  \\  
- \   /|  |  Y Y  \/ __ \|   |  \/ __ \_
-  \_/ |__|__|_|  (____  /___|  (____  /
-               \/     \/     \/     \/{} 
-        author: s4dhu
-        version alpha
-        2017{}\n
-    """.format(Y_c,Wn_c,D_c))
-
-
-def load(target=''):
+def load(target='',maxl=20):
     import os 
     from random import choice
 
@@ -276,10 +231,10 @@ def load(target=''):
         ("\033[1;37m"), ("\033[1;30m"), ("\033[1;31m"),
         ("\033[1;32m"), ("\033[1;33m"), ("\033[1;34m"),
 	("\033[1;35m"), ("\033[1;36m"), ("\033[1;37m"),
-        ("\033[1;37m")
+        ("\033[1;37m"), ("\033[0m"   ), ("\033[1;30m")
     ]
     c = 0
-    while c != 30:
+    while c != maxl:
         c1 = choice(colors)
         c2 = choice(colors)
         c3 = choice(colors)
@@ -298,7 +253,7 @@ def load(target=''):
         d7 = choice(colors)
         d8 = choice(colors)
         d9 = choice(colors) 
-        
+
         print("\033c", end="")
         print(r"""{}
         *                        {}~{}|{}~{}

@@ -78,17 +78,20 @@ class CheckTargetScope:
             msg = colored('Connection going out {}'.format(eip),'cyan')
             proxy_type = colored(proxy_set['proxy_type'].rstrip().upper() + ' proxy', 'blue')
             _s_ = colored('{}: {} → {}'.format(proxy_type, status, msg ,'cyan'))
-            print('{} {}'.format(colored('⡯⠥','green', attrs=['bold']),_s_))
-            sleep(0.25)
-
-        print("{} Validating port status for target {}{}{}...\n".format(
-            colors.Gn_c + "⠿⠥" + colors.C_c,
-            colors.G_c,
-            self.target,
-            colors.D_c
+            
+            if not self.vmnf_handler.get('sample'):
+                print('{} {}'.format(colored('⡯⠥','green', attrs=['bold']),_s_))
+                sleep(0.25)
+        
+        if not self.vmnf_handler.get('sample'):
+            print("{} Validating port status for target {}{}{}...\n".format(
+                colors.Gn_c + "⠿⠥" + colors.C_c,
+                colors.G_c,
+                self.target,
+                colors.D_c
+                )
             )
-        )
-        sleep(0.10)
+            sleep(0.10)
 
         for port in self.port_list:
             self.queue.put(port)
@@ -98,10 +101,11 @@ class CheckTargetScope:
         gen_status = list(zip(self.p,self.s))
         for i, d in enumerate(gen_status):
             line = ' '.join(str(x).ljust(17) for x in d)
-            print('     {}'.format(line))
-            if line == 0:
-                print('-' * len(line))
-            sleep(0.10)
+            if not self.vmnf_handler.get('sample'):
+                print('     {}'.format(line))
+                if line == 0:
+                    print('-' * len(line))
+                sleep(0.10)
         print()
 
         return self.valid_scope

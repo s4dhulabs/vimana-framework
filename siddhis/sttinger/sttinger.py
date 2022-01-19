@@ -123,7 +123,8 @@ class siddhi:
         return match 
 
     def get_response(self,target_url):
-        return (requests.get(target_url,headers=self.headers))
+        # requests.exceptions.SSLError
+        return (requests.get(target_url,headers=self.headers,verify=False))
 
     def check_patterns(self):
         sttg_obj = self.get_sttg_obj()

@@ -69,9 +69,8 @@ class ScopeParser:
 
         if self.target_defined and not valid_scope_port:
             arg = colored('--ignore-state', 'green', attrs=[])
-            print('''{} No active port has been identified. Check the target's IP with a network scanner or use {} argument on vimana command line.'''.format(self.scope_error,arg))
+            print('''{} No active port has been identified.\nCheck the target's IP with a network scanner or use {} argument on vimana command line.\n'''.format(self.scope_error,arg))
             
-            print(valid_scope_port)
             sys.exit(1)
 
     def parse_scope(self):

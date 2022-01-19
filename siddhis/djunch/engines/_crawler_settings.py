@@ -25,7 +25,7 @@ settings = {
     'REDIRECT_ENABLED':True,
     'USER_AGENT': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko)',
     'AUTOTHROTTLE_ENABLED': False,
-    #'HTTPCACHE_ENABLED':True
+    'HTTPCACHE_ENABLED':True
     #'CONCURRENT_REQUESTS': 1
 }
 

@@ -47,7 +47,7 @@ class siddhi:
         """
         \r  This tool was designed to audit applications running with the Django
         \r  framework. Acts as an input module for Vimana to collect base data. 
-        \r  DMT works seamlessly with other framework tools such as Djonga, DJunch,
+        \r  DMT works seamlessly with other framework tools such as Jungle, DJunch,
         \r  which are respectively brute force and fuzzing tools. Among the various
         \r  actions taken are: Identification of the state of Debug extraction
         \r  and mapping of application URL Patterns. This first step will serve as
@@ -154,8 +154,13 @@ class siddhi:
         self.vmnf_handler['cookie'] = {'csrftoken':'    '}
 
         # call djunch engine v2
-        process = CrawlerProcess(dict(settings))
-        process.crawl(_djuep_, **self.vmnf_handler)
-        try:
-            process.start()
-        except:pass
+        if self.vmnf_handler.get('sample'):
+            settings['RETRY_TIMES'] = 1
+            #settings['HTTP_CACHE'] = True
+
+        from scrapy.crawler import CrawlerRunner
+        from twisted.internet import reactor
+        
+        runner = CrawlerRunner(dict(settings))
+        d = runner.crawl(_djuep_, **self.vmnf_handler)
+        reactor.run(0)

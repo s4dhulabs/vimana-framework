@@ -11,7 +11,7 @@ class VimanaHelp():
      \   /|  |  Y Y  \\/ __ \\|   |  \\/ __ \\_
       \_/ |__|__|_|__(____  /___|  (____  /
                          \\/      \\/     \\/   
-        @s4dhulabs           v0.4
+        @s4dhulabs           v0.5
         
         '''
 
@@ -64,6 +64,22 @@ class VimanaHelp():
         --port-list          List of ports to check Django 
         --port-range         Port range to check Django         
         --ignore-state       Disable IP and port status verifications 
+        '''
+
+    def save_config(self):
+        '''
+
+    [save_config]
+        
+        this option saves the command line to a YAML file. 
+        Making it easy to be executed again using the argument --abduct with command run.
+
+        This option is especially useful when command lines become huge to remember 
+        or when too many lines were already executed polluting with the terminal history.
+        
+        example: 
+        vimana run --module dmt --target mydjangoapp.com --port-list 4440,5001,8000,8888 --debug --save-config test2
+
         '''
 
     def abduct(self):
