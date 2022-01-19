@@ -82,6 +82,7 @@ class VimanaParser:
         )
         # add aditional arguments to complement shared args
         run_cmd.add_argument('--abduct', action='store', dest='abduct_file')
+        run_cmd.add_argument('--save-config', action='store', dest='save_config')
         run_cmd.add_argument('--module', action='store', dest='module_run')
         run_cmd.add_argument('--fuzzer', action='store_true')
         run_cmd.add_argument('--discovery', action='store_true')
@@ -124,10 +125,12 @@ class VimanaParser:
             '--abduct': VimanaHelp.abduct.__doc__,
             '--proxy':  VimanaHelp.proxy.__doc__, 
             '--proxy-type':  VimanaHelp.proxy.__doc__, 
-            '--target': VimanaHelp.set_scope.__doc__
+            '--target': VimanaHelp.set_scope.__doc__,
+            '--save-config': VimanaHelp.save_config.__doc__
         }
 
         required_args = [
+            '--save-config',
             '--target',
             '--file',
             '--ip-range',
@@ -187,7 +190,7 @@ class VimanaParser:
                 print(VimanaHelp().__doc__)
                 print(arg_help[sys.argv[-1]])
             
-            print('[vmnf_argparser: {}] Missing a value for the argument {}'.format(
+            print('[vmnf_argparser: {}] Missing a value for the argument {}\n\n'.format(
                 datetime.now(),
                 sys.argv[-1]
                 )

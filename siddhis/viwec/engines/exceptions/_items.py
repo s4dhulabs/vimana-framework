@@ -55,7 +55,5 @@ class ExceptionItem(scrapy.Item):
     DB_SETTINGS = scrapy.Field()
     CONTEXTS = scrapy.Field()
     OBJECTS = scrapy.Field()
-    FINGERPRINT = scrapy.Field()
-
 
 

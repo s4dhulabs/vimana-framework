@@ -5,6 +5,7 @@ import sys
 sys.path.insert(0, '../../../')
 
 from termcolor import colored, cprint
+from datetime import datetime
 from pathlib import Path
 from time import sleep
 import argparse
@@ -15,6 +16,7 @@ import os
 # vimana core modules
 from siddhis.dmt.dmt import siddhi as dmt_siddhi
 from siddhis.djunch.djunch import siddhi as Djunch
+from termcolor import colored,cprint
 
 from core.vmnf_fuzz_scope import handle_fuzz_scope
 from core.vmnf_scope_parser import ScopeParser
@@ -82,7 +84,22 @@ def abduct():
     
     vmn_parser = VimanaParser()
     handler_ns = vmn_parser.start_handler()
-
+   
+    run_from_file = True \
+        if len(sys.argv[1:]) == 2\
+        and cmd == 'run' \
+        and sys.argv[2] != '--module'\
+        else False
+    
+    # running plugin/arguments from a saved config file
+    if run_from_file:
+        exec_file = str(sys.argv[2]) + '.yaml'\
+            if not str(sys.argv[2]).endswith('.yaml') \
+            else str(sys.argv[2])
+        
+        file_path = 'core/execs/' + exec_file
+        handler_ns = validator.check_saved_exec(exec_file,handler_ns)
+    
     if not handler_ns:
         print('[vmnf_engine] Something went wrong during scope validation. Check syntax and try again')
         sys.exit(1)
@@ -98,10 +115,32 @@ def abduct():
     # run module
     elif handler_ns.module_run\
         or handler_ns.abduct_file:
-        
+
         if sys.argv[-1] != handler_ns.module_run:
-            if not handler_ns.session_mode:
-                vmnf_banners.load()
+            
+            # save command line to a yaml
+            if handler_ns.save_config:
+                exec_time = str(datetime.now()).replace(' ','_') + '_'
+                file_name = str(handler_ns.module_run) + '_'\
+                    + exec_time + handler_ns.save_config + '.yaml'
+
+                file_path = 'core/execs/' + file_name
+                vars(handler_ns)['save_config'] = False
+
+                with open(file_path, 'w') as file:
+                    yaml.dump(vars(handler_ns),file,default_flow_style=False) 
+                sys.exit(0)
+            
+            # sample agile mode 
+            if handler_ns.sample:
+                print("\033c", end="")
+                vmnf_banners.sample_mode(colored('  sample mode   ','red', 'on_white', attrs=['bold']))
+
+            # when module arguments (main vimana argparser namespace) will be loaded by stager
+            if not handler_ns.session_mode\
+                and not handler_ns.sample:
+
+                vmnf_banners.load(handler_ns.module_run,20)
                 vmnf_banners.default_vmn_banner()
         
         # loading settings from abduct file

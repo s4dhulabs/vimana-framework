@@ -66,6 +66,7 @@ class VimanaSharedArgs:
         # > Scope setting - [ Target parser ] 
         # -------------------------------------------------------------------------------
         #target = parser.add_mutually_exclusive_group()
+        vmnf_shared_parser.add_argument('--endpoint-url',action='store',dest='endpoint_url',default=False)
         vmnf_shared_parser.add_argument('--target-dir',action='store',dest='target_dir',default=False)
         vmnf_shared_parser.add_argument('--target-url',action='store',dest='target_url',default=False)
         vmnf_shared_parser.add_argument('--filename',action='store',dest='filename',default=False)
@@ -95,6 +96,8 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--timeout", action="store", type=int, default=5)
         vmnf_shared_parser.add_argument("--pause-steps", action="store_true",default=False) 
         vmnf_shared_parser.add_argument("--auto", action="store_true",default=False)        
+        vmnf_shared_parser.add_argument("--sample", action="store_true",default=False)        
+        vmnf_shared_parser.add_argument("--tracker_scope", action="store_true",default=False)        
         # -------------------------------------------------------------------------------
         # > Scope setting - [ scope parser options ] 
         # -------------------------------------------------------------------------------
@@ -108,7 +111,7 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--proxy", action="store", default=False)
         vmnf_shared_parser.add_argument("--proxy-type", action="store", dest='proxy_type', default=False)
         # -------------------------------------------------------------------------------
-        # > Payload settings
+        # > Payload, session settings
         # -------------------------------------------------------------------------------
         vmnf_shared_parser.add_argument("--local-port",action="store",dest='local_port',default=False)
         vmnf_shared_parser.add_argument("--local-host",action="store",dest='local_host',default=False)
@@ -118,6 +121,7 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--forward",action="store",dest='foward_session',default=False)
         vmnf_shared_parser.add_argument("--siddhi-call",action="store_true",dest='siddhi_call',default=False)
         vmnf_shared_parser.add_argument("--session",action="store_true",dest='session_mode',default=False)
+        vmnf_shared_parser.add_argument("--callback-session",action="store_true",dest='callback_session',default=False)
         
         return vmnf_shared_parser
 

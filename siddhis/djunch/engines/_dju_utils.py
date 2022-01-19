@@ -20,6 +20,9 @@ from time import sleep
 import yaml
 import os
 
+from siddhis.tictrac import tictrac
+from siddhis.prana import prana
+
 
 
 class DJUtils:
@@ -175,13 +178,14 @@ class DJUtils:
         status = colored('building scope from', 'green')
         hl_pattern = colored('{} patterns'.format(len(patterns)), 'white')
         
-        print('\n{} Starting DJunch | {} {}'.format(
-            (Gn_c  + "⠿" + C_c),
-            status,
-            hl_pattern
+        if not handler.get('sample'):
+            print('\n{} Starting DJunch | {} {}'.format(
+                (Gn_c  + "⠿" + C_c),
+                status,
+                hl_pattern
+                )
             )
-        )
-        sleep(1)
+            sleep(0.40)
 
         self.full_scope=[]
         self.raw_urls=[]
@@ -206,16 +210,19 @@ class DJUtils:
             self.raw_urls.insert(0,self.target)
            
             random_types = self.get_random_data_list()
-            ssti_payloads= self._vmnfp_.get_ssti_payloads()
-            xss_payloads= self._vmnfp_.get_xss_payloads()
-            sqli_payloads= self._vmnfp_.get_sqli_payloads()
+
+            # we're not gonna need attack payloads in sample mode
+            if not handler.get('sample'):
+                ssti_payloads= self._vmnfp_.get_ssti_payloads()
+                xss_payloads= self._vmnfp_.get_xss_payloads()
+                sqli_payloads= self._vmnfp_.get_sqli_payloads()
             
             common_params= [
-                'add','cmd','alterar',
+                'add','cmd','alterar','account',
                 'consultar','remove','delete', 
-                'config','edit','set','change'
+                'config','edit','set','change',
+                'update', 'download','settings'
             ]
-
             
             count = 1
             # build scope from initial raw patterns (dmt input)
@@ -235,38 +242,44 @@ class DJUtils:
                     self.float_type_urls.append(
                         url.replace(url_p, str(self._vmnfp_.get_random_float()))
                     )
-                    self.random_xss_payloads.append(
-                        url.replace(url_p, str(choice(xss_payloads)))
-                    )
                     self.sec_random_type_urls.append(
                         url.replace(url_p, str(self._vmnfp_.get_secure_random_string()))
                     )
-                    self.random_path_traversal.append(
-                        urljoin(self.target, 
-                            str('/' + url_p + '/' + '%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd'))
-                    )
-                    self.random_param_values.append(
-                        urljoin(self.target, 
-                            str(url_p + '?{}={}'.format(
-                                choice(common_params), 
-                                choice(random_types))
+
+                    # because --sample its an optmized mode to trigger just one exception
+                    # attack payloads like these are more like a redundance from this perspective
+                    # they're not intended to really trigger the relative vulnerability, it may happen
+                    # but its not the focus here, and its another story. [:'
+                    if not handler.get('sample'):
+                        self.random_param_values.append(
+                            urljoin(self.target, 
+                                str(url_p + '?{}={}'.format(
+                                    choice(common_params), 
+                                    choice(random_types))
+                                )
                             )
                         )
-                    )
-                    self.random_ssti_payloads.append(
-                        urljoin(self.target,url_path.replace(url_p, str(choice(ssti_payloads)))
+                        self.random_path_traversal.append(
+                            urljoin(self.target, 
+                                str('/' + url_p + '/' + '%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd'))
                         )
-                    )
-                    self.random_sqli_payloads.append(
-                        urljoin(self.target,url_path.replace(url_p, str(choice(sqli_payloads)))
+                        self.random_xss_payloads.append(
+                            url.replace(url_p, str(choice(xss_payloads)))
                         )
-                    )
+                        self.random_ssti_payloads.append(
+                            urljoin(self.target,url_path.replace(url_p, str(choice(ssti_payloads)))
+                            )
+                        )
+                        self.random_sqli_payloads.append(
+                            urljoin(self.target,url_path.replace(url_p, str(choice(sqli_payloads)))
+                            )
+                        )
 
                     count +=1
         
         # altough the main idea here is to set contextual fuzzer according to regex (oposite)
         # at this time we're just playing a little bit with this to enrich fuzzer scope
-        if regex_patterns:
+        if regex_patterns and not handler.get('sample'):
             for view,rgx_patterns in regex_patterns.items():
                 hl_view = colored(view,'red') 
                 rgx_msg = ('   |- Building scope from fuzz_regex_patterns / view: {} ({} patterns)...'.format(
@@ -274,7 +287,7 @@ class DJUtils:
                     )
                 )
                 print(rgx_msg.ljust(os.get_terminal_size().columns - 1), end="\r")
-                sleep(0.10)
+                sleep(0.02)
 
                 for pattern in rgx_patterns:
                     self.regex_patterns_payloads.extend(
@@ -338,6 +351,232 @@ class DJUtils:
         )
 
         return _tbl_
+
+    def generate_exceptions_table(self, EXCEPTIONS):
+        exceptions_tbl = self.get_report_tables().get('exceptions')
+        #exceptions_tbl = tables['exceptions']
+
+        i_count = 1
+        # >> load exceptions into table
+        env_pool = []
+        count_lines = False
+        count_vars  = False
+        count_triggers = False
+        total_xocc = False
+
+        for exception in EXCEPTIONS:
+            x_traceback = exception['EXCEPTION_TRACEBACK']
+            env_count = len(exception['ENVIRONMENT'])
+            occ_count = exception['EXCEPTION_COUNT']
+
+            env_pool.append(env_count)
+            total_xocc = total_xocc + occ_count
+
+            x_summary = exception['EXCEPTION_SUMMARY']
+            x_loc_full = x_summary['Exception Location']
+            x_location = '/'+'/'.join(x_loc_full.split()[0].split('/')[-3:])
+            x_line_number = x_loc_full.split()[-1]
+            x_function = x_loc_full.split()[-3].replace(',','')
+            installed_items = exception['INSTALLED_ITEMS']
+
+            lines_count = 0
+            triggers_count = 0
+            vars_count = 0
+
+            for item in x_traceback:
+                lines_count = lines_count + len(item['RAW_CODE_SNIPPET'])
+                triggers_count = triggers_count + len(item['MODULE_TRIGGERS'])
+                vars_count = vars_count + len(item['MODULE_ARGS'])
+
+            count_lines = count_lines + lines_count
+            count_vars  = count_vars + vars_count
+            count_triggers = count_triggers + triggers_count
+
+            exceptions_tbl.add_row(
+                [
+                    colored(exception['IID'], 'green'),
+                    exception['EXCEPTION_TYPE'],
+                    x_function,
+                    x_location,
+                    x_line_number,
+                    lines_count,
+                    triggers_count,
+                    env_count,
+                    vars_count,
+                    occ_count
+                ]
+            )
+            i_count +=1
+
+        return {
+            'exceptions_tbl': exceptions_tbl,
+            'total_xocc': total_xocc,
+            'env_pool': env_pool,
+            'count_lines':count_lines,
+            'count_vars':count_vars,
+            'count_triggers':count_triggers
+     
+        }
+
+    def get_version_issues(self,**sampler):
+        
+        tickets_tbl = self.get_report_tables().get('tickets')
+        cves_tbl = self.get_report_tables().get('cves')
+        tickets = None
+        cves = None
+
+        sttinger_data = sampler.get('FINGERPRINT',False)
+
+        if sampler['EXCEPTION_SUMMARY'].get('Django Version'):
+            django_version = sampler['EXCEPTION_SUMMARY'].get('Django Version').strip()
+            #django_version = x_summary.get('Django Version').strip()
+            
+            installed_items = sampler['INSTALLED_ITEMS']
+            
+            # if Django Versions is found in Djunch 'environment_context'
+            if django_version and django_version is not None:
+                if len(django_version.split('.')) >= 3:
+                    django_version = '.'.join(django_version.split('.')[:-1])
+                
+                # if dmt already retrieve sec issues through passive fingerprint
+                if sttinger_data\
+                    and django_version == sttinger_data.get('flag_version',False):
+
+                    if sttinger_data.get('cves',False):
+                        cves = sttinger_data.get('cves')
+                    
+                    if sttinger_data.get('tcts',False):
+                        tickets = sttinger_data.get('tcts')
+                else:
+                    # - Get CVEs and security tickets for abducted framework version-
+                    tickets = tictrac.siddhi(django_version).start()
+                    cves = prana.siddhi(django_version).start()
+                
+                if tickets is not None:
+                    #and security_tickets is not None: 
+                
+                    # Security Tickets table
+                    for ticket in tickets:
+                        title = ticket['title']
+                    
+                        # max text len to pretty result
+                        if len(title) > 100:
+                            title = str(title[:100]) + '...'
+                    
+                        # >> load security tickets 
+                        tickets_tbl.title = colored(
+                            "Security tickets for Django {}".format(django_version),
+                            "white", attrs=['bold']
+                        )
+
+                        tickets_tbl.add_row(
+                            [
+                                colored('ST{}'.format(ticket['id']),'green'),
+                                title
+                            ]
+                        )
+                else:
+                    tickets_tbl = '?'
+                  
+                # CVE table
+                if cves is not None:
+                    for entry in cves:
+                        # >> load cve ids
+                        cves_tbl.title = colored(
+                            "CVE IDs for Django {}".format(django_version),
+                            "white",attrs=['bold']
+                        )
+                    
+                        cves_tbl.add_row(
+                            [
+                                colored(entry['id'],'green'),
+                                entry['title'].rstrip(),
+                                entry['date'].rstrip()
+
+                            ]
+                        )
+                else:cves_tbl = '?'
+
+        return {
+            'tickets_tbl': tickets_tbl,
+            'cves_tbl': cves_tbl,
+            'tickets': tickets,
+            'cves':cves
+        }
+
+    def show_scan_settings(self,**vmnf_handler):
+        print("\033c", end="")
+        vmnf_banners.audit_report_banner('DMT')
+
+        ### Abudct analysis ###
+        cprint("\n⣆⣇      Scan settings                          \n", "white", "on_red", attrs=['bold'])
+        cprint("\tGeneral settings and siddhis called during analysis.\n",
+                'cyan', attrs=[]
+        )
+
+        hl_color = 'green'
+        sg = colored('→', hl_color, attrs=['bold'])
+
+        pass_flags = ['patterns_table', 'patterns_views', 'fuzz_settings',
+            'meta','download_timeout','method','headers','cookie']
+
+        for _abd_k, _abd_v in (vmnf_handler.items()):
+            if _abd_v and _abd_k not in pass_flags:
+                if isinstance(_abd_v,(list,dict)):
+                    _abd_v = len(_abd_v)
+
+                print('{}{}:\t   {}'.format(
+                    (' ' * int(5-len(_abd_k) + 15)),
+                    _abd_k,
+                    colored(_abd_v, hl_color)
+                    )
+                )
+        print()
+        sleep(1)
+    
+    def show_server_env(self,contexts):
+        cprint("\n⣠⣾      Target Environment              ", "white", "on_red", attrs=['bold'])
+        print()
+        cprint("\tDetails about target application environment.\n",
+                'cyan', attrs=[]
+        )
+
+        for k,v in contexts['server'].items():
+            k = (k.replace('_',' ')).capitalize()
+            print('{}{}:\t   {}'.format(
+                (' ' * int(5-len(k) + 15)),
+                k,colored(v, 'green'))
+            )
+            sleep(0.10)
+
+        try:
+            contexts['environment']['EXCEPTION_REPORTER'] = \
+                contexts['environment'].pop('DEFAULT_EXCEPTION_REPORTER_FILTER')
+        except KeyError:
+            contexts['environment']['EXCEPTION_REPORTER'] = '?'
+
+        try:
+            contexts['environment']['DJANGO_SETTINGS'] = \
+                contexts['environment'].pop('DJANGO_SETTINGS_MODULE')\
+                if 'DJANGO_SETTINGS_MODULE' in contexts['environment'] \
+                    else contexts['environment'].pop('SETTINGS_MODULE')
+        except KeyError:
+            contexts['environment']['DJANGO_SETTINGS'] = '?'
+
+        for k,v in contexts['environment'].items():
+            k = (k.replace('_',' ')).capitalize()
+
+            print('{}{}:\t   {}'.format(
+                (' ' * int(5-len(k) + 15)),
+                k,colored(v, 'green'))
+            )
+            sleep(0.10)
+
+        print()
+        sleep(0.20)
+        
+        return contexts
+
 
     def get_report_tables(self):
         from . _dju_settings import table_models
@@ -426,7 +665,7 @@ class DJUtils:
                     )
                 )
             
-                sleep(0.10)
+                sleep(0.05)
             return 
         
         # full details

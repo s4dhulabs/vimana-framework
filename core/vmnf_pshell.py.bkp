@@ -6,7 +6,7 @@
 
                     - PSHELL -
 
-    PSHELL v2: Prompt shell for Vimana Framework
+    PSHELL v1: Prompt shell for Vimana Framework
     s4dhu <s4dhul4bs[at]prontonmail[dot]ch
 
 """
@@ -14,7 +14,7 @@
 from __future__ import unicode_literals
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from siddhis.viwec.viwec import siddhi as crawler
-from siddhis.jungle.jungle import siddhi as bruteforce
+from siddhis.jungler.jungler import siddhi as bruteforce
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.lexers import PygmentsLexer
 from prompt_toolkit.shortcuts import prompt
@@ -24,9 +24,8 @@ from pygments.lexers import PythonLexer
 from prompt_toolkit.styles import Style
 from termcolor import colored, cprint
 from prettytable import PrettyTable
-from res.colors import *
 from time import sleep
-import itertools
+from res.colors import *
 import textwrap
 import getpass
 import sys
@@ -35,7 +34,6 @@ import re
 
 from settings.siddhis_shared_settings import django_envvars as djev
 from siddhis.djunch.engines._dju_utils import DJUtils
-from core.vmnf_utils import pshell_set 
 from scrapy.exceptions import CloseSpider
 from res.vmnf_text_utils import text_wrap
 from siddhis.tictrac import tictrac
@@ -46,18 +44,21 @@ from siddhis.prana import prana
 class vmnfshell:
     def __init__(self,**_vmnf_session_):
        
-        # general configuration and helpers
-        _pset_ = pshell_set(**_vmnf_session_)
-        
-        # forward session `vimana run --module [module]`
+        '''
+        if _vmnf_session_.get('siddhi_callbacks'):
+            last_callback = (
+                _vmnf_session_.get(
+                    'siddhi_callbacks')
+            )
+            print(last_callback)
+            input('---- @ ----')
+        '''
         self._vmnf_session_ = _vmnf_session_
-
-        self.siddhi   = _vmnf_session_.get('module_run')
+        self.siddhi   = _vmnf_session_.get('siddhi',False)
         self._issues_ = _vmnf_session_.get('djunch_result',False)
         self.sampler  = self._issues_.get('EXCEPTIONS')[0]
         self.fuzz_scope = self.sampler.get('FUZZ_URLS_SCOPE',False)
         self._vmnf_session_['scope'] = self.fuzz_scope.get('RAW_URLS',False)
-
         self.contexts = self.sampler.get('CONTEXTS',False)
         self.keyenv_contexts = self.sampler.get('KEY_ENV_CONTEXTS',False)
         self.report_items = _vmnf_session_.get('report_tables',False)
@@ -65,24 +66,110 @@ class vmnfshell:
         self.installed_items = self.sampler.get('INSTALLED_ITEMS',False)
         self.cves = _vmnf_session_.get('_cves_',False)
         
-        # instance of settings and helpers
-        vmnf_commands = _pset_.vmnf_commands
-        self.valid_show_options = _pset_.valid_show_options
-        self.handle_show_options = _pset_.handle_show_options
-        self.vmnf_mng_cmds = _pset_.vmnf_mng_cmds
-        help_cmds = _pset_.help_cmds
-        self.list_env_vars = _pset_.list_env_vars
-        cmdcompleter = _pset_.cmdcompleter
-        session = _pset_.session
-        message = _pset_.message
-        self.issue_categories = _pset_.issue_categories
-        self.valid_run_utils = _pset_.valid_run_utils
-        self.sec_midd_tbl = _pset_.sec_midd_tbl
+        # general supported options in this alpha version
+        vmnf_commands= [
+            'abduct',
+            'inspect', 
+            'show', 
+            'search',
+            'exit', 
+            'options',
+            'run',
+            '?',
+            'help'
+        ]
+
+        # to invoke help 
+        help_cmds = ['?', 'options', 'help']
+
+        cmdcompleter = WordCompleter(
+            vmnf_commands, 
+            ignore_case=True
+        )
+        
+        p_style = Style.from_dict({
+            '':         '#92bfaa',
+            'username': '#884444',
+            'at':       '#1dff96',
+            'colon':    '#1d86ff',
+            'pound':    '#1d86ff',
+            'host':     '#ff4b03',
+            'path':     'ansicyan underline',
+        })
+        
+        prompt = ()
+        session = PromptSession(
+            lexer=PygmentsLexer(PythonLexer), 
+            completer=cmdcompleter, 
+            complete_in_thread=True,
+            auto_suggest=AutoSuggestFromHistory(),
+            complete_while_typing=True,
+            style=p_style
+        )
+        message = [
+            ('class:username', getpass.getuser()),
+            ('class:at',       '@'),
+            ('class:host',     'vimana'),
+            ('class:colon',    ':'),
+            ('class:path',     '{}'.format(self.siddhi)),
+            ('class:pound',    ' ⠶ '),
+        ]
+
         found_ticket = False
         found_exception = False
         found_config_issue = False
         secmid_tbl = False
 
+        self.issue_categories = {
+            'ST': "Security Tickets",
+            'CV': "CVE ID's",
+            'UX': "Exceptions",
+            'CI': "Configuration Issues",
+            'LC': "EnvLeak Contexts",
+            'UP': "URL Patterns",
+            'SM': "Security Middleware",
+            '??': "Issues"
+        }
+
+        # show cmd options 
+        self.valid_show_options = {
+            0:'summary      |show issues summary',
+            1:'exceptions   |show identified exceptions',
+            2:'tickets      |show security tickets',
+            3:'cves         |show related cve ids',
+            4:'contexts     |show env leak contexts',
+            5:'patterns     |show mapped url patterns',
+            6:'config       |show configuration issues',
+            7:'applications |show installed applications',
+            8:'middlewares  |show installed middlewares',
+            9:'databases    |show available databases',
+            10:'objects     |show traceback objects',
+            11:'variables   |show leaked app variables',
+            12:'log         |show fuzzer logs',
+            13:'references  |show related cwe entries'
+        }
+
+        self.valid_run_utils = {
+            'crawler': 'run the utility against the pre-collected scope (dmt)',
+            'code_scan': 'run the utility against the code snippets of tracebacks (in progress)',
+            'bruteforce': 'run bruteforce utilitity against Django admin portal'
+        }
+
+        # ==[ UX - EXCEPTIONS ]==
+        self.sec_midd_tbl = PrettyTable()
+        self.sec_midd_tbl.field_names = [
+            'iid',
+            'resource',
+            'value',
+            'status'
+        ]
+
+        self.sec_midd_tbl.align = "l"
+        self.sec_midd_tbl.title = colored(
+            "~ django.middleware.security.SecurityMiddleware ~",
+            "white",
+            attrs=['bold']
+        )
 
         while True:
             try:
@@ -96,19 +183,11 @@ class vmnfshell:
                 # help,options,?
 
                 if cmd_len == 1:
-                    r_cmd = r_cmd.strip()
-
                     if r_cmd == 'exit':
                         cprint('↓↓↓ Exiting Vimana...','blue')
                         sleep(1)
                         os._exit(os.EX_OK)
-                    
-                    elif r_cmd == 'run':
-                        _pset_.valid_run_option('?')
-                        continue
 
-                    elif r_cmd == 'search':
-                        self.list_env_vars(r_cmd, '?', self.keyenv_contexts)
                     elif r_cmd == 'show' or r_cmd == 'show ':
                         self.handle_show_options()
                     elif r_cmd == 'inspect':
@@ -138,52 +217,34 @@ class vmnfshell:
                         print('[vmnfpshell] Invalid command, use options')
                         continue
                 
+                    
                     ###########
                     # ~ run ~ #
                     ########### 
                     if cmd == 'run':
-                        if not _pset_.valid_run_option(arg):
+                        if arg not in self.valid_run_utils.keys():
+                            print('[run] → Invalid resource: {}! Choose one from below:\n'.format(colored(arg, 'red')))
+
+                            for k,v in self.valid_run_utils.items():
+                                print('{:>20}       {}'.format(
+                                    colored(k, 'green'),
+                                    colored(v, 'blue')
+                                    )
+                                )
+                            print()
                             continue
                         
                         # set callback signals to siddhi
                         self._vmnf_session_['callback_session'] = True
                         
-                        if arg in ['wc','web_crawler', 'crawler']:
-                            self._vmnf_session_['siddhi_run'] = \
-                                crawler.module_information.get('Name').lower()
+                        if arg == 'crawler':
+                            self._vmnf_session_['call_siddhi'] = \
+                            crawler.module_information.get('Name')
                             crawler(**self._vmnf_session_).start()
-                        
-                        elif arg in ['bf','brute_force', 'bruteforce']:
-                            self._vmnf_session_['siddhi_run'] = \
-                                bruteforce.module_information.get('Name').lower()
+                        elif arg == 'bruteforce':
+                            self._vmnf_session_['call_siddhi'] = \
+                            bruteforce.module_information.get('Name')
                             bruteforce(**self._vmnf_session_).start()
-
-                        elif arg in ['it','issues_tracker', 'itracker']:
-                            
-                            if len(self.report_items['cves']._rows) > 0\
-                                    and len(self.report_items['tickets']._rows) > 0:
-                                
-                                cprint('→ Issues already collected. Use show command instead.', 'cyan')
-                                continue
-                            
-                            issues_found = DJUtils(False,False).get_version_issues(**self.sampler)
-
-                            if not issues_found:
-                                print('Was not possible to retrieve issues')
-                                continue
-                        
-                            security_tickets = issues_found.get('tickets')
-                            cves = issues_found.get('cves')
-                            self.tickets_tbl = issues_found.get('tickets_tbl')
-                            self.cves_tbl = issues_found.get('cves_tbl')
-
-                            self.report_items['tickets'] = self.tickets_tbl
-                            self.report_items['cves'] = self.cves_tbl
-                            self.security_tickets = security_tickets
-                            self.cves = cves
-
-                            print(self.cves_tbl)
-                            print(self.tickets_tbl)
 
                         continue
 
@@ -192,15 +253,23 @@ class vmnfshell:
                     ############## 
                     elif cmd == 'search':
                         arg = arg.upper().strip("'").strip('"').strip(',')
-                        if not arg or arg not in self.keyenv_contexts:
-                            self.list_env_vars(cmd,arg,self.keyenv_contexts)
+                        if arg not in self.keyenv_contexts:
+                            c_arg = colored(arg, 'red')
+                            cprint('[{}] Variable {} not found in environment / Available categories:\n'.format(cmd, c_arg), 'white')
+                            x=[str(key) for key in self.keyenv_contexts.keys()]
+                            cprint(str(x).replace(
+                                '[','').replace(
+                                    ']','').replace(
+                                        '"','').replace(
+                                            "'",''), 'green')
+                            print()
                             continue
             
                         num_vars = colored(str(len(self.keyenv_contexts.get(arg))), 'white')
                         cprint("[{}]→ Found {} variables for keyword \"{}\"\n".format(cmd, num_vars, arg),"cyan")
 
                         for env_match in self.keyenv_contexts.get(arg):
-                            print('\t+ {}'.format(colored(env_match,'green')))
+                            print('\t+ {}'.format(env_match))
                         print()
                         continue
 
@@ -253,68 +322,46 @@ class vmnfshell:
                         if arg == 'summary':
                             cprint('\n→ Issues summary', 'cyan')
                             print(self.report_items['summary'])
-
                         elif arg == 'exceptions':
                             cprint('\n→ Triggered unhandled exceptions', 'cyan')
                             print(self.report_items['exceptions'])
-
                         elif arg == 'tickets':
-                            if self._vmnf_session_.get('sample')\
-                                and len(self.report_items.get('tickets')._rows) == 0:
-                                print(colored('\n--| Sample mode doesnt search for version issues in runtime. Use: ', 'cyan'), colored('run itracker\n', 'green'))
-                                continue
-
                             cprint('\n→ Security tickets (by framework version)', 'cyan')
                             print(self.report_items['tickets'])
-
                         elif arg == 'config':
                             cprint('\n→ Configuration issues', 'cyan')
                             print(self.report_items['configuration'])
-
                         elif arg == 'contexts':
                             cprint('\n→ ENV leak contexts', 'cyan')
                             print(self.report_items['contexts'])
-
                         elif arg == 'patterns':
                             cprint('\n→ Mapped URL patterns', 'cyan')
                             print(self.report_items['raw_patterns'])
-
                         elif arg == 'cves':
-                             
-                            if self._vmnf_session_.get('sample')\
-                                and len(self.report_items.get('cves')._rows) == 0:
-                                print(colored('\n--| Sample mode doesnt search for version issues in runtime. Use: ', 'cyan'), colored('run itracker\n', 'green'))
-                                continue
-                            
                             cprint("\n→ CVE ID's (by framework version)", 'cyan')
                             print(self.report_items['cves'])
-
                         elif arg == 'applications':
                             cprint("\n→ Applications enabled in this Django installation", 'cyan')
                             print()
                             for app in self.installed_items['Installed Applications']:
                                 print('   {}'.format(app))
                             print()
-
                         elif arg == 'middlewares':
                             cprint("\n→ Enabled Django middlewares", 'cyan')
                             print()
                             for mid in self.installed_items['Installed Middlewares']:
                                 print('   {}'.format(mid))
                             print()
-
                         elif arg == 'databases':
                             cprint("\n→ Available databases", 'cyan')
                             print()
                             for k,v in self.sampler['DB_SETTINGS'].items():
                                 print('   {}: {}'.format(k,v))
                             print()
-
                         elif arg == 'objects':
                             cprint("\n→ Parsed traceback objects", 'cyan')
                             print(self.report_items['objects'])
                             print()
-
                         elif arg == 'variables':
                             print()
                             for exception in self._issues_.get('EXCEPTIONS'):
@@ -327,7 +374,6 @@ class vmnfshell:
                                 DJUtils(False,False).show_module_args(
                                     *exception['EXCEPTION_TRACEBACK']
                                 )
-
                         elif arg == 'log':
                             for entry in self._issues_.get('FUZZ_STATUS_LOG'):
                                 for k,v in entry.items():
@@ -365,21 +411,13 @@ class vmnfshell:
                         if _type_ not in self.issue_categories.keys():
                             self._type_ = '??'
                             self._reason_ = 'Invalid issue identifier'
-                            _pset_.handle_inspect_msg(
-                                self._type_.lower(),
-                                self._reason_,
-                                self.issue_categories[self._type_]
-                            )
+                            self.handle_inspect_msg()
                             continue
                         
                         # to handle inspect iid 'without' number identifier
                         if not _issue_:
                             self._reason_ = 'Invalid iid format'
-                            _pset_.handle_inspect_msg(
-                                self._type_.lower(),
-                                self._reason_,
-                                self.issue_categories[self._type_]
-                            )
+                            self.handle_inspect_msg()
                             continue 
                         
                         # inspect security tickets
@@ -399,11 +437,7 @@ class vmnfshell:
                                         tictrac.siddhi(_issue_).start()
                             else:  
                                 self._reason_ = 'Ticket not found'
-                                _pset_.handle_inspect_msg(
-                                    self._type_.lower(),
-                                    self._reason_,
-                                    self.issue_categories[self._type_]
-                                )
+                                self.handle_inspect_msg()
                                 continue
 
                         # inspect unhandled exceptions
@@ -428,11 +462,7 @@ class vmnfshell:
                                 continue
                             else:
                                 self._reason_ = 'Exception not found'
-                                _pset_.handle_inspect_msg(
-                                    self._type_.lower(),
-                                    self._reason_,
-                                    self.issue_categories[self._type_]
-                                )
+                                self.handle_inspect_msg()
                                 continue
                         
                         # inspect leaked [env] contexts 
@@ -478,11 +508,7 @@ class vmnfshell:
 
                             if lc_not_found:
                                 self._reason_ = 'Context not found'
-                                _pset_.handle_inspect_msg(
-                                    self._type_.lower(),
-                                    self._reason_,
-                                    self.issue_categories[self._type_]
-                                )
+                                self.handle_inspect_msg()
                                 continue
                         
                         elif _type_ == 'SM': 
@@ -518,20 +544,12 @@ class vmnfshell:
                             #self.itype = 'CVE Id'
                             if not (re.search('(CVE-\d{4}-\d{4})',_iid_)):
                                 self._reason_ = 'Invalid CVE Id'
-                                _pset_.handle_inspect_msg(
-                                    self._type_.lower(),
-                                    self._reason_,
-                                    self.issue_categories[self._type_]
-                                )
+                                self.handle_inspect_msg()
                                 continue
 
                             if _iid_ not in str(self.cves):
                                 self._reason_ = 'Unrelated CVE Id'
-                                _pset_.handle_inspect_msg(
-                                    self._type_.lower(),
-                                    self._reason_,
-                                    self.issue_categories[self._type_]
-                                )
+                                self.handle_inspect_msg()
                                 continue
 
                             print('Retrieving details for CVE ID {}...\n'.format(_iid_))   
@@ -588,11 +606,48 @@ class vmnfshell:
                                         print()
                             else:
                                 self._reason_ = 'Configuration issue not found'
-                                _pset_.handle_inspect_msg(
-                                    self._type_.lower(),
-                                    self._reason_,
-                                    self.issue_categories[self._type_]
-                                )
+                                self.handle_inspect_msg()
 
                             continue
+                    
+    def handle_inspect_msg(self):
+        '''handle inspect messages'''
+
+        print('[{}:{}] {}. Make sure that the issue id (iid) is correct in the "{}" table.'.format(
+            self.siddhi,
+            self._type_.lower(),
+            self._reason_,
+            self.issue_categories[self._type_]
+            )
+        )
+
+        return False
+
+    def vmnf_mng_cmds(self):
+        '''management commands'''
+
+        print('''\nBasic commands for interacting with the analysis result:
+
+        \r  abduct      evaluate exploitable scenarios (not available yet)
+        \r  inspect     inspect a given issue id (iid)
+        \r  run         run plugins against current findings
+        \r  show        show analysis items by category
+        \r  search      search environment variables by keyword
+        \r  options     this help
+        \r  exit        exit framework
+        ''')
+
+    def handle_show_options(self):
+        print("\nMissing issue category argument. Supported options:\n")
+        
+        for k,v in self.valid_show_options.items():
+            cat,desc = v.split('|')
+
+            print('  {:15s}{:25s}{:25s}'.format(
+                colored(str(k) + ': ','blue'),
+                colored(cat.strip(), 'green'),
+                colored("\x1B[3m{}\x1B[0m".format(desc.strip()),'white')
+                )
+            )
+        print()
 

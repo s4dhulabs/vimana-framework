@@ -291,8 +291,6 @@ class siddhi:
 
         print()
         if self.vmnf_handler.get("session_mode"):
-
-
             self.vmnf_handler = stager(**self.vmnf_handler).check_forward()
             if not self.vmnf_handler:
                 print('[{}] An error occurred while loading session.'.format(

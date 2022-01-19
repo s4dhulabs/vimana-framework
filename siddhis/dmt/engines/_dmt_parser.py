@@ -69,12 +69,15 @@ class DMTEngine(scrapy.Spider):
         self.meta = vmnf_handler.get('meta')
         self.patterns = vmnf_handler.get('patterns')
         self.auto_mode = vmnf_handler.get('auto')
+        self.silent_mode = True if vmnf_handler.get('silent') \
+            or vmnf_handler.get('sample') else False
         self.found_version = False
         self.GenObj = Generic()
 
         self.only_patterns=[]
         self.raw_patterns =[]
         self.app_patterns =[]
+        self.exit_step = False
 
     def get_raw_patterns(self,response):
         return [('/'.join(pattern.split()).replace('//','/'))\
@@ -87,6 +90,11 @@ class DMTEngine(scrapy.Spider):
         if self.exit_step:
             return False
 
+        if not self.raw_patterns:
+            cprint("""[{}] The target doesn't seem to be up. Check out if the application is running, and try again.\n""".format(
+                datetime.now()), 'magenta', attrs=['bold'])
+            os._exit(os.EX_OK) 
+
         self.vmnf_handler['fuzz_regex_flags'] = self.fuzz_flags_context
         self.vmnf_handler['view_context'] = self.p_context
         self.vmnf_handler['raw_patterns'] = self.raw_patterns
@@ -97,6 +105,7 @@ class DMTEngine(scrapy.Spider):
         
         # call new djunch engine
         Djunch(**self.vmnf_handler).start()
+        #os._exit(os.EX_OK)
 
     def start_requests(self):
         
@@ -115,12 +124,19 @@ class DMTEngine(scrapy.Spider):
             if not self.target_url.startswith('http'):
                 self.target_url = 'http://' + entry 
 
+            try:
+                requests.get(self.target_url)
+            except requests.exceptions.ConnectionError:
+                # requests.exceptions.SSLError
+                self.target_url = 'https://' + entry
+
             dmt_start = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             c_target = colored(self.target_url,'white')
             
-            cprint("[{}] Starting DMT against {}...".format(datetime.now(),c_target), 'cyan')
-            sleep(1)
-
+            if not self.vmnf_handler.get('sample'):
+                cprint("[{}] Starting DMT against {}...".format(datetime.now(),c_target), 'cyan')
+                sleep(1)
+            
             self.target_trigger = urljoin(self.target_url,str(random()))
 
             yield scrapy.Request(
@@ -133,7 +149,10 @@ class DMTEngine(scrapy.Spider):
             )
             
     def failure_handler(self,failure):
-        pass
+        if "ResponseNeverReceived" in str(failure.type):
+            cprint("[{}] The target doesn't seem to be vulnerable.\nException: {}".format(
+                datetime.now(), colored(failure.type,'red')), 'magenta')
+            os._exit(os.EX_OK)
 
     def run_passive_fingerprint(self):
         sttd = {
@@ -167,29 +186,45 @@ class DMTEngine(scrapy.Spider):
         self.f_map = colored('  ↪','blue')
         self.exit_step = False
 
-        print()
-        for k,v in response.headers.items():
-            print('   - {}: {}'.format(k.decode(),v[0].decode()))
+        if not self.vmnf_handler.get('sample'):
+            print()
+            for k,v in response.headers.items():
+                print('   - {}: {}'.format(k.decode(),v[0].decode()))
         
         # passive framework version fingerprint - sttinger
-        self.run_passive_fingerprint()
-
-        cprint('\n{}Checking DEBUG status...'.format(self.f_start),'cyan')
-        sleep(1)
+        if not self.vmnf_handler.get('sample'):
+            self.run_passive_fingerprint()
+        
+        if not self.vmnf_handler.get('sample'):
+            cprint('\n{}Checking DEBUG status...'.format(self.f_start),'cyan')
+            sleep(0.20)
 
         if response.status == 404:
             d = colored('DEBUG', 'green', attrs=['bold'])
-            exp_msg = (response.xpath('//div[@id="explanation"]//p//code/text()').get()).replace(' ','').strip()
+            
+            exp_msg = (response.xpath('//div[@id="explanation"]//p//code/text()').get())
+            
+            if (exp_msg) is None:
+                exp_msg = colored('Debug is not enabled', 'red')
+                cprint("\n[{}] The target doesn't seem to be vulnerable: {}.\n".format(
+                    datetime.now(), exp_msg), 'magenta')
+                os._exit(os.EX_OK)
+
+            exp_msg = exp_msg.replace(' ','').strip()
 
             if exp_msg != 'DEBUG=True':
                 d = colored('DEBUG', 'red',attrs=['dark'])
-                print('{} {} mode is disabled.\n'.format(self.f_map,d))
-                return False
-
-            print('{} {} mode is activated.\n'.format(self.f_map,d))
-            sleep(1)
+                if not self.vmnf_handler.get('sample'):
+                    print('{} {} mode is disabled.\n'.format(self.f_map,d))
+                    return False
             
-            if not self.auto_mode:
+            if not self.vmnf_handler.get('sample'):
+                print('{} {} mode is activated.\n'.format(self.f_map,d))
+                sleep(1)
+            
+            if not self.auto_mode \
+                and not self.vmnf_handler.get('sample'):
+
                 confirm_step = 'n'
                 confirm_step = input(colored('[DMT] The target is vulnerable, would you like to continue? (Y/n) → ', 'cyan'))
             
@@ -200,15 +235,15 @@ class DMTEngine(scrapy.Spider):
                     
                     cprint('See you Sadhu! Leaving the ship...', 'green')
                     cprint('\tHit CTRL+C to exit the engine', 'green')
-                    
-                    sys.exit(0)
+                    os._exit(os.EX_OK)
 
             self.URLconf=(response.xpath('//div[@id="info"]//p//code/text()').get()).strip()
             
             if self.URLconf is not None:
-                hl_uc = colored(self.URLconf, 'white')
-                print('{}Dumping APP patterns from URLconf {}'.format(self.f_start,hl_uc))
-                sleep(0.10)
+                hl_uc = colored(self.URLconf, 'blue')
+                if not self.vmnf_handler.get('sample'):
+                    print('{}Dumping APP patterns from URLconf {}'.format(self.f_start,hl_uc))
+                    sleep(0.10)
 
             if not self.app_patterns:
                 
@@ -217,7 +252,7 @@ class DMTEngine(scrapy.Spider):
                 
                 # expand patterns 
                 self.patterns_mapper()
-        
+                
                 # patterns by view
                 self.get_view_context_patterns()
         
@@ -252,8 +287,10 @@ class DMTEngine(scrapy.Spider):
         self.fuzz_flags_context = {}
         total_views = len(self.p_context.keys())
         tv_hl = colored(total_views, 'white')
-        print('\n{}Setting up contextual fuzzing flags for {} views'.format(self.f_start,tv_hl))
-        sleep(2)
+        
+        if not self.vmnf_handler.get('sample'):
+            print('\n{}Setting up contextual fuzzing flags for {} views'.format(self.f_start,tv_hl))
+            sleep(0.20)
         
         v_count=0
         for view,patterns in self.p_context.items(): 
@@ -261,13 +298,14 @@ class DMTEngine(scrapy.Spider):
             v_hl = colored(view, 'blue')
             t_hl = colored(len(patterns),'blue')
             
-            dmt_step=('{} Parsing ({}) patterns in view {} ({}/{})...'.format(
-                self.f_map,t_hl,v_hl,v_count,total_views
+            if not self.vmnf_handler.get('sample'):
+                dmt_step=('{} Parsing ({}) patterns in view {} ({}/{})...'.format(
+                    self.f_map,t_hl,v_hl,v_count,total_views
+                    )
                 )
-            )
 
-            print(dmt_step.ljust(os.get_terminal_size().columns - 1), end="\r")
-            sleep(0.20)
+                print(dmt_step.ljust(os.get_terminal_size().columns - 1), end="\r")
+                sleep(0.10)
             
             for pattern in patterns:
                 found_regex=False
@@ -285,14 +323,16 @@ class DMTEngine(scrapy.Spider):
                     if item.startswith('('):
                         found_regex = True
                         _p_ = _p_.replace(item,fuzz_flag)
-                        
-                        reg_found = ('\n\t+ regex: {}'.format(
-                            colored(item.strip(),'magenta',attrs=[])
+                       
+                        # sample mode enabled, avoid verbose/debug messages
+                        if not self.vmnf_handler.get('sample'):
+                            reg_found = ('\n\t+ regex: {}'.format(
+                                colored(item.strip(),'magenta',attrs=[])
+                                )
                             )
-                        )
 
-                        print(reg_found.ljust(os.get_terminal_size().columns - 1), end="\r")
-                        sleep(0.10)
+                            print(reg_found.ljust(os.get_terminal_size().columns - 1), end="\r")
+                            sleep(0.10)
 
                         if view not in self.fuzz_flags_context.keys():
                             self.fuzz_flags_context[view]=[]
@@ -301,8 +341,10 @@ class DMTEngine(scrapy.Spider):
                     self.fuzz_flags_context[view].append(_p_)
                     ff_hl = colored(fuzz_flag, 'magenta', attrs=[])
                     _p_hl = colored(_p_.strip(),'blue').strip()
-                    print('\n\t→ {}\n'.format(_p_hl.replace(fuzz_flag,ff_hl)))
-                    sleep(0.20)
+
+                    if not self.vmnf_handler.get('sample'):
+                        print('\n\t→ {}\n'.format(_p_hl.replace(fuzz_flag,ff_hl)))
+                        sleep(0.01)
 
     def strip_chars(self,pattern):
         return(pattern.replace('^','').replace(
@@ -322,9 +364,10 @@ class DMTEngine(scrapy.Spider):
         p_count = 0
         total_p = len(self.app_patterns)
         hl_total = colored(total_p, 'blue')
-
-        print('{}Starting PatternMapper via {}'.format(self.f_start,trick))
-        sleep(1)
+        
+        if not self.vmnf_handler.get('sample'):
+            print('{}Starting PatternMapper via {}'.format(self.f_start,trick))
+            sleep(1)
 
         for pattern in self.app_patterns:
             p_count +=1
@@ -342,12 +385,12 @@ class DMTEngine(scrapy.Spider):
 
             p = colored(pattern, 'white', attrs=['bold'])
             
-            print('\n{} Mapping app {} ({}/{})...'.format(self.f_map,p,hl_p_count,hl_total))
-            print()
-            sleep(0.20)
+            if not self.vmnf_handler.get('sample'):
+                print('\n{} Mapping app {} ({}/{})...'.format(self.f_map,p,hl_p_count,hl_total))
+                print()
+                sleep(0.10)
 
             payload = self.get_clean_pattern(pattern) + '/' + str(random())
-            #payload_url = self.get_clean_pattern(pattern) + '/aaaaaaaaaaaaaaa'
             
             self.new_target_url = urljoin(self.target_url, payload)
             self.headers['Origin']  = self.target_url
@@ -365,7 +408,8 @@ class DMTEngine(scrapy.Spider):
                             view_hl = colored(view,'blue')
                             map_p_hl = map_p.replace(view,view_hl)
 
-                        print('   + {}'.format(map_p_hl))
+                        if not self.vmnf_handler.get('sample'):
+                            print('   + {}'.format(map_p_hl))
                     
                         if map_p not in self.raw_patterns:
                             self.raw_patterns.append(map_p)
@@ -377,11 +421,12 @@ class DMTEngine(scrapy.Spider):
            self.app_patterns.append(pattern)
         
         hl_ap = colored(len(self.app_patterns), 'white')
-        print('{} {} app patterns\n'.format(self.f_map,hl_ap))
-        sleep(1)
+        if not self.vmnf_handler.get('sample'):
+            print('{} {} app patterns\n'.format(self.f_map,hl_ap))
+            sleep(0.30)
 
-        for pattern in self.app_patterns:
-            print('   - {}'.format(pattern))
-            sleep(0.10)
-        print()
+            for pattern in self.app_patterns:
+                print('   - {}'.format(pattern))
+                sleep(0.05)
+            print()
 

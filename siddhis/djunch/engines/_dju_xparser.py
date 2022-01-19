@@ -18,8 +18,10 @@ import sys
 sys.path.insert(0, '../')
 
 from random import random, choice, randint
+from scrapy.exceptions import CloseSpider
 from urllib.parse import urlparse
 from datetime import datetime
+from res import vmnf_banners
 from mimesis import Internet
 from mimesis import Generic
 import urllib3.exceptions
@@ -90,13 +92,15 @@ class DJEngineParser(scrapy.Spider):
         self.patterns = vmnf_handler.get('patterns')
         self.fuzz_step = vmnf_handler.get('fuzz_step')
         self.caught_exceptions = []
+        self.collected_sample = False
         
         _ISSUES_ = IssuesPool()
         _ISSUES_['ISSUES'] = {
             'EXCEPTIONS': [],
             'CONFIGURATION': [],
             'FUZZ_STATUS_LOG': [],
-            'GENERAL_OBJECTS': []
+            'GENERAL_OBJECTS': [],
+            'FUZZ_SCOPE': False
         }
         self._ISSUES_POOL = _ISSUES_['ISSUES']
         self._XP_ = ExceptionPool()
@@ -117,11 +121,13 @@ class DJEngineParser(scrapy.Spider):
                 for request_status in self._ISSUES_POOL['FUZZ_STATUS_LOG']:
                     print(request_status)
 
-            return False
+            os._exit(os.EX_OK) 
+            #return False
         
         # create instance of dju_reporter to issues presentation
         result = resultParser(self._ISSUES_POOL, **self.vmnf_handler).show_issues()
- 
+        os._exit(os.EX_OK) 
+
     def start_requests(self):
 
         # This will be used in future versions to configure the fuzzer options: full, fast, etc.
@@ -138,15 +144,16 @@ class DJEngineParser(scrapy.Spider):
         if not self.target or self.target is None:
             print('[{}:{}]→ Missing target'.format(self.vmnf_handler['module_run'], datetime.now()))
             return False
-
-        print(' {} Starting DJunch against {} | {} rounds / {} URL variations'.format(
-            colored("✔", 'green'),
-            (G_c  + self.target + W_c),
-            self.fuzz_rounds,
-            self.fuzz_scope_size
+        
+        if not self.vmnf_handler.get('sample'):
+            print(' {} Starting DJunch against {} | {} rounds / {} URL variations'.format(
+                colored("✔", 'green'),
+                (G_c  + self.target + W_c),
+                self.fuzz_rounds,
+                self.fuzz_scope_size
+                )
             )
-        )
-        sleep(1)
+            sleep(1)
 
         f_count = 1
         for url_step_type, fuzz_urls in self._FuzzURLsPool_.items():
@@ -158,6 +165,11 @@ class DJEngineParser(scrapy.Spider):
             t_count = 1
             hl_color = 'white'
             f_hl_fuzz = hl_color
+            set_max = 5
+
+            if self.vmnf_handler.get('sample'):
+                self.meta["max_retry_times"] = 1
+                set_max = 1
            
             for target_url in fuzz_urls:
                 
@@ -193,39 +205,44 @@ class DJEngineParser(scrapy.Spider):
                         _fzz_headers_[self.GenObj.person.name()]= choice(range(1000))  
                         _fzz_headers_['Content-Type'] = self.GenObj.internet.content_type()
 
-                    # random method 2
+                    # random method 2 / other methods to be implemented to enrich fuzzer
                     self.step_method = choice(['GET','POST','PUT','PATCH'])
-                    self.meta["max_retry_times"] = choice(range(1,5))
-                    self.meta["download_timeout"] = choice(range(1,3))
+                    
+                    # because in this mode we expect to be faster, set as 1 before
+                    if not self.vmnf_handler.get('sample'):
+                        self.meta["max_retry_times"] = choice(range(1,set_max))
+                        self.meta["download_timeout"] = choice(range(1,set_max))
+
                     f_hl_fuzz = 'green'
                     
                 if t_count == step_urls:
                     hl_color = 'green'
                     step_mark = colored('✔', hl_color)
                 
-                align = ' ' if self.step_method == 'GET' else ''
-                hl_t_count = colored(str(t_count), hl_color)
-                hl_step_urls= colored(str(step_urls), hl_color)
-                hl_f_count = colored(str(f_count), hl_color)
-                hl_fuzz_rounds = colored(str(self.fuzz_rounds), f_hl_fuzz)
-                hl_fuzz_steps = '{}/{}'.format(hl_f_count,hl_fuzz_rounds)
-                urls_step_count = '{}/{}'.format(hl_t_count,hl_step_urls)
-                hl_method = colored(self.step_method + align, 'blue')
+                if not self.vmnf_handler.get('sample'):
+                    align = ' ' if self.step_method == 'GET' else ''
+                    hl_t_count = colored(str(t_count), hl_color)
+                    hl_step_urls= colored(str(step_urls), hl_color)
+                    hl_f_count = colored(str(f_count), hl_color)
+                    hl_fuzz_rounds = colored(str(self.fuzz_rounds), f_hl_fuzz)
+                    hl_fuzz_steps = '{}/{}'.format(hl_f_count,hl_fuzz_rounds)
+                    urls_step_count = '{}/{}'.format(hl_t_count,hl_step_urls)
+                    hl_method = colored(self.step_method + align, 'blue')
 
-                fuzz_step_msg = (' {} Fuzzer step ({}) | {} {} ({})'.format(
-                    step_mark,
-                    hl_fuzz_steps,
-                    hl_method,
-                    hl_url_step_type,
-                    urls_step_count,
+                    fuzz_step_msg = (' {} Fuzzer step ({}) | {} {} ({})'.format(
+                        step_mark,
+                        hl_fuzz_steps,
+                        hl_method,
+                        hl_url_step_type,
+                        urls_step_count,
+                        )
                     )
-                )
                 
-                if self.debug_is_on:
-                    print(fuzz_step_msg)
-                else:
-                    print()
-                    print(fuzz_step_msg.ljust(os.get_terminal_size().columns - 1), end="\r")
+                    if self.debug_is_on:
+                        print(fuzz_step_msg)
+                    else:
+                        print()
+                        print(fuzz_step_msg.ljust(os.get_terminal_size().columns - 1), end="\r")
                 
                 if self.step_method == 'GET':
                     yield scrapy.Request(
@@ -256,8 +273,12 @@ class DJEngineParser(scrapy.Spider):
             sleep(1)
             print()
         
-        cprint('    → Waiting for threads...', 'cyan') 
-        sleep(2)
+        if not self.vmnf_handler.get('sample'):
+            cprint('\n → Waiting for threads [fell free to cut this short with a CTRL+C]...', 'cyan') 
+        sleep(1)
+        #raise CloseSpider('-- [fuzz:done] --')
+
+
 
     def failure_handler(self, failure):
         self._ISSUES_POOL['FUZZ_STATUS_LOG'].append(
@@ -320,9 +341,11 @@ class DJEngineParser(scrapy.Spider):
             for p in _csrf_().expected_status:
                 if response_data.find(p) != -1:
                     debug_step = "CSRF_FAILURE_VIEW warning"
-                    flag_status = colored(" djunch().parser({}) ".format(response.status),'red', 'on_cyan',attrs=['dark'])
-                    status_msg=colored('Triggered a Django forbidden warning:','cyan')
-                    cprint("\n{} {} {} \n  → '{}'".format(flag_status,status_msg,p,debug_step))
+                    
+                    if not self.vmnf_handler.get('sample'):
+                        flag_status = colored(" djunch().parser({}) ".format(response.status),'red', 'on_cyan')
+                        status_msg=colored('Triggered a Django forbidden warning:','cyan')
+                        cprint("\n{} {} {} \n  → '{}'".format(flag_status,status_msg,p,debug_step))
                     
                     self._ISSUE_ = ConfigIssuesItem()
                     self._ISSUE_['ISSUE_TYPE'] = 'CONFIGURATION'
@@ -341,6 +364,7 @@ class DJEngineParser(scrapy.Spider):
                         print('     + URL: {}'.format(response.url))
                         print('     + Method: {}'.format(self.step_method))
                         print('     + Cookie: {}'.format(self.cookie))
+
                         for k,v in (response.headers.items()):
                             print('     + {}: {}'.format(k.decode(),v[0].decode()))
                         print()
@@ -401,8 +425,14 @@ class DJEngineParser(scrapy.Spider):
                             sleep(0.15)
                 return False
             
-            self.djx_parser(response)
+            if self.vmnf_handler.get('sample') \
+                and self.collected_sample:                
+                raise CloseSpider('-- sample mode enabled')
+                sleep(0.10)
 
+            # normal exception parser sample or regular fuzzer mode
+            self.djx_parser(response)
+        
     def djx_parser(self, response):
         ''' Parse and register a new exception '''
 
@@ -449,15 +479,19 @@ class DJEngineParser(scrapy.Spider):
         DB_SETTINGS = DJUtils(False,KEY_ENV_CONTEXTS).parse_db_settings()
         CONTEXTS = DJUtils(False, False).parse_contexts(**ENVIRONMENT)
         
-        print()
-        cprint(' {} {} Django applications identified on host {} with {}'.format(
-            stage,colored(len(INSTALLED_ITEMS['Installed Applications']),'green'),
-            colored(CONTEXTS['server'].get('SERVER_NAME'), 'green'),
-            colored(CONTEXTS['server'].get('SERVER_SOFTWARE'), 'green')
+        if not self.vmnf_handler.get('sample'):
+            cprint('\n\n {} {} Django applications identified on host {} with {}'.format(
+                stage,colored(len(INSTALLED_ITEMS['Installed Applications']),'green'),
+                colored(CONTEXTS['server'].get('SERVER_NAME'), 'green'),
+                colored(CONTEXTS['server'].get('SERVER_SOFTWARE'), 'green')
+                )
             )
-        )
-        print()
-        sleep(1)
+            print()
+            sleep(0.30)
+        else:
+            print("\033c", end="")
+            vmnf_banners.sample_mode(colored(' sample caught  ','white', 'on_red', attrs=['bold']))
+            sleep(1)
         
         EXCEPTION_SUMMARY = {}
         for s in RAW_X_SUMMARY:
@@ -505,21 +539,22 @@ class DJEngineParser(scrapy.Spider):
         except KeyError:  
             return False
 
-        print('{}{}:\t   {}'.format(
-            (' ' * int(5-len('Variables') + 14)),
-            'Variables',colored(len(EXCEPTION_VAR_CACHE), 'green')
-            )
-        )
-        
-        if self.djx_def.get(exception_type) is not None:
-            EXCEPTION_REASON = (self.djx_def.get(exception_type))
+        if not self.vmnf_handler.get('sample'):
             print('{}{}:\t   {}'.format(
-                (' ' * int(5-len('Exception reason') + 14)),
-                'Exception reason',colored(EXCEPTION_REASON, 'green')
+                (' ' * int(5-len('Variables') + 14)),
+                'Variables',colored(len(EXCEPTION_VAR_CACHE), 'green')
                 )
             )
         
-        sleep(1)
+            if self.djx_def.get(exception_type) is not None:
+                EXCEPTION_REASON = (self.djx_def.get(exception_type))
+                print('{}{}:\t   {}'.format(
+                    (' ' * int(5-len('Exception reason') + 14)),
+                    'Exception reason',colored(EXCEPTION_REASON, 'green')
+                    )
+                )
+        
+            sleep(1)
 
         trace_count = 0
         EXCEPTION_PARSED_TRACEBACK = []
@@ -619,7 +654,13 @@ class DJEngineParser(scrapy.Spider):
 
         self.LAST_EXCEPTION = _EXCEPTION_ 
         self._ISSUES_POOL['EXCEPTIONS'].append(_EXCEPTION_)
-        DJUtils(False,False).show_exception(**_EXCEPTION_)
+        self.collected_sample = self.LAST_EXCEPTION
         
+        # in sample mode we're looking for just one exception 
+        if self.vmnf_handler.get('sample'):
+            raise CloseSpider('-- [VIMANA: Exception Caught]→ Running in sample mode')
+            
+        DJUtils(False,False).show_exception(**_EXCEPTION_)
         sleep(1)
+
 
