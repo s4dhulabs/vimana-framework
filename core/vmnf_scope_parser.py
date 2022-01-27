@@ -138,7 +138,6 @@ class ScopeParser:
         # ***   scope: target list  *** 
         elif self.handler_ns['list_target']:
             for target in self.handler_ns['list_target'].split(','):
-                if target.count('.') == 3:
                     self.target_list.append(target)
         
         # ***   scope: "file" with targets   ***

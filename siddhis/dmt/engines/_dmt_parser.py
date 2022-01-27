@@ -91,6 +91,7 @@ class DMTEngine(scrapy.Spider):
             return False
 
         if not self.raw_patterns:
+            
             cprint("""[{}] The target doesn't seem to be up. Check out if the application is running, and try again.\n""".format(
                 datetime.now()), 'magenta', attrs=['bold'])
             os._exit(os.EX_OK) 
@@ -127,7 +128,6 @@ class DMTEngine(scrapy.Spider):
             try:
                 requests.get(self.target_url)
             except requests.exceptions.ConnectionError:
-                # requests.exceptions.SSLError
                 self.target_url = 'https://' + entry
 
             dmt_start = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -233,8 +233,8 @@ class DMTEngine(scrapy.Spider):
                     
                     self.exit_step=True 
                     
-                    cprint('See you Sadhu! Leaving the ship...', 'green')
-                    cprint('\tHit CTRL+C to exit the engine', 'green')
+                    cprint('\nSee you sadhu! Leaving the ship...\n', 'green')
+                    sleep(1)
                     os._exit(os.EX_OK)
 
             self.URLconf=(response.xpath('//div[@id="info"]//p//code/text()').get()).strip()

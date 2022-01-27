@@ -344,6 +344,10 @@ class resultParser:
             'total_env': str(max(env_pool))
         } 
 
+        #if we need command line arguments [after siddhis execution] inside vmnfsheel  we can set _vmnf_session_ as a new key to vmnf_handler
+        # and pass the handler itself to vmnfshell, but at this time we're going to use just target_url, what was passed as argument to dmt with `run`
+        #self.vmnf_handler['_vmnf_session_']
+        
         self.vmnf_handler.update(
             {
                 'module_run':self.siddhi,
@@ -356,3 +360,16 @@ class resultParser:
         )
         vmnfshell(**self.vmnf_handler)
 
+        '''
+        vmnfshell(
+            **{
+                'target_url':self.vmnf_handler.get('target_url'),
+                'module_run':self.siddhi,
+                'djunch_result':self.fuzz_report,
+                'security_tickets':security_tickets,
+                '_cves_':cves,
+                'report_tables':report_tables,
+                'prompt': vmnfshell
+            }
+        )
+        '''

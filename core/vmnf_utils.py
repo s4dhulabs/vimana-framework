@@ -1,15 +1,5 @@
-"""
-             _   _   _   _   _   _  
-            / \ / \ / \ / \ / \ / \ 
-        ((-( V | 1 | M | 4 | N | 4 )-))
-            \_/ \_/ \_/ \_/ \_/ \_/ 
+""" [[[V1M4N4FR4M3W0RK]]]   """
 
-                    - PSHELL -
-
-    PSHELL v1: Prompt shell for Vimana Framework
-    s4dhu <s4dhul4bs[at]prontonmail[dot]ch
-
-"""
 
 from __future__ import unicode_literals
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory

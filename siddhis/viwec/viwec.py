@@ -27,12 +27,8 @@ import twisted
 from .engines._viwec_engine import vwce
 from core.vmnf_shared_args import VimanaSharedArgs
 from .engines._crawler_settings import settings
-#from .engines._crawler_settings import headers
 from res.vmnf_banners import load_viwec
 from res import vmnf_banners
-
-#from siddhis.djunch.engines._crawler_settings import settings
-
 
 class siddhi:   
     module_information = collections.OrderedDict()
@@ -68,6 +64,8 @@ class siddhi:
     
     def start(self):
         if not self.vmnf_handler.get('callback_session'):
+            self.vmnf_handler['scope'] = [
+                self.vmnf_handler.get('target_url')]
             vmnf_banners.load_viwec()
 
         if not self.vmnf_handler.get('scope',False):

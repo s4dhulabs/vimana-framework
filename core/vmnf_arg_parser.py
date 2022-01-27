@@ -62,6 +62,7 @@ class VimanaParser:
             help='List available resources'
         )
         list_cmd.add_argument('--payloads', action='store_true',dest='list_payloads')
+        list_cmd.add_argument('--cases', action='store_true',dest='list_cases')
         list_cmd.add_argument('--modules', action='store_true',dest='module_list')
         list_cmd.add_argument('-t', '--type', action='store')
         list_cmd.add_argument('-c', '--category', action='store', dest='category')
@@ -82,11 +83,12 @@ class VimanaParser:
         )
         # add aditional arguments to complement shared args
         run_cmd.add_argument('--abduct', action='store', dest='abduct_file')
-        run_cmd.add_argument('--save-config', action='store', dest='save_config')
+        run_cmd.add_argument('--save-case', action='store', dest='save_case')
         run_cmd.add_argument('--module', action='store', dest='module_run')
         run_cmd.add_argument('--fuzzer', action='store_true')
         run_cmd.add_argument('--discovery', action='store_true')
         run_cmd.add_argument('--fingerprint', action='store_true')
+        run_cmd.add_argument('--exec-case', action='store_true', default=False)
         
         # -----------------------------------------------------------------
         # 'info' command overview 
@@ -126,11 +128,11 @@ class VimanaParser:
             '--proxy':  VimanaHelp.proxy.__doc__, 
             '--proxy-type':  VimanaHelp.proxy.__doc__, 
             '--target': VimanaHelp.set_scope.__doc__,
-            '--save-config': VimanaHelp.save_config.__doc__
+            '--save-case': VimanaHelp.save_case.__doc__
         }
 
         required_args = [
-            '--save-config',
+            '--save-case',
             '--target',
             '--file',
             '--ip-range',
@@ -173,6 +175,8 @@ class VimanaParser:
             module_run      = False,
             module_list     = False,
             list_payloads   = False,
+            list_cases      = False,
+            save_case       = False,
             module_args     = False,
             framework       = False,
             url_conf        = False,

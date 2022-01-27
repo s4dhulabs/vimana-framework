@@ -1,7 +1,10 @@
 # encoding=utf8
 
-from res.vmnf_banners import s4dhu0nv1m4n4
+from res.colors import *
+from res.vmnf_banners import s4dhu0nv1m4n4,vmn05
 from termcolor import colored, cprint
+from core.load_settings import _version_
+
 
 class VimanaHelp():
     '''
@@ -11,25 +14,35 @@ class VimanaHelp():
      \   /|  |  Y Y  \\/ __ \\|   |  \\/ __ \\_
       \_/ |__|__|_|__(____  /___|  (____  /
                          \\/      \\/     \\/   
-        @s4dhulabs           v0.5
+        @s4dhulabs           {}
         
-        '''
+    '''
+    
 
     def __init__(self):
         '''@'''
 
     def overview(self):
-        '''
-    Commands:
+        ovw = {
+            'about': "About the framework",
+            'args': "Show module arguments",
+            'info': "Show information about modules",
+            'list': "List available modules",
+            'run': "Run a specific module or case directly",
+            'start':"Start Vimana in a interactive mode",
+        }
+        
+        print()
+        print()
 
-    start       Start Vimana in a interactive mode
-    list        List available modules
-    run         Run a specific module directly (non-interactive)
-    info        Show information about modules
-    args        Show module arguments 
-    about       About the framework 
-
-        '''
+        for cmd, desc in ovw.items():
+            print('{:>22}  \t  {}'.format(
+                colored(cmd, 'green'),
+                colored(desc, 'white')
+                )
+            )
+        print()
+        print()
 
     def proxy(self):
         '''
@@ -66,19 +79,20 @@ class VimanaHelp():
         --ignore-state       Disable IP and port status verifications 
         '''
 
-    def save_config(self):
+    def save_case(self):
         '''
 
-    [save_config]
+    [save_case]
         
         this option saves the command line to a YAML file. 
-        Making it easy to be executed again using the argument --abduct with command run.
+        Making it easy to be executed again using the argument --abduct with command run,
+        or simply vimana run <case_name>
 
         This option is especially useful when command lines become huge to remember 
         or when too many lines were already executed polluting with the terminal history.
         
         example: 
-        vimana run --module dmt --target mydjangoapp.com --port-list 4440,5001,8000,8888 --debug --save-config test2
+        vimana run --module dmt --target mydjangoapp.com --port-list 4440,5001,8000,8888 --debug --save-case app1_dev
 
         '''
 
@@ -162,7 +176,7 @@ class VimanaHelp():
     
     List available modules
 
-    → usage: list --modules <options>
+    → usage: list --modules/--cases <options>
 
     Without <option filters> 'list' command will retrieve all modules available in
     current version of Vimana Framework.
@@ -237,10 +251,22 @@ class VimanaHelp():
 
     [run]
     
-    Run specific module/resource directly by Vimana command line mode
+    Run specific plugin/case directly by command line 
 
-    → usage: run --module <module/resource> <arguments> <options>
+    → usage: run <case_id|name>/--module <module/resource> <arguments> <options>
 
+    examples:
+
+             vimana run !           run the last case created
+             vimana run @cf12       run case id @cf12 (12th case created)    
+             vimana run \\
+                     --module dmt \\
+                     --target mydjapp4.com \\
+                     --sample
+                                    run DMT plugin against target application mydjapp4.com
+                                        on port 8889 in sample mode 
+           
+                     
     options:
 
     This command is used to run a specific module or resource type. 
@@ -280,15 +306,15 @@ class VimanaHelp():
         '''
 
     def basic_help(self):
-        print("\033c", end="")  
-        print(VimanaHelp().__doc__)
-        print(self.overview.__doc__)
+        vmn05()
+        self.overview()
 
     def full_help(self):
         print("\033c", end="") 
-        print(VimanaHelp().__doc__)
+        print(VimanaHelp().__doc__.format(_version_))
+        self.overview()
         print(    
-            self.overview.__doc__,
+            #self.overview.__doc__,
             self.start.__doc__,
             self.list.__doc__,
             self.run.__doc__,

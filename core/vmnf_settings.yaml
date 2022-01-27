@@ -1,0 +1,15 @@
+project:
+  author: s4dhu
+  email: <s4dhul4bs[at]prontonmail.ch
+  git: https://github.com/s4dhulabs
+  repo: https://github.com/s4dhulabs/vimana-framework
+  name: Vimana Framework
+  site: https://s4dhulabs.github.io/
+  tag: alpha
+  version: v0.5
+settings:
+  case_set:
+    cases_path: core/cases/
+    cases_yf: core/cases/*.yaml
+    empty_msg: '[{}] It seems like you didn''t create any case yet, or they were flushed.'
+  siddhis: siddhis/
