@@ -247,7 +247,7 @@ class siddhi:
                 
                 inf = colored(pws_url,'green')
 
-            print('[{}] → Success! Enjoy your shell:{}'.format(xpl_hl,inf))
+            print('[{}] → Success! Enjoy your shell: {}'.format(xpl_hl,inf))
         else:
             print('[{}] → It looks like something went wrong / The server responded with {}'.format(xpl_hl,upload.status_code))
 

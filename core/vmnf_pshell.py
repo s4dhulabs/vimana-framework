@@ -389,7 +389,7 @@ class vmnfshell:
                                 for ticket in self.security_tickets:
                                     if ticket['id'] == _issue_: 
                                         found_ticket = True
-                                        print('Retrieving results for issue {}...\n'.format(ticket['id']))
+                                        cprint('\nRetrieving results for issue {}...\n'.format(ticket['id']),'cyan')
                                         sleep(1)
                                         
                                         cprint(ticket['title'], 'cyan')
@@ -404,7 +404,8 @@ class vmnfshell:
                                     self._reason_,
                                     self.issue_categories[self._type_]
                                 )
-                                continue
+                            print()
+                            continue
 
                         # inspect unhandled exceptions
                         elif _type_ == 'UX':
@@ -487,7 +488,7 @@ class vmnfshell:
                         
                         elif _type_ == 'SM': 
                             if not secmid_tbl:
-                                print('[{}:inspect] You need to inspect the security middleware context before inspecting an SM issue.'.format(
+                                print('\n[{}:inspect] You need to inspect the security middleware context before inspecting an SM issue.\n'.format(
                                     self.siddhi
                                     )
                                 )
@@ -534,7 +535,7 @@ class vmnfshell:
                                 )
                                 continue
 
-                            print('Retrieving details for CVE ID {}...\n'.format(_iid_))   
+                            cprint('\nRetrieving details for CVE ID {}...\n'.format(_iid_), 'cyan')   
                             
                             # False = querying for cve id not framework version
                             # _iid_ is full argument because cve doesnt need another identifier 
@@ -569,7 +570,7 @@ class vmnfshell:
                                     print('\n{}'.format(cve['text']))
                                     print('\nFull description:\n{}'.format(cve['full_description']))
                                     print('\nReferences:\n{}\n'.format(cve['references']))
-                            
+                            print()
                             continue 
 
                         # inspect configuration issues

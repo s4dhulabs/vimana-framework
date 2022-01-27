@@ -1,5 +1,3 @@
-mastedj
-django
-admin
 root
+banker
 djadmin

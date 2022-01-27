@@ -5,7 +5,40 @@ import random
 from random import choice
 from time import sleep
 from termcolor import cprint,colored
-                         
+from core.load_settings import _version_
+
+
+def vmn05(): 
+
+    print("\033c", end="")
+    msg = ('''{}
+              .             :. *
+                :  └┐'┌┘          . :  .
+                └┐// ' \\\┌┘
+        ¨⣠⠛⠛⠛⠛⠛---=======---⠛⠛⠛⠛⠛⣄      .'
+       .::::__\├ ┤/⠛⠛⣄⣇⣷\├ ┤/__::::.
+               '-'\_____/'-' {}         ⣄
+               :: '│.│.│' .
+               {}
+
+    '''.format(
+        G_c, C_c + _version_ + G_c, D_c))
+
+    print(msg)
+
+def case_header():
+        cprint("""       *              `'´    *
+                    {}              
+                      __'__'__         ,
+                        `''´ {}
+            -o-
+             '          .*       o       .       *
+        o         |
+           .     -O-            `ç´    
+.                 |        *     '  .     -0-
+       *  o     .    '       *      .        o
+       """.format(G_c, b_c),'blue')
+
 
 def sample_mode(mod_stat,_attrs_=['bold','blink']):
     c = ['green','cyan','blue']
@@ -17,7 +50,8 @@ def sample_mode(mod_stat,_attrs_=['bold','blink']):
           ││││       
     """, 'blue', attrs=['blink', 'bold'])
     
-    fversion = colored('v0.5', 'red')
+    fversion = colored(_version_, 'red')
+
     banner = '''
     ┬  ┬┬┌┬┐┌─┐┌┐┌┌─┐
     ┬  ┬┬┌┬┐┌─┐┌┐┌┌─┐
@@ -74,7 +108,6 @@ def audit_report_banner(module='', report_type='',cl=Wn_c):
     )
 
 def about_text():
-
     msg='''
 
       Vimana is an experimental tool that aims to provide resources for
@@ -89,20 +122,22 @@ def about_text():
       The framework is modular, allowing new modules (siddhis) to be
       plugged in to expand the range of available resources, being able
       to support mixed analyzes that start from a black-box approach
-      and culminate in a gray-box, increasing the possibilities.
+      and culminate in a gray box, increasing the possibilities.
 
       A lot of code has been written and rewritten, as well as a lot
       left out (for now) since the idea of the tool came about 10
-      years ago, however, the framework is still very early and
-      considering that until then it was only a sadhu (who is not a
-      developer) coding the crazy ideas, certainly, a lot needs to be
-      improved, as well as many new features can be added (soon).
+      years ago, however, the framework was still very early and
+      considering that until then, it was only a sadhu (who is not a
+      developer) coding the crazy ideas, indeed, a lot needs to be
+      improved, and many new features can be added (soon).
 
-      So feel free to get in touch, suggest ideas and improvements.
+      So feel free to get in touch suggest ideas and improvements.
                 https://github.com/s4dhulabs/vimana-framework
 
-                                                s4dhu
+                                        s4dhu
+
     '''
+    
     return msg
 
 
@@ -277,4 +312,17 @@ def load(target='',maxl=20):
         )
         sleep(0.10)
         c += 1
+
+def mdtt1():
+    cprint("""
+                        
+                        
+                     @(-_-)@       
+                     '_) (_`         
+                     /__/  \            
+                   _(<_   / )_          
+                  (__\_\_|_/__)        
+
+
+    """, 'blue', attrs=[])
 

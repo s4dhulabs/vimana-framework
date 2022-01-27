@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 ''' ~ Vimana Engine ~ '''
 
 import sys
@@ -23,6 +24,8 @@ from core.vmnf_scope_parser import ScopeParser
 from core.vmnf_urls_parser import digest_scope
 from core.vmnf_arg_parser import VimanaParser
 from core.vmnf_payloads import  VMNFPayloads 
+from core.load_settings import _version_
+from core.vmnf_cases import CasManager
 from core.vmnf_manager import vmng
 
 # vimana helpers 
@@ -31,8 +34,9 @@ import res.vmnf_validators as validator
 
 # vimana resources
 from res import vmnf_banners 
-from res.vmnf_banners import s4dhu0nv1m4n4
+from res.vmnf_banners import s4dhu0nv1m4n4,vmn05
 from res.colors import *
+
 
 def abduct():
     # commands that require --module argument
@@ -60,9 +64,12 @@ def abduct():
     
     elif arg_len == 1:
         if cmd in vmnf_cmds.keys():
-            print("\033c", end="")
+            #print("\033c", end="")
+            #if cmd != 'about':
+                #print(VimanaHelp().__doc__.format(_version_))
             if cmd != 'about':
-                print(VimanaHelp().__doc__)
+                vmn05()
+
             print(vmnf_cmds[cmd])
             sys.exit(1)
 
@@ -85,21 +92,19 @@ def abduct():
     vmn_parser = VimanaParser()
     handler_ns = vmn_parser.start_handler()
    
-    run_from_file = True \
+    # set case load flag
+    run_from_case = True \
         if len(sys.argv[1:]) == 2\
         and cmd == 'run' \
         and sys.argv[2] != '--module'\
         else False
     
-    # running plugin/arguments from a saved config file
-    if run_from_file:
-        exec_file = str(sys.argv[2]) + '.yaml'\
-            if not str(sys.argv[2]).endswith('.yaml') \
-            else str(sys.argv[2])
-        
-        file_path = 'core/execs/' + exec_file
-        handler_ns = validator.check_saved_exec(exec_file,handler_ns)
-    
+    # running plugin/arguments from a saved case
+    if run_from_case:
+        exec_case = CasManager(False,handler_ns).get_exec_case(sys.argv)
+        file_path = 'core/cases/' + exec_case
+        handler_ns = CasManager(exec_case,handler_ns).load_case()
+
     if not handler_ns:
         print('[vmnf_engine] Something went wrong during scope validation. Check syntax and try again')
         sys.exit(1)
@@ -119,18 +124,9 @@ def abduct():
         if sys.argv[-1] != handler_ns.module_run:
             
             # save command line to a yaml
-            if handler_ns.save_config:
-                exec_time = str(datetime.now()).replace(' ','_') + '_'
-                file_name = str(handler_ns.module_run) + '_'\
-                    + exec_time + handler_ns.save_config + '.yaml'
+            if handler_ns.save_case:
+                CasManager(False,handler_ns).save_case()
 
-                file_path = 'core/execs/' + file_name
-                vars(handler_ns)['save_config'] = False
-
-                with open(file_path, 'w') as file:
-                    yaml.dump(vars(handler_ns),file,default_flow_style=False) 
-                sys.exit(0)
-            
             # sample agile mode 
             if handler_ns.sample:
                 print("\033c", end="")
@@ -183,4 +179,7 @@ def abduct():
     elif handler_ns.list_payloads:
         VMNFPayloads()._vmnfp_payload_types_(False,True)
 
+    # list available cases
+    elif handler_ns.list_cases:
+        CasManager(False,handler_ns).list_cases()
         

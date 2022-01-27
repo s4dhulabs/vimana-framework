@@ -1,23 +1,24 @@
 # -*- coding:utf-8 -*-
-import sys
-#sys.path.insert(0, '../')
 
-from urllib.parse import urlparse
-from scrapy.http import HtmlResponse
-import scrapy
-#import sys
-import os
 from scrapy.exceptions import CloseSpider
-from time import sleep 
-from datetime import datetime
+from scrapy.http import HtmlResponse
 from termcolor import colored,cprint
+from urllib.parse import urlparse
+from requests.exceptions import *
 from urllib.parse import urljoin
-import requests
+from ._items import CrawlerPool
+from datetime import datetime
+from tabulate import tabulate
 from .. res import config
 from res.colors import *
-from tabulate import tabulate
-from requests.exceptions import *
-from ._items import CrawlerPool
+from time import sleep 
+import requests
+import scrapy
+import sys,os
+
+
+
+
 
 
 class vwce(scrapy.Spider):
@@ -25,7 +26,6 @@ class vwce(scrapy.Spider):
     
     def __init__(self, *args,**handler):
         super(vwce, self).__init__(*args,**handler)
-        
         self.handler = handler
         self.start_urls = list(set(handler.get('scope',False)))
         #self.allowed_domains = urlparse(self.start_urls[0]).netloc
@@ -34,6 +34,10 @@ class vwce(scrapy.Spider):
         self.url_pool =[]
         self.discovered_urls = []
         self.url_count = 0
+        self.started = False
+        self.single_target = True \
+            if len(self.start_urls) == 1 \
+                else False
 
         if not self.start_urls:
             self.log('[viwec:{}] Missing scope!'.format(datetime.now()))
@@ -50,6 +54,8 @@ class vwce(scrapy.Spider):
         sleep(1)        
     
     def parse(self,response):
+        self.started = True
+        
         print()        
         if response.url in self.url_pool:
             return 
@@ -104,8 +110,12 @@ class vwce(scrapy.Spider):
         #print()
 
     def closed(self,reason):
+        if self.single_target and not self.started:
+            cprint("[{}] Connection failure: check the HTTP scheme and try again.\n".format(
+                datetime.now()), 'red')
+            
         print()
-        if self.handler['callback_session']:
+        if self.started and self.handler['callback_session']:
             vmnf_callback_session = self.handler.get('prompt')
 
             # disable callback session flag
