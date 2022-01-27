@@ -4,7 +4,7 @@ from pygments.formatters import TerminalFormatter
 import sys, re, os, random, string, platform
 from lxml.html.soupparser import fromstring
 from pygments.lexers import PythonLexer
-from termcolor import cprint, colored
+from neotermcolor import cprint, colored
 from prettytable import PrettyTable
 from collections import OrderedDict 
 from pygments import highlight

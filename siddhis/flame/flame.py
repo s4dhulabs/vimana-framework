@@ -18,7 +18,7 @@
 
 import requests
 import argparse
-from termcolor import cprint,colored
+from neotermcolor import cprint,colored
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 from requests.exceptions import *

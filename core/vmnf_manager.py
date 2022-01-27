@@ -13,7 +13,7 @@ import threading
 import time
 import traceback
 from prettytable import PrettyTable
-from termcolor import colored, cprint
+from neotermcolor import colored, cprint
 from res.colors import *
 
 from core.vmnf_engine_exceptions import engineExceptions as _ex_

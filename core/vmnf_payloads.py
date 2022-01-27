@@ -4,7 +4,7 @@ import secrets
 from datetime import datetime
 from random import randint, choice
 from mimesis import Generic
-from termcolor import colored
+from neotermcolor import colored
 import base64
 
 

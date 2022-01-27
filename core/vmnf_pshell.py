@@ -22,7 +22,7 @@ from prompt_toolkit import PromptSession
 from pygments.lexers.sql import SqlLexer
 from pygments.lexers import PythonLexer
 from prompt_toolkit.styles import Style
-from termcolor import colored, cprint
+from neotermcolor import colored, cprint
 from prettytable import PrettyTable
 from res.colors import *
 from time import sleep

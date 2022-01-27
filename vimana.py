@@ -11,9 +11,10 @@ if __name__ == '__main__':
     try:
         abduct()
     except KeyboardInterrupt:
-        print('\n[{}] Exiting vimana framework...\n'.format(
+        print("\033[0m")
+        print('\n[{}] Exiting Vimana framework...\n'.format(
             datetime.now()
             )
         )
         sleep(1)
-        sys.exit(1)
+        sys.exit(0)

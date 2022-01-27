@@ -2,7 +2,7 @@
 from core.vmnf_check_target import CheckTargetScope
 from netaddr.core import AddrFormatError
 from libnmap.parser import NmapParser
-from termcolor import colored, cprint
+from neotermcolor import colored, cprint
 from core.vmnf_manager import vmng
 from datetime import datetime
 from netaddr import valid_ipv4

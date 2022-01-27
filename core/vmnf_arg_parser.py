@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from termcolor import colored,cprint
+from neotermcolor import colored,cprint
 from datetime import datetime
 import argparse
 from time import sleep

@@ -4,7 +4,7 @@ from . colors import *
 import random
 from random import choice
 from time import sleep
-from termcolor import cprint,colored
+from neotermcolor import cprint,colored
 from core.load_settings import _version_
 
 

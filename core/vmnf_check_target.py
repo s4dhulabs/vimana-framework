@@ -1,6 +1,6 @@
 from res.session.vmnf_proxies import _set_socks_
 from settings.siddhis_shared_settings import common
-from termcolor import colored,cprint
+from neotermcolor import colored,cprint
 import threading, socket, sys, time
 from res import colors
 from time import sleep

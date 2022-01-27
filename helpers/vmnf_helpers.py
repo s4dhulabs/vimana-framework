@@ -2,7 +2,7 @@
 
 from res.colors import *
 from res.vmnf_banners import s4dhu0nv1m4n4,vmn05
-from termcolor import colored, cprint
+from neotermcolor import colored, cprint
 from core.load_settings import _version_
 
 
