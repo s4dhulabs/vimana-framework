@@ -1,5 +1,5 @@
 import os,glob
-from termcolor import colored,cprint
+from neotermcolor import colored,cprint
 from tabulate import tabulate
 import yaml
 import sys

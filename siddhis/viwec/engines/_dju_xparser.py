@@ -46,7 +46,7 @@ from scrapy.http import HtmlResponse
 from scrapy.http.headers import Headers
 from pygments.formatters import TerminalFormatter
 from pygments.lexers import PythonLexer
-from termcolor import colored,cprint
+from neotermcolor import colored,cprint
 from pygments import highlight
 import django.core.exceptions as django_cx
 

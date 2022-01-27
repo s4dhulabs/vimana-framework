@@ -4,7 +4,7 @@ from pygments.formatters import TerminalFormatter
 import sys, re, os, random, string, platform
 from lxml.html.soupparser import fromstring
 from pygments.lexers import PythonLexer
-from termcolor import cprint, colored
+from neotermcolor import cprint, colored
 from prettytable import PrettyTable
 from collections import OrderedDict 
 from pygments import highlight
@@ -141,8 +141,8 @@ class resultParser:
         # get well known framework issues by identified version [exception fuzzer]
         fmk_version_issues = False
         
-        if not self.vmnf_handler.get('sample'):
-            fmk_version_issues = DJUtils().get_version_issues(**self.sampler)
+        #if not self.vmnf_handler.get('sample'):
+        #    fmk_version_issues = DJUtils().get_version_issues(**self.sampler)
         
         if fmk_version_issues:
             security_tickets = fmk_version_issues.get('tickets')

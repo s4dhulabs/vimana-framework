@@ -2,7 +2,7 @@
 
 from scrapy.exceptions import CloseSpider
 from scrapy.http import HtmlResponse
-from termcolor import colored,cprint
+from neotermcolor import colored,cprint
 from urllib.parse import urlparse
 from requests.exceptions import *
 from urllib.parse import urljoin

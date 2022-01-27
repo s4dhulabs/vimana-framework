@@ -5,7 +5,7 @@
 import sys
 sys.path.insert(0, '../../../')
 
-from termcolor import colored, cprint
+from neotermcolor import colored, cprint
 from datetime import datetime
 from pathlib import Path
 from time import sleep
@@ -17,7 +17,7 @@ import os
 # vimana core modules
 from siddhis.dmt.dmt import siddhi as dmt_siddhi
 from siddhis.djunch.djunch import siddhi as Djunch
-from termcolor import colored,cprint
+from neotermcolor import colored,cprint
 
 from core.vmnf_fuzz_scope import handle_fuzz_scope
 from core.vmnf_scope_parser import ScopeParser

@@ -1,6 +1,6 @@
 import sys,os,yaml,glob
 from datetime import datetime
-from termcolor import colored,cprint
+from neotermcolor import colored,cprint
 from res.vmnf_banners import mdtt1,case_header
 from core.load_settings import _cs_
 

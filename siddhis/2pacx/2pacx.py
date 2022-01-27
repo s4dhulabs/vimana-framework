@@ -14,18 +14,17 @@
 
 from core.vmnf_payloads import VMNFPayloads
 from core.vmnf_shared_args import VimanaSharedArgs
-from res import colors
-from res.stage import stager
-
 import sys, re, os, random, string, platform
-from mimesis import Generic
-import zipfile, json, requests
-import collections 
-from termcolor import colored, cprint
-from html.parser import HTMLParser
 from urllib.parse import urlsplit,urlparse
+from neotermcolor import colored, cprint
+from html.parser import HTMLParser
+import zipfile, json, requests
 from datetime import datetime
+from res.stage import stager
+from mimesis import Generic
 from time import sleep
+from res import colors
+import collections 
 import argparse
     
 

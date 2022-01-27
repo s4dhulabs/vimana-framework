@@ -43,7 +43,7 @@ from twisted.internet.error import DNSLookupError
 from scrapy.utils.log import configure_logging  
 from scrapy.http import HtmlResponse
 from scrapy.http.headers import Headers
-from termcolor import colored,cprint
+from neotermcolor import colored,cprint
 from pygments import highlight
 
 from res.vmnf_validators import get_tool_scope as get_scope
@@ -192,8 +192,8 @@ class DMTEngine(scrapy.Spider):
                 print('   - {}: {}'.format(k.decode(),v[0].decode()))
         
         # passive framework version fingerprint - sttinger
-        if not self.vmnf_handler.get('sample'):
-            self.run_passive_fingerprint()
+        #if not self.vmnf_handler.get('sample'):
+        #    self.run_passive_fingerprint()
         
         if not self.vmnf_handler.get('sample'):
             cprint('\n{}Checking DEBUG status...'.format(self.f_start),'cyan')

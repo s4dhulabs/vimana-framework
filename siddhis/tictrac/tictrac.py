@@ -15,7 +15,7 @@
 
 
 
-from termcolor import colored, cprint
+from neotermcolor import colored, cprint
 from pygments.formatters import TerminalFormatter
 from pygments.lexers import PythonLexer
 from pygments import highlight

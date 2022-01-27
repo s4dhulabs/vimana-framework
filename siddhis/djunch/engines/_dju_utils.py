@@ -7,8 +7,8 @@ from res.vmnf_fuzz_data import VMNFPayloads
 from urllib.parse import urlparse, urljoin
 import settings.vmnf_settings as settings
 from pygments.lexers import PythonLexer
-from termcolor import colored, cprint
-from termcolor import colored,cprint
+from neotermcolor import colored, cprint
+from neotermcolor import colored,cprint
 from prettytable import PrettyTable
 from pygments import highlight
 from res import vmnf_banners

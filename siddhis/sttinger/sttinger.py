@@ -1,6 +1,6 @@
 from core.vmnf_shared_args import VimanaSharedArgs
 from urllib.parse import urlparse, urljoin
-from termcolor import colored, cprint
+from neotermcolor import colored, cprint
 from siddhis.tictrac import tictrac
 from siddhis.prana import prana
 from collections import Counter

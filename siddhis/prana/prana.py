@@ -23,8 +23,7 @@ import requests
 import re
 import sys
 
-from termcolor import colored,cprint
-#from colors import *
+from neotermcolor import colored,cprint
 
 
 class siddhi:
