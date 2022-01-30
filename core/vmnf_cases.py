@@ -1,7 +1,9 @@
 import sys,os,yaml,glob
+from time import sleep
+from res.vmnf_validators import check_file
 from datetime import datetime
 from neotermcolor import colored,cprint
-from res.vmnf_banners import mdtt1,case_header
+from res.vmnf_banners import mdtt1,case_header,vmn05,create_status
 from core.load_settings import _cs_
 
 
@@ -11,6 +13,38 @@ class CasManager:
         self.handler = handler
         self.search_case = search_case
         self.case_files = self.get_cases()
+
+    def handler_no_case(self):
+        print("\033c", end="")
+        mdtt1()
+        cprint(_cs_.get('empty_msg').format(
+            datetime.now()
+            ), 'cyan'
+        )
+        print()
+        sys.exit(1)
+
+    def flush_cases(self):
+        if len(self.case_files) == 0:
+            self.handler_no_case()
+        
+        vmn05()
+        for file in os.scandir(_cs_['cases_path']):
+            fmsg = ('          \t- flushing {}'.format(
+                colored(file.name.split('_')[-1].split('.')[0], 'red')
+                )
+            )
+            print(fmsg.ljust(os.get_terminal_size().columns - 1), end="\r")
+            sleep(0.10)
+            os.remove(file.path)
+        
+        smsg = colored('          \t* {} cases flushed'.format(
+            len(self.case_files)), 'green')
+
+        print(smsg.ljust(os.get_terminal_size().columns - 1), end="\r")
+        print('\n\n\n')
+
+        return 
 
     def update_handler(self,case_file):
         with open(case_file) as file:
@@ -65,14 +99,7 @@ class CasManager:
                     key=os.path.getctime
             )
         except ValueError:
-            print("\033c", end="")
-            mdtt1()
-            cprint(_cs_.get('empty_msg').format(
-                datetime.now() 
-                ), 'cyan'
-            )
-            print()
-            sys.exit(1)
+            self.handler_no_case()
 
         return lentry.split('/')[-1]
         
@@ -123,7 +150,8 @@ class CasManager:
     def save_case(self):
         if self.handler.save_case.endswith('.yaml'):
             self.handler.save_case = self.handler.save_case.replace('.yaml','')
-
+        
+        case_name = self.handler.save_case
         exec_time = str(datetime.now()).replace(' ','_') + '_'
         file_name = str(self.handler.module_run) + '_'\
             + exec_time + self.handler.save_case + '.yaml'
@@ -136,7 +164,13 @@ class CasManager:
                 vars(self.handler),
                 file,default_flow_style=False
             )
+            
+        if not check_file(file_path,True):
+            print("\n Error while creating case!")
+            sys.exit(1)
 
+        create_status(case_name)
+        
         ''' optionally cases can be executed during creation: 
             --exec-case '''
         if not self.handler.exec_case:
@@ -147,6 +181,7 @@ class CasManager:
             if not str(argv[2]).endswith('.yaml') \
             and not str(argv[2]).startswith(('@cf','!'),0)\
             else str(argv[2])
+
         return exec_case
 
 

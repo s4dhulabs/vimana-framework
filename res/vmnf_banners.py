@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import os
 from . colors import *
 import random
-from random import choice
 from time import sleep
+from random import choice
 from neotermcolor import cprint,colored
 from core.load_settings import _version_
 
@@ -25,6 +26,22 @@ def vmn05():
         G_c, C_c + _version_ + G_c, D_c))
 
     print(msg)
+
+def create_status(case_name):
+        msg = ("""
+                  |
+           .     -O-
+.                 |
+
+        __'__'__    {}
+          ``´´
+
+        """.format('Case {} successfully created'.format(
+                colored(case_name, 'red')
+                )
+            )
+        )
+        print(msg.ljust(os.get_terminal_size().columns - 1), end="\r")
 
 def case_header():
         cprint("""       *              `'´    *

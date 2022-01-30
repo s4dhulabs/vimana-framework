@@ -1,17 +1,21 @@
 # -*- coding: utf-8 -*-
 
+
 from neotermcolor import colored,cprint
 from datetime import datetime
-import argparse
 from time import sleep
+import argparse
 import sys
 import os
 
 sys.path.insert(0, '../../../')
 
-from helpers.vmnf_helpers import VimanaHelp
-from core.vmnf_shared_args import VimanaSharedArgs
+from core.load_settings import _ap_
 from core.vmnf_engine_exceptions import engineExceptions
+from core.vmnf_shared_args import VimanaSharedArgs
+from helpers.vmnf_helpers import VimanaHelp
+from res.vmnf_banners import vmn05 
+
 
 
 
@@ -84,6 +88,8 @@ class VimanaParser:
         # add aditional arguments to complement shared args
         run_cmd.add_argument('--abduct', action='store', dest='abduct_file')
         run_cmd.add_argument('--save-case', action='store', dest='save_case')
+        run_cmd.add_argument('-c','--case', action='store', dest='case_file')
+        run_cmd.add_argument('--flush-cases', action='store_true', dest='flush_cases')
         run_cmd.add_argument('--module', action='store', dest='module_run')
         run_cmd.add_argument('--fuzzer', action='store_true')
         run_cmd.add_argument('--discovery', action='store_true')
@@ -124,30 +130,13 @@ class VimanaParser:
         }
         
         arg_help = {
-            '--abduct': VimanaHelp.abduct.__doc__,
-            '--proxy':  VimanaHelp.proxy.__doc__, 
-            '--proxy-type':  VimanaHelp.proxy.__doc__, 
-            '--target': VimanaHelp.set_scope.__doc__,
-            '--save-case': VimanaHelp.save_case.__doc__
+            '--abduct':     VimanaHelp.abduct.__doc__,
+            '--proxy':      VimanaHelp.proxy.__doc__, 
+            '--proxy-type': VimanaHelp.proxy.__doc__, 
+            '--target':     VimanaHelp.set_scope.__doc__,
+            '--save-case':  VimanaHelp.save_case.__doc__
         }
-
-        required_args = [
-            '--save-case',
-            '--target',
-            '--file',
-            '--ip-range',
-            '--cidr-range',
-            '--target-list',
-            '--port',
-            '--port-list',
-            '--port-range',
-            '--fuzzer',
-            '--proxy',
-            '--proxy-type',
-            '--nmap-xml',
-            '--abduct'
-        ]
-
+        
         handler_ns  = argparse.Namespace(
             scope           = False,
             file_scope      = False,
@@ -177,6 +166,8 @@ class VimanaParser:
             list_payloads   = False,
             list_cases      = False,
             save_case       = False,
+            case_file       = False,
+            flush_cases     = False,
             module_args     = False,
             framework       = False,
             url_conf        = False,
@@ -189,14 +180,13 @@ class VimanaParser:
         if len(sys.argv) > 1:
             _cmd_ = sys.argv[1]
 
-        if (sys.argv[-1]) in required_args:
+        if (sys.argv[-1]) in _ap_['require_args']:
             if sys.argv[-1] in arg_help.keys():
-                print(VimanaHelp().__doc__)
+                vmn05()
                 print(arg_help[sys.argv[-1]])
             
-            print('[vmnf_argparser: {}] Missing a value for the argument {}\n\n'.format(
-                datetime.now(),
-                sys.argv[-1]
+            print('    [vmnf_argparser] Missing value for the argument {}\n\n'.format(
+                colored(sys.argv[-1], 'red')
                 )
             )
             

@@ -64,9 +64,6 @@ def abduct():
     
     elif arg_len == 1:
         if cmd in vmnf_cmds.keys():
-            #print("\033c", end="")
-            #if cmd != 'about':
-                #print(VimanaHelp().__doc__.format(_version_))
             if cmd != 'about':
                 vmn05()
 
@@ -91,17 +88,28 @@ def abduct():
     
     vmn_parser = VimanaParser()
     handler_ns = vmn_parser.start_handler()
-   
+
     # set case load flag
-    run_from_case = True \
-        if len(sys.argv[1:]) == 2\
-        and cmd == 'run' \
-        and sys.argv[2] != '--module'\
-        else False
-    
+    run_from_case = False
+    case_args = sys.argv
+    if len(sys.argv[1:]) == 2:
+        if cmd == 'run' \
+            and sys.argv[2] \
+            not in [
+                '--module',
+                '--flush-cases'
+            ]:
+            run_from_case = True
+
+    elif len(sys.argv[1:]) == 3:
+        if cmd == 'run' \
+            and handler_ns.case_file:
+            run_from_case = True
+            case_args[2] = case_args[3]
+            
     # running plugin/arguments from a saved case
     if run_from_case:
-        exec_case = CasManager(False,handler_ns).get_exec_case(sys.argv)
+        exec_case = CasManager(False,handler_ns).get_exec_case(case_args)
         file_path = 'core/cases/' + exec_case
         handler_ns = CasManager(exec_case,handler_ns).load_case()
 
@@ -130,7 +138,9 @@ def abduct():
             # sample agile mode 
             if handler_ns.sample:
                 print("\033c", end="")
-                vmnf_banners.sample_mode(colored('  sample mode   ','red', 'on_white', attrs=['bold']))
+                vmnf_banners.sample_mode(
+                    colored('  sample mode   ','red', 'on_white', attrs=['bold'])
+                )
 
             # when module arguments (main vimana argparser namespace) will be loaded by stager
             if not handler_ns.session_mode\
@@ -182,4 +192,8 @@ def abduct():
     # list available cases
     elif handler_ns.list_cases:
         CasManager(False,handler_ns).list_cases()
+
+    # flush cases
+    elif handler_ns.flush_cases:
+        CasManager(False,handler_ns).flush_cases()
         
