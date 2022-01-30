@@ -1,7 +1,8 @@
+##################################################
 # set an environment to run vimana v0.5 
 # create a simbolic link to vimana handler vf 
-# fix some pip install issues
-
+# fix some pip install issues (sometimes)
+##################################################
 python3 -m venv ~/vfe0.5
 source ~/vfe0.5/bin/activate
 pip3 install --upgrade pip 
