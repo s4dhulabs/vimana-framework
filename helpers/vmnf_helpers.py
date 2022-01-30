@@ -17,19 +17,18 @@ class VimanaHelp():
         @s4dhulabs           {}
         
     '''
-    
 
     def __init__(self):
         '''@'''
 
     def overview(self):
         ovw = {
-            'about': "About the framework",
-            'args': "Show module arguments",
-            'info': "Show information about modules",
-            'list': "List available modules",
-            'run': "Run a specific module or case directly",
-            'start':"Start Vimana in a interactive mode",
+            'about' : "About the framework",
+            'args'  : "Show module arguments",
+            'info'  : "Show information about modules",
+            'list'  : "List available modules",
+            'run'   : "Run a specific module or case directly",
+            'start' : "Start Vimana in a interactive mode",
         }
         
         print()
@@ -92,7 +91,25 @@ class VimanaHelp():
         or when too many lines were already executed polluting with the terminal history.
         
         example: 
-        vimana run --module dmt --target mydjangoapp.com --port-list 4440,5001,8000,8888 --debug --save-case app1_dev
+
+        vimana run \\
+            --module dmt \\
+            --target-list mydjangodash.com,mydjapp1.com \\
+            --port-list 4440,5001,8000,8888 \\
+            --debug \\
+            --threads 10 \\
+            --save-case app1_dev
+
+        Cases can also be executed during the creation process:
+
+        vimana run \\
+            --module dmt \\
+            --target-list mydjangodash.com,mydjapp1.com \\
+            --port-list 4440,5001,8000,8888 \\
+            --debug \\
+            --threads 10 \\
+            --save-case app1_dev \\
+            --exec-case
 
         '''
 
@@ -257,12 +274,14 @@ class VimanaHelp():
 
     examples:
 
-             vimana run !           run the last case created
-             vimana run @cf12       run case id @cf12 (12th case created)    
-             vimana run \\
-                     --module dmt \\
-                     --target mydjapp4.com \\
-                     --sample
+             vf run !               run the last case created
+             vf run --case djapp8   run case djapp8
+             vf run djapp8          run case djapp8
+             vf run @cf12           run case id @cf12 (12th case created)    
+             vf run \\
+                --module dmt \\
+                --target mydjapp4.com \\
+                --sample
                                     run DMT plugin against target application mydjapp4.com
                                         on port 8889 in sample mode 
            

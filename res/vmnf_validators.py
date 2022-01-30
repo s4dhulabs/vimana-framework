@@ -5,32 +5,35 @@ import yaml
 import sys
 
 
-def check_file(file):
+def check_file(file, quiet=False):
     scope_error = colored(' - scope_error - ', 'white', 'on_red', attrs=['bold'])
 
     if not os.path.exists(file):
-        print('''\r{} File not found: {}. Check the file location and try again.\n'''.format(
-            scope_error, file
+        if not quiet:
+            print('''\r{} File not found: {}. Check the file location and try again.\n'''.format(
+                scope_error, file
+                )
             )
-        )
         return False
 
     if not os.path.isfile(file) \
         or not file.endswith('.yaml'):
-        
-        arg_msg=''
-        arg_msg = 'Requires a configuration file with .yaml extension\n'
-        print('''\r{} Invalid YAML file: {}. {}'''.format(
-            scope_error, file, arg_msg
+            
+        if not quiet:
+            arg_msg=''
+            arg_msg = 'Requires a configuration file with .yaml extension\n'
+            print('''\r{} Invalid YAML file: {}. {}'''.format(
+                scope_error, file, arg_msg
+                )
             )
-        )
         return False
 
     if os.path.getsize(file) == 0:
-        print('''\r{} The file is empty: {}\n'''.format(
-            scope_error, file
+        if not quiet:
+            print('''\r{} The file is empty: {}\n'''.format(
+                scope_error, file
+                )
             )
-        )
         return False
 
     return True
