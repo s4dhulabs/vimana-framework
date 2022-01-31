@@ -22,7 +22,7 @@ PyJWT==1.4.2
 python-dateutil==2.6.1
 pythonping==1.0.8
 pytimeparse==1.1.5
-reportlab==3.4.0
+reportlab>=3.5.55
 requests>=2.20.0
 requests-unixsocket==0.1.5
 scapy-python3==0.23
@@ -31,8 +31,8 @@ neotermcolor==2.0.10
 tldextract==2.2.2
 urllib3>=1.24.2
 mimesis==4.1.2
-Scrapy==2.4.1
+Scrapy>=2.5.1
 Twisted==20.3.0
 tabulate==0.8.9
-PyYAML==3.12
+PyYAML>=5.4
 packaging==21.3
