@@ -192,8 +192,8 @@ class DMTEngine(scrapy.Spider):
                 print('   - {}: {}'.format(k.decode(),v[0].decode()))
         
         # passive framework version fingerprint - sttinger
-        #if not self.vmnf_handler.get('sample'):
-        #    self.run_passive_fingerprint()
+        if not self.vmnf_handler.get('sample'):
+            self.run_passive_fingerprint()
         
         if not self.vmnf_handler.get('sample'):
             cprint('\n{}Checking DEBUG status...'.format(self.f_start),'cyan')
