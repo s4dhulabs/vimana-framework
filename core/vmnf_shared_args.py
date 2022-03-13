@@ -65,7 +65,6 @@ class VimanaSharedArgs:
         # -------------------------------------------------------------------------------
         # > Scope setting - [ Target parser ] 
         # -------------------------------------------------------------------------------
-        #target = parser.add_mutually_exclusive_group()
         vmnf_shared_parser.add_argument('--endpoint-url',action='store',dest='endpoint_url',default=False)
         vmnf_shared_parser.add_argument('--target-dir',action='store',dest='target_dir',default=False)
         vmnf_shared_parser.add_argument('--target-url',action='store',dest='target_url',default=False)
@@ -79,7 +78,6 @@ class VimanaSharedArgs:
         # -------------------------------------------------------------------------------
         # > Scope setting - [ port parser ] 
         # -------------------------------------------------------------------------------
-        #ports = parser.add_mutually_exclusive_group()
         vmnf_shared_parser.add_argument("--port",action="store",dest='single_port',default=False)
         vmnf_shared_parser.add_argument("--port-list",action="store",nargs='+',dest='port_list',default=False)
         vmnf_shared_parser.add_argument("--port-range",action="store",dest='port_range',default=False)
@@ -97,10 +95,13 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--pause-steps", action="store_true",default=False) 
         vmnf_shared_parser.add_argument("--auto", action="store_true",default=False)        
         vmnf_shared_parser.add_argument("--sample", action="store_true",default=False)        
+        vmnf_shared_parser.add_argument("--xscope", action="store_true",default=False)        
+        vmnf_shared_parser.add_argument("--extended-scope", action="store_true",default=False)        
         vmnf_shared_parser.add_argument("--tracker_scope", action="store_true",default=False)        
         # -------------------------------------------------------------------------------
         # > Scope setting - [ scope parser options ] 
         # -------------------------------------------------------------------------------
+        vmnf_shared_parser.add_argument("--console-pin", action="store", dest='console_pin',default=False)
         vmnf_shared_parser.add_argument("--urlconf", action="store", dest='url_conf',default=False)
         vmnf_shared_parser.add_argument("--patterns", action="store", dest='patterns_file',default=False)
         vmnf_shared_parser.add_argument("--view-name", action="store", dest='view_name',default=False)
@@ -118,7 +119,7 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--remote-port",action="store",dest='remote_port',default=False)
         vmnf_shared_parser.add_argument("--remote-host",action="store",dest='remote_port',default=False)
         vmnf_shared_parser.add_argument("--payload",action="store",dest='payload_type',default=False)
-        vmnf_shared_parser.add_argument("--forward",action="store",dest='foward_session',default=False)
+        vmnf_shared_parser.add_argument("--forward",action="store",dest='forward_session',default=False)
         vmnf_shared_parser.add_argument("--siddhi-call",action="store_true",dest='siddhi_call',default=False)
         vmnf_shared_parser.add_argument("--session",action="store_true",dest='session_mode',default=False)
         vmnf_shared_parser.add_argument("--callback-session",action="store_true",dest='callback_session',default=False)

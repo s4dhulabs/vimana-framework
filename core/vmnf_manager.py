@@ -253,8 +253,12 @@ def vmng(**handler_ns):
                 #~ run module
                 if module_run \
                     and module_name_ == search_module_name:
-                    status_ok = _siddhi_(**handler_ns).start()
-                  
+
+                    try:
+                        status_ok = _siddhi_(**handler_ns).start()
+                    except KeyboardInterrupt:
+                        sys.exit(1)
+
                     if not status_ok:
                         '''this is not usefull in this version, but will be [control other siddhi aspects]'''
                         pass

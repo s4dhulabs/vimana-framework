@@ -167,6 +167,8 @@ def abduct():
                     sys.exit(1)
 
         handler_ns.scope = ScopeParser(**vars(handler_ns)).parse_scope()
+        print(handler_ns)
+        input()
         vmng(**vars(handler_ns))  
 
     # list modules

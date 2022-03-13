@@ -61,6 +61,21 @@ class vmnfshell:
         self.contexts = self.sampler.get('CONTEXTS',False)
         self.keyenv_contexts = self.sampler.get('KEY_ENV_CONTEXTS',False)
         self.report_items = _vmnf_session_.get('report_tables',False)
+
+        """
+        print(">> This is report items:")
+        print(self.report_items.get('cves')._rows)
+        print(len(self.report_items.get('cves')._rows))
+        print(type(self.report_items.get('cves')))
+
+        print(self.report_items.get('tickets')._rows)
+        print(len(self.report_items.get('tickets')._rows))
+        print(type(self.report_items.get('tickets')))
+        #for i in self.report_items:
+        #    print(i)
+        input()
+        """
+
         self.security_tickets = _vmnf_session_.get('security_tickets',False)
         self.installed_items = self.sampler.get('INSTALLED_ITEMS',False)
         self.cves = _vmnf_session_.get('_cves_',False)
@@ -82,7 +97,6 @@ class vmnfshell:
         found_exception = False
         found_config_issue = False
         secmid_tbl = False
-
 
         while True:
             try:
@@ -148,30 +162,42 @@ class vmnfshell:
                         # set callback signals to siddhi
                         self._vmnf_session_['callback_session'] = True
                         
-                        if arg in ['wc','web_crawler', 'crawler']:
+                        if arg in ['wc', 'web_crawler', 'crawler']:
                             self._vmnf_session_['siddhi_run'] = \
                                 crawler.module_information.get('Name').lower()
                             crawler(**self._vmnf_session_).start()
                         
-                        elif arg in ['bf','brute_force', 'bruteforce']:
+                        elif arg in ['bf', 'brute_force', 'bruteforce']:
                             self._vmnf_session_['siddhi_run'] = \
                                 bruteforce.module_information.get('Name').lower()
                             bruteforce(**self._vmnf_session_).start()
 
-                        elif arg in ['it','issues_tracker', 'itracker']:
+                        elif arg in ['it', 'issues_tracker', 'itracker']:
+                            '''
+                                if len(self.report_items['cves']._rows) > 0\
+                                AttributeError: 'str' object has no attribute '_rows'
+
+                                somehow ptable change during acquisition
+                            '''
                             
-                            if len(self.report_items['cves']._rows) > 0\
-                                    and len(self.report_items['tickets']._rows) > 0:
-                                
+                            if self.cves is not None\
+                                and self.cves != '?':
+                                    
                                 cprint('→ Issues already collected. Use show command instead.', 'cyan')
                                 continue
                             
-                            issues_found = DJUtils(False,False).get_version_issues(**self.sampler)
-
-                            if not issues_found:
-                                print('Was not possible to retrieve issues')
+                            try:
+                                issues_found = DJUtils(False,False).get_version_issues(**self.sampler)
+                            except KeyboardInterrupt:
                                 continue
-                        
+
+                            if not issues_found or issues_found is None:
+                                print('>> Was not possible to retrieve issues')
+                                continue
+                       
+                            
+                            #print(issues_found.get('cves'))
+
                             security_tickets = issues_found.get('tickets')
                             cves = issues_found.get('cves')
                             self.tickets_tbl = issues_found.get('tickets_tbl')
@@ -260,7 +286,7 @@ class vmnfshell:
 
                         elif arg == 'tickets':
                             if self._vmnf_session_.get('sample')\
-                                and len(self.report_items.get('tickets')._rows) == 0:
+                                and self.security_tickets is None:
                                 print(colored('\n--| Sample mode doesnt search for version issues in runtime. Use: ', 'cyan'), colored('run itracker\n', 'green'))
                                 continue
 
@@ -280,9 +306,8 @@ class vmnfshell:
                             print(self.report_items['raw_patterns'])
 
                         elif arg == 'cves':
-                             
                             if self._vmnf_session_.get('sample')\
-                                and len(self.report_items.get('cves')._rows) == 0:
+                                and self.cves is None:
                                 print(colored('\n--| Sample mode doesnt search for version issues in runtime. Use: ', 'cyan'), colored('run itracker\n', 'green'))
                                 continue
                             
