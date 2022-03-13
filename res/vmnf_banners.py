@@ -9,6 +9,17 @@ from neotermcolor import cprint,colored
 from core.load_settings import _version_
 
 
+def circuits_banner(proc_type=False):
+    proc_type = colored(proc_type, 'red') if proc_type else ''
+    banner = colored('''
+    ┬  ┬┬┌┬┐┌─┐┌┐┌┌─┐
+    └┐┌┘││││├─┤│││├─┤
+     └┘ ┴┴ ┴┴ ┴┘└┘┴ ┴
+            {0}
+    '''.format(proc_type), 'green', attrs=['blink', 'bold'])
+
+    return banner
+
 def vmn05(): 
 
     print("\033c", end="")
