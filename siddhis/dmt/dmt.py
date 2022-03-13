@@ -13,7 +13,7 @@
 
 """
 
-
+from scrapy.exceptions import CloseSpider
 from scrapy.crawler import CrawlerRunner
 
 import sys, re, os, random, string, platform, signal
@@ -77,7 +77,7 @@ class siddhi:
 
 
     def __init__(self,**vmnf_handler):
-    
+   
         self.vmnf_handler = vmnf_handler
         self.target_url = vmnf_handler['target_url'] 
         self.threads = self.vmnf_handler['threads']
@@ -130,5 +130,6 @@ class siddhi:
         # call djunch engine v2
         process = CrawlerProcess(dict(settings))
         process.crawl(_dmt_, **self.vmnf_handler)
-        process.start(stop_after_crawl=False)
+        process.start(stop_after_crawl=False) 
+
         

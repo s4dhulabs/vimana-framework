@@ -55,11 +55,11 @@ class siddhi:
     '''
 
     def __init__(self, django_version=False):
-        
+       
         self.django_version = django_version 
         self.cve_pool =[]
         self.desc_url = 'https://www.djangoproject.com/weblog/{}/{}/{}/security-releases/'
-        self.sec_rel_url = 'https://docs.djangoproject.com/en/3.0/releases/security/'
+        self.sec_rel_url = f'https://docs.djangoproject.com/en/{django_version}/releases/security/'
         self.cve_register =[]
         self.nist_endpoint = 'https://nvd.nist.gov/vuln/detail/{}'
         self.month_num = {
@@ -185,12 +185,13 @@ class siddhi:
                                 
                                 # save entry
                                 self.cve_register.append(cve_entry)
-
+                                
                     except AttributeError:
                         pass
             except TypeError:
                 pass
 
+        return self.cve_register
 
     def start(self):
         '''
@@ -223,10 +224,6 @@ class siddhi:
         
         self.get_cves()
 
-        if self.cve_register:
-            return self.cve_register 
-
-        return False
         
         
 

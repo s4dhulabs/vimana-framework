@@ -48,6 +48,7 @@ from scrapy.http import HtmlResponse
 from scrapy.http.headers import Headers
 from pygments.formatters import TerminalFormatter
 from pygments.lexers import PythonLexer
+from pygments.lexers import HtmlLexer
 from neotermcolor import colored,cprint
 from pygments import highlight
 import django.core.exceptions as django_cx
@@ -93,6 +94,7 @@ class DJEngineParser(scrapy.Spider):
         self.fuzz_step = vmnf_handler.get('fuzz_step')
         self.caught_exceptions = []
         self.collected_sample = False
+        self.set_close = False
         
         _ISSUES_ = IssuesPool()
         _ISSUES_['ISSUES'] = {
@@ -130,9 +132,12 @@ class DJEngineParser(scrapy.Spider):
 
     def start_requests(self):
 
-        # This will be used in future versions to configure the fuzzer options: full, fast, etc.
         scope = DJUtils(False,False)
-        self._FuzzURLsPool_ = scope.get_scope(self.target, self._vmnfp_, **self.vmnf_handler)
+        self._FuzzURLsPool_ = scope.get_scope(
+            self.target, 
+            self._vmnfp_, 
+            **self.vmnf_handler
+        )
         self.fuzz_scope_size = len(self._FuzzURLsPool_['FULL_SCOPE'])
         self.fuzz_rounds = len(self._FuzzURLsPool_) 
         step_mark = colored('↪', 'white', attrs=['bold'])
@@ -273,12 +278,11 @@ class DJEngineParser(scrapy.Spider):
             sleep(1)
             print()
         
+        self.set_close = True
+
         if not self.vmnf_handler.get('sample'):
             cprint('\n → Waiting for threads [fell free to cut this short with a CTRL+C]...', 'cyan') 
-        sleep(1)
-        raise CloseSpider('-- [fuzz:done] --')
-
-
+            raise CloseSpider('shutdown')
 
     def failure_handler(self, failure):
         self._ISSUES_POOL['FUZZ_STATUS_LOG'].append(
@@ -309,6 +313,10 @@ class DJEngineParser(scrapy.Spider):
                 )
             )
             print()
+
+        if self.set_close:
+            raise CloseSpider('-- [fuzz:done] --')
+
         pass
 
     def status_handler(self, response):
@@ -379,13 +387,13 @@ class DJEngineParser(scrapy.Spider):
                 self.EXCEPTION_ID = hashlib.sha256(str(self.EXCEPTION_MATCH).encode('utf-8')).hexdigest()[:10]
             
             if len(self.EXCEPTION_PATTERN) == 0:
-                status_msg=colored("The application's response does not match with an expected exception. Maybe a server issue:", 'yellow')
-                print("[djunch().status_handler({})] {} \n{}".format(
-                    response.status,
-                    status_msg,
-                    response_data
+                if not self.vmnf_handler.get('sample'):
+                    status_msg=colored("The application's response does not match with an expected exception. Maybe a server issue:", 'yellow')
+                    print("[djunch().status_handler({})] {} \n{}".format(
+                        response.status,status_msg,
+                        highlight(str(response_data),HtmlLexer(),TerminalFormatter())
+                        )
                     )
-                )
                 return False
 
             if self.EXCEPTION_ID in self.caught_exceptions:
@@ -464,7 +472,6 @@ class DJEngineParser(scrapy.Spider):
             ENVIRONMENT[key] = value
             k_ref = key.upper()
             
-            # consider this case wsgi.file_wrapper - split by '.' not only _ !ctp: handler this cases
             if '_' in k_ref:
                 k_ref = k_ref.split('_')[0]
             elif '.' in k_ref \
@@ -522,8 +529,6 @@ class DJEngineParser(scrapy.Spider):
             if key == 'Exception Type':
                 hl_color = 'magenta'
 
-            # print('{}{}:\t   {}'.format((' ' * int(5-len(key) + 14)),key,colored(value, hl_color)))
-       
         # link exception type with related environment variable (if exists)
         EXCEPTION_TYPE = EXCEPTION_SUMMARY['Exception Type']
         EXCEPTION_REASON = False

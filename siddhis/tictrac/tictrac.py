@@ -20,11 +20,12 @@ from pygments.formatters import TerminalFormatter
 from pygments.lexers import PythonLexer
 from pygments import highlight
 
-import requests
+import sys
 import json
-from bs4 import BeautifulSoup
+import requests
 import collections
 from time import sleep
+from bs4 import BeautifulSoup
 
 
 class siddhi:
@@ -92,8 +93,11 @@ class siddhi:
     def get_ticket_ids(self, django_version):
         ''' Retrieve all tickets (type:bug) for a given Django version '''
 
-        response = requests.get(self.django_query_url.format(django_version, self.columns))
-        soup = BeautifulSoup(response.content, "lxml")
+        try:
+            response = requests.get(self.django_query_url.format(django_version, self.columns))
+            soup = BeautifulSoup(response.content, "lxml")
+        except KeyboardInterrupt:
+            return False
 
         ticket_entry = 1
         for tag in soup.find_all('a', href=True):
