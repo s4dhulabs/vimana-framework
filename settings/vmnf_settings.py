@@ -1,6 +1,7 @@
 import socks
 
 
+common_pyvars = 'res/pyvars/common_vars.txt'
 ssti_p = 'res/attack/payloads/ssti.txt'
 xss_p  = 'res/attack/payloads/xss.txt'
 sqli_p = 'res/attack/payloads/sqli.txt'
