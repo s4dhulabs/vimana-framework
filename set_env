@@ -10,3 +10,4 @@ pip3 install --ignore-installed PyYAML -r requirements.txt
 pip3 install -U PyYAML
 sudo ln -s $PWD/vimana.py /usr/bin/vf
 vf
+
