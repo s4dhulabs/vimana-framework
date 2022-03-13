@@ -166,11 +166,85 @@ class DJUtils:
             g.food.vegetable()
         ]
 
+    def get_wrmail(self):
+
+        return (    
+            Generic('fr').person.surname()[:3]\
+            + Generic('fr').person.title()\
+            + Generic('fr').person.name()\
+            + Generic('fr').person.email()
+        )
+
+    def set_form_fuzz(self, **base_form):
+        from res.vmnf_fuzz_data import VMNFPayloads
+       
+        fuzz_all = {}
+        fuzz_scope = {
+            'nullf':[],
+            'rawin':[],
+            'allin':[],
+            'useri':[],
+            'iauth':[],
+            'payfv':[],
+            'ptpay':[]
+        }
+
+        base_form = base_form
+        vfp = VMNFPayloads(**{'patterns':1})
+        ssti_payloads   = vfp.get_ssti_payloads()
+        xss_payloads    = vfp.get_xss_payloads()
+        sqli_payloads   = vfp.get_sqli_payloads()
+
+        all_payloads = list(
+            set(
+                chain(
+                    ssti_payloads,
+                    xss_payloads,
+                    sqli_payloads,
+                )
+
+            )
+        )    
+        
+        # fuzz with empty form / step 0
+        fuzz_scope['nullf'].append({})
+        fuzz_scope['rawin'].append(base_form)
+
+        # fuzz all inputs / step 2
+        for field, value in base_form.items():
+            fuzz_scope['allin'].append({field: choice(all_payloads)})
+            fuzz_scope['ptpay'].append({field:"%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd"})
+            
+            # fuzz usercontrolled inputs [no actions] / step 3
+            if field not in ['next', 'submit','csrfmiddlewaretoken']:
+                fuzz_scope['useri'].append({choice(all_payloads): choice(all_payloads)})
+                fuzz_scope['payfv'].append({choice(all_payloads): choice(all_payloads)})
+            
+            # fuzz auth endpoints - with valid values / invalid creds
+            if field == 'username':
+                creds = vfp.get_random_credential()
+                fuzz_scope['iauth'].append({field: creds.get('username')})
+
+            elif field == 'password':
+                fuzz_scope['iauth'].append({field: creds.get('password')})
+
+            elif field in ['email', 'user_email']:
+                fuzz_scope['iauth'].append({field: self.get_wrmail()}) 
+
+
+        return fuzz_scope
+
     def get_scope(self, target, payloads, **handler):
         self._FuzzURLsPool_ = FuzzURLsPool()
         self._vmnfp_ = payloads
         patterns = handler.get('patterns')
         regex_patterns = handler.get('fuzz_regex_flags',False)
+        sample_mode = handler.get('sample') 
+
+        _xscope_ = True if sample_mode \
+            and handler.get('xscope') \
+            or handler.get('extended-scope')\
+            else False
 
         self.target = 'http://' + target \
             if not target.startswith('http') else target
@@ -199,6 +273,7 @@ class DJUtils:
         self.random_ssti_payloads=[]
         self.random_sqli_payloads=[]
         self.regex_patterns_payloads=[]
+        self.random_pyvars_payloads=[]
         
         if patterns is not None:
             # build scope from clean patterns
@@ -212,10 +287,14 @@ class DJUtils:
             random_types = self.get_random_data_list()
 
             # we're not gonna need attack payloads in sample mode
-            if not handler.get('sample'):
-                ssti_payloads= self._vmnfp_.get_ssti_payloads()
-                xss_payloads= self._vmnfp_.get_xss_payloads()
-                sqli_payloads= self._vmnfp_.get_sqli_payloads()
+            # but xscope forces it extending scope during sample mode
+            # --sample --xscope/--extended-scope || sample_mode == False
+
+            if _xscope_ or not sample_mode:
+                ssti_payloads = self._vmnfp_.get_ssti_payloads()
+                xss_payloads = self._vmnfp_.get_xss_payloads()
+                sqli_payloads = self._vmnfp_.get_sqli_payloads()
+                pyvars_payloads = self._vmnfp_.get_pyvars()
             
             common_params= [
                 'add','cmd','alterar','account',
@@ -224,6 +303,21 @@ class DJUtils:
                 'update', 'download','settings'
             ]
             
+            pathtr_vals = [ 
+                'etc/passwd',
+                'db.sqlite3',
+                '*.sqlite3',
+                'urls.py',
+                'models.py',
+                'settings.py',
+                '__init__.py',
+                '.gitignore',
+                '__pycache__',
+                'settings.yaml',
+                'etc/shadow',
+                '../app/../urls.py'
+            ]
+
             count = 1
             # build scope from initial raw patterns (dmt input)
             for url in self.raw_urls[1:]:
@@ -250,7 +344,8 @@ class DJUtils:
                     # attack payloads like these are more like a redundance from this perspective
                     # they're not intended to really trigger the relative vulnerability, it may happen
                     # but its not the focus here, and its another story. [:'
-                    if not handler.get('sample'):
+                    
+                    if _xscope_ or not sample_mode:
                         self.random_param_values.append(
                             urljoin(self.target, 
                                 str(url_p + '?{}={}'.format(
@@ -261,7 +356,8 @@ class DJUtils:
                         )
                         self.random_path_traversal.append(
                             urljoin(self.target, 
-                                str('/' + url_p + '/' + '%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd'))
+                                str('/' + url_p + '/' + f'%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/{choice(pathtr_vals)}'))
+                                #str('/' + url_p + '/' + '%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd'))
                         )
                         self.random_xss_payloads.append(
                             url.replace(url_p, str(choice(xss_payloads)))
@@ -274,12 +370,16 @@ class DJUtils:
                             urljoin(self.target,url_path.replace(url_p, str(choice(sqli_payloads)))
                             )
                         )
+                        self.random_pyvars_payloads.append(
+                            urljoin(self.target,url_path.replace(url_p, str(choice(pyvars_payloads)))
+                            )
+                        )
 
                     count +=1
         
         # altough the main idea here is to set contextual fuzzer according to regex (oposite)
         # at this time we're just playing a little bit with this to enrich fuzzer scope
-        if regex_patterns and not handler.get('sample'):
+        if regex_patterns and not sample_mode:
             for view,rgx_patterns in regex_patterns.items():
                 hl_view = colored(view,'red') 
                 rgx_msg = ('   |- Building scope from fuzz_regex_patterns / view: {} ({} patterns)...'.format(
@@ -310,7 +410,8 @@ class DJUtils:
                 set(self.random_param_values),
                 set(self.random_ssti_payloads),
                 set(self.random_sqli_payloads),
-                set(self.regex_patterns_payloads)
+                set(self.regex_patterns_payloads),
+                set(self.random_pyvars_payloads)
             )
         )
 
@@ -328,6 +429,7 @@ class DJUtils:
             'RANDOM_SSTI_PAYLOADS':self.random_ssti_payloads,
             'RANDOM_SQLI_PAYLOADS':self.random_sqli_payloads,
             'REGEX_PATTERNS_URLS': self.regex_patterns_payloads,
+            'RANDOM_PYVARS_PAYLOAD': self.random_pyvars_payloads,
             'FULL_SCOPE':self.full_scope
         }
         
@@ -450,9 +552,9 @@ class DJUtils:
                 else:
                     # - Get CVEs and security tickets for abducted framework version-
                     tickets = tictrac.siddhi(django_version).start()
-                    cves = prana.siddhi(django_version).start()
+                    cves = prana.siddhi(django_version).get_cves()
                 
-                if tickets is not None:
+                if tickets and tickets is not None:
                     #and security_tickets is not None: 
                 
                     # Security Tickets table
@@ -479,7 +581,7 @@ class DJUtils:
                     tickets_tbl = '?'
                   
                 # CVE table
-                if cves is not None:
+                if cves and cves is not None:
                     for entry in cves:
                         # >> load cve ids
                         cves_tbl.title = colored(
@@ -497,6 +599,7 @@ class DJUtils:
                         )
                 else:cves_tbl = '?'
 
+        
         return {
             'tickets_tbl': tickets_tbl,
             'cves_tbl': cves_tbl,

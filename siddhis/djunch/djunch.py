@@ -156,11 +156,15 @@ class siddhi:
         # call djunch engine v2
         if self.vmnf_handler.get('sample'):
             settings['RETRY_TIMES'] = 1
-            #settings['HTTP_CACHE'] = True
 
         from scrapy.crawler import CrawlerRunner
         from twisted.internet import reactor
         
         runner = CrawlerRunner(dict(settings))
         d = runner.crawl(_djuep_, **self.vmnf_handler)
-        reactor.run(0)
+        try:
+            reactor.run(0)
+        except builtins.KeyboardInterrupt:
+            pass
+
+

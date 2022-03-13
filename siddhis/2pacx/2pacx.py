@@ -104,7 +104,8 @@ class siddhi:
         --filename 
         --payload
         '''
-        session = self.vmnf_handler.get('foward_session')
+        forward_is_enabled = self.vmnf_handler.get('forward_session', False) 
+
         g = Generic()
         payload_type = False
         xpl_hl = colored('2pacx', 'blue')
@@ -203,9 +204,9 @@ class siddhi:
         print("[{}] → Uploading {} to {}...".format(xpl_hl,filename, self.vmnf_handler['target_url']))
         sleep(1)
         
-        if session: 
+        if forward_is_enabled: 
             print("[{}] → Forward is enabled, start {} in another terminal:\n\t run --module {} --session and hit Enter here.".format(
-                xpl_hl,self.vmnf_handler.get('foward_session'),session
+                xpl_hl,forward_is_enabled,forward_is_enabled
                 )
             )
             
