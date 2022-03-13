@@ -357,7 +357,6 @@ class DJUtils:
                         self.random_path_traversal.append(
                             urljoin(self.target, 
                                 str('/' + url_p + '/' + f'%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/{choice(pathtr_vals)}'))
-                                #str('/' + url_p + '/' + '%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd'))
                         )
                         self.random_xss_payloads.append(
                             url.replace(url_p, str(choice(xss_payloads)))
@@ -456,7 +455,6 @@ class DJUtils:
 
     def generate_exceptions_table(self, EXCEPTIONS):
         exceptions_tbl = self.get_report_tables().get('exceptions')
-        #exceptions_tbl = tables['exceptions']
 
         i_count = 1
         # >> load exceptions into table
