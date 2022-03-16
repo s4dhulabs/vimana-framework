@@ -23,9 +23,22 @@ settings:
         - --proxy-type
         - --nmap-xml
         - --abduct
+        - --module
     case_set:
         cases_path: core/cases/
         cases_yf: core/cases/*.yaml
         empty_msg: '[{}] It seems like you didn''t create any case yet, or they were
             flushed.'
-    siddhis: siddhis/
+    siddhis_set:
+        dir: siddhis/
+        list:
+        - djunch
+        - 2pacx
+        - prana
+        - dmt
+        - flame
+        - sttinger
+        - jungle
+        - viwec
+        - atlatl
+        - tictrac

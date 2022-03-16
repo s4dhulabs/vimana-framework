@@ -24,7 +24,7 @@ from core.vmnf_scope_parser import ScopeParser
 from core.vmnf_urls_parser import digest_scope
 from core.vmnf_arg_parser import VimanaParser
 from core.vmnf_payloads import  VMNFPayloads 
-from core.load_settings import _version_
+from core.load_settings import _version_, _siddhis_, _cs_
 from core.vmnf_cases import CasManager
 from core.vmnf_manager import vmng
 
@@ -78,16 +78,26 @@ def abduct():
         and cmd not in vmnf_cmds:
         VimanaHelp().basic_help()
         sys.exit(1)
-    
+
     elif arg_len > 1 \
         and cmd in require_module \
         and len(sys.argv[2:]) == 1 \
         and sys.argv[2] == '--module':
+
         print(vmnf_cmds[cmd])
         sys.exit(1)
     
     vmn_parser = VimanaParser()
     handler_ns = vmn_parser.start_handler()
+    
+    if (handler_ns.module_run)\
+        and handler_ns.module_run not in _siddhis_.get("list"):
+        print(f"\n  Plugin {colored(handler_ns.module_run, 'red')} doesn't exist. Available plugins:\n")
+
+        [cprint('   ' + s, 'blue') for s in _siddhis_.get("list")]
+        print()
+        sys.exit(1)
+
 
     # set case load flag
     run_from_case = False
@@ -110,7 +120,6 @@ def abduct():
     # running plugin/arguments from a saved case
     if run_from_case:
         exec_case = CasManager(False,handler_ns).get_exec_case(case_args)
-        file_path = 'core/cases/' + exec_case
         handler_ns = CasManager(exec_case,handler_ns).load_case()
 
     if not handler_ns:

@@ -370,7 +370,7 @@ class DJUtils:
                             )
                         )
                         self.random_pyvars_payloads.append(
-                            urljoin(self.target,url_path.replace(url_p, str(choice(pyvars_payloads)))
+                            urljoin(self.target,url_path.replace(url_p, '{{' + str(choice(pyvars_payloads)) + '}}')
                             )
                         )
 
@@ -455,6 +455,7 @@ class DJUtils:
 
     def generate_exceptions_table(self, EXCEPTIONS):
         exceptions_tbl = self.get_report_tables().get('exceptions')
+        #exceptions_tbl = tables['exceptions']
 
         i_count = 1
         # >> load exceptions into table
