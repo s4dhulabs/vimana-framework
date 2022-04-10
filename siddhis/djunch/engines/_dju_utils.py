@@ -9,6 +9,7 @@ import settings.vmnf_settings as settings
 from pygments.lexers import PythonLexer
 from neotermcolor import colored, cprint
 from neotermcolor import colored,cprint
+from core.load_settings import _utils_ 
 from prettytable import PrettyTable
 from pygments import highlight
 from res import vmnf_banners
@@ -233,6 +234,10 @@ class DJUtils:
 
 
         return fuzz_scope
+
+    def get_random_headers(self):
+        with open(_utils_['random_headers']) as f:
+            return yaml.load(f,Loader=yaml.FullLoader)
 
     def get_scope(self, target, payloads, **handler):
         self._FuzzURLsPool_ = FuzzURLsPool()
@@ -577,7 +582,7 @@ class DJUtils:
                             ]
                         )
                 else:
-                    tickets_tbl = '?'
+                    tickets_tbl = False
                   
                 # CVE table
                 if cves and cves is not None:
@@ -596,7 +601,7 @@ class DJUtils:
 
                             ]
                         )
-                else:cves_tbl = '?'
+                else:cves_tbl = False
 
         
         return {
@@ -864,6 +869,9 @@ class DJUtils:
 
         tp_count = 0
         total_triggers = len(traceback)
+        line_pause = 0.03 if total_triggers > 3 else 0.10
+        step_pause  = 0.07 if total_triggers > 3 else 0.20
+
         for entry in traceback:
             tp_count +=1
             hl_tpc = colored(tp_count, 'white', attrs=['bold'])
@@ -886,8 +894,8 @@ class DJUtils:
 
             for line in entry['HL_CODE_SNIPPET']:
                 print(line)
-                sleep(0.10)
-            sleep(0.20)
+                sleep(line_pause)
+            sleep(step_pause)
 
             print('\n\n')
             print('   {} {}'.format(mark,colored('Local variables', 'cyan')))
@@ -900,9 +908,7 @@ class DJUtils:
                 )
 
             print("-" * 100)
-            #print()
 
-        #print('\n\n')
         print('   {} {}'.format(mark,colored('Traceback Objects', 'cyan')))
         print()
         for tb_object in traceback_objects:

@@ -69,7 +69,11 @@ class siddhi:
         if not self.vmnf_handler.get('target_url',False):
             print(VimanaSharedArgs().shared_help.__doc__)
             sys.exit(1)
-    
+  
+        target_url = self.vmnf_handler.get('target_url')
+        if not target_url.startswith('http'):
+            self.vmnf_handler['target_url'] = f'http://{target_url}'
+
         runner = CrawlerRunner(dict(settings))
         daemon = runner.crawl(jungle_engine, **self.vmnf_handler)
         reactor.run(0) 

@@ -128,11 +128,17 @@ class DJEngineParser(scrapy.Spider):
         
         # create instance of dju_reporter to issues presentation
         result = resultParser(self._ISSUES_POOL, **self.vmnf_handler).show_issues()
+        '''
+        if result['multi_target']:
+            return self._ISSUES_POOL    
+        '''
         os._exit(os.EX_OK) 
 
     def start_requests(self):
 
         scope = DJUtils(False,False)
+        random_headers = scope.get_random_headers()
+
         self._FuzzURLsPool_ = scope.get_scope(
             self.target, 
             self._vmnfp_, 
@@ -162,11 +168,14 @@ class DJEngineParser(scrapy.Spider):
 
         f_count = 1
         for url_step_type, fuzz_urls in self._FuzzURLsPool_.items():
+ 
             _fzz_headers_ = copy.copy(self.headers)
             filter_mode = False
+            
             self.fuzz_step = url_step_type.lower()
             hl_url_step_type = colored(self.fuzz_step, 'cyan')
             step_urls = len(fuzz_urls)
+            
             t_count = 1
             hl_color = 'white'
             f_hl_fuzz = hl_color
@@ -249,6 +258,10 @@ class DJEngineParser(scrapy.Spider):
                         print()
                         print(fuzz_step_msg.ljust(os.get_terminal_size().columns - 1), end="\r")
                 
+
+                if url_step_type == 'FUZZ_HEADERS':
+                    _fzz_headers_ = random_headers
+
                 if self.step_method == 'GET':
                     yield scrapy.Request(
                         target_url, 
@@ -287,10 +300,10 @@ class DJEngineParser(scrapy.Spider):
     def failure_handler(self, failure):
         self._ISSUES_POOL['FUZZ_STATUS_LOG'].append(
             {
-                'method': self.step_method,
+                'method': str(self.step_method),
                 'request': str(failure.request),
-                'status': failure.value,
-                'step': self.fuzz_step
+                'status': str(failure.value),
+                'step': str(self.fuzz_step)
             }
         )
 
@@ -325,10 +338,10 @@ class DJEngineParser(scrapy.Spider):
     
         self._ISSUES_POOL['FUZZ_STATUS_LOG'].append(
             {
-                'method': self.step_method,
-                'url': response.url,    
-                'status': response.status,
-                'step': self.fuzz_step
+                'method': str(self.step_method),
+                'url': str(response.url),    
+                'status': str(response.status),
+                'step': str(self.fuzz_step)
             }
         )
         
@@ -657,15 +670,16 @@ class DJEngineParser(scrapy.Spider):
         _EXCEPTION_['CONTEXTS'] = CONTEXTS
         _EXCEPTION_['OBJECTS'] = TRACEBACK_OBJECTS
 
-        self.LAST_EXCEPTION = _EXCEPTION_ 
         self._ISSUES_POOL['EXCEPTIONS'].append(_EXCEPTION_)
-        self.collected_sample = self.LAST_EXCEPTION
+        self.collected_sample = _EXCEPTION_
         
-        # in sample mode we're looking for just one exception 
         if self.vmnf_handler.get('sample'):
-            raise CloseSpider('-- [VIMANA: Exception Caught]→ Running in sample mode')
+            raise CloseSpider(f"[VMNF@ExceptionCaught(): {EXCEPTION_TYPE}]→ SAMPLE MODE enabled     ")
             
         DJUtils(False,False).show_exception(**_EXCEPTION_)
-        sleep(1)
+
+        if self.vmnf_handler.get('exit_on_trigger'):
+            raise CloseSpider(f"[VMNF@ExceptionCaught(): {EXCEPTION_TYPE}]→ EXIT_ON_TRIGGER enabled ")
+        
 
 

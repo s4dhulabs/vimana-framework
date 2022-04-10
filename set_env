@@ -3,8 +3,8 @@
 # create a simbolic link to vimana handler vf 
 # fix some pip install issues (sometimes)
 ##################################################
-python3 -m venv ~/vfe0.5
-source ~/vfe0.5/bin/activate
+python3 -m venv ~/vfe0.6
+source ~/vfe0.6/bin/activate
 pip3 install --upgrade pip 
 pip3 install --ignore-installed PyYAML -r requirements.txt
 pip3 install -U PyYAML

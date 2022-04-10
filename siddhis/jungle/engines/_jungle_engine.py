@@ -96,11 +96,15 @@ class jungle_engine(scrapy.Spider):
                 )
     
     def closed(self,reason):
+        if not self.pool['credentials']:
+            msg = colored("No valid credentials were found with current settings.", 'red')
+            print(f"\n\t  * {msg}")
+
         if self.handler['callback_session']:
             vmnf_callback_session = self.handler.get('prompt')
 
             # disable callback session flag
-            self.handler['callback_session'] = False
+            # self.handler['callback_session'] = False
 
             if not self.handler.get('siddhi_callbacks'):
                 self.handler['siddhi_callbacks'] = []
@@ -127,12 +131,6 @@ class jungle_engine(scrapy.Spider):
                 }
             )
             
-            if not self.pool['credentials']:
-                print('\n[{}] {}'.format(
-                    colored(datetime.now(), 'cyan'),
-                    colored('→ No valid credentials were found with current settings.\n', 'white', attrs=['bold'])
-                    )
-                )
 
             # return to caller session
             vmnf_callback_session(**self.handler)
@@ -190,14 +188,11 @@ class jungle_engine(scrapy.Spider):
             
     def list_users(self,response):
         session = requests.session()
+        session_id = response.request.headers.get('Cookie').decode().split(';')[1].split('=')[1][1:20]
 
-
-        print('[{}] → {} {}...\n'.format(
-            colored(datetime.now(),'cyan'),
-            colored('Harvesting users through session', 'white', attrs=['bold']),
-            colored(response.request.headers.get('Cookie').decode().split(';')[1].split('=')[1][:20], 'blue')
-            )
-        )
+        msg = colored("Harvesting users through session", 'white', attrs=['bold'])
+        hl_session_id = colored(session_id + '...', 'blue')
+        print(f"\t  → {msg} {hl_session_id}")
         sleep(1)
         
         try:
@@ -224,12 +219,19 @@ class jungle_engine(scrapy.Spider):
             else False
 
         if not list_users_ok:
+            _user_ = self.auth_meta.get('username')
+            msg = colored(f"User {_user_} does not have permission to log into Django's administrative endpoint.", 'yellow', attrs=['bold'])
+            hl_session_id = colored(session_id, 'blue')
+            print(f"\t  → {msg}")
+
+            """
             print('[{}] → {}...\n'.format(
                 colored(datetime.now(), 'cyan'),
                 colored("User {} does not have permission to log into Django's administrative endpoint.".format(
                     self.auth_meta.get('username')), 'white', attrs=['bold'])
                 )
             )
+            """
             return 
         
         self.users_table.append(

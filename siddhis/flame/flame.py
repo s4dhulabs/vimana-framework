@@ -292,7 +292,7 @@ class siddhi:
     
         print('+ Target: {}\n+ Server: {}\n+ Python Version: {}'.format(self.target, target_server, python_version))
 
-        print('''\n{}*{} Bellow are the exceptions identified during analisys:{}'''.format(Gn_c, C_c, D_c))
+        print('''\n{}*{} Bellow are the exceptions identified during analysis:{}'''.format(Gn_c, C_c, D_c))
         print(self.exception_table)
         print()
         print('''\n{}*{} Bellow are all paths identified in Flask traceback schema:{}'''.format(Gn_c, C_c, D_c))

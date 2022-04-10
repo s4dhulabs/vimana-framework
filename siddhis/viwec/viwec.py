@@ -65,7 +65,13 @@ class siddhi:
     def start(self):
         if not self.vmnf_handler.get('callback_session'):
             self.vmnf_handler['scope'] = [
-                self.vmnf_handler.get('target_url')]
+                self.vmnf_handler.get('target_url')
+            ]
+            self.vmnf_handler['scope'] = [
+                f'http://{url}' for url \
+                    in self.vmnf_handler['scope'] \
+                        if not url.startswith('http')
+            ]
             vmnf_banners.load_viwec()
 
         if not self.vmnf_handler.get('scope',False):

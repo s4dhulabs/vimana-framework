@@ -164,7 +164,7 @@ class siddhi:
         d = runner.crawl(_djuep_, **self.vmnf_handler)
         try:
             reactor.run(0)
-        except builtins.KeyboardInterrupt:
+        except KeyboardInterrupt:
             pass
 
 

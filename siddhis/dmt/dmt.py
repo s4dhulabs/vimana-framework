@@ -13,8 +13,14 @@
 
 """
 
+from res.vmnf_validators import get_tool_scope as get_scope
+from twisted.internet.defer import inlineCallbacks
+from scrapy.crawler import CrawlerProcess
 from scrapy.exceptions import CloseSpider
 from scrapy.crawler import CrawlerRunner
+from twisted.internet import reactor
+import collections
+import twisted
 
 import sys, re, os, random, string, platform, signal
 from datetime import datetime
@@ -24,13 +30,11 @@ import argparse
 from core.vmnf_shared_args import VimanaSharedArgs
 from res import vmnf_banners
 
-import collections
-
 from .engines._crawler_settings import settings
 from .engines._crawler_settings import headers
 from .engines._dmt_parser import DMTEngine as _dmt_
 
-from scrapy.crawler import CrawlerProcess
+
 
 
 class siddhi:   
@@ -126,10 +130,12 @@ class siddhi:
         self.vmnf_handler['download_timeout'] = 3
         self.vmnf_handler['method'] = 'GET'
         self.vmnf_handler['headers'] = headers
-        
-        # call djunch engine v2
-        process = CrawlerProcess(dict(settings))
-        process.crawl(_dmt_, **self.vmnf_handler)
-        process.start(stop_after_crawl=False) 
 
-        
+        try:
+            process = CrawlerProcess(dict(settings))
+            process.crawl(_dmt_, **self.vmnf_handler)
+            process.start(stop_after_crawl=False) 
+        except twisted.internet.error.ReactorAlreadyInstalledError:
+            runner = CrawlerRunner(dict(settings))
+            d = runner.crawl(_dmt_, **self.vmnf_handler)
+            reactor.run(0)

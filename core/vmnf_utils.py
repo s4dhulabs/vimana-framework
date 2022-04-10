@@ -24,6 +24,7 @@ import os
 import re
 
 
+
 class pshell_set:
     def __init__(self, **handler):
         self.handler = handler
@@ -127,6 +128,9 @@ class pshell_set:
             "~ django.middleware.security.SecurityMiddleware ~",
             "white",attrs=['bold']
         )
+
+
+
 
     def valid_run_option(self,arg):
         if arg not in (

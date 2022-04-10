@@ -69,7 +69,7 @@ class ScopeParser:
 
         if self.target_defined and not valid_scope_port:
             arg = colored('--ignore-state', 'green', attrs=[])
-            print('''{} No active port has been identified.\nCheck the target's IP with a network scanner or use {} argument on vimana command line.\n'''.format(self.scope_error,arg))
+            print(f"{self.scope_error} No active port has been identified.\nCheck the target's IP with a network scanner or use {arg} argument on vimana command line.\n")
             
             sys.exit(1)
 
@@ -148,23 +148,50 @@ class ScopeParser:
             # check if a scope file exists
             if not os.path.exists(scope_location):
                 arg = colored('--file-scope', 'green', attrs=[])
-                print('''\r{} File scope not found: {}\n'''.format(self.scope_error, scope_location))
+                print(f'''\r{self.scope_error} File scope not found: {scope_location}\n''')
                 sys.exit(1)
 
             # check if a valid scope file
             elif not os.path.isfile(scope_location):
-                print('''\r{} Invalid scope file: {}\n'''.format(self.scope_error, scope_location))
+                print(f'''\r{self.scope_error} Invalid scope file: {scope_location}\n''')
                 sys.exit(1)
 
             fh = open(self.handler_ns['file_scope'], 'r')
             fh = fh.readlines()
+
             for target in fh:
-                if target.count('.') == 3:
-                    target = target.rstrip()
-                    self.target_list.append(target)
+                target = target.strip()
+                if target.find(":"):
+                    tp = target.split(':')
+                    
+                    if len(tp) != 2:
+                        continue
+
+                    target = tp[0].strip()
+                    port = tp[1].strip()
+
+                    try:
+                        port = int(port)
+                        if port not in self.port_list:
+                            self.port_list.append(port)
+                    except ValueError:
+                        #self.port_list.append('80')
+                        pass
+                
+                if target not in self.target_list:
+                    self.target_list.append(target.strip())
+
             if not (self.target_list):
-                print('''\r{} No valid target was identified in the file scope: {}\n'''.format(self.scope_error, scope_location))
+                print(f'''\r{self.scope_error} No valid target was identified in the file scope: {scope_location}\n''')
                 sys.exit(1) 
+
+            if self.port_list:
+                if len(self.port_list) == 1:
+                    self.handler_ns['single_port'] = self.port_list[0]
+                    self.handler_ns['port_list'] = False
+                elif len(self.port_list) >= 2:
+                    self.handler_ns['port_list'] = self.port_list 
+                    self.handler_ns['single_port'] = False
 
         # ***   scope: network "range"    ***
         elif self.handler_ns['ip_range']: 
@@ -190,7 +217,7 @@ class ScopeParser:
         # ***   scope: single port   ****
         if self.handler_ns['single_port']:
             if "," in str(self.handler_ns['single_port']):
-                arg = colored('--target-list', 'green', attrs=[])
+                arg = colored('--port-list', 'green', attrs=[])
                 print('''\r{} Invalid format for the --port argument,try this with {} or specify a single port.\n'''.format(self.scope_error,arg))
                 sys.exit(1)
             self.port_list.append(self.handler_ns['single_port'])
@@ -209,9 +236,9 @@ class ScopeParser:
 
         # ***   scope: port list    ****
         elif self.handler_ns['port_list']:
-            
             if not "," in str(self.handler_ns['port_list']):
                 arg = colored('--port-list', 'green', attrs=[])
+                print(self.handler_ns['port_list'])
                 print('''\r{} Invalid format for the {} argument. Ports must be separated by a comma.\n'''.format(self.scope_error,arg))
                 sys.exit(1)
             

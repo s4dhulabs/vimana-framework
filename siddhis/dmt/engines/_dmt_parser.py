@@ -59,6 +59,7 @@ class DMTEngine(scrapy.Spider):
     def __init__(self, *args, **vmnf_handler):
         super(DMTEngine, self).__init__(*args,**vmnf_handler)
         
+        self.tps = False
         self.f_start = ' _n0p_ '
         self.f_map = ' _n0p_ '
         self.vmnf_handler = vmnf_handler
@@ -83,19 +84,6 @@ class DMTEngine(scrapy.Spider):
         self.app_patterns =[]
         self.exit_step = False
    
-    '''
-    
-    @classmethod
-    def from_crawler(cls, crawler, *args, **kwargs):
-        spider = super(DMTEngine, cls).from_crawler(crawler, *args, **kwargs)
-        crawler.signals.connect(spider.spider_closed, signal=signals.spider_closed)
-        return spider
-
-    def spider_closed(self, spider):
-        spider.logger.info('Spider closed: %s', spider.name)
-    
-    '''
-
     def get_raw_patterns(self,response):
         return [('/'.join(pattern.split()).replace('//','/'))\
             for pattern in [p.xpath('.//text()').get().strip()\
@@ -108,9 +96,13 @@ class DMTEngine(scrapy.Spider):
             return False
 
         if not self.raw_patterns:
-            
-            cprint("""[{}] The target doesn't seem to be up. Check out if the application is running, and try again.\n""".format(
-                datetime.now()), 'magenta', attrs=['bold'])
+            if not self.tps:
+                cprint("""[{}] Missing scope!\n""".format(
+                    datetime.now()), 'magenta', attrs=['bold'])
+            else:
+                cprint("""[{}] The target doesn't seem to be up. Check out if the application is running, and try again.\n""".format(
+                    datetime.now()), 'magenta', attrs=['bold'])
+
             os._exit(os.EX_OK) 
 
         self.vmnf_handler['fuzz_regex_flags'] = self.fuzz_flags_context
@@ -127,47 +119,50 @@ class DMTEngine(scrapy.Spider):
 
     def start_requests(self):
         
+        targets_ports_set = []
+        
         # This will be used in future versions to configure the fuzzer options: full, fast, etc.
-        if not self.vmnf_handler['scope']:
+        if not self.vmnf_handler['scope'] \
+            and not self.vmnf_handler['docker_scope']\
+            and not self.vmnf_handler['runner_mode']:
+
             print(VimanaSharedArgs().shared_help.__doc__)
             try: 
                 sys.exit(1) 
             except builtins.SystemExit:
                 pass
 
-        # here we just need to get a list of valid scope
-        targets_ports_set = get_scope(**self.vmnf_handler)
         self.tps = targets_ports_set
+        self.target_url = self.vmnf_handler.get('target_url')
+        self.base_url = self.vmnf_handler.get('target_url')
+        self.tps = self.target_url
 
-        for entry in targets_ports_set:
-            self.target_url = entry
+        if not self.base_url.startswith('http'):
+            self.target_url = 'http://' + self.base_url
 
-            if not self.target_url.startswith('http'):
-                self.target_url = 'http://' + entry 
+        try:
+            requests.get(self.target_url)
+        except requests.exceptions.ConnectionError:
+            self.target_url = 'https://' + self.base_url
 
-            try:
-                requests.get(self.target_url)
-            except requests.exceptions.ConnectionError:
-                self.target_url = 'https://' + entry
-
-            dmt_start = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            c_target = colored(self.target_url,'white')
+        dmt_start = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        c_target = colored(self.target_url,'white')
             
-            if not self.vmnf_handler.get('sample'):
-                cprint("[{}] Starting DMT against {}...".format(datetime.now(),c_target), 'cyan')
-                sleep(1)
+        if not self.vmnf_handler.get('sample'):
+            cprint("\n[{}] Starting DMT against {}...".format(datetime.now(),c_target), 'cyan')
+            sleep(1)
             
-            self.target_trigger = urljoin(self.target_url,str(random()))
+        self.target_trigger = urljoin(self.target_url,str(random()))
 
-            yield scrapy.Request(
-                self.target_trigger, 
-                callback=self.status_handler,
-                headers=self.headers,
-                meta=self.meta,
-                errback=self.failure_handler,
-                dont_filter = True
-            )
-        
+        yield scrapy.Request(
+            self.target_trigger, 
+            callback=self.status_handler,
+            headers=self.headers,
+            meta=self.meta,
+            errback=self.failure_handler,
+            dont_filter = True
+        )
+
         self.set_closed = True
 
     def failure_handler(self,failure):
@@ -281,7 +276,7 @@ class DMTEngine(scrapy.Spider):
                 # set fuzzer flags: antiregex
                 self.set_flag_regex_patterns()
                 
-                return 
+                #return 
             
     def get_view_context_patterns(self):
         self.p_context={}
@@ -367,6 +362,8 @@ class DMTEngine(scrapy.Spider):
                     if not self.vmnf_handler.get('sample'):
                         print('\n\t→ {}\n'.format(_p_hl.replace(fuzz_flag,ff_hl)))
                         sleep(0.01)
+
+                else: print()
 
     def strip_chars(self,pattern):
         return(pattern.replace('^','').replace(
