@@ -65,6 +65,10 @@ class VimanaSharedArgs:
         # -------------------------------------------------------------------------------
         # > Scope setting - [ Target parser ] 
         # -------------------------------------------------------------------------------
+        vmnf_shared_parser.add_argument('--runner-mode',action='store_true',dest='runner_mode',default=False)
+        vmnf_shared_parser.add_argument('--runner-tasks',action='store_true',dest='runner_tasks',default=False)
+        vmnf_shared_parser.add_argument('--multi-target',action='store_true',dest='multi_target',default=False)
+        vmnf_shared_parser.add_argument('--docker-scope',action='store_true',dest='docker_scope',default=False)
         vmnf_shared_parser.add_argument('--endpoint-url',action='store',dest='endpoint_url',default=False)
         vmnf_shared_parser.add_argument('--target-dir',action='store',dest='target_dir',default=False)
         vmnf_shared_parser.add_argument('--target-url',action='store',dest='target_url',default=False)
@@ -122,10 +126,10 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--forward",action="store",dest='forward_session',default=False)
         vmnf_shared_parser.add_argument("--siddhi-call",action="store_true",dest='siddhi_call',default=False)
         vmnf_shared_parser.add_argument("--session",action="store_true",dest='session_mode',default=False)
+        vmnf_shared_parser.add_argument("--save-session",action="store_true",dest='save_session',default=False)
         vmnf_shared_parser.add_argument("--callback-session",action="store_true",dest='callback_session',default=False)
         
         return vmnf_shared_parser
-
 
 
     def shared_help(self):
@@ -133,6 +137,7 @@ class VimanaSharedArgs:
         '''
     [target]  
 
+    --docker-scope      build scope from docker containers
     --target            defines a single target scope
     --file              defines a file with a target list
     --ip-range          defines ip range scope

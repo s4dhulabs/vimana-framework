@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from scrapy.utils.serialize import ScrapyJSONEncoder
+from scrapy.exporters import PythonItemExporter
 from pygments.formatters import TerminalFormatter
 import sys, re, os, random, string, platform
 from lxml.html.soupparser import fromstring
@@ -26,6 +28,7 @@ from settings.siddhis_shared_settings import payloads
 from core.vmnf_shared_args import VimanaSharedArgs
 from core.vmnf_thread_handler import ThreadPool
 import settings.vmnf_settings as settings
+from core.vmnf_sessions import VFSession
 from core.vmnf_pshell import vmnfshell
 
 from res.session.vmnf_sessions import createSession
@@ -43,6 +46,7 @@ from . _dju_settings import table_models
 from siddhis.tictrac import tictrac
 from . _dju_utils import DJUtils
 from siddhis.prana import prana
+
 
 
 class resultParser:   
@@ -85,6 +89,9 @@ class resultParser:
         # passive fingerprint results
         self.fingerprint = self.vmnf_handler['fingerprint']
 
+    def _get_exporter(self, **kwargs):
+        return PythonItemExporter(binary=False, **kwargs)
+
     def show_issues(self):
 
         print("\033c", end="")
@@ -105,7 +112,8 @@ class resultParser:
 
         hl_color = 'green'
 
-        if not self.vmnf_handler.get('sample'):
+        if not self.vmnf_handler.get('sample') \
+            and not self.vmnf_handler.get('runner_mode'):
             mark_status = colored(' ● ', 'green', attrs=['bold', 'blink'])
             status_msg = colored('Consolidating analysis result...', 'blue')
             print('\n {} {}'.format(mark_status, status_msg))
@@ -118,7 +126,9 @@ class resultParser:
         for exception in self.fuzz_report['EXCEPTIONS']:
             found_exceptions.append(exception['EXCEPTION_TYPE'].rstrip())
         
-        if not self.vmnf_handler.get('sample'):
+        if not self.vmnf_handler.get('sample') \
+            and not self.vmnf_handler.get('runner_mode'):
+
             pxh = exception_hierarchy()
 
             for x in pxh.split('\n'):
@@ -132,8 +142,7 @@ class resultParser:
 
         _prana_ = []
         cve_siddhi = colored('prana', 'green')
-        tickets_siddhi = colored('tictrac', 'green') 
-        
+        tickets_siddhi = colored('tictrac', 'green')  
 
         django_version = self.sampler['EXCEPTION_SUMMARY'].get('Django Version').strip()
         self.sampler['FINGERPRINT'] = self.fingerprint
@@ -157,6 +166,8 @@ class resultParser:
             'total_issues': (
                 len(self.fuzz_report['EXCEPTIONS']) + \
                 len(self.fuzz_report['CONFIGURATION'])),
+            'exceptions': len(self.fuzz_report['EXCEPTIONS']),
+            'configuration': len(self.fuzz_report['CONFIGURATION']),
             'objects': len(self.general_objects),
             'security_tickets': len(security_tickets) if security_tickets else 0,
             'cve_ids': len(cves) if cves else 0,
@@ -297,10 +308,9 @@ class resultParser:
             ### configuration issues ###
             ############################
             if self.fuzz_report['CONFIGURATION']: 
-                status = ('\nWere identified {} configuration issues that make it possible to infer configurations and identify technologies.'.format(
-                    len(self.fuzz_report['CONFIGURATION'])
-                    )
-                )
+                count_ci = len(self.fuzz_report['CONFIGURATION'])
+                status = f'\nWere identified {count_ci} configuration issues that make it possible to infer configurations and identify technologies.'
+
                 cprint(status, 'cyan', attrs=[])
                 print(self.config_issues_tbl)
             
@@ -326,14 +336,14 @@ class resultParser:
                 print(self.cves_tbl)
 
         report_tables = {
-            'summary': self.summary_tbl,
-            'tickets': self.tickets_tbl,
-            'cves': self.cves_tbl,
-            'exceptions': self.exceptions_tbl,
-            'configuration': self.config_issues_tbl,
-            'contexts': self.envleak_tbl,
+            'summary': self.summary_tbl.get_string(),
+            'tickets': self.tickets_tbl.get_string() if self.tickets_tbl else '?',
+            'cves': self.cves_tbl.get_string() if self.cves_tbl else '?',
+            'exceptions': self.exceptions_tbl.get_string(),
+            'configuration': self.config_issues_tbl.get_string(),
+            'contexts': self.envleak_tbl.get_string(),
             'raw_patterns': self.raw_patterns,
-            'objects': self.traceback_objects_tbl
+            'objects': self.traceback_objects_tbl.get_string()
         }
 
         # + security_tickets: collected security tickets [list of dicts]
@@ -345,32 +355,27 @@ class resultParser:
             'total_env': str(max(env_pool))
         } 
 
-        #if we need command line arguments [after siddhis execution] inside vmnfsheel  we can set _vmnf_session_ as a new key to vmnf_handler
-        # and pass the handler itself to vmnfshell, but at this time we're going to use just target_url, what was passed as argument to dmt with `run`
-        #self.vmnf_handler['_vmnf_session_']
-        
         self.vmnf_handler.update(
             {
+                'framework': 'Django',
+                'framework_version': django_version,
                 'module_run':self.siddhi,
-                'djunch_result':self.fuzz_report,
-                'security_tickets':security_tickets,
-                '_cves_':cves,
                 'report_tables':report_tables,
+                'djunch_result': self.fuzz_report,
+                'security_tickets':security_tickets,
+                'issues_overview': self.issues_overview,
+                '_cves_':cves,
                 'prompt': vmnfshell
             }
         )
+        
+        if self.vmnf_handler['multi_target'] \
+            or self.vmnf_handler['runner_mode']\
+            or self.vmnf_handler['save_session']:
+            
+            return(VFSession(**self.vmnf_handler).save_session())
+
         vmnfshell(**self.vmnf_handler)
 
-        '''
-        vmnfshell(
-            **{
-                'target_url':self.vmnf_handler.get('target_url'),
-                'module_run':self.siddhi,
-                'djunch_result':self.fuzz_report,
-                'security_tickets':security_tickets,
-                '_cves_':cves,
-                'report_tables':report_tables,
-                'prompt': vmnfshell
-            }
-        )
-        '''
+
+    

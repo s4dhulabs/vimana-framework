@@ -67,6 +67,7 @@ class VimanaParser:
         )
         list_cmd.add_argument('--payloads', action='store_true',dest='list_payloads')
         list_cmd.add_argument('--cases', action='store_true',dest='list_cases')
+        list_cmd.add_argument('--sessions', action='store_true',dest='list_sessions')
         list_cmd.add_argument('--modules', action='store_true',dest='module_list')
         list_cmd.add_argument('-t', '--type', action='store')
         list_cmd.add_argument('-c', '--category', action='store', dest='category')
@@ -75,6 +76,33 @@ class VimanaParser:
         list_cmd.add_argument('-p', '--payload',action='store',
 	    choices=('reverse-shell', 'bind-port', 'backdoor', 'exfiltration-server')
         )
+        # -----------------------------------------------------------------
+        # 'flush' command overview 
+        # ------------------------
+        # vf flush --session <session_id>
+        # vf flush --sessions --xray
+        # vf flush --case <case_id>
+        # vf flush --cases/--sessions
+        # -----------------------------------------------------------------
+        flush_cmd = subparsers.add_parser('flush', add_help=False)
+        flush_cmd.add_argument('--sessions',action='store_true', dest='flush_sessions')
+        flush_cmd.add_argument('--cases',action='store_true', dest='flush_cases')
+        flush_cmd.add_argument('--session',action='store', dest='flush_session')
+        flush_cmd.add_argument('--case',action='store', dest='flush_case')
+        flush_cmd.add_argument('--show-details',action='store_true', dest='flush_details')
+        flush_cmd.add_argument('--xray',action='store_true', dest='xray_enabled')
+        
+        # -----------------------------------------------------------------
+        # 'load' command overview 
+        # ----------------------
+        # vimana load --session <session_id>
+        # -----------------------------------------------------------------
+        load_cmd = subparsers.add_parser('load', add_help=False)
+        load_cmd.add_argument('--session', 
+            action='store', 
+            dest='load_session', 
+            default='_missing_session_id_'
+        ) 
 
         # -----------------------------------------------------------------
         # 'run' command overview 
@@ -88,13 +116,14 @@ class VimanaParser:
         # add aditional arguments to complement shared args
         run_cmd.add_argument('--abduct', action='store', dest='abduct_file')
         run_cmd.add_argument('--save-case', action='store', dest='save_case')
-        run_cmd.add_argument('-c','--case', action='store', dest='case_file')
+        run_cmd.add_argument('--case', action='store', dest='case_file')
         run_cmd.add_argument('--flush-cases', action='store_true', dest='flush_cases')
         run_cmd.add_argument('--module', action='store', dest='module_run')
         run_cmd.add_argument('--fuzzer', action='store_true')
         run_cmd.add_argument('--discovery', action='store_true')
         run_cmd.add_argument('--fingerprint', action='store_true')
         run_cmd.add_argument('--exec-case', action='store_true', default=False)
+        run_cmd.add_argument("--exit-on-trigger", action="store_true", dest='exit_on_trigger')
         
         # -----------------------------------------------------------------
         # 'info' command overview 
@@ -165,9 +194,21 @@ class VimanaParser:
             module_list     = False,
             list_payloads   = False,
             list_cases      = False,
+            list_sessions   = False,
             save_case       = False,
             case_file       = False,
+            runner_mode     = False,
+            runner_tasks    = False,
+            docker_scope    = False,
+            exit_on_trigger = False,
+            load_session    = False,
+            flush_sessions  = False,
             flush_cases     = False,
+            flush_session   = False,
+            flush_case      = False,
+            endpoint_url    = False,
+            xray_enabled    = False,
+            #flush_cases     = False,
             module_args     = False,
             framework       = False,
             url_conf        = False,
@@ -185,10 +226,7 @@ class VimanaParser:
                 vmn05()
                 print(arg_help[sys.argv[-1]])
             
-            print('    [vmnf_argparser] Missing value for the argument {}\n\n'.format(
-                colored(sys.argv[-1], 'red')
-                )
-            )
+            print(f"    \n[vmnf_argparser] Missing value for the argument {colored(sys.argv[-1], 'red')}\n\n")
             
             tools = [
                 '--fuzzer',

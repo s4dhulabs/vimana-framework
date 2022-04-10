@@ -28,7 +28,6 @@ class vwce(scrapy.Spider):
         super(vwce, self).__init__(*args,**handler)
         self.handler = handler
         self.start_urls = list(set(handler.get('scope',False)))
-        #self.allowed_domains = urlparse(self.start_urls[0]).netloc
         self.domain_filter = urlparse(self.start_urls[0]).netloc
         self.saved_items = []
         self.url_pool =[]

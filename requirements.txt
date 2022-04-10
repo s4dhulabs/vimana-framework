@@ -36,3 +36,8 @@ Twisted==20.3.0
 tabulate==0.8.9
 PyYAML>=5.4
 packaging==21.3
+docker==5.0.3
+Flask-SQLAlchemy==2.5.1
+SQLAlchemy==1.4.32
+SQLAlchemy-Utils==0.38.2
+sqlparse==0.3.1

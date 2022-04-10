@@ -215,7 +215,7 @@ def vmng(**handler_ns):
             if file and not file.startswith('_') and file[-3:] == ".py":
                 module_path = '{}/{}'.format(relpath, file)
                 module_path = (module_path.replace('/', '.').replace('\\', '.'))[:-3]
-	       
+                
                 try:
                     module = __import__(module_path, globals(), 'siddhi', 1)
                     _siddhi_ = (module.siddhi)

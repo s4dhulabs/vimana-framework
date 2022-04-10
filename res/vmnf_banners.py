@@ -20,21 +20,35 @@ def circuits_banner(proc_type=False):
 
     return banner
 
+def vmn07(): 
+
+    print("\033c", end="")
+
+    cosmo = """˙                    ٭       ⠛          .    ˖
+              .             :. *                    ,
+
+      ٭                ٭   ˖ . :  .         ⠛
+                         .               '          ٭
+        ⣄   ٭   .'   ˖     ~            - ˖ -
+       ٭            ˖ ˖         ˖ *     '
+         ⣄      ˖       ˖                           ,
+                            ⠛
+                                        ⠛
+    """
+
+    print(msg)
+
 def vmn05(): 
 
     print("\033c", end="")
-    msg = ('''{}
+    msg = f'''{G_c} ˙              ٭                   .    ˖
               .             :. *
                 :  └┐'┌┘          . :  .
                 └┐// ' \\\┌┘
         ¨⣠⠛⠛⠛⠛⠛---=======---⠛⠛⠛⠛⠛⣄      .'
        .::::__\├ ┤/⠛⠛⣄⣇⣷\├ ┤/__::::.
-               '-'\_____/'-' {}         ⣄
-               :: '│.│.│' .
-               {}
-
-    '''.format(
-        G_c, C_c + _version_ + G_c, D_c))
+               '-'\_____/'-' {R_c + _version_ + G_c}         ⣄
+               :: '│.│.│' .{D_c}'''
 
     print(msg)
 
@@ -56,15 +70,16 @@ def create_status(case_name):
 
 def case_header():
         cprint("""       *              `'´    *
-                    {}              
+                    {}          ˙   ٭.    ˖     
                       __'__'__         ,
-                        `''´ {}
+             ˖          `''´ {}  ˙              ٭   .    ˖
             -o-
              '          .*       o       .       *
-        o         |
+        o   ˖     |
            .     -O-            `ç´    
 .                 |        *     '  .     -0-
-       *  o     .    '       *      .        o
+       *  o     .    '       *      .        
+       ˖                ˖
        """.format(G_c, b_c),'blue')
 
 
@@ -92,9 +107,9 @@ def sample_mode(mod_stat,_attrs_=['bold','blink']):
     for i in banner.split('\n'):
         cprint(i,choice(c), attrs=[choice(['bold','dark'])])
     print('     '+ mod_stat)
+
     if 'sample' in mod_stat or 'caught' in mod_stat:
-        for i in vmn.split('\n'):
-            cprint(i,choice(c),attrs=_attrs_)
+        [cprint(i,choice(c),attrs=_attrs_) for i in vmn.split('\n')]
     
 def audit_report_banner(module='', report_type='',cl=Wn_c):
     vmc = Rn_c
@@ -174,7 +189,7 @@ def s4dhu0nv1m4n4(vmnf_about=''):
     if vmnf_about:
         vmnf_about = about_text()
         
-    about=("""                                         
+    about=f"""                                         
 
                         (((          )))    )   
                               ⠚⠶⠶                        
@@ -211,8 +226,8 @@ def s4dhu0nv1m4n4(vmnf_about=''):
                               
                                 ⠶
 
-    {}
-    """.format(vmnf_about))
+    {vmnf_about}
+    """
 
     return about
 
@@ -341,16 +356,17 @@ def load(target='',maxl=20):
         sleep(0.10)
         c += 1
 
-def mdtt1():
-    cprint("""
-                        
-                        
-                     @(-_-)@       
-                     '_) (_`         
+def mdtt1(cl='blue',attrs=[]):
+    ey=colored('-', 'green', attrs=['blink'])
+    cprint(f"""
+                      ({ey}_{ey})      
+                ٭     _| |_         
                      /__/  \            
                    _(<_   / )_          
                   (__\_\_|_/__)        
 
+                 {colored('vimanaframework', 'green', attrs=['dark'])}
+                 {colored('@s4dhulabs', 'blue', attrs=['dark'])} {colored(_version_, 'green', attrs=['dark'])}
 
-    """, 'blue', attrs=[])
+    """, cl, attrs=attrs)
 

@@ -1,0 +1,249 @@
+Accept-Ranges: bytes
+Access-Control-Allow-Methods: GET,HEAD
+Access-Control-Allow-Origin: https://code.djangoproject.com
+Access-Control-Expose-Headers: X-IG-Set-WWW-Claim
+Age: '197'
+Alt-Svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000,h3-Q050=":443"; ma=2592000,h3-Q046=":443";
+  ma=2592000,h3-Q043=":443"; ma=2592000,quic=":443"; ma=2592000; v="46,43"
+Arr-Disable-Session-Affinity: 'true'
+Azure-InstanceId: b1549675c7eddf79bd8b609682ecf20cba18354cef78fe8a3e2934e4e61f5431
+Azure-RegionName: Brazil South
+Azure-SiteName: acom-prod-brazilsouth-02
+Azure-SlotName: production
+Azure-Version: 20220321-1908-300122
+CF-Cache-Status: DYNAMIC
+CF-RAY: 6eff49119aba79c8-GRU
+CF-Ray: 6eff490588cc7963-GRU
+Cache-Control: private, max-age=0
+Connection: keep-alive
+Content-Encoding: gzip
+Content-Language: en
+Content-Length: '1203'
+Content-MD5: RaVvyjkne8QvLFhvIMTq+A==
+Content-Security-Policy: 'default-src ''none''; base-uri ''self''; block-all-mixed-content;
+  child-src github.com/assets-cdn/worker/ gist.github.com/assets-cdn/worker/; connect-src
+  ''self'' uploads.github.com objects-origin.githubusercontent.com www.githubstatus.com
+  collector.githubapp.com collector.github.com api.github.com github-cloud.s3.amazonaws.com
+  github-production-repository-file-5c1aeb.s3.amazonaws.com github-production-upload-manifest-file-7fdce7.s3.amazonaws.com
+  github-production-user-asset-6210df.s3.amazonaws.com cdn.optimizely.com logx.optimizely.com/v1/events
+  translator.github.com wss://alive.github.com github.githubassets.com; font-src github.githubassets.com;
+  form-action ''self'' github.com gist.github.com objects-origin.githubusercontent.com;
+  frame-ancestors ''none''; frame-src render.githubusercontent.com viewscreen.githubusercontent.com
+  notebooks.githubusercontent.com; img-src ''self'' data: github.githubassets.com
+  identicons.github.com collector.githubapp.com collector.github.com github-cloud.s3.amazonaws.com
+  secured-user-images.githubusercontent.com/ *.githubusercontent.com customer-stories-feed.github.com
+  spotlights-feed.github.com; manifest-src ''self''; media-src github.com user-images.githubusercontent.com/
+  github.githubassets.com; script-src github.githubassets.com; style-src ''unsafe-inline''
+  github.githubassets.com; worker-src github.com/assets-cdn/worker/ gist.github.com/assets-cdn/worker/'
+Content-Security-Policy-Report-Only: default-src *; connect-src *; font-src * data:;
+  frame-src *; img-src * data:; media-src *; object-src *; script-src 'unsafe-eval'
+  'unsafe-inline' *; style-src 'unsafe-inline' *; report-uri https://prod-us-west-2.csp-report.marketing.aws.dev/submit
+Content-Type: text/html; charset=ISO-8859-1
+Cross-Origin-Opener-Policy-Report-Only: same-origin; report-to="coop_gse_qebhlk"
+Date: Tue, 22 Mar 2022 13:30:30 GMT
+ETag: '"a6f-5d242fcc50c80-gzip"'
+Edge-Cache-Tag: signup-newdomain
+Expect-CT: max-age=2592000, report-uri="https://api.github.com/_private/browser/errors"
+Expires: '-1'
+Keep-Alive: timeout=10, max=100
+Last-Modified: Fri, 03 Dec 2021 19:33:54 GMT
+Link: <https://www.127.0.0.1/br-pt>; rel="canonical", <https://www.127.0.0.1/br-pt>; rel="revision",
+  <//1.cms.s81c.com>; rel=preconnect; crossorigin, <//1.cms.s81c.com>; rel=dns-prefetch
+MS-CV: UI2bKlhgCUyaGPYA.0
+NEL: '{"success_fraction":0,"report_to":"cf-nel","max_age":604800}'
+Onion-Location: http://2gzyxa5ihm7nsggfxnu52rck2vv4rvmdlkiu3zzui5du4xyclen53wid.onion/index.html
+P3P: CP="This is not a P3P policy! See g.co/p3phelp for more info."
+Permissions-Policy: interest-cohort=()
+Pragma: no-cache
+Referrer-Policy: origin-when-cross-origin, strict-origin-when-cross-origin
+Report-To: '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v3?s=8ysxSsYOtA7UexsM4TJkZWMF%2FtUzS5%2FaYw1Qeq6Wtnzu6shStAYNyV3qiS5ZVmi0yZXE6IsJDZSVaapbwxc2p1qezI%2Ft1fQehq8mB6P39Wj7Lqksei%2FOAo5kuwg%3D"}],"group":"cf-nel","max_age":604800}'
+Request-Context: appId=cid-v1:271db03b-0de6-4bf7-8ebf-f90dccf4de6b
+Server: gws
+Server-Timing: intid;desc=e901b1414d674a12
+Set-Cookie: 1P_JAR=2022-03-22-13; expires=Thu, 21-Apr-2022 13:30:30 GMT; path=/; domain=.127.0.0.1;
+  Secure, AEC=AVQQ_LBPQqLYzeHzfmQK9kTwTUV6hwbT2n6U6ASZBvLL14VlixppWXJYNW4; expires=Sun,
+  18-Sep-2022 13:30:30 GMT; path=/; domain=.127.0.0.1; Secure; HttpOnly; SameSite=lax,
+  NID=511=AF2jf4JQX5-eOxeaPsNQ-UIMwLNXpQcf6xCWEltLH9C6EO9cfgS87ApcwqLiIbz5YsyxEwHtaljBVtaOgbN5vNqjPTV-_KCN_qkH16IqnproALoFiIVA3aAby19QNylKJxN4kOMLTA1R-d3RHeiroJNCSgTW2s3LxMJXUZqrxuA;
+  expires=Wed, 21-Sep-2022 13:30:30 GMT; path=/; domain=.127.0.0.1; HttpOnly
+Strict-Transport-Security: max-age=47474747; includeSubDomains; preload
+TLS_version: tls1.3
+Transfer-Encoding: chunked
+Vary: Content-Type,Accept-Encoding,X-Amzn-CDN-Cache,X-Amzn-AX-Treatment,User-Agent
+Via: 1.1 11fda4b51957df303adb5c964da00504.cloudfront.net (CloudFront)
+X-ASPNET-VERSION: ''
+X-Activity-Id: 33504a4a-0fb2-4275-9c69-fac8301a9ad9
+X-Akamai-Transformed: 9 10224 0 pmb=mTOE,1
+X-Amz-Cf-Id: UK8LRgyFl5aD27u4IFNnfEl4I-_gr0zoxJoCksxIFy2KJFwshFgb9w==
+X-Amz-Cf-Pop: GRU50-C1
+X-AppVersion: 1.0.8104.38482
+X-Az: '{did:92e7dc58ca2143cfb2c818b047cc5cd1, rid: OneDeployContainer, sn: marketingsites-prod-odeastus,
+  dt: 2018-05-03T20:14:23.4188992Z, bt: 2022-03-11T06:22:44.0000000Z}'
+X-Backend-Server: bedrock-prod-web-6f5c6d56c5-zd2pm.iowa-a
+X-CDN: Imperva
+X-Cache: Error from cloudfront
+X-Cache-Hits: '0'
+X-Cache-Profile: terra360-cover
+X-Clacks-Overhead: GNU Terry Pratchett
+X-Cloud-Trace-Context: 9bda55ae0199419981793a3a3ac667d9
+X-Cluster-Name: us-east-1-prod-edge-eks-15
+X-Cms-Delivery-Uuid: 5141abc3-f77e-4a00-9ac1-f896dbf5d3eb
+X-Content-Type-Options: nosniff
+X-DNS-Prefetch-Control: 'off'
+X-FB-Debug: NIHdcFrbTxnDxVTyrUP7VOd9dNoUbrEGpWr/Dya6tFCiIp7qmkZaF/5+OaMfNw66xmYDnmXiafVqMG/rWRJ9ng==
+X-FB-TRIP-ID: '1679558926'
+X-Frame-Options: SAMEORIGIN
+X-GUploader-UploadID: ADPycdtlaRJnBp3fhXSM2kimzeD7VLZOSogVe2iIkpjAusD_tDKH5UVnekek8oxSG_CmZFNBITTIqBfvPKmJVhp_cyc
+X-GitHub-Request-Id: 99EC:61BD:1597B8:1CD538:6239CF7A
+X-Http-Reason: OK
+X-Iinfo: 8-1583936-1578636 2NNN RT(1647955859032 215) q(0 0 0 -1) r(1 1)
+X-MSEdge-Ref: 'Ref A: 259A05953BD04172B29F9E962C7B2A8A Ref B: CPQ02EDGE0921 Ref C:
+  2022-03-22T13:30:41Z'
+X-Mt-Cache: HIT
+X-Netflix.nfstatus: '1_1'
+X-Netflix.proxy.execution-time: '187'
+X-Original-Ua: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML,
+  like Gecko) Chrome/62.0.3202.94 Safari/537.36
+X-Originating-URL: http://www.netflix.com/br-en/
+X-RTag: RT
+X-Served-By: cache-cgh11154-CGH
+X-Timer: S1647955840.962793,VS0,VE119
+X-UA-Compatible: IE=edge,chrome=1
+X-XSS-Protection: '0'
+X-Xact-Montador-Time: '1647955852'
+X-Xact-Uuid: cadd693e-f704-4b3d-9007-3762cbb5d735
+X-Xss-Protection: 1; mode=block
+accept-ch: device-memory, dpr, width, viewport-width, rtt, downlink, ect
+accept-ch-lifetime: '604800'
+accept-ranges: bytes
+access-control-allow-origin: '*'
+age: '0'
+alt-svc: h3=":443"; ma=86400, h3-29=":443"; ma=86400
+cache-control: private
+cf-apo-via: tcache
+content-encoding: gzip
+content-language: en-US
+content-length: '13112'
+content-security-policy: 'report-uri https://www.127.0.0.1.com/security/csp_report/;
+  default-src ''self'' https://www.127.0.0.1.com; img-src data: blob: https://*.fbcdn.net
+  https://*.127.0.0.1.com https://*.cdn127.0.0.1.com https://*.127.0.0.1.com https://*.fbsbx.com
+  https://*.giphy.com; font-src data: https://*.fbcdn.net https://*.127.0.0.1.com
+  https://*.cdn127.0.0.1.com; media-src ''self'' blob: https://www.127.0.0.1.com https://*.cdn127.0.0.1.com
+  https://*.fbcdn.net; manifest-src ''self'' https://www.127.0.0.1.com; script-src
+  ''self'' https://127.0.0.1.com https://www.127.0.0.1.com https://*.www.127.0.0.1.com
+  https://*.cdn127.0.0.1.com wss://www.127.0.0.1.com https://*.127.0.0.1.com https://*.fbcdn.net
+  https://*.127.0.0.1.net ''unsafe-inline'' ''unsafe-eval'' blob:; style-src ''self''
+  https://*.www.127.0.0.1.com https://www.127.0.0.1.com ''unsafe-inline''; connect-src
+  ''self'' https://127.0.0.1.com https://www.127.0.0.1.com https://*.www.127.0.0.1.com
+  https://graph.127.0.0.1.com https://*.graph.127.0.0.1.com https://i.127.0.0.1.com/graphql_www
+  https://graphql.127.0.0.1.com https://*.cdn127.0.0.1.com https://api.127.0.0.1.com
+  https://i.127.0.0.1.com https://*.i.127.0.0.1.com https://*.od.127.0.0.1.com wss://www.127.0.0.1.com
+  wss://edge-chat.127.0.0.1.com https://*.127.0.0.1.com https://*.fbcdn.net https://*.127.0.0.1.net
+  chrome-extension://boadgeojelhgndaghljhdicfkmllpafd blob:; worker-src ''self'' blob:
+  https://www.127.0.0.1.com; frame-src ''self'' https://127.0.0.1.com https://www.127.0.0.1.com
+  https://*.127.0.0.1.com https://staticxx.127.0.0.1.com https://www.127.0.0.1.com https://web.127.0.0.1.com
+  https://connect.127.0.0.1.net https://m.127.0.0.1.com; object-src ''none''; upgrade-insecure-requests'
+content-type: text/html; charset=utf-8
+cross-origin-embedder-policy: unsafe-none
+cross-origin-opener-policy: same-origin-allow-popups;report-to="coop"
+date: Tue, 22 Mar 2022 13:30:46 GMT
+document-policy: force-load-at-top
+etag: W/"7bd1-AfaJ5TcVL9+HPmde4R/4tbFSP1c"
+expect-ct: max-age=2592000, enforce, report-uri="https://reports.127.0.0.1.com/reports/tls"
+expires: Tue, 22 Mar 2022 13:30:51 GMT
+expiry: Tue, 31 Mar 1981 05:00:00 GMT
+feature-policy: microphone 'none'; speaker 'none'
+last-modified: Thu, 17 Mar 2022 10:03:31 GMT
+ms-operation-id: 1e73f6e0ee8dc0439145f4034118da1e
+nel: '{"report_to":"network-errors","max_age":3600,"failure_fraction":0.01}'
+opc-request-id: /30CC71FB6F7CE8379D809CBF4CBE795C/7A598956BA60F9DE8F71D5D96B6ACC4E
+origin-trial: AuqWincgAuXeuu3KypEMnrrFEJHySaesyJS3EaIH40zvafzrU0Irhb7+5QwZpOqMZrPTjgvFl7Z5jJgy1dNAcQMAAAB6eyJvcmlnaW4iOiJodHRwczovL2luc3RhZ3JhbS5jb206NDQzIiwiZmVhdHVyZSI6IkNyb3NzT3JpZ2luT3BlbmVyUG9saWN5UmVwb3J0aW5nIiwiZXhwaXJ5IjoxNjEzNDExNjYyLCJpc1N1YmRvbWFpbiI6dHJ1ZX0=
+p3p: policyref="https://policies.yahoo.com/w3c/p3p.xml", CP="CAO DSP COR CUR ADM DEV
+  TAI PSA PSD IVAi IVDi CONi TELo OTPi OUR DELi SAMi OTRi UNRi PUBi IND PHY ONL UNI
+  PUR FIN COM NAV INT DEM CNT STA POL HEA PRE LOC GOV"
+permissions-policy: interest-cohort=()
+pragma: no-cache
+public-key-pins: pin-sha256="tUzPsvKmIOFQV/AYWII/pRAAt9UKrYuBkkAav1dsuuE="; pin-sha256="47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=";
+  max-age=2592000; includeSubDomains
+public-key-pins-report-only: pin-sha256="8joiNBdqaYiQpKskgtkJsqRxF7zN0C0aqfi8DacknnI=";
+  pin-sha256="drtmcR2kFkM8qJClsuWgUzxgBkePfRCkRpqUesyDmeE="; report-uri="https://reports.127.0.0.1.com/reports/tls"
+referrer-policy: strict-origin-when-cross-origin
+report-to: '{"max_age":3600,"endpoints":[{"url":"https:\/\/www.127.0.0.1.com\/ajax\/browser_error_reports\/?device_level=unknown"}],"group":"network-errors"}'
+server: Vercel
+set-cookie: Session-Id=YjnPi2o9AQ354h2UPYMmdQAAAKw; Domain=127.0.0.1.com; Path=/;
+  HttpOnly; Secure; Max-Age=7776000, Version=default; Path=/; Secure; Max-Age=7776000,
+  Tag=default; Path=/; Secure; Max-Age=7776000
+strict-transport-security: max-age=15552000
+transfer-encoding: chunked
+vary: Accept-Encoding
+x-acquia-host: www.127.0.0.1
+x-acquia-path: /br-pt
+x-acquia-purge-tags: ''
+x-acquia-site: ''
+x-aed: '48'
+x-age: '1169'
+x-amz-id-1: 6VNVWAJM0G1WT7MEMPG0
+x-amz-id-2: GRa/FN8YQu348NpX+I4eknApTTiPV59gtBEdcUTpHznj7HkG7ay66PRe7PojgQfcYFDZsi5yFWI=
+x-amz-meta-md5_hash: dee7006e15a5a9dfd3919525c3e13ed1
+x-amz-replication-status: COMPLETED
+x-amz-request-id: 43X4WJ1NM189R54P
+x-amz-rid: 2Q77Y72D0FC7FGKG4N9V
+x-amz-server-side-encryption: AES256
+x-amz-version-id: aOHYH6xyAwvkxSS..dW3sKtzbIjZqOn2
+x-auto-login: realm=127.0.0.1&args=service%3Dmail%26continue%3Dhttps%253A%252F%252Fmail.127.0.0.1%252Fmail%252Fu%252F0%252F
+x-b3-traceid: 5c8be2e72637fecc
+x-cache: HIT
+x-cache-group: normal
+x-cache-hits: '1'
+x-cache-operation: plone.app.caching.noCaching
+x-cache-rule: plone.content.itemView
+x-cache-status: MISS
+x-cacheable: SHORT
+x-connection-hash: da0625af49cb0fa72270a3bbf9060403c175d1b2d73f7e7283f066f5098940dc
+x-content-type-options: nosniff
+x-dns-prefetch-control: 'on'
+x-drupal-cache: MISS
+x-drupal-dynamic-cache: UNCACHEABLE
+x-envoy-decorator-operation: lo_svc
+x-envoy-upstream-service-time: '12'
+x-fastly-request-id: e44d98a46b024201f2c06797d15a3cc4db8b0110
+x-fb-rlafr: '0'
+x-frame-options: SAMEORIGIN
+x-generator: Drupal 9 (https://www.drupal.org)
+x-github-request-id: 4CE8:0DB9:697387:6FAC04:6239AC3A
+x-goog-generation: '1647955778044136'
+x-goog-hash: crc32c=ZguDAQ==, md5=BbXJJ7bvzwJDqa1v9gG0/A==
+x-goog-meta-goog-reserved-file-mtime: '1647887088'
+x-goog-metageneration: '1'
+x-goog-storage-class: MULTI_REGIONAL
+x-goog-stored-content-encoding: gzip
+x-goog-stored-content-length: '31975'
+x-ibm-trace: 'www-dipatcher: dynamic rule'
+x-ig-origin-region: ncg
+x-ig-peak-time: '1'
+x-ig-push-state: c2
+x-ig-request-elapsed-time-ms: '171'
+x-matched-path: /dashboard
+x-origin-processing-time: 68.0000 ms
+x-permitted-cross-domain-policies: none
+x-powered-by: Next.js
+x-proxy-cache: MISS
+x-request-guid: 9921cf97-1383-4f47-b788-201dd075d6ec
+x-request-id: b2d561fe-1e66-467f-82da-aaf19e9b69ad
+x-response-time: '34'
+x-robots-tag: index
+x-rs-cf-app-version: 1.0.45
+x-rs-changes-amount: '1'
+x-rs-fixes-request-time: '234.0000'
+x-served-by: cache-gru17147-GRU
+x-tec-api-origin: https://127.0.0.1
+x-tec-api-root: https://127.0.0.1
+x-tec-api-version: v1
+x-theme-applied: 'true'
+x-theme-disabled: ''
+x-timer: S1647955862.623946,VS0,VE1
+x-total-processing-time: 302.0000 ms
+x-ua-compatible: IE=edge
+x-varnish: 389615968 389061634
+x-vercel-cache: MISS
+x-vercel-id: gru1:gru1:gru1::sfo1::698vf-1647955846823-fbf06b047b2f
+x-xss-protection: 1; mode=block; report=https://reports.127.0.0.1.com/reports/csp

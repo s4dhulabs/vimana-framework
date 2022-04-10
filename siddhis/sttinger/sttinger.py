@@ -48,12 +48,16 @@ class siddhi:
 
     def __init__(self,**vmnf_handler):
         self.vmnf_handler = vmnf_handler
+        self.siddhi = colored('sttg', 'magenta')
         self.target_url = vmnf_handler.get('target_url',False)
         self.quiet_mode = vmnf_handler.get('quiet_mode',False)
         self.siddhi_call = vmnf_handler.get('siddhi_call',False)
         self.search_issues = vmnf_handler.get('search_issues',True)
         self.exit_on_success = vmnf_handler.get('exit_on_success',True)
         self.load_config()
+        
+        if not self.target_url.startswith('http'):
+            self.target_url = f'http://{self.target_url}' 
 
     def load_config(self):
         yaml_file = str(os.path.dirname(__file__)) + '/config.yaml'
@@ -115,32 +119,40 @@ class siddhi:
         }
         
         if self.search_issues:
-            search_version=flag_v[:-2]
-            match['flag_version'] = search_version
-            match['tcts'] = tictrac.siddhi(search_version).start()
-            match['cves'] = prana.siddhi(search_version).start()
+            self.search_version=flag_v[:-2]
+            match['flag_version'] = self.search_version
+            match['tcts'] = tictrac.siddhi(self.search_version).start()
+            match['cves'] = prana.siddhi(self.search_version).get_cves()
         
         return match 
 
     def get_response(self,target_url):
         # requests.exceptions.SSLError
-        return (requests.get(target_url,headers=self.headers,verify=False))
+        try:
+            return (requests.get(target_url,headers=self.headers,verify=False))
+        except requests.exceptions.ConnectionError:
+            return False
 
     def check_patterns(self):
         sttg_obj = self.get_sttg_obj()
         for sttg_t, sttg_p in sttg_obj.items():
 
             if not self.quiet_mode:
-                print('→ Checking {} patterns...'.format(sttg_t))
+                print(f'[{self.siddhi}:{sttg_t}]! Checking {colored(self.target_url, "cyan")}...')
             
             for f_pattern in self.sttg_patterns.get(sttg_t):
                 resp = self.get_response(urljoin(self.target_url, f_pattern))                
                 
+                if not resp:
+                    print(f'[{self.siddhi}:{sttg_t}]- {colored("Was not possible to identify the framework version", "yellow")}\n')
+                    return False
+
                 if resp.status_code == 200:
                     match_version = self.check_match(
                         self.get_hash(resp.text),**sttg_p
                     )
-                    
+                   
+                    #input(match_version.get('cves'))
                     if match_version:
                         # if search issues mode enabled
                         # if called by another vmnf siddhi
@@ -148,19 +160,30 @@ class siddhi:
                             return match_version
 
                         if not self.quiet_mode:
-                            print('\n[{}]→ Running Django {} / ({} - {}) → {} associated tags'.format(
-                                sttg_t, colored(match_version['versions'],'red',attrs=['bold']),
-                                match_version['min'], match_version['max'],len(self.versions_list[1:])
-                                )
-                            )
+                            mversion = colored(match_version['versions'], 'red', attrs=['bold'])
+                            minv = colored(match_version['min'], 'cyan')
+                            maxv = colored(match_version['max'], 'cyan')
+                            tags = colored(len(self.versions_list[1:]), 'green') 
 
-                            print('→ {} CVEs'.format(len(match_version.get('cves'))))
-                            print('→ {} Security Tickets'.format(len(match_version.get('tcts'))))
+                            print(f'[{self.siddhi}:{sttg_t}]+ Running Django {mversion} / ({minv} - {maxv}) \n\t     → {tags} associated tags')
+
+                            if match_version.get('cves') is not None:
+                                hl_cves = colored(len(match_version.get('cves')), 'green')
+                                print(f'\t     → {hl_cves} CVEs')
+
+                            if match_version.get('tcts') is not None:
+                                hl_tcts = colored(len(match_version.get('tcts')), 'green')
+                                print(f'\t     → {hl_tcts} Security Tickets')
+                            print()
 
                             #print(self.versions_list[1:])
                             if self.exit_on_success:
                                 return True
                         break
+                    else:
+                        if not self.quiet_mode:
+                            print(f'\n[{sttg_t}]→ No issues identified for Django {self.search_version} version.')
+                        return False
                 
                 elif resp.status_code == 404:
                     if not self.quiet_mode:

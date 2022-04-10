@@ -1,4 +1,5 @@
 
+
 headers = {
     'Host': '127.0.0.1',
     'User-Agent': "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:81.0) Gecko/20100101 Firefox/81.0",
@@ -25,7 +26,8 @@ settings = {
     'REDIRECT_ENABLED':True,
     'USER_AGENT': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko)',
     'AUTOTHROTTLE_ENABLED': False,
-    'HTTPCACHE_ENABLED':True
+    'HTTPCACHE_ENABLED':True,
+    'EXTENSIONS':{'scrapy.contrib.feedexport.FeedExporter': None}
     #'CONCURRENT_REQUESTS': 1
 }
 

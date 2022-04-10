@@ -1,10 +1,16 @@
+
+from res.vmnf_banners import mdtt1,case_header,vmn05,create_status
+from res.vmnf_validators import check_file
+from neotermcolor import colored,cprint
+from core.load_settings import _cs_
+from datetime import datetime
 import sys,os,yaml,glob
 from time import sleep
-from res.vmnf_validators import check_file
-from datetime import datetime
-from neotermcolor import colored,cprint
-from res.vmnf_banners import mdtt1,case_header,vmn05,create_status
-from core.load_settings import _cs_
+
+
+
+
+
 
 
 
@@ -16,9 +22,9 @@ class CasManager:
 
     def handler_no_case(self):
         print("\033c", end="")
-        mdtt1()
+        mdtt1('white','bold')
         cprint(_cs_.get('empty_msg').format(
-            datetime.now()
+            '!'#datetime.now()
             ), 'cyan'
         )
         print()

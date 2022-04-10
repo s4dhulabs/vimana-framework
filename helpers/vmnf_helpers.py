@@ -25,18 +25,20 @@ class VimanaHelp():
         ovw = {
             'about' : "About the framework",
             'args'  : "Show module arguments",
+            'flush' : "Remove a recorded resource", 
             'info'  : "Show information about modules",
             'list'  : "List available modules",
-            'run'   : "Run a specific module or case directly",
+            'load'  : "Load a recorded session (post-analysis)",
+            'run'   : "Run a resource, module or case",
             'start' : "Start Vimana in a interactive mode",
         }
         
-        print()
-        print()
-
+        print('\n\n\n')
+        
         for cmd, desc in ovw.items():
-            print('{:>22}  \t  {}'.format(
+            print("{:>27}  {}  {}".format(
                 colored(cmd, 'green'),
+                colored('⇀ ', 'blue', attrs=['dark']),
                 colored(desc, 'white')
                 )
             )
@@ -186,6 +188,24 @@ class VimanaHelp():
         * Category
         '''
     
+    def flush(self): 
+        '''
+
+    [flush]
+    
+    Remove a recorded resource: sessions/cases
+
+    → usage: vf flush <resource type> <parameters>
+
+    Examples:
+        
+        vf flush --sessions                 Remove all sessions
+        vf flush --session 2720b71be1       Remove session 2720b71be1 from database
+        
+        vf flush --case newdjango_apps      Remove newdjango_apps case 
+        vf flush --cases                    Remove all cases
+        '''
+    
     def list(self):
         '''
 
@@ -193,7 +213,7 @@ class VimanaHelp():
     
     List available modules
 
-    → usage: list --modules/--cases <options>
+    → usage: list --modules/--cases/--sessions <options>
 
     Without <option filters> 'list' command will retrieve all modules available in
     current version of Vimana Framework.

@@ -1,3 +1,5 @@
+from neotermcolor import colored as cl
+from res.vmnf_banners import mdtt1
 from res import colors
 import sys
 
@@ -21,20 +23,23 @@ class engineExceptions:
             siddhi_path = 'siddhis.{}.{}'.format(siddhi, siddhi)
 
         conflict_msg = """
+
         \r Vimana exits with an argparse.ArgumentError() exception
 
         \r This exception usually occurs when an argument present in the shared args
-        \r has also been specified in the parser of the module to be run .
+        \r has also been specified in the parser of the module to be run.
 
-        \r If you're using Vimana shared arguments, make sure {} argument doesn't exist
-        \r in module parser in {}.args()
+        \r If you're using Vimana shared arguments, make sure {} argument
+        \r doesn't exist in module parser in {}.args()
+
         """.format(
-            self.exception.argument_name, 
-            siddhi_path 
+            cl(self.exception.argument_name, 'red'), 
+            cl(siddhi_path, 'red')
         )
 
         print("\033c", end="")
         print(conflict_msg)
+        mdtt1()
         sys.exit(1)
 
     def template_atribute_error(self, AEX, module):
