@@ -262,7 +262,7 @@ class VFSession:
         """ We're going to use `unsafe_load()` here because sessions 
         are basicaly Python objects, names, and expressions, altough 
         all of them are created and controled internally by Vimana, 
-        so it offers no risk at all, because its not based
+        so it offers no risk at all, once it's not based
         on untrusted user inputs and so on...
                                                                     ´
                     *                                                

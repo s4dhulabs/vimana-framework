@@ -37,7 +37,8 @@ def DockerDiscovery(**opts):
 
         target = net_settings['bridge'].get('IPAddress')    
         scope  = [(target + ':' + str(port)) for port in ports]
-        
+       
+        #scope.append('127.0.0.1:8887')
         d = {
             'IPAddress': target,
             'target_list': list(set(scope)),

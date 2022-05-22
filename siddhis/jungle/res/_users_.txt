@@ -1,3 +1,4 @@
 root
 banker
 djadmin
+manager

