@@ -115,6 +115,7 @@ class DMTEngine(scrapy.Spider):
         
         # call new djunch engine
         Djunch(**self.vmnf_handler).start()
+
         #os._exit(os.EX_OK)
 
     def start_requests(self):
@@ -306,7 +307,7 @@ class DMTEngine(scrapy.Spider):
         tv_hl = colored(total_views, 'white')
         
         if not self.vmnf_handler.get('sample'):
-            print('\n{} Setting up contextual fuzzing flags for {} views'.format(self.f_start,tv_hl))
+            print(f'\n{self.f_start} Setting up contextual fuzzing flags for {tv_hl} views')
             sleep(0.20)
         
         v_count=0
@@ -316,10 +317,7 @@ class DMTEngine(scrapy.Spider):
             t_hl = colored(len(patterns),'blue')
             
             if not self.vmnf_handler.get('sample'):
-                dmt_step=('{} Parsing ({}) patterns in view {} ({}/{})...'.format(
-                    self.f_map,t_hl,v_hl,v_count,total_views
-                    )
-                )
+                dmt_step=(f'{self.f_map} Parsing ({t_hl}) patterns in view {v_hl} ({v_count}/{total_views})...')
 
                 print(dmt_step.ljust(os.get_terminal_size().columns - 1), end="\r")
                 sleep(0.10)
@@ -363,7 +361,9 @@ class DMTEngine(scrapy.Spider):
                         print('\n\t→ {}\n'.format(_p_hl.replace(fuzz_flag,ff_hl)))
                         sleep(0.01)
 
-                else: print()
+                else:
+                    if not self.vmnf_handler.get('sample'):
+                        print()
 
     def strip_chars(self,pattern):
         return(pattern.replace('^','').replace(
