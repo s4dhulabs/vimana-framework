@@ -261,7 +261,7 @@ class DJEngineParser(scrapy.Spider):
 
                 if url_step_type == 'FUZZ_HEADERS':
                     _fzz_headers_ = random_headers
-
+                
                 if self.step_method == 'GET':
                     yield scrapy.Request(
                         target_url, 

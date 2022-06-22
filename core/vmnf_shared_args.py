@@ -125,7 +125,7 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--payload",action="store",dest='payload_type',default=False)
         vmnf_shared_parser.add_argument("--forward",action="store",dest='forward_session',default=False)
         vmnf_shared_parser.add_argument("--siddhi-call",action="store_true",dest='siddhi_call',default=False)
-        vmnf_shared_parser.add_argument("--session",action="store_true",dest='session_mode',default=False)
+        vmnf_shared_parser.add_argument("--session-mode",action="store_true",dest='session_mode',default=False)
         vmnf_shared_parser.add_argument("--save-session",action="store_true",dest='save_session',default=False)
         vmnf_shared_parser.add_argument("--callback-session",action="store_true",dest='callback_session',default=False)
         

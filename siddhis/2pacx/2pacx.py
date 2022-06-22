@@ -138,6 +138,7 @@ class siddhi:
                 hl_arg = colored('--local-port', 'red')
                 print('[{}] → Missing required {} argument.\n'.format(xpl_hl,hl_arg))
                 return False
+
             if not self.vmnf_handler['local_host']:
                 hl_arg = colored('--local-host', 'red')
                 print('[{}] → Missing required {} argument.\n'.format(xpl_hl,hl_arg))
@@ -205,14 +206,13 @@ class siddhi:
         sleep(1)
         
         if forward_is_enabled: 
-            print("[{}] → Forward is enabled, start {} in another terminal:\n\t run --module {} --session and hit Enter here.".format(
+            print("[{}] → Forward is enabled, start {} in another terminal:\n\t vf run --module {} --session and hit Enter here.".format(
                 xpl_hl,forward_is_enabled,forward_is_enabled
                 )
             )
             
             stager(**self.vmnf_handler).forward_session()
             s=input()
-
        
         try:
             # stages were introduced to manage some new payloads:fps

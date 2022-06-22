@@ -40,11 +40,16 @@ class VFSession:
         return _session_hash_.hexdigest()
         
     def get_sessions(self):
-        with os.scandir(f"{_vfs_['sessions']}") as sessions:
-            return [entry.name \
-                for entry in sessions \
-                    if entry.is_file()
-            ]
+        try:    
+            with os.scandir(f"{_vfs_['sessions']}") as sessions:
+                return [entry.name \
+                    for entry in sessions \
+                        if entry.is_file()
+                ]
+        except FileNotFoundError:
+            vmn05()
+            print(f"\n   Something went wrong invoking: {cl(' '.join(sys.argv), 'red')} \n\n")
+            sys.exit(1)
 
     def save_session(self):
         session_hash  = self.hashsession()
@@ -174,7 +179,8 @@ class VFSession:
                     key=os.path.getctime
             )
         except ValueError:
-            self.handler_no_sessions()
+            #self.handler_no_sessions()
+            self.handle_invalid_session()
             return False
 
         return lass.split('/')[-1]
