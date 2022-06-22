@@ -211,7 +211,6 @@ def abduct():
         handler_ns.multi_target = True if len_tps > 1 else False
         
         if handler_ns.multi_target:
-            #runner_handler=vfutils(**vars(handler_ns)).build_runner_scope(sys.argv)
             
             handler_ns.args = sys.argv
             handler_ns.runner = "python3 vimana.py run"
@@ -228,11 +227,9 @@ def abduct():
             vmn05()
             cprint("\n\t\t >> Missing scope!\n\n", 'red')
 
-            sys.exit(1)
-
+            #sys.exit(1)
 
         vmng(**vars(handler_ns))  
-
 
     # load session
     elif handler_ns.load_session:

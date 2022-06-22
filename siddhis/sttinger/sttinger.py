@@ -26,7 +26,7 @@ class siddhi:
         "Category":     "Framework",
         "Framework":    "Django",
         "Type":         "Tracker",
-        "Module":       "siddhis/statinger",
+        "Module":       "siddhis/sttinger",
         "Author":       "s4dhu <s4dhul4bs[at]prontonmail[dot]ch",
         "Brief":        "Identify framework version in passive way",
         "Description":

@@ -323,9 +323,8 @@ class siddhi:
                 self.vmnf_handler.get("console_pin")
             )
             
-
-        #self.start_catcher()
-
+        
+        
         self.load()
         os.system('clear')
 
@@ -357,6 +356,7 @@ class siddhi:
         sleep(1)
 
         target = self.vmnf_handler.get('local_host','127.0.0.1')
+        
         try:
             port = int(self.vmnf_handler.get('local_port',9000))
         except ValueError:
