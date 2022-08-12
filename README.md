@@ -14,3 +14,15 @@ Vimana is a modular security framework designed to audit Python web applications
 * [ Disclaimer](https://github.com/s4dhulabs/vimana-framework/wiki/Disclaimer)
 * [ Site](http://s4dhulabs.github.io/) 👾
 
+
+
+
+
+## Under Active development:
+
+|**Resource**| **Type** |      **Category**   | **Focus** |    **Status**
+|  :-----:   | :-----:  |        :-----:      |   :-----: |      :-----:
+|   caiman   | Plugin   | Exploitation/Scanner|    SSTI   |   :mage_man: In progress...
+|   vfte    | Templates|Template engine   |    Python CVEs   |   :spider_web: Designing...
+|   d4m8    | Plugin| Fuzzer   |    PyApps Forms   |   :mage_man: In progress...
+
