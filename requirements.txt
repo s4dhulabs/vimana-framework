@@ -42,3 +42,4 @@ SQLAlchemy==1.4.32
 SQLAlchemy-Utils==0.38.2
 sqlparse==0.3.1
 Flask==2.0.3
+sqlalchemy-filters==0.3.0
