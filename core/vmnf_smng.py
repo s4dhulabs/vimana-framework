@@ -150,3 +150,159 @@ class VFManager:
         print()
         print()
 
+    def list_siddhis(self):
+        
+        matches = self.query_siddhis()
+
+        if not matches:
+            self.no_match() 
+            return False
+
+        case_header()
+        matches_table = DJUtils().get_pretty_table(
+            **table_models().siddhis_tbl_set
+        )
+
+        for siddhi in matches:
+            matches_table.add_row(
+                [
+                    cl(siddhi.name.lower(), 'blue'),
+                    siddhi.type.lower(),
+                    siddhi.category.lower(),
+                    siddhi.info.lower()
+                ]
+            )
+
+        print(matches_table)
+
+    def run_siddhi(self):
+        self.handler['module'] = self.handler['module_run']
+
+        if not self.handler['runner_mode']:
+            ''' In Runner mode we already have the scope 
+            and everything else in place '''
+
+            self.parse_handler_scope()
+
+        siddhi = self.get_siddhi()
+        module_path = (siddhi.module.replace('/', '.').replace('\\', '.'))[:-3]
+
+        try:
+            _siddhi_ = __import__(module_path, globals(), 'siddhi', 1).siddhi
+        except AttributeError as AEX:
+            if self.handler['debug']:
+                _ex_().template_atribute_error(AEX,module_name)
+            sys.exit(1)
+
+        try:
+            run_status = _siddhi_(**self.handler).start()
+        except KeyboardInterrupt:
+            sys.exit(1)
+
+        return True
+
+    def set_sessions_control(self):
+        return VFDBOps(**self.handler).get_all_sessions() 
+
+    def parse_handler_scope(self):
+
+        from res.vmnf_validators import get_tool_scope as get_scope
+        from core.vmnf_scope_parser import ScopeParser
+        from core.vmnf_dscan import DockerDiscovery
+        from core.vmnf_rrunner import rudrunner
+        from core.vmnf_cases import CasManager
+        from res.vmnf_banners import vmn05
+        from res import vmnf_banners
+        import sys
+
+        targets_ports_set = []
+
+        _vfassert_ = vfasserts(**self.handler)
+        
+        #if vfACK(**self.handler).version_search():
+        if _vfassert_.version_search():
+            self.handler['framework_search_version'] = True
+
+        if self.handler['docker_scope'] \
+                and not self.handler['save_case'] \
+                or _vfassert_.exec_enabled():
+                #or vfACK(**self.handler).exec_enabled():
+
+            self.handler['docker_scope'] = DockerDiscovery()
+
+            [targets_ports_set.extend(y) \
+                for y in [x['target_list'] \
+                    for x in self.handler['docker_scope']
+                    ]
+            ]
+            
+        if sys.argv[-1] != self.handler['module']:
+
+            if self.handler['save_case']:
+                self.handler['args'] = sys.argv
+                CasManager(False,self.handler).save_case()
+
+            if self.handler['sample']:
+                print("\033c", end="")
+                vmnf_banners.sample_mode(
+                    cl('  sample mode   ','red', 'on_white', attrs=['bold'])
+                )
+
+            if not self.handler['session_mode']\
+                    and not self.handler['sample']:
+
+                vmnf_banners.load(self.handler['module'],20)
+                vmnf_banners.default_vmn_banner()
+
+        if not self.handler['docker_scope']:
+            self.handler['scope'] = ScopeParser(**self.handler).parse_scope()
+            targets_ports_set = get_scope(**self.handler)
+
+        len_tps = len(targets_ports_set)
+        self.handler['multi_target'] = True if len_tps > 1 else False
+
+        if self.handler['multi_target']:
+            b = self.set_sessions_control()
+            
+            # if not a loaded case
+            if not self.handler['args']:
+                self.handler['args'] = sys.argv
+
+            self.handler['runner_mode']  = True
+            self.handler['runner_tasks'] = targets_ports_set
+            rudrunner(**self.handler)
+            
+            a = self.set_sessions_control()
+            new_sessions = len(a) - len(b)
+            
+            if new_sessions >= 1:
+                cprint(f"\n\t{new_sessions} {self.handler['module_run']} sessions successfuly recorded!\n", 'blue')
+
+            os._exit(os.EX_OK) 
+
+        #if not vfACK(**self.handler).tatic_mode():
+        if not _vfassert_.tatic_mode():
+            try:
+                self.handler['target_url'] = targets_ports_set[0]
+            except IndexError: 
+                vmn05()
+                print(f"""
+                
+                [{cl(self.handler['module_run'],'blue')}] {cl('→ Missing scope!', 'red')}\n 
+                * Protip: Use vf guide -m {self.handler['module_run']} --args/--labs/--examples
+
+                """
+                )
+
+                sys.exit(1)
+
+        else:
+            if self.handler['target_url']:
+                self.handler['scope'] = {
+                    'target_url': [
+                        self.handler.get('target_url')
+                    ]
+                }
+
+
+        
