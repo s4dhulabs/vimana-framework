@@ -1,0 +1,47 @@
+name: 2pacx
+author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
+brief: Unsecure Zip File Extraction Exploit
+category: package
+framework: generic
+info: Remote code execution via insecure file extraction
+module: siddhis/2pacx/
+package: zipfile
+type: exploit
+tags:
+  - Path Traversal
+  - Zipfile 
+description: |
+  The vulnerability occurs when a zipped file is sent to a
+  Python application that uses the zipfile.ZipInfo() method
+  from the zipfile[1] library to obtain the information
+  necessary to perform the server side extraction.
+
+  In this scenario, an attacker can manipulate a
+  specially created .zip file, in which the filename
+  (fileinfo.filename) is configured, via path traversal
+  (eg: '../config/__init__.py'), by setting an arbitrary
+  location for record the contents of the malicious zip
+  file[2][3].
+
+  The goal of the exploit is to subscribe to the content
+  of some __init__.py file (zipfile.ZipInfo.writestr())
+  within any directory of the exploited application.
+
+  Note that there are numerous particularities necessary
+  for this flaw to be exploited, one of which is the fact
+  that the payload sent will only be executed immediately
+  in cases where the Python application (Flask/Django)
+  is running with DEBUG true, otherwise the payload will
+  only be triggered when the server restarts.
+
+  Another important point is that it is necessary that
+  the directory specified in the filename of the sent zip
+  exists on the server with an __init__.py file.
+references:
+  links:
+    - https://docs.python.org/2/library/zipfile.html#zipfile.ZipInfo
+    - https://ajinabraham.com/blog/exploiting-insecure-file-extraction-in-python-for-code-execution 
+    - https://github.com/MobSF/Mobile-Security-Framework-MobSF/issues/358
+  cwe:
+    - CWE-22 - Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')
+    - CWE-73 - External Control of File Name or Path
