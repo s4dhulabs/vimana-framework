@@ -1,0 +1,51 @@
+name: dmt
+author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
+brief: Django Misconfiguration Tracker
+category: framework
+framework: django 
+info: Tracks and exploits misconfigurations in Django applications
+module: siddhis/dmt/dmt.py 
+package: Django
+type: tracker
+tags:
+  - Error
+  - Debug
+  - Exceptions
+  - Misconfiguration 
+description: |
+  This tool was designed to audit applications running
+  with the Django framework. Acts as an input module for
+  Vimana to collect base data.  DMT works seamlessly with
+  other framework tools such as Jungle, DJunch, which are
+  respectively brute force and fuzzing tools. Among the
+  various actions taken are: Identification of the state
+  of Debug extraction and mapping of application URL
+  Patterns. This first step will serve as input to the
+  fuzzer process (performed by DJunch) where tests will
+  be conducted to handle and map unhandled exceptions,
+  extract and identify sensitive information in the leaks,
+  implementation failure testing.
+
+  With the same initial DMT input the brute force process
+  will be performed on the API authentication endpoints
+  (if available) and also on the Django administrative
+  interface (if available).
+
+  At the end of the analysis it is possible to query
+  the data obtained by DMT, using the commands to
+  access contexts, view information about the identified
+  exceptions, view the source code leaked by the affected
+  modules.
+
+  Run DMT with 'args' command to show all available
+  options: $ vf args --module dmt
+references:
+  links:
+    - https://www.djangoproject.com/
+  cwe:
+    - CWE-248 - Uncaught Exception
+    - CWE-703 - Improper Check or Handling of Exceptional Conditions
+    - CWE-215 - Insertion of Sensitive Information Into Debugging Code
+    - CWE-209 - Generation of Error Message Containing Sensitive Information
+    - CWE-756 - Missing Custom Error Page
+    - CWE-1295 - Debug Messages Revealing Unnecessary Information
