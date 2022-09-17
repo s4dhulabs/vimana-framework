@@ -1,0 +1,36 @@
+name: djunch
+author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
+brief: Django application fuzzer
+category: framework
+framework: django
+info: application fuzzer for Django framework  
+module: siddhis/djunch/djunch.py
+package: Django
+type: fuzzer
+tags:
+  - Exceptions
+description: |
+  Djunch is a Django application fuzzer whose purpose is
+  to spot unhandled exceptions and feed the caller modules
+  with a variety of data, such as:
+
+     * Application and server environment variables 
+     * Traceback/stacktrace breakpoints 
+     * Categorized keywords 
+     * Source code snippets  
+     * Software versions 
+     * Django objects
+
+  Djunch is usually called by other modules receiving its
+  input and returning the fuzzer result as an enrichment
+  that can be used to take the subsequent actions.
+references:
+  links:
+    - https://www.djangoproject.com/
+  cwe:
+    - CWE-248 - Uncaught Exception
+    - CWE-703 - Improper Check or Handling of Exceptional Conditions
+    - CWE-215 - Insertion of Sensitive Information Into Debugging Code
+    - CWE-209 - Generation of Error Message Containing Sensitive Information
+    - CWE-756 - Missing Custom Error Page
+    - CWE-1295 - Debug Messages Revealing Unnecessary Information
