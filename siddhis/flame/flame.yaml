@@ -1,0 +1,28 @@
+name: flame
+author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
+brief: Flask misconfiguration parser
+category: framework
+framework: flask
+info: Traceback parser for Flask applications
+module: siddhis/flame/flame.py
+package: Flask
+type: parser
+tags:
+  - Flask
+  - Jinja2
+  - Werkzeug
+description: |
+  Flask traceback parser utility. Usually, this module
+  will be called for other modules in Vimana, acting as a
+  parser for some situations. Caiman will absorb this as
+  a method in the future.
+references:
+  links:
+    - https://flask.palletsprojects.com
+  cwe:
+    - CWE-248 - Uncaught Exception
+    - CWE-703 - Improper Check or Handling of Exceptional Conditions
+    - CWE-215 - Insertion of Sensitive Information Into Debugging Code
+    - CWE-209 - Generation of Error Message Containing Sensitive Information
+    - CWE-756 - Missing Custom Error Page
+    - CWE-1295 - Debug Messages Revealing Unnecessary Information
