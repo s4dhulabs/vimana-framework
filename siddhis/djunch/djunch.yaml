@@ -34,3 +34,137 @@ references:
     - CWE-209 - Generation of Error Message Containing Sensitive Information
     - CWE-756 - Missing Custom Error Page
     - CWE-1295 - Debug Messages Revealing Unnecessary Information
+guide:
+  args: |
+    ø----------------------------------------------------------------------o
+    │└┐└│└┘┌┐│└└┘┌┐┘└┘└┐└│┐┘│└┘│-  DJUNCH ARGS  -└┐└┘││ └┐┌┐│ │┘└┘││└┐└┘│┌└│
+    o-----------+----------------------------------------------------------ø
+    │ target    └┐                                                         │
+    +------------+---------------------------------------------------------+
+     --urlconf           Django URLconf with URL patterns
+     --patterns          File with a custom list of URL patterns
+     --bruteforce        Brute force URL patterns
+     --view-name         Filter scope by view name
+    
+     patterns            A Python list object with a list of URL patterns
+     target_url          The Django application URL address
+    
+  examples: |
+    ø----------------------------------------------------------------------o
+    ::┌┐:⠞⠓⠊⠎ ⠙⠊⠗⠑⠉⠞│⠞│⠞├⠞┌⠞┐─⠞┤  DJUNCH GUIDE  ⠞⠓⠊⠎│└┘│├┤⠙⠊⠗⠑⠉⠞┌┐⠞.:└┘┌┐┘⠞
+    ø----------------------------------------------------------------------o
+    
+     In the example below, we're starting djunch fuzzer against
+     the Django application running on http://mydjapp2.com:8887,
+     passing as scope the url.py used by the application. This
+     can be taken as a kind of gray box perspective:
+
+     $ vimana run \
+        --fuzzer \
+        --target mydjapp2.com \
+        --port 8887 \
+        --urlconf mydjapp2/urls.py
+
+    ø----------------------------------------------------------------------o
+    
+     In the following one, we're passing as scope a simple text
+     file with a list of URL patterns, enabling the fuzzer
+     debug and also informing the djunch to trigger just one
+     exception:
+
+     $ vimana run \
+        --fuzzer \
+        --target mydjapp2.com \
+        --port 8887 \
+        --patterns urls.txt \
+        --exit-on-trigger \
+        --debug
+
+    ø----------------------------------------------------------------------o
+    
+     The less personalized and straightforward way to run djunch
+     is by enabling brute force. In this way, you need to inform
+     just the target and port:
+
+     $ vimana run \
+        --fuzzer \
+        --brute-force \
+        --target mydjapp2.com \
+        --port 8887 
+
+    ø----------------------------------------------------------------------o
+    
+     * Importing Djunch
+
+     In Vimana Framework, one module can be constituted by
+     features instantiated from other modules. For example, DMT
+     (Django Misconfiguration Tracker) calls Prana, Sttinger,
+     and Djunch to fuzz the collected Django URL patterns.
+
+     To create an instance of Djunch you need to
+     prepare a Python dictionary object containing
+     at least two mandatory parameters: `target_url`,
+     a string object containing the Django application
+     URL in the format `scheme:ip/domain:port`, like
+     "http://mydjangoapp.com:9984", and `patterns`, a Python
+     list object with the URL patterns to be used as an initial
+     scope by Djunch fuzzer. Bellow, there is an example of a
+     dictionary model used by DMT to start the fuzzing process:
+
+     dju_input = {
+        'fuzz_regex_flags': fuzz_regex_flags, #False/None
+        'view_context': view_context,  # False/None
+        'raw_patterns': raw_patterns,  # False/None
+        'app_patterns':  app_patterns, # False/None
+        'patterns': list_of_patterns,  # * required
+        'target_url': 'http://mydjdash.com:8887', # * required
+        'fingerprint': fingerprint # False/None
+     }
+
+     Done that, you can now call Djunch like this:
+
+     >> from siddhis.djunch.djunch import siddhi 
+    
+     >> fuzz = siddhi(**dju_input)
+     >> fuzz.start()
+    
+    ø----------------------------------------------------------------------o
+    
+     Djunch, at this stage, has its limitations, no doubt. On
+     the other hand, it creatively does its stuff and gives us
+     some findings. In some cases, such as DMT, the analysis
+     result will be handled by an interactive prompt where the
+     collected data will be presented in a set of contexts and
+     categories and searchable. At this point, you can also
+     run other plugins against the initial data as an automatic
+     scope with `run` command.
+
+     The main focus of Djunch is the disruptive conditions
+     that can lead applications to leak critical and juicy
+     information to threat actors. In the case of Django
+     Applications, we're talking about unhandled exceptions,
+     generic misconfigurations, and insecure design.
+
+     As you noticed, Djunch is not exactly looking for
+     vulnerabilities. Instead, it searches for exceptions and
+     anomaly conditions that can end up giving an attacker much
+     more than a single vulnerability, but the whole internal
+     logic, API Keys, secrets, environment variables, source
+     code, and so on.
+
+     You can also check it out in detail with:
+     $ vimana guide -m dmt --labs
+
+  lab_setup: |
+    ø----------------------------------------------------------------------o
+    │└┘=┌┐│└/└┘┌┐┌┘┌┬┐└┐┘│-└┘┌⠊⠗┌  LAB SETUP  ┘└┐│└┘┌┐││⠊⠗┬│⠊⠗ └┘⠊⠗┌┐└┐⠊⠗┌│⠊
+    ø----------------------------------------------------------------------o
+    
+     In this case, the setup is the same one recommended for DMT,
+     using a purposefully vulnerable Django application, like this
+     one provided by nVisium: https://github.com/nVisium/django.nV
+
+     You can also check it out in detail with:
+     `vimana guide -m dmt --labs`
+ 
+
