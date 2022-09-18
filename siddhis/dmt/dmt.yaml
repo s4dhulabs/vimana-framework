@@ -37,8 +37,11 @@ description: |
   exceptions, view the source code leaked by the affected
   modules.
 
-  Run DMT with 'args' command to show all available
-  options: $ vf args --module dmt
+  You can quickly get some help related to the required
+  arguments, syntax, examples, and labs with:
+
+  $ vimana guide -m dmt --args/--examples/--labs 
+
 references:
   links:
     - https://www.djangoproject.com/
@@ -49,3 +52,40 @@ references:
     - CWE-209 - Generation of Error Message Containing Sensitive Information
     - CWE-756 - Missing Custom Error Page
     - CWE-1295 - Debug Messages Revealing Unnecessary Information
+guide:
+  args: |
+    ø----------------------------------------------------------------------ø
+    │└┐└│└┘┌┐│└└┘┌┐┘└┘└┐└┘│└┐┘││└┘│-  DMT ARGS  ┐│││││├┤┘│││┤└┘││└┐└┘│┌┌┐└│┐
+    ø-----------+----------------------------------------------------------ø
+    │ target    └┐                                                         │
+    +------------+---------------------------------------------------------+
+     --target            Run DMT against a single target
+     --target-list       Run DMT against a target list (comma separated)
+     --file              Run DMT loading scope from a file
+    +-----------+----------------------------------------------------------+
+    │ port      └┐                                                         │     
+    +------------+---------------------------------------------------------+
+     --port              Setting a single port for the target
+     --port-list         Setting a port-list (comma separated)
+     --port-range        Setting a range of ports for each target
+     --ignore-state      Ignore port status checks   
+    +-----------+----------------------------------------------------------+
+    │ autoload  └┐                                                         │     
+    +------------+---------------------------------------------------------+
+     --nmap-xml          Load the scope from nmap xml file
+     --docker-scope      Load the scope from Docker environment
+    +-----------+----------------------------------------------------------+
+    │ modes     └┐                                                         │
+    +------------+---------------------------------------------------------+
+     --extended-scope    Run DMT in sample mode with extended scope
+     --exit-on-trigger   Run in default mode exiting on first exception
+     --sample            Run DMT in silent sample mode 
+    +-----------+----------------------------------------------------------+
+    │ options   └┐                                                         │      
+    +------------+---------------------------------------------------------+
+     --save-session      Save analysis results as a interactive session
+     --verbose           Enable verbosity (not enabled in sample mode)
+     --debug             Enable debug messages (not enabled in sample mode)
+     --auto              Enable auto-confirmation (default on sample mode)
+    
+     * You can also see some examples with `vimana guide -m DMT -e`              
