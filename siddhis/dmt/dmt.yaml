@@ -89,3 +89,65 @@ guide:
      --auto              Enable auto-confirmation (default on sample mode)
     
      * You can also see some examples with `vimana guide -m DMT -e`              
+  examples: |
+    ø----------------------------------------------------------------------ø
+    ⠞⠓⠊⠎:⠞⠓⠎⠞⠎-⠞⠊⠞⠓~⠊⠎⠞⠓⠊⠎└┐  DMT GUIDE  ⠞⠓⠊⠎.~⠞⠎⠞⠓⠊⠓⠊::::::⠞⠓⠊⠎,⠞⠊.⠞⠓⠊⠎⠞⠓⠊⠎
+    ø---------------------└┘-----------------------------------------------ø
+    
+     Run DMT in (default) analytical mode (all occurrences)
+     against a specific target and port, enabling debug mode:
+
+     $ vimana run -m dmt -t djapp1.vmnf.com -p 8000 --debug
+
+    ø----------------------------------------------------------------------ø
+    
+     Run DMT against a list of targets on a specific port
+     with sample mode enabled. This mode will suppress all
+     debug or verbose messages focused on triggering just one
+     exception. It aims to be fast once we're looking for
+     a single sample instead of analytical mode (default),
+     which looks for all unique occurrences:
+    
+     $ vimana run \
+        --module dmt \
+        --target-list 127.0.0.1, 192.168.1.161 \
+        --port 9001 \
+        --sample
+
+    ø----------------------------------------------------------------------ø
+    
+     Creating a case setting DMT against a list of targets and
+     ports enabling auto-confirmation, verbose and running the
+     case with name 'djapps':
+
+     $ vimana run \
+        --module dmt \
+        --target-list 127.0.0.1, 192.168.1.161, djapp1.vmnf.com\
+        --port-list 8888,9001,8000,5001 \
+        --verbose \
+        --auto \
+        --save-case djapps \
+        --exec-case
+
+    ø----------------------------------------------------------------------ø
+
+     By default, when the set of instructions contains the
+     option --save-case <case_name>, that command line will be
+     saved in the form of a vimana case file, enabling easy
+     re-execution of the same plugin with the same set of
+     instructions. The case file created can also be executed
+     at the same time with the option --exec-case as in the
+     example above.
+
+     Many options can be used to run the case posteriorly,
+     as the examples below:
+
+     * Run the last case created:
+     $ vimana run !
+
+     * Run case by id @cf1:
+     $ vimana run --case @cf1
+
+     * Run case by name:
+     $ vimana run --case djapps
+
