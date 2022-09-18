@@ -45,3 +45,32 @@ references:
   cwe:
     - CWE-22 - Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')
     - CWE-73 - External Control of File Name or Path
+guide:
+  args: |
+    o----------------------------------------------------------------------o
+    │└┐└│└┘┌┐│└└┘┌┘└⠶⠶└┐└┘│└┐┘││└│ 2PACX ARGS  -└┐└┘││└┐⠶┌┐││┘└┘││└┐│┌┌┐└│⠶.
+    o-----------+----------------------------------------------------------o
+    │ target    └┐                                                         │
+    +------------+---------------------------------------------------------+
+     --target-url        Application target URL (upload feature)
+     --target-dir        Application directory target to write the payload
+    +-----------+----------------------------------------------------------+
+    │ port      └┐                                                         │     
+    +------------+---------------------------------------------------------+
+     --remote-port       Specify the remote port for the payload (pws)
+     --local-port        Specify the local listener port 
+    +-----------+----------------------------------------------------------+
+    │ payload   └┐                                                         │     
+    +------------+---------------------------------------------------------+
+     --payload           Specify the payload type 
+    +-----------+----------------------------------------------------------+
+    │ modes     └┐                                                         │
+    +------------+---------------------------------------------------------+
+     --forward           Foward the session to Vimana plugin (atlatl)
+    +-----------+----------------------------------------------------------+
+    │ options   └┐                                                         │      
+    +------------+---------------------------------------------------------+
+     --local-host        Local host address to receive the connection
+
+     * You can also see some examples with `vimana guide -m 2pacx -e`         
+
