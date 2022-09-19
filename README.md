@@ -68,10 +68,22 @@ It will register all vimana modules. At the end of this process, the Framework w
 ![image](https://user-images.githubusercontent.com/89562876/190948039-c3dbdf32-c439-4c59-b76c-ace1b200a9ea.png)
 
 ## Getting information about a module
-Done that, you can get information about what a vimana module is about by running ```vimana info```, for example, with 2pacx module, an exploit one you'll do ```vimana info --module 2pacx```:
+Done that, you can get information about what a vimana module is about by running ```vimana info```, for example, with 2pacx module, an exploit one you'll do 
+
+```
+vimana info --module 2pacx
+
+```
 
 ![image](https://user-images.githubusercontent.com/89562876/191022863-501f04ab-aaaf-4c57-933b-212cd5668b12.png)
 
+### Vimana Guides
+In version 0.7 was introduced a new command to guide usage, modules required arguments, usage examples, and tips to set up a lab for tests. 
+
+You can see the help for this new command by just typing: 
+```bash
+vimana guide
+```
 
 ## Under active development:
 
