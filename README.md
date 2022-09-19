@@ -53,7 +53,7 @@ $ source scripts/set_env
 ```
 After finishing the setup successfully, your terminal should look like this: 
 
-![image](https://user-images.githubusercontent.com/89562876/190939171-5e223809-5426-455b-851f-72c072739af7.png)
+![image](https://user-images.githubusercontent.com/89562876/190946225-d2c19ce8-7bdd-48f8-9394-fb6b21099457.png)
 
 With that, you have the framework itself ready. The last step is to load Vimana plugins, you can do this running: 
 ```bash
@@ -61,6 +61,10 @@ With that, you have the framework itself ready. The last step is to load Vimana 
 $ vimana load --plugins
 
 ```
+![image](https://user-images.githubusercontent.com/89562876/190946332-4c48ac1f-f404-453b-bb9b-c3b99df169fa.png)
+
+
+
 ## Under active development:
 
 |**Resource**| **Type** |      **Category**   | **Focus** |    **Status**
