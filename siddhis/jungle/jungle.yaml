@@ -1,0 +1,21 @@
+name: jungle
+author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
+brief: Brute force utility 
+category: framework
+framework: django
+info: Brute force utility to audit Django administration portal
+module: siddhis/jungle/jungle.py
+package: Django
+type: audit
+tags:
+  - Django
+  - portal 
+  - Brute-Force
+description: |
+  Utility to brute force Django administration portal. 
+  In the present version, the tool adheres to the Django
+  administration endpoint. Future versions may add other
+  features, such as session auditing and tampering.
+references:
+  links: False
+  cwe: False
