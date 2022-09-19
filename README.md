@@ -63,6 +63,9 @@ $ vimana load --plugins
 ```
 ![image](https://user-images.githubusercontent.com/89562876/190946770-fc6328a6-0867-4692-9344-5e653d61b8ad.png)
 
+It will register all vimana modules. At the end of this process, the Framework will show a table with all available modules loaded. 
+
+![image](https://user-images.githubusercontent.com/89562876/190947363-db5ab1ad-d746-4939-b61d-f9dd877681a1.png)
 
 
 ## Under active development:
