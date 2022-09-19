@@ -3,6 +3,7 @@ Vimana is a modular security framework designed to audit Python web applications
 
 ![Alt text](https://github.com/s4dhulabs/s4dhulabs.github.io/blob/master/resources/imgs/vimana1.png?raw=true "VIMANAFRAMEWORK")
 
+<!-- 
 ## Content
 
 * [ Framework Structure](https://github.com/s4dhulabs/vimana-framework/wiki/Framework-Structure)
@@ -14,6 +15,7 @@ Vimana is a modular security framework designed to audit Python web applications
 * [ Disclaimer](https://github.com/s4dhulabs/vimana-framework/wiki/Disclaimer)
 * [ Site](http://s4dhulabs.github.io/) 👾
 
+-->
 
 ## Getting Started
 The most straightforward approach to get started with Vimana Framework is by running the setup scripts like this on your Linux terminal:
