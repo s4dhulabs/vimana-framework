@@ -67,6 +67,12 @@ It will register all vimana modules. At the end of this process, the Framework w
 
 ![image](https://user-images.githubusercontent.com/89562876/190948039-c3dbdf32-c439-4c59-b76c-ace1b200a9ea.png)
 
+## Getting information about a module
+Done that, you can get information about what a vimana module is about by running ```vimana info```, for example, with 2pacx module, an exploit one you'll do ```vimana info --module 2pacx```:
+
+![image](https://user-images.githubusercontent.com/89562876/191021844-5b73070e-1dee-4c0c-b876-f6ec2ba8481a.png)
+
+
 ## Under active development:
 
 |**Resource**| **Type** |      **Category**   | **Focus** |    **Status**
