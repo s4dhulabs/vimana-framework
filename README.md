@@ -22,9 +22,10 @@ Vimana is a modular security framework designed to audit Python web applications
 In the beginning, the main goal behind this Framework was to act as a web fuzzer to identify Python exceptions. That was the core idea. Later it became just another feature that can be invoked by other siddhis or directly via command line with ```vimana run --module <module_name> ```. In the current releases, there are available module types like:
 
 * persistence
-* fuzzers
+* crawlers
 * trackers
 * exploits
+* fuzzers
 * parses
 * audit
 
