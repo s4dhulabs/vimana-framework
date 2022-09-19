@@ -71,7 +71,7 @@ It will register all vimana modules. At the end of this process, the Framework w
 Done that, you can get information about what a vimana module is about by running ```vimana info```, for example, with 2pacx module, an exploit one you'll do 
 
 ```
-vimana info --module 2pacx
+$ vimana info --module 2pacx
 
 ```
 
@@ -81,8 +81,45 @@ vimana info --module 2pacx
 In version 0.7 was introduced a new command to guide usage, modules required arguments, usage examples, and tips to set up a lab for tests. 
 
 You can see the help for this new command by just typing: 
-```bash
-vimana guide
+
+
+```yaml
+$ vimana guide
+
+ ˙              ٭                   .    ˖
+              .             :. *
+                :  └┐'┌┘          . :  .
+                └┐// ' \\┌┘
+        ¨⣠⠛⠛⠛⠛⠛---=======---⠛⠛⠛⠛⠛⣄      .'
+       .::::__\├ ┤/⠛⠛⣄⣇⣷\├ ┤/__::::.
+               '-'\_____/'-' v0.7         ⣄
+               :: '│.│.│' .
+
+
+        [guide]
+
+    Show usage examples
+
+    → Usage: vimana guide --module <module name> <options>
+    
+    Examples:
+
+        # Show full DMT plugin guide
+        $ vimana guide --module dmt
+        $ vimana guide -m dmt
+
+        # Show DMT plugin arguments
+        $ vimana guide --module DMT -args
+        $ vimana guide -m dmt -a
+
+        # Show only usage examples
+        $ vimana guide --module dmt --examples
+        $ vimana guide -m dmt -e
+
+        # Show lab setup tips:
+        $ vimana guide -m dmt --labs
+        $ vimana guide -m dmt -l
+
 ```
 
 ## Under active development:
