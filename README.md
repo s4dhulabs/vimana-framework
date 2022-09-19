@@ -1,5 +1,3 @@
-# Vimana Framework
-Vimana is a modular security framework designed to audit Python web applications.
 
 ![Alt text](https://github.com/s4dhulabs/s4dhulabs.github.io/blob/master/resources/imgs/vimana1.png?raw=true "VIMANAFRAMEWORK")
 
@@ -16,6 +14,25 @@ Vimana is a modular security framework designed to audit Python web applications
 * [ Site](http://s4dhulabs.github.io/) 👾
 
 -->
+
+## Overview
+
+Vimana is a modular security framework designed to audit Python web applications using different and sometimes uncommon approaches.  
+
+In the beginning, the main goal behind this Framework was to act as a web fuzzer to identify Python exceptions. That was the core idea. Later it became just another feature that can be invoked by other siddhis or directly via command line with ```vimana run --module <module_name> ```. In the current releases, there are available module types like:
+* fuzzers
+* trackers
+* exploits
+* parses
+* audit
+* persistence
+
+Lately, Vimana is walking to its maturity while a Framework with a robust core to support modularization, various integrations, and post-analysis features to enrich security assessments. In addition, many new siddhis (vimana plugins) are consistently being researched and developed. 
+
+Vimana aims not to take a side as a defensive or offensive tool. Instead, the motivation here is to mix those both perspectives, allowing a software developer to audit their projects, for example, and give offensive, security engineer, and bug hunter folks a great resource to their arsenals. 
+
+With time, this project has revealed some promising capabilities to support security research related to Python Frameworks and applications, and it has recently been one of the current studies. In other words, research about how to support research goals. Quite meta-research stuff. I have no idea where it goes, but I've some clues, and it is worth it.     
+
 
 ## Getting Started
 The most straightforward approach to get started with Vimana Framework is by running the setup scripts like this on your Linux terminal:
