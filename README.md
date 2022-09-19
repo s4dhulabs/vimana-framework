@@ -15,9 +15,30 @@ Vimana is a modular security framework designed to audit Python web applications
 * [ Site](http://s4dhulabs.github.io/) 👾
 
 
+## Getting Started
+The most straightforward approach to get started with Vimana Framework is by running the setup scripts like this on your Linux terminal:
+```bash
 
+$ curl -s https://raw.githubusercontent.com/s4dhulabs/vimana-framework/main/scripts/get_vimana | bash
 
+```
+You can also set it up like this:
+```bash
 
+$ git clone https://github.com/s4dhulabs/vimana-framework.git && cd vimana-framework
+$ source scripts/set_env
+
+```
+After finishing the setup successfully, your terminal should look like this: 
+
+![image](https://user-images.githubusercontent.com/89562876/190939171-5e223809-5426-455b-851f-72c072739af7.png)
+
+With that, you have the framework itself ready. The last step is to load Vimana plugins, you can do this running: 
+```bash
+
+$ vimana load --plugins
+
+```
 ## Under active development:
 
 |**Resource**| **Type** |      **Category**   | **Focus** |    **Status**
