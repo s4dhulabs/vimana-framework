@@ -1,0 +1,55 @@
+name: tictrac
+author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
+brief: Django Ticket Tracker
+category: framework
+framework: django
+info: Track bug tickets in Django ticket system
+module: siddhis/tictrac/tictrac.py
+package: Django
+type: tracker
+tags:
+  - Django
+description: |
+  This module implements methods for querying bug ticket
+  details using the official Django ticket system. The tool
+  can be used in isolated mode, although it is generally
+  used as a resource for other modules. For example, after
+  performing the target analysis, the DMT module (Django
+  Misconfiguration Tracker) will instantiate tictrack to
+  consult bug tickets for an identified framework version.
+references:
+  links:
+    - https://www.djangoproject.com
+  cwe: False
+guide:
+  args: |
+    ø----------------------------------------------------------------------ø
+    │└┐└┌⠞⠓┬┐│└æ┌┐æ│└æ└┘┌┐┌⠞⠓┬┐æ┘æ└┘ TICTRAC ARGS  æ│┘┌⠞⠓┬┐æ│┐æ│┘æ││æ│┘æ│~æ│
+    ø-----------+----------------------------------------------------------ø
+    │ scope     └┐                                                         │
+    +------------+---------------------------------------------------------+
+     --django-version    Django version to search for security tickets. 
+
+  examples: |
+    ø----------------------------------------------------------------------ø
+    ⠞ ⠓ ⠎ ⠞ ⠎⠞⠎ ⠞⠊⠞⠓ ⠊⠎⠞⠓⠊  ⠞⠓⠊⠎⠞⠓⠊  TICTRAC GUIDE  ⠞⠓⠊⠎.~ ⠎⠞ ⠞ ⠊⠎ ⠞⠊.⠞ ⠊⠎⠎
+    ø----------------------------------------------------------------------ø
+
+     Run tictract directly by command line (vimana run) looking for Django
+     3.1 security tickets:
+     
+     $ vimana run --module tictrac --django-version 3.1
+
+  lab_setup: |
+    ø----------------------------------------------------------------------ø
+    │└┘⠞⠓┌┐│└ø└┘┌Þ┐┌┘.┌Þ┬┐þ└┐Þ┘│ĦÞ~  TICTRAC SETUP  Þ┘└┐│Ŋ└┘Ŋµ→┌⠞⠓┬┐┌┐│⠞⠓│┬│
+    ø----------------------------------------------------------------------ø
+  
+     In this case,  you only need the Django version to look for
+     issues. But if you're researching based on this version,
+     it would be interesting to have some labs running an
+     application to perform some tests. You can see lab
+     examples with:
+
+     $ vimana guide -m dmt -l
+
