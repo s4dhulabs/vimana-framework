@@ -53,15 +53,56 @@ $ source scripts/set_env
 ```
 After finishing the setup successfully, your terminal should look like this: 
 
-![image](https://user-images.githubusercontent.com/89562876/190946974-6ff0b2a7-2005-41b2-9666-bd4d85cce365.png)
+```python
+                      ø
+ ˙              ٭                   .    ˖
+              .             :. *
+                :  └┐'┌┘          . :  .
+                └┐// ' \\┌┘
+        ¨⣠⠛⠛⠛⠛⠛---=======---⠛⠛⠛⠛⠛⣄      .'
+       .::::__\├ ┤/⠛⠛⣄⣇⣷\├ ┤/__::::.
+               '-'\_____/'-' v0.7         ⣄
+               :: '│.│.│' .
+
+
+
+
+             about  ⇀   About the framework
+             flush  ⇀   Remove a recorded resource
+             guide  ⇀   Show module usage examples
+              info  ⇀   Show information about modules
+              list  ⇀   List available modules
+              load  ⇀   Load a recorded session (post-analysis)
+               run  ⇀   Run a resource, module or case
+             start  ⇀   Start Vimana in a interactive mode
+
+
+(vimana_env) ➟ 
+
+```
 
 With that, you have the framework itself ready. The last step is to load Vimana plugins, you can do this running: 
 ```bash
 
 $ vimana load --plugins
 
+ ˙              ٭                   .    ˖
+              .             :. *
+                :  └┐'┌┘          . :  .
+                └┐// ' \\┌┘
+        ¨⣠⠛⠛⠛⠛⠛---=======---⠛⠛⠛⠛⠛⣄      .'
+       .::::__\├ ┤/⠛⠛⣄⣇⣷\├ ┤/__::::.
+               '-'\_____/'-' v0.7         ⣄
+               :: '│.│.│' .
+
+
+
+	 ⠞⠓⠊⠎ Abducting dmt: Django Misconfiguration Tracker ...
+
+
+
+
 ```
-![image](https://user-images.githubusercontent.com/89562876/190946770-fc6328a6-0867-4692-9344-5e653d61b8ad.png)
 
 It will register all vimana modules. At the end of this process, the Framework will show a table with all available modules loaded. 
 
@@ -105,7 +146,7 @@ It will register all vimana modules. At the end of this process, the Framework w
 ## Getting information about a module
 Done that, you can get information about what a vimana module is about by running ```vimana info```, for example, with 2pacx module, an exploit one you'll do 
 
-```
+```python
 $ vimana info --module 2pacx
 
 
@@ -160,7 +201,7 @@ In version 0.7 was introduced a new command to guide usage, modules required arg
 You can see the help for this new command by just typing: 
 
 
-```yaml
+```python
 $ vimana guide
 
  ˙              ٭                   .    ˖
@@ -203,7 +244,7 @@ This command is responsible for guiding you through usage, options, and tips to 
 
 ### Module required arguments
 
-```bash
+```python
 $ vimana guide --module dmt --args
 
 		ø----------------------------------------------------------------------ø
@@ -245,7 +286,7 @@ $ vimana guide --module dmt --args
 ```
 
 ### Module usage examples
-```bash
+```python
 $ vimana guide -m dmt --examples
 
 		ø----------------------------------------------------------------------ø
@@ -292,7 +333,7 @@ $ vimana guide -m dmt --examples
 ```
 
 ### Module lab tips
-```bash
+```python
 $ vimana guide -m dmt --labs
 
 		ø----------------------------------------------------------------------ø
