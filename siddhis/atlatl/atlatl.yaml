@@ -74,3 +74,31 @@ guide:
 
      $ vimana run -m atlatl --session 2pacx
 
+    ø----------------------------------------------------------------------ø
+    
+     → Listener mode
+
+     Start atlatl as a simple TCP Listener:
+
+     $ vimana run \
+        -m atlatl \ 
+        --listener \
+        --local-port 7777 \
+        --local-host 127.0.0.1
+
+    ø----------------------------------------------------------------------ø
+    
+     → Auth mode
+
+     Atlatl acts as an authenticator in this mode, requiring
+     the Flask application URL and the console PIN. This feature
+     is invoked automatically as a part of the tasks realized by
+     atlatl in --session mode. But for some reason, sometimes
+     it can be handy as a separate resource.
+
+     $ vimana run \
+        -m atlatl \
+        --auth \
+        --target-url http://flaskappwithdebug.com:8877 \
+        --console-pin 246-810-121
+
