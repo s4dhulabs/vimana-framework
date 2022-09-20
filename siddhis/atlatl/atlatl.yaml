@@ -23,3 +23,23 @@ references:
     - https://flask.palletsprojects.com/en/2.1.x/debugging/
     - https://werkzeug.palletsprojects.com/en/2.2.x/debug/
   cwe: False
+guide:
+  args: |
+    o----------------------------------------------------------------------o
+    │└┐└│└┘┌┐│└└┘┌└┘└┐└┘└┐││└┘│-  ATLATL ARGS  -└┐ └┘││└┐┌┐││┘└┘││ └┐│┌ ┌┐└│
+    o-----------+----------------------------------------------------------o
+    │ Scope    └┐                                                          │
+    +------------+---------------------------------------------------------+
+     --target-url        Application target URL (auth mode)
+     --local-host        Local address to start in listener mode
+     --local-port        Local port to set listener mode
+     --console-pin       Flask console PIN to start in auth mode
+    o-----------+----------------------------------------------------------o
+    │ modes    └┐                                                          │
+    +------------+---------------------------------------------------------+
+     --auth              Start in authentication mode(req: --console-pin)
+     --listener          Start in listener mode (req: --local_host/port)
+     --session           Load settings from the current session (--forward)
+ 
+     * You can also see some examples with `vimana guide -m atlatl -e`        
+
