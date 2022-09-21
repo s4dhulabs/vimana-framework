@@ -1,0 +1,23 @@
+name: prana
+author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
+brief: Tracks Django CVE ids 
+category: framework
+framework: django
+info: Utility to retrieve CVE ids from the official Django security page
+module: siddhis/prana/prana.py
+package: Django
+type: tracker
+tags:
+  - Django 
+description: |
+  Simple utility to retrieve CVE ids from the official
+  Django security releases page. This module receives a
+  Django version as an argument and retrieves related CVE
+  ids. Prana is usually used as a resource by other Vimana
+  modules. For example, DMT (Django Misconfiguration
+  Tracker) uses to correlate the identified framework
+  version (context 'environment') with the respective CVES.
+references:
+  links:
+    - https://www.djangoproject.com/
+  cwe: False
