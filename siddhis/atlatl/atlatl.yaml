@@ -102,3 +102,23 @@ guide:
         --target-url http://flaskappwithdebug.com:8877 \
         --console-pin 246-810-121
 
+  lab_setup: |
+    ø----------------------------------------------------------------------ø
+    │/└┘│┬│┌┐│└└┬┌┐┌┘┌┬┐┬└┐┘└┘┌┌  LAB SETUP  ┘└┐│└┘┌┐││┬│/└┘┌┬┐└┐┌││:└┘└└┬┌┐
+    ø----------------------------------------------------------------------ø
+  
+     The best way to give it a try is by setting up 
+     a deliberately vulnerable web application to demonstrate
+     insecure file extraction. Just follow the steps below or
+     check the repository itself:
+
+     $ git clone https://github.com/ajinabraham/bad_python_extract.git
+     $ python3 -m venv bpex_env
+     $ source bpex_env/bin/activate
+     $ cd bad_python_extract
+     $ pip install -r requirements.txt --user
+     $ python server.py
+
+     * This setup is the same for 2pacx
+     * For exploitation examples use: `vimana guide -m 2pacx -e`
+
