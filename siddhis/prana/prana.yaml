@@ -21,3 +21,33 @@ references:
   links:
     - https://www.djangoproject.com/
   cwe: False
+guide:
+  args: |
+    ø----------------------------------------------------------------------ø
+    │└┐└│└┘┌┐~│└└┘┌┐┘└┘└┐└┘│└┐┘││└┘│ PRANA ARGS  └ │┘┌│┐└│┘┌│*└│┘*│┐=│┘┌│┐=│
+    ø-----------+----------------------------------------------------------ø
+    │ scope     └┐                                                         │
+    +------------+---------------------------------------------------------+
+     --django-version        Django version to look for issues, ie. 1.8
+    
+  examples: |
+    ø----------------------------------------------------------------------ø
+    ⠞ ⠓ ⠎ ⠞ ⠎⠞⠎ ⠞⠊⠞⠓ ⠊⠎⠞⠓⠊  ⠞⠓⠊⠎⠞⠓⠊  PRANA GUIDE  ⠞⠓⠊⠎.~ ⠎⠞ ⠞ ⠊⠎ ⠞⠊.⠞ ⠊⠎ ⠊⠎
+    ø----------------------------------------------------------------------ø
+
+     Start prana looking for Django 1.8 issues:
+     $ vimana run -m prana --django-version 1.8 
+
+     * Note that prana is focused on just retrieving CVEs from
+       a given Django version. To perform a passive fingerprint
+       of a version running with an application, take a look at 
+       sttinger usage examples: $ vimana run -m sttinger -e
+
+  lab_setup: |
+    ø----------------------------------------------------------------------ø
+    │└┘⠞⠓┌┐│└⠞⠓└┘┌⠞⠓┐┌┘.┌⠞⠓┬┐.└┐ ┘│  PRANA SETUP  ┘└┐│.└┘.┌┐│⠞⠓│┬.│⠞└┘┌┬┐└┌.
+    ø----------------------------------------------------------------------ø
+  
+     You can see lab examples with:
+     $ vimana guide -m dmt -l
+
