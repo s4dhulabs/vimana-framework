@@ -1,0 +1,24 @@
+name: sttinger
+author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
+brief: Framework version fingerprint tool
+category: framework
+framework: django
+info: Identify the framework version in a passive way
+module: siddhis/sttinger/sttinger.py
+package: Django
+type: fingerprint
+tags:
+  - Django
+description: |
+  This tool was designed to passively identify the Python
+  framework version, acquiring and analyzing standard
+  files from framework installations. This first version
+  only supports Django, but it'll soon be compatible with
+  Flask. It can be invoked directly from the command line
+  through the command and incorporated by other tools
+  such as DMT, which gathers it in the initial stages of
+  the analysis.
+references:
+  links:
+    - https://www.djangoproject.com/
+  cwe: False
