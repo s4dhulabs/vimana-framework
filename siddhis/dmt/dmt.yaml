@@ -94,60 +94,149 @@ guide:
     ⠞⠓⠊⠎:⠞⠓⠎⠞⠎-⠞⠊⠞⠓~⠊⠎⠞⠓⠊⠎└┐  DMT GUIDE  ⠞⠓⠊⠎.~⠞⠎⠞⠓⠊⠓⠊::::::⠞⠓⠊⠎,⠞⠊.⠞⠓⠊⠎⠞⠓⠊⠎
     ø---------------------└┘-----------------------------------------------ø
     
-     Run DMT in (default) analytical mode (all occurrences)
-     against a specific target and port, enabling debug mode:
+        Run DMT in (default) analytical mode (all occurrences)
+        against a specific target and port, enabling debug mode:
 
-     $ vimana run -m dmt -t djapp1.vmnf.com -p 8000 --debug
-
-    ø----------------------------------------------------------------------ø
-    
-     Run DMT against a list of targets on a specific port
-     with sample mode enabled. This mode will suppress all
-     debug or verbose messages focused on triggering just one
-     exception. It aims to be fast once we're looking for
-     a single sample instead of analytical mode (default),
-     which looks for all unique occurrences:
-    
-     $ vimana run \
-        --module dmt \
-        --target-list 127.0.0.1, 192.168.1.161 \
-        --port 9001 \
-        --sample
+        $ vimana run -m dmt -t djapp1.vmnf.com -p 8000 --debug
 
     ø----------------------------------------------------------------------ø
     
-     Creating a case setting DMT against a list of targets and
-     ports enabling auto-confirmation, verbose and running the
-     case with name 'djapps':
+        Run DMT against a list of targets on a specific port
+        with sample mode enabled. This mode will suppress all
+        debug or verbose messages focused on triggering just one
+        exception. It aims to be fast once we're looking for
+        a single sample instead of analytical mode (default),
+        which looks for all unique occurrences:
+    
+        $ vimana run \
+           --module dmt \
+           --target-list 127.0.0.1, 192.168.1.161 \
+           --port 9001 \
+           --sample
 
-     $ vimana run \
-        --module dmt \
-        --target-list 127.0.0.1, 192.168.1.161, djapp1.vmnf.com\
-        --port-list 8888,9001,8000,5001 \
-        --verbose \
-        --auto \
-        --save-case djapps \
-        --exec-case
+    ø----------------------------------------------------------------------ø
+    
+        Creating a case setting DMT against a list of targets and
+        ports enabling auto-confirmation, verbose and running the
+        case with name 'djapps':
+
+        $ vimana run \
+           --module dmt \
+           --target-list 127.0.0.1, 192.168.1.161, djapp1.vmnf.com\
+           --port-list 8888,9001,8000,5001 \
+           --verbose \
+           --auto \
+           --save-case djapps \
+           --exec-case
+
+    ø----------------------------------------------------------------------ø
+     
+        Run DMT against Django target URL http://mydjlabs.com:9981
+        disabling external lookups (like CVE, Tickets, etc)
+        and exiting on the first exception caught. If you are
+        running a Vimana module without sudo, in some cases, if the
+        resource needs to write in disk, for cache http objects,
+        for instance, the analysis could fail. With that in mind,
+        sometimes it is handy to run the same set of arguments
+        adding --disable-cache, but usually, the framework will
+        warn you about that. In addition, this dmt command line
+        enables debug mode and sets confirmations in some steps
+        to Yes.
+
+        $ vimana run \
+           --plugin dmt \ 
+           --target-url http://mydjlabs.com:9981 \
+           --disable-external \
+           --exit-on-trigger \
+           --disable-cache \
+           --debug \
+           --auto 
 
     ø----------------------------------------------------------------------ø
 
-     By default, when the set of instructions contains the
-     option --save-case <case_name>, that command line will be
-     saved in the form of a vimana case file, enabling easy
-     re-execution of the same plugin with the same set of
-     instructions. The case file created can also be executed
-     at the same time with the option --exec-case as in the
-     example above.
+        By default, when the set of instructions contains the
+        option --save-case <case_name>, that command line will be
+        saved in the form of a vimana case file, enabling easy
+        re-execution of the same plugin with the same set of
+        instructions. The case file created can also be executed
+        at the same time with the option --exec-case as in the
+        example above.
 
-     Many options can be used to run the case posteriorly,
-     as the examples below:
+        Many options can be used to run the case posteriorly,
+        as the examples below:
 
-     * Run the last case created:
-     $ vimana run !
+        * Run the last case created:
+        $ vimana run !
 
-     * Run case by id @cf1:
-     $ vimana run --case @cf1
+        * Run case by id @cf1:
+        $ vimana run --case @cf1
 
-     * Run case by name:
-     $ vimana run --case djapps
+        * Run case by name:
+        $ vimana run --case djapps
+
+    ø----------------------------------------------------------------------ø
+    
+        Run DMT setting the siddhi scope as the active targets
+        on Docker environment. When --exit-on-trigger is enabled,
+        the plugins will look for just one exception as --sample
+        does, but debug and verbose could be enabled normally,
+        differently from sample mode.
+
+        $ vimana run --module dmt --docker-scope --exit-on-trigger
+
+    ø----------------------------------------------------------------------ø
+
+        Run DMT in debug mode using a file with a list of targets
+        in the format <target:port> as scope:
+
+        $ vimana run --module dmt --file scope.txt --debug
+
+  lab_setup: |
+    ø----------------------------------------------------------------------ø
+    │└┘⠞⠓┌┐│└⠞⠓└┘┌⠞⠓┐┌┘.┌⠞⠓┬┐.└┐┘│ LAB SETUP  ┘└┐│.└┘.┌┐│⠞⠓│┬.│⠞└┘┌┬┐└┐┌.│.│
+    ø----------------------------------------------------------------------ø
+  
+        Even though there are many ways to test DMT, I encourage
+        you to set up a test environment using some Django
+        open-source projects available on GitHub. Also, you can
+        easily find many interesting images on Docker Hub to run
+        DMT against it. Check it out: https://hub.docker.com
+
+        If you're running DMT for the first time, I recommend 
+        using this purposefully vulnerable Django application 
+        provided by nVisium: 
+    
+        https://github.com/nVisium/django.nV
+
+        You can simply follow the steps bellow to setup a test env
+        using django.nV:
+
+        $ git clone https://github.com/nVisium/django.nV.git
+        $ export PYTHONPATH="/usr/local/lib/python3.4/site-packages"
+        $ virtualenv -p python3 ~/django.nV_venv
+        $ source ~/django.nV_venv/bin/activate
+        $ cd django.nV
+        $ pip install -r requirements.txt
+        $ ./reset_db.sh
+        $ ./runapp.sh
+
+        In another terminal start DMT with debug and save-session
+        enabled:
+
+        $ vimana run \
+           --module dmt \
+           --target localhost \
+           --port 8000 \
+           --debug \
+           --save-session 
+
+        In case you have not set Vimana using set_env script:
+
+        $ python3 vimana.py run \
+           --module dmt \
+           --target localhost \
+           --port 8000 \
+           --debug 
+
+        * args: `vimana guide -m dmt -a`              
 
