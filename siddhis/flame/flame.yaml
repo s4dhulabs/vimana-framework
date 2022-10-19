@@ -26,3 +26,49 @@ references:
     - CWE-209 - Generation of Error Message Containing Sensitive Information
     - CWE-756 - Missing Custom Error Page
     - CWE-1295 - Debug Messages Revealing Unnecessary Information
+guide:
+  args: |
+    ø----------------------------------------------------------------------ø
+    ⣿⠓⣓⠒⣓⣿⣛⣆⠞⣇⠞⠓⣓⠒⣛⣆⠞⣿⣆⣇⣛⣇⠒⣿⣓⠒⠂ FLAME ARGS  ⠒⠒⣆⣇⠒⣿⣛⣓⠒⠒⣠⣾⠒⣿⣠⣾⣿⠒⣾⣿⠓⣿⣿⠒⠒⣓⣿⠒⣓⣿⠒⣓
+    ø-----------+----------------------------------------------------------ø
+    │ target    └┐                                                         │
+    +------------+---------------------------------------------------------+
+     --target-url           The full URL of Flask application to parse
+     --target               Target address of Flask application
+     --port                 Flask application port
+    
+
+    * If you're using --target-url you can not use --target
+      and --port in the same command line. The first one in the
+      command line order will be considered.
+
+  examples: |
+    ø----------------------------------------------------------------------ø
+    ⠒⣓⣿⣛:::::::⠒⣓::::::::::⠒⣓⣿  FLAME GUIDE  ⠒⣓::::⠒⣓.:.::::::::::::;:::::⣓⣿
+    ø----------------------------------------------------------------------ø
+    
+        In the example below, we're starting
+        flame against the flask application at
+        http://myflkpp1:8877/?opt=7&listopt=1 using target-url
+        option and enabling debug:
+
+        $ vimana run \
+           --module flame \
+           --target-url http://myflkpp1:8877/?opt=7&listopt=1 \
+           --debug
+
+        * Note that at this point, Flame is just a limited parser
+        for Flask exceptions. It has been recent developments in
+        many modules lately, and with that, Flame will be part of
+        something bigger in the future.
+
+  lab_setup: |
+    ø----------------------------------------------------------------------ø
+    ⠞⠓⣓└⠞⠓⣓⠞⠓┌┘┌⠞⠓⣓┬┐└┐┘│└┘┌⣿⠒⣓ LAB SETUP  ┘└┐│└┘┌┐││.│⠞⠓└┘┌┬└┐│⠞⠞⠓└⠓⣓⠞┘⣓└⣓⣿
+    ø----------------------------------------------------------------------ø
+    
+        You can easily find many opensource Flask projects on GitHub:
+           https://github.com/topics/python-flask-application
+
+
+

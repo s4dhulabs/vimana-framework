@@ -11,8 +11,8 @@ class stager:
             yaml.dump(self.session, 
                 file,default_flow_style=False)
 
-    def check_forward(self):
-        if not val.check_file(self.stage):
+    def check_forward(self,quiet:False):
+        if not val.check_file(self.stage, quiet):
             return False
         
         with open(self.stage) as file:

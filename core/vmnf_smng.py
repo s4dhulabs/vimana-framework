@@ -1,25 +1,46 @@
 from siddhis.djunch.engines._dju_settings import table_models
 from siddhis.djunch.engines._dju_utils import DJUtils 
+from core.vmnf_sessions_utils import abduct_items
 from ._dbops_.vmnf_dbops import VFSiddhis as VFS
 from neotermcolor import cprint, colored as cl
 from ._dbops_.vmnf_dbops import VFDBOps
 from res.vmnf_banners import case_header
 from .vmnf_sessions import VFSession
-from .vmnf_utils import describe
 from .vmnf_asserts import vfasserts
+from .vmnf_utils import describe
+from time import sleep
+import yaml
 import sys
 import os
+
+from pygments.formatters import TerminalFormatter
+from pygments.lexers import PythonLexer
+from pygments import highlight
 
 
 class VFManager:
     def __init__(self,**handler:False):
+
         self.handler = handler
-        
-        if not handler.get('module_run'):
+        self.query_filters = []
+
+        if not handler.get('module_run') and not handler.get('load_plugins'):
             ''' We're not going to use query filters with vf run -m '''
 
             self.query_filters = self.get_filters()
 
+    def load_siddhis(self):
+
+        for s in os.scandir(f'{os.getcwd()}/siddhis/'):
+            if (s.is_dir() and not s.name.startswith('_')):
+                with open(f"{s.path}/{s.name}.yaml", 'r') as f:
+                    siddhi = yaml.load(f, Loader=yaml.FullLoader)
+
+                abduct_items(**siddhi)
+                VFS(**siddhi).register_siddhi()
+
+        self.list_siddhis()
+    
     def no_match(self):
         case_header()
         cprint("\tNo modules were found with the given criteria:\n", 'red')
@@ -38,7 +59,15 @@ class VFManager:
             if not value or value is None:
                 continue
             
-            if field in ['module_list', 'args']:
+            if field in [
+                'highlight_enabled',
+                'guide_examples', 
+                'module_list', 
+                'guide_args', 
+                'guide_labs',
+                'args'
+                ]:
+
                 continue
             
             if field in ['module_info']:
@@ -71,24 +100,28 @@ class VFManager:
 
         return filters
 
+    def print_guide_line(self, line):
+        if self.handler['highlight_enabled']:
+            print(f"\t\t{highlight(line,PythonLexer(),TerminalFormatter()).strip()}")
+        else:
+            print(f"\t\t{cl(line,'white')}")
+
     def show_guide(self, sguide, sections:list):
        
         if '-e' in sections:
-            # command line examples 
             for ie in sguide['examples'].split('\n'):
-                print(f"\t\t{cl(ie,'white')}")
-
+                self.print_guide_line(ie)
+                
         if '-a' in sections:
-            # only args 
             for arg in sguide['args'].split('\n'):
-                print(f"\t\t{cl(arg,'white')}")
-        
+                self.print_guide_line(arg)
+
         if '-l' in sections:
-            # lab test setup
             for lset in sguide['lab_setup'].split('\n'):
-                print(f"\t\t{cl(lset,'white')}")
+                self.print_guide_line(lset)
     
     def get_siddhi_guide(self):
+
         siddhi = self.get_siddhi()
         _vfassert_ = vfasserts(**self.handler)
         
@@ -102,7 +135,6 @@ class VFManager:
         print()
         
         # full guide -> examples, args, labs
-        #if vfACK(**self.handler).default_guide_mode():
         if _vfassert_.default_guide_mode():
             self.show_guide(sguide,['-e', '-a', '-l'])
 
@@ -151,7 +183,6 @@ class VFManager:
         print()
 
     def list_siddhis(self):
-        
         matches = self.query_siddhis()
 
         if not matches:
@@ -185,8 +216,15 @@ class VFManager:
             self.parse_handler_scope()
 
         siddhi = self.get_siddhi()
-        module_path = (siddhi.module.replace('/', '.').replace('\\', '.'))[:-3]
+        
+        try:
+            module_path = (siddhi.module.replace('/', '.').replace('\\', '.'))[:-3]
+        except AttributeError as aex:
+            if "no attribute 'module'" in aex.args[0]:
+                cprint("It seems like you haven't populated the database yet.", 'cyan')
+                cprint(f"   Just run load to fix this: {cl('$ vimana load --plugins.','green')}\n", 'cyan')
 
+                return 'blossom'
         try:
             _siddhi_ = __import__(module_path, globals(), 'siddhi', 1).siddhi
         except AttributeError as AEX:
@@ -219,16 +257,15 @@ class VFManager:
 
         _vfassert_ = vfasserts(**self.handler)
         
-        #if vfACK(**self.handler).version_search():
         if _vfassert_.version_search():
             self.handler['framework_search_version'] = True
 
         if self.handler['docker_scope'] \
                 and not self.handler['save_case'] \
                 or _vfassert_.exec_enabled():
-                #or vfACK(**self.handler).exec_enabled():
 
             self.handler['docker_scope'] = DockerDiscovery()
+            self.handler['auto'] = True 
 
             [targets_ports_set.extend(y) \
                 for y in [x['target_list'] \
@@ -263,6 +300,7 @@ class VFManager:
 
         if self.handler['multi_target']:
             b = self.set_sessions_control()
+            b = 0 if not b else b
             
             # if not a loaded case
             if not self.handler['args']:
@@ -273,14 +311,15 @@ class VFManager:
             rudrunner(**self.handler)
             
             a = self.set_sessions_control()
-            new_sessions = len(a) - len(b)
             
-            if new_sessions >= 1:
-                cprint(f"\n\t{new_sessions} {self.handler['module_run']} sessions successfuly recorded!\n", 'blue')
+            if a:
+                new_sessions = len(a) - len(b)
+            
+                if new_sessions >= 1:
+                    cprint(f"\n\t{new_sessions} {self.handler['module_run']} sessions successfuly recorded!\n", 'blue')
 
             os._exit(os.EX_OK) 
 
-        #if not vfACK(**self.handler).tatic_mode():
         if not _vfassert_.tatic_mode():
             try:
                 self.handler['target_url'] = targets_ports_set[0]
@@ -295,7 +334,6 @@ class VFManager:
                 )
 
                 sys.exit(1)
-
         else:
             if self.handler['target_url']:
                 self.handler['scope'] = {

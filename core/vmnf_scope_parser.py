@@ -3,7 +3,8 @@ from core.vmnf_check_target import CheckTargetScope
 from netaddr.core import AddrFormatError
 from libnmap.parser import NmapParser
 from neotermcolor import colored, cprint
-from core.vmnf_manager import vmng
+#from core.vmnf_manager import vmng
+from urllib.parse import urlparse
 from datetime import datetime
 from netaddr import valid_ipv4
 from netaddr import IPNetwork
@@ -13,9 +14,10 @@ import pathlib
 import socket
 import yaml
 import sys
+#from core.oms import is_target_set
 import os
 
-
+from .vmnf_asserts import vfasserts
 
 class ScopeParser:
     def __init__(self, **handler_ns):
@@ -23,11 +25,7 @@ class ScopeParser:
         self.target_scope = {}
 
         self.scope_error = colored(' - scope_error - ', 'white', 'on_red', attrs=['bold'])
-        self.target_defined = True if handler_ns['single_target'] \
-            or handler_ns['file_scope'] \
-            or handler_ns['ip_range'] \
-            or handler_ns['cidr_range'] \
-            or handler_ns['list_target'] else False
+        self.got_target = vfasserts(**handler_ns).is_target_set()
 
     def scope_validate(self):        
         valid_scope_port = False
@@ -67,7 +65,7 @@ class ScopeParser:
                 valid_scope_port = True
                 self.target_scope[str(target)] = self.port_status
 
-        if self.target_defined and not valid_scope_port:
+        if self.got_target and not valid_scope_port:
             arg = colored('--ignore-state', 'green', attrs=[])
             print(f"{self.scope_error} No active port has been identified.\nCheck the target's IP with a network scanner or use {arg} argument on vimana command line.\n")
             
@@ -139,7 +137,7 @@ class ScopeParser:
         elif self.handler_ns['list_target']:
             for target in self.handler_ns['list_target'].split(','):
                     self.target_list.append(target)
-        
+            
         # ***   scope: "file" with targets   ***
         elif self.handler_ns['file_scope']:
             scope_file = self.handler_ns['file_scope']
@@ -171,7 +169,7 @@ class ScopeParser:
                     port = tp[1].strip()
 
                     try:
-                        port = int(port)
+                        port = str(int(port))
                         if port not in self.port_list:
                             self.port_list.append(port)
                     except ValueError:

@@ -19,7 +19,6 @@ import argparse
 import hashlib
 import yaml
 
-
 from settings.siddhis_shared_settings import django_envvars as djev
 from settings.siddhis_shared_settings import csrf_table as csrf
 from settings.siddhis_shared_settings import set_header 
@@ -51,29 +50,30 @@ from siddhis.prana import prana
 
 class resultParser:   
     def __init__(self, results, **vmnf_handler):
+
         # dmt handler (argparser namespace) 
         self.vmnf_handler = vmnf_handler
         self.catched_exceptions = []
 
         self.fuzz_report=False
         tables = DJUtils().get_report_tables()
-        
-        #self.exceptions_tbl = tables['exceptions']
+
+        self.tickets_tbl = tables['tickets']
+        self.cves_tbl = tables['cves']
+
         self.config_issues_tbl = tables['configuration']
         self.summary_tbl = tables['summary']
-        self.tickets_tbl = tables['tickets']
         self.envleak_tbl = tables['envleak']
-        self.cves_tbl = tables['cves']
         self.traceback_objects_tbl = tables['objects']
 
         # siddhi name
         self.vmnf_handler = vmnf_handler 
-        self.siddhi = vmnf_handler['module_run'].lower()
+        self.siddhi = vmnf_handler.get('module_run').lower() 
 
         # results from djunch fuzzer 
         if (len(results['EXCEPTIONS'])) == 0:
             return None
-        
+
         # instance of djunch results
         self.fuzz_report = results 
         
@@ -85,7 +85,7 @@ class resultParser:
         
         # mapped (expanded url patterns from DMT)
         self.raw_patterns = self.vmnf_handler['raw_patterns']
-       
+
         # passive fingerprint results
         self.fingerprint = self.vmnf_handler['fingerprint']
 
@@ -100,6 +100,7 @@ class resultParser:
         else:
             vmnf_banners.sample_mode(colored('       DMT      ','white', 'on_red', attrs=['bold']),['bold'])
             print('\n\n')
+            
         
         if not self.fuzz_report:
             print('[result_parser: {}] Missing fuzzing result after {} execution'.format(
@@ -116,7 +117,8 @@ class resultParser:
             and not self.vmnf_handler.get('runner_mode'):
             mark_status = colored(' ● ', 'green', attrs=['bold', 'blink'])
             status_msg = colored('Consolidating analysis result...', 'blue')
-            print('\n {} {}'.format(mark_status, status_msg))
+
+            print(f'\n {mark_status} {status_msg}')
             sleep(1)
         
         security_tickets=None
@@ -145,21 +147,31 @@ class resultParser:
         tickets_siddhi = colored('tictrac', 'green')  
 
         django_version = self.sampler['EXCEPTION_SUMMARY'].get('Django Version').strip()
-        self.sampler['FINGERPRINT'] = self.fingerprint
         
-        # get well known framework issues by identified version [exception fuzzer]
-        fmk_version_issues = False
-        
-        if not self.vmnf_handler.get('sample'):
-            fmk_version_issues = DJUtils().get_version_issues(**self.sampler)
-        
-        if fmk_version_issues:
-            security_tickets = fmk_version_issues.get('tickets')
-            cves = fmk_version_issues.get('cves')
+        if not self.vmnf_handler.get('sample') \
+                and not self.vmnf_handler.get('external_disabled'):
 
-            self.tickets_tbl = fmk_version_issues.get('tickets_tbl')
-            self.cves_tbl = fmk_version_issues.get('cves_tbl')
+            # if sttinger already did it invoked by dmt itself
+            if self.vmnf_handler['search_issues']:
+                # reuse sttinger findings 
+                f_issues = self.vmnf_handler['fingerprint']
 
+                if f_issues:
+                    self.tickets_tbl = f_issues.get('tickets_tbl',False)
+                    security_tickets = f_issues.get('tickets',False)
+                    self.cves_tbl = f_issues.get('cves_tbl',False)
+                    cves = f_issues.get('cves',False)
+            else:
+                # issues lookup 
+                fmk_version_issues = False
+                fmk_version_issues = DJUtils().get_version_issues(**self.sampler)
+
+                if fmk_version_issues:
+                    self.tickets_tbl = fmk_version_issues.get('tickets_tbl')
+                    security_tickets = fmk_version_issues.get('tickets')
+                    self.cves_tbl = fmk_version_issues.get('cves_tbl')
+                    cves = fmk_version_issues.get('cves')
+        
         # issues overview
         installed_items = self.sampler['INSTALLED_ITEMS']
         self.issues_overview = {
@@ -184,7 +196,6 @@ class resultParser:
                     colored(tb_object['address'], 'blue')
                 ]
             )
-
 
         i_count = 1
         # >> load contexts 
@@ -298,7 +309,7 @@ class resultParser:
                 len(self.fuzz_report['EXCEPTIONS'])),'cyan')
         
             print(self.exceptions_tbl)
-        
+
         if not self.vmnf_handler.get('sample'):
             # get external issues references
             DJUtils().get_cwe_references()
@@ -313,7 +324,7 @@ class resultParser:
 
                 cprint(status, 'cyan', attrs=[])
                 print(self.config_issues_tbl)
-            
+
         if not self.vmnf_handler.get('sample'):
             ################################
             ### Framework version issues ###
@@ -323,22 +334,22 @@ class resultParser:
             cprint("\tSecurity tickets and CVEs associated with the Framework version\n",'cyan', attrs=[])
         
             # Security Tickets
-            cprint(']]- Security Tickets ({})'.format(tickets_siddhi), 'magenta')
+            cprint(f']]- Security Tickets ({tickets_siddhi})', 'magenta')
             if security_tickets:
                 print(self.tickets_tbl)
                 print()
             else:
-                print('No security tickets identified for Django {}'.format(django_version))
+                print(f'No security tickets identified for Django {django_version}')
 
             # CVE IDs
             if cves:
-                cprint(']]- CVE IDs ({})'.format(cve_siddhi), 'magenta')
+                cprint(f']]- CVE IDs ({cve_siddhi})', 'magenta')
                 print(self.cves_tbl)
-
+        
         report_tables = {
             'summary': self.summary_tbl.get_string(),
-            'tickets': self.tickets_tbl.get_string() if self.tickets_tbl else '?',
-            'cves': self.cves_tbl.get_string() if self.cves_tbl else '?',
+            'tickets': self.tickets_tbl if self.tickets_tbl else '?',
+            'cves': self.cves_tbl if self.cves_tbl else '?',
             'exceptions': self.exceptions_tbl.get_string(),
             'configuration': self.config_issues_tbl.get_string(),
             'contexts': self.envleak_tbl.get_string(),

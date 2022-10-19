@@ -1,4 +1,8 @@
 from ..config import db
+from sqlalchemy.ext.mutable import MutableList
+from sqlalchemy import PickleType
+from sqlalchemy.types import JSON
+
 
 
 class Siddhis(db.Model):
@@ -9,52 +13,71 @@ class Siddhis(db.Model):
         db.Integer, 
         primary_key = True
     )
-    _name_ = db.Column(
+    name = db.Column(
         db.String(30),
         unique = True,
         nullable = False
     )
-    _acronym_ = db.Column(
-        db.String(30),
+    author = db.Column(
+        db.String(100),
+        unique = False,
+        nullable = False
+    )
+    brief = db.Column(
+        db.String(100),
         unique = True,
         nullable = False
     )
-    _category_ = db.Column(
+    category = db.Column(
         db.String(30),
+        unique = False,
+        nullable = False
+    )
+    framework = db.Column(
+        db.String(50),
+        unique = False,
+        nullable = False
+    )
+    info = db.Column(
+        db.String(100),
         unique = True,
         nullable = False
     )
-    _framework_ = db.Column(
-        db.String(30),
+    module = db.Column(
+        db.String(50),
         unique = True,
         nullable = False
     )
-    _type_ = db.Column(
+    package = db.Column(
+        db.String(50),
+        unique = False,
+        nullable = True
+    )
+    type = db.Column(
         db.String(30),
+        unique = False,
+        nullable = False
+    )
+    tags = db.Column(
+        JSON,
+        unique = False,
+        nullable = False
+    )
+    description = db.Column(
+        db.String(1000),
         unique = True,
         nullable = False
     )
-    _module_ = db.Column(
-        db.String(30),
+    references = db.Column(
+        JSON,
+        unique = False,
+        nullable = False
+    )
+    guide = db.Column(
+        JSON,
         unique = True,
         nullable = False
     )
-    _author_ = db.Column(
-        db.String(30),
-        unique = True,
-        nullable = False
-    )
-    _brief_ = db.Column(
-        db.String(30),
-        unique = True,
-        nullable = False
-    )
-    _description_ = db.Column(
-        db.String(30),
-        unique = True,
-        nullable = False
-    )
-
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -63,5 +86,5 @@ class Siddhis(db.Model):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
     def __repr__(self):
-        return f"Session {self.session_id} successfully created!"
+        return f"successfully created!"
 

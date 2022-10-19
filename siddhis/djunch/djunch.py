@@ -32,64 +32,14 @@ from scrapy.crawler import CrawlerProcess
 #from twisted.internet.error import ReactorAlreadyRunning
 import twisted
 
+from scrapy.crawler import CrawlerRunner
+from scrapy.utils.log import configure_logging
+#from scrapy.spiders import Spider
+from twisted.internet import reactor
+
+
+
 class siddhi:   
-    module_information = collections.OrderedDict()
-    module_information = {
-        "Name":            "Djunch",
-        "Info":            "Django (Unchained) fuzzer",
-        "Category":        "Framework",
-        "Framework":       "Django",
-        "Type":            "Fuzzer",
-        "Module":          "siddhis/djunch",
-        "Author":          "s4dhu <s4dhul4bs[at]prontonmail[dot]ch",
-        "Brief":           "Django application fuzzer ",
-        "Description":
-        """
-        \r  This tool was designed to audit applications running with the Django
-        \r  framework. Acts as an input module for Vimana to collect base data. 
-        \r  DMT works seamlessly with other framework tools such as Djonga, DJunch,
-        \r  which are respectively brute force and fuzzing tools. Among the various
-        \r  actions taken are: Identification of the state of Debug extraction
-        \r  and mapping of application URL Patterns. This first step will serve as
-        \r  input to the fuzzer process (performed by DJunch) where tests will be
-        \r  conducted to handle and map unhandled exceptions, extract and identify
-        \r  sensitive information in the leaks, implementation failure testing. With
-        \r  the same initial DMT input the brute force process will be performed on
-        \r  the API authentication endpoints (if available) and also on the Django
-        \r  administrative interface (if available).
-
-        \r  At the end of the analysis it is possible to query the data obtained
-        \r  by DMT, using the commands to access contexts, view information about
-        \r  the identified exceptions, view the source code leaked by the affected
-        \r  modules, track CVEs and Security Tickets.
-
-        \r  Use 'args' cmdto see all available options: 
-        \r  $ vimana args --module dmt 
-
-        """
-
-    }
-
-    module_arguments = '''
-    ==========
-    # Djunch #
-    ==========
-
-    \r* Creating a fuzzer instance to use in another siddhi:
-
-    \rTo create a djunch instance it is necessary to pass the target in the format: 
-    \rscheme:ip/domain:port, a list with URL Patterns and the namespace with the command line arguments, 
-    \rin this way, the fuzzer can be invoked:
-
-    \rfuzz = Djunch(base_r, self.expanded_patterns,**self.vmnf_handler)
-    \rfuzz.start()
-
-    \rthe 'fuzz' object will be a list containing two entries: the issues identified and the contexts (envleak contexts).
-
-    \r* to simplify, in this version fuzzer will run against one target at a time
-    
-    '''
-
     def __init__(self,**vmnf_handler):
     
         self.pattern = '<dmt_trigger>'
@@ -157,14 +107,16 @@ class siddhi:
         if self.vmnf_handler.get('sample'):
             settings['RETRY_TIMES'] = 1
 
-        from scrapy.crawler import CrawlerRunner
-        from twisted.internet import reactor
-        
+        if self.vmnf_handler['disable_cache']:
+            settings['HTTPCACHE_ENABLED'] = False
+
         runner = CrawlerRunner(dict(settings))
         d = runner.crawl(_djuep_, **self.vmnf_handler)
+        
         try:
             reactor.run(0)
-        except KeyboardInterrupt:
+        except twisted.internet.error.ReactorAlreadyRunning:
             pass
-
+            
+            
 

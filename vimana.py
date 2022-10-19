@@ -12,9 +12,7 @@ if __name__ == '__main__':
         abduct()
     except KeyboardInterrupt:
         print("\033[0m")
-        print('\n[{}] Exiting Vimana framework...\n'.format(
-            datetime.now()
-            )
-        )
+        print(f'\n[{datetime.now()}] Exiting Vimana framework...\n')
+        
         sleep(1)
         sys.exit(0)

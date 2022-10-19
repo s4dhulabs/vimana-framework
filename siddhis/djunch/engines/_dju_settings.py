@@ -3,7 +3,18 @@
 class table_models:
     def __init__(self):
         self.exception_tbl_set = {
-            'fields': ['iid', 'type', 'function', 'location', 'line', 'lines', 'triggers', 'env', 'vars', 'occurrences'],
+            'fields': [
+                'iid', 
+                'type', 
+                'function', 
+                'location', 
+                'line', 
+                'lines', 
+                'triggers', 
+                'env', 
+                'vars', 
+                'occurrences'
+            ],
             'title' : 'Exceptions',
             'color' : 'blue',
             'attrs' : ['bold'],
@@ -50,6 +61,20 @@ class table_models:
             'color' : 'blue',
             'attrs' : ['bold'],
             'align' : 'c' 
+        }
+        self.siddhis_tbl_set = {
+            'fields': ['Name', 'Type', 'Category', 'Info'],
+            'title' : 'siddhis',
+            'color' : 'yellow',
+            'attrs' : ['bold'],
+            'align' : 'l' 
+        }
+        self.sttinger_findings_set = {
+            'fields': ['Endpoint', 'Version', 'Vrange', 'CVEs', 'Tickets'],
+            'title' : 'Sttinger Fingerprint',
+            'color' : 'yellow',
+            'attrs' : ['bold'],
+            'align' : 'l' 
         }
 
 

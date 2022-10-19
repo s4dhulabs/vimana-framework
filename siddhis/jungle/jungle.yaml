@@ -37,45 +37,45 @@ guide:
     ⠞⠓⠊⠎:⠞⠓⠎⠞⠎-⠞⠊⠞⠓~⠊⠎⠞⠓⠊ø└┐⠞⠓⠊⠎⠞⠓⠊  JUNGLE GUIDE  ⠞⠓⠊⠎.~⠞⠎⠞⠓⠞⠓⠊⠎,⠞⠊.⠞⠓⠊⠎⠞⠊⠎
     ø---------------------└┘-----------------------------------------------ø
 
-     Start jungle against the Django application admin portal
-     using the default
+        Start jungle against the Django application admin portal
+        using the default
     
-     $ vimana run \
-        --module jungle \
-        --target-url http://mydj1app.com:8887
+        $ vimana run \
+           --plugin jungle \
+           --target-url http://mydj1app.com:8887
 
     ø----------------------------------------------------------------------ø
 
-     Start jungle against the Django application admin portal
-     using a custom password and username lists.
+        Start jungle against the Django application admin portal
+        using a custom password and username lists.
  
-     $ vimana run \
-        --module jungle \
-        --target-url http://mydjapp1.com:8887 \
-        --usernames usernames.txt \
-        --passwords passwords.txt
+        $ vimana run \
+           --module jungle \
+           --target-url http://mydjapp1.com:8887 \
+           --usernames usernames.txt \
+           --passwords passwords.txt
 
     ø----------------------------------------------------------------------ø
 
-     Start jungle against the Django application admin portal
-     using a custom password and username lists, setting 
-     default proxy (SOCKS5://127.0.0.1:9050) and enabling debug:
+        Start jungle against the Django application admin portal
+        using a custom password and username lists, setting 
+        default proxy (SOCKS5://127.0.0.1:9050) and enabling debug:
 
-     $ vimana run \
-        --module jungle \
-        --target-url http://mydjapp1.com:8887 \
-        --usernames usernames.txt \
-        --passwords passwords.txt \
-        --set-proxy \       
-        --debug
+        $ vimana run \
+           --module jungle \
+           --target-url http://mydjapp1.com:8887 \
+           --usernames usernames.txt \
+           --passwords passwords.txt \
+           --set-proxy \       
+           --debug
 
   lab_setup: |
     ø----------------------------------------------------------------------ø
     │└┘⠞⠓┌┐│└⠞⠓└┘┌⠞⠓┐┌┘.┌⠞⠓┬┐.└┐┘│ LAB SETUP  ┘└┐│.└┘.┌┐│⠞⠓│┬.│⠞└┘┌┬┐└┐┌.│.│
     ø----------------------------------------------------------------------ø
   
-     You can see lab examples with:
-     $ vimana guide -m dmt -l
+       You can see lab examples with:
+       $ vimana guide -m dmt -l
 
 
 

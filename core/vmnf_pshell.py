@@ -24,6 +24,7 @@ from pygments.lexers import PythonLexer
 from prompt_toolkit.styles import Style
 from neotermcolor import colored, cprint
 from prettytable import PrettyTable
+from res.vmnf_banners import case_header
 from res.colors import *
 from time import sleep
 import itertools
@@ -61,20 +62,6 @@ class vmnfshell:
         self.contexts = self.sampler.get('CONTEXTS',False)
         self.keyenv_contexts = self.sampler.get('KEY_ENV_CONTEXTS',False)
         self.report_items = _vmnf_session_.get('report_tables',False)
-
-        """
-        print(">> This is report items:")
-        print(self.report_items.get('cves')._rows)
-        print(len(self.report_items.get('cves')._rows))
-        print(type(self.report_items.get('cves')))
-
-        print(self.report_items.get('tickets')._rows)
-        print(len(self.report_items.get('tickets')._rows))
-        print(type(self.report_items.get('tickets')))
-        #for i in self.report_items:
-        #    print(i)
-        input()
-        """
 
         self.security_tickets = _vmnf_session_.get('security_tickets',False)
         self.installed_items = self.sampler.get('INSTALLED_ITEMS',False)
@@ -118,6 +105,7 @@ class vmnfshell:
                         os._exit(os.EX_OK)
                     
                     elif r_cmd == 'run':
+                        case_header()
                         _pset_.valid_run_option('?')
                         continue
 
@@ -161,15 +149,46 @@ class vmnfshell:
                         
                         # set callback signals to siddhi
                         self._vmnf_session_['callback_session'] = True
-                        
-                        if arg in ['wc', 'web_crawler', 'crawler']:
-                            self._vmnf_session_['siddhi_run'] = \
-                                crawler.module_information.get('Name').lower()
+                     
+                        if arg in [
+                            'ss',
+                            'qx', 
+                            'cx',
+                            'query_extractor', 
+                            'creds_extractor',
+                            'secret_scan'
+                            ]:
+
+                            extractors = {
+                                'qx': 'SQL query patterns',
+                                'query_extractor': 'SQL query patterns',
+                                'cx': 'Credential patterns',
+                                'creds_extractor': 'Credential patterns',
+                                'secret_scan': 'Secrets',
+                                'ss': 'Secrets'
+                            }
+
+                            hl_xtype = colored(extractors[arg],44, 867)
+
+                            for exception in self._issues_.get('EXCEPTIONS'):
+                                exception_type = exception['EXCEPTION_SUMMARY'].get('Exception Type')
+                                exception_type = colored(exception_type, 'red', attrs=['bold'])
+                                   
+                                cprint(f"\n➥ Looking for {hl_xtype} on {exception_type} exception metadata...\n")
+                                sleep(0.40)
+                                
+                                DJUtils(False,False).extract_metadata(
+                                    arg,*exception['EXCEPTION_TRACEBACK']
+                                )
+
+                            print()
+
+                        elif arg in ['wc', 'web_crawler', 'crawler']:
+                            self._vmnf_session_['siddhi_run'] = 'viwec'
                             crawler(**self._vmnf_session_).start()
                         
                         elif arg in ['bf', 'brute_force', 'bruteforce']:
-                            self._vmnf_session_['siddhi_run'] = \
-                                bruteforce.module_information.get('Name').lower()
+                            self._vmnf_session_['siddhi_run'] = 'jungle'
                             bruteforce(**self._vmnf_session_).start()
 
                         elif arg in ['it', 'issues_tracker', 'itracker']:
@@ -194,7 +213,6 @@ class vmnfshell:
                             if not issues_found or issues_found is None:
                                 print('>> Was not possible to retrieve issues')
                                 continue
-                       
                             
                             #print(issues_found.get('cves'))
 
@@ -318,21 +336,21 @@ class vmnfshell:
                             cprint("\n→ Applications enabled in this Django installation", 'cyan')
                             print()
                             for app in self.installed_items['Installed Applications']:
-                                print('   {}'.format(app))
+                                print(f'   {app}')
                             print()
 
                         elif arg == 'middlewares':
                             cprint("\n→ Enabled Django middlewares", 'cyan')
                             print()
                             for mid in self.installed_items['Installed Middlewares']:
-                                print('   {}'.format(mid))
+                                print(f'   {mid}')
                             print()
 
                         elif arg == 'databases':
                             cprint("\n→ Available databases", 'cyan')
                             print()
                             for k,v in self.sampler['DB_SETTINGS'].items():
-                                print('   {}: {}'.format(k,v))
+                                print(f'   {k}: {v}')
                             print()
 
                         elif arg == 'objects':
@@ -356,11 +374,11 @@ class vmnfshell:
                         elif arg == 'log':
                             for entry in self._issues_.get('FUZZ_STATUS_LOG'):
                                 for k,v in entry.items():
-                                    print('\t + {}: {}'.format(k,colored(v,'blue')))
+                                    print(f"\t + {k}: {colored(v,'blue')}")
                                     sleep(0.01)
                                 cprint('-'*100,'magenta',attrs=['dark'])
                         
-                        elif arg == 'references':
+                        elif arg in ['ref','refs','references'] or arg.startswith('ref'):
                             DJUtils().consolidate_issues(self._issues_,self.report_items)
                             
                         continue

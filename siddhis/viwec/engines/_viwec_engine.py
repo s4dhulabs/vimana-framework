@@ -109,6 +109,7 @@ class vwce(scrapy.Spider):
         #print()
 
     def closed(self,reason):
+        
         if self.single_target and not self.started:
             cprint("[{}] Connection failure: check the HTTP scheme and try again.\n".format(
                 datetime.now()), 'red')

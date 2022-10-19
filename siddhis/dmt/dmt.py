@@ -38,48 +38,6 @@ from .engines._dmt_parser import DMTEngine as _dmt_
 
 
 class siddhi:   
-    module_information = collections.OrderedDict()
-    module_information = {
-        "Name":         "DMT",
-        "Info":         "Django Misconfiguration Tracker",
-        "Category":     "Framework",
-        "Framework":    "Django",
-        "Type":         "Tracker",
-        "Module":       "siddhis/dmt",
-        "Author":       "s4dhu <s4dhul4bs[at]prontonmail[dot]ch",
-        "Brief":        "Tracks and exploits misconfigurations in Django applications",
-        "Description":
-        """
-
-        \r  This tool was designed to audit applications running with the Django
-        \r  framework. Acts as an input module for Vimana to collect base data.
-        \r  DMT works seamlessly with other framework tools such as Djonga, DJunch,
-        \r  which are respectively brute force and fuzzing tools. Among the various
-        \r  actions taken are: Identification of the state of Debug extraction
-        \r  and mapping of application URL Patterns. This first step will serve as
-        \r  input to the fuzzer process (performed by DJunch) where tests will be
-        \r  conducted to handle and map unhandled exceptions, extract and identify
-        \r  sensitive information in the leaks, implementation failure testing. With
-        \r  the same initial DMT input the brute force process will be performed on
-        \r  the API authentication endpoints (if available) and also on the Django
-        \r  administrative interface (if available).
-
-        \r  At the end of the analysis it is possible to query the data obtained
-        \r  by DMT, using the commands to access contexts, view information about
-        \r  the identified exceptions, view the source code leaked by the affected
-        \r  modules.
-
-        \r  Run DMT with 'args' command to show all available options:
-        \r  $ vimana args --module dmt
-
-        """
-
-    }
-    
-    # help to 'args' command in main vimana board: vimana args --module dmt
-    module_arguments = VimanaSharedArgs().shared_help.__doc__
-
-
     def __init__(self,**vmnf_handler):
    
         self.vmnf_handler = vmnf_handler
@@ -126,10 +84,16 @@ class siddhi:
         headers['Origin']   = self.vmnf_handler['target_url']
         headers['Referer']  = self.vmnf_handler['target_url']
         self.vmnf_handler['fuzz_settings'] = settings
-        self.vmnf_handler['meta'] = {"max_retry_times": 3,'dont_merge_cookies': True}
+        self.vmnf_handler['meta'] = {
+            "max_retry_times": 3,
+            'dont_merge_cookies': True
+        }
         self.vmnf_handler['download_timeout'] = 3
         self.vmnf_handler['method'] = 'GET'
         self.vmnf_handler['headers'] = headers
+
+        if self.vmnf_handler['disable_cache']:
+            settings['HTTPCACHE_ENABLED'] = False
 
         try:
             process = CrawlerProcess(dict(settings))

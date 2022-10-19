@@ -10,12 +10,12 @@ from core.vmnf_urls_parser import digest_scope
 #from siddhis.dmt.dmt import siddhi as dmt_siddhi
 from siddhis.djunch.djunch import siddhi as Djunch
 from siddhis.dmt.engines._dmt_parser import DMTEngine
-
+from collections import defaultdict
 
 
 
 def handle_fuzz_scope(**fuzz_ns):
-    
+
     # fuzz banner
     print(vmnf_banners.circuits_banner('fuzzer'))
     
@@ -63,7 +63,7 @@ def handle_fuzz_scope(**fuzz_ns):
         
         print(f'''
         \r[fuzz_scope] Error: {argument} argument requires a {scope_type} file.
-        \rexample: vimana run --fuzzer --target http://mydjpyapp.com --port 8000 --urls-file urls.py''')
+        \rexample: vf run --fuzzer --target http://mydjpyapp.com --port 8000 --urls-file urls.py''')
 
         sys.exit(1)
 
@@ -71,7 +71,7 @@ def handle_fuzz_scope(**fuzz_ns):
         and scope_file.split('.')[1] == 'py':
         print(f'''
         \r[fuzzer_scope] Error: {argument} argument requires a {scope_type} file.
-        \rexample: vimana run --fuzzer --target http://mydjpyapp.com --port 8000 --patterns patterns.txt''')
+        \rexample: vf run --fuzzer --target http://mydjpyapp.com --port 8000 --patterns patterns.txt''')
 
         sys.exit(1)
 
@@ -107,8 +107,6 @@ def handle_fuzz_scope(**fuzz_ns):
         'fuzz_patterns'  : patterns,
     }
 
-
-
     for k,v in _scope_.items():
         if k != 'fuzz_patterns':
             print('|+| {}:\t{}'.format(k,v))
@@ -125,42 +123,27 @@ def handle_fuzz_scope(**fuzz_ns):
     fuzz_ns.update(**_scope_)
     fuzz_ns.update(**headers)
 
+    #if not fuzz_ns.get('auto'):
     confirmation = False
     while not confirmation:
         confirmation = input(f'''\nWere detected {_scope_['scope_size']} input URL Patterns, continue? (Y/n) > ''')
-
         print()
 
-        if confirmation.lower() == 'y':
-            '''
-            try:
-                requests.get(self.target_url)
-            except requests.exceptions.ConnectionError:
-                self.target_url = 'https://' + entry
+        if confirmation.lower() != 'y':
+            break 
 
-            '''
-
-
-            fuzz_ns['scope'] = ScopeParser(**fuzz_ns).parse_scope()
-            targets_ports_set = get_tool_scope(**fuzz_ns)
+        fuzz_ns['scope'] = ScopeParser(**fuzz_ns).parse_scope()
+        targets_ports_set = get_tool_scope(**fuzz_ns)
             
-            for entry in targets_ports_set:
-                fuzz_ns['target_url']= 'http://' + entry
-                expatterns = DMTEngine(**fuzz_ns).patterns_mapper(True)
+        for entry in targets_ports_set:
+            fuzz_ns['target_url']= 'http://' + entry
+            expatterns = DMTEngine(**fuzz_ns).patterns_mapper(True)
 
-                fuzz_ns['patterns']= expatterns
-                x = Djunch(**fuzz_ns).start()
-                break
+            fuzz_ns['patterns']= expatterns
+            fuzz_ns['raw_patterns']= expatterns
+            fuzz_ns['fingerprint']= ''
+            fuzz_ns['patterns_views']=False
+            fuzz_ns['module_run']= 'djunch'
 
-                '''
-                fuzz_ns['patterns']= expatterns
-                fuzz_ns['patterns_table']= xlp_tbl_x
-                fuzz_ns['patterns_views']=False
-                fuzz_ns['module_run']= 'djunch'
-
-                fuzz_result=Djunch(**fuzz_ns).start()
-                '''
-
-
-
-
+            fr = Djunch(**fuzz_ns).start()
+            

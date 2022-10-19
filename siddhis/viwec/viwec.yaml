@@ -1,0 +1,62 @@
+name: viwec
+author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
+brief: Vimana Web Crawler 
+category: discovery
+framework: generic
+info:  Simple web crawler utility
+module: siddhis/viwec/viwec.py
+package: False
+type: crawler
+tags:
+  - discovery
+description: |
+  Simple web crawler utility to work isolated (directly
+  by command line), and also integrated to enrich
+  post-analysis as with DMT.
+references:
+  links: False
+  cwe: False
+guide:
+  args: |
+    ø----------------------------------------------------------------------ø
+    │└┐└┌⠞⠓┬┐│└æ┌┐æ│└æ└┘┌┐┌⠞⠓┬┐æ┘æ└┘ VIWEC ARGS  æ│┘┌⠞⠓┬┐æ│┐æ│┘æ││æ│┘æ│~æ│
+    ø-----------+----------------------------------------------------------ø
+    │ scope     └┐                                                         │
+    +------------+---------------------------------------------------------+
+     --target-url        Application base URL (required)
+
+  examples: |
+    ø----------------------------------------------------------------------ø
+    ⠞ ⠓ ⠎ ⠞ ⠎⠞⠎ ⠞⠊⠞⠓ ⠊⠎⠞⠓⠊  ⠞⠓⠊⠎⠞⠓⠊  VIWEC GUIDE  ⠞⠓⠊⠎.~ ⠎⠞ ⠞ ⠊⠎ ⠞⠊.⠞ ⠊⠎⠎
+    ø----------------------------------------------------------------------ø
+
+        Running viwec against a target application:
+     
+        $ vimana run --module viwec --target-url http://myapp.lab.com
+
+    ø----------------------------------------------------------------------ø
+     
+     * viwec in post-analysis 
+
+        viwec can also be invoked through session prompt like DMT.
+        When you enter the prompt after consolidation, you can run:
+
+        s4dhu@vimana:dmt ⠶  run wc
+        
+        In this case, viwec will automatically take as scope all
+        the URL patterns mapped and expanded by DMT and Djunch,
+        and you don't need to specify target URLs.
+
+  lab_setup: |
+    ø----------------------------------------------------------------------ø
+    │└┘⠞⠓┌┐│└ø└┘┌Þ┐┌┘.┌Þ┬┐þ└┐Þ┘│ĦÞ~  VIWEC LABS  ~Þ┘└┐│Ŋ..└┘Ŋµ→┌⠞⠓┬┐┌┐│⠞⠓│┬│
+    ø----------------------------------------------------------------------ø
+  
+        Here you'll only need the application URL to get started.
+        If you're researching, it would be interesting to have some labs 
+        running an application to perform some tests. 
+  
+        You can a example here:
+
+        $ vimana guide -m dmt -l
+

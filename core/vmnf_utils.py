@@ -12,7 +12,7 @@ from prompt_toolkit import PromptSession
 from pygments.lexers.sql import SqlLexer
 from pygments.lexers import PythonLexer
 from prompt_toolkit.styles import Style
-from neotermcolor import colored, cprint
+from neotermcolor import cprint, colored as cl
 from prettytable import PrettyTable
 from time import sleep
 from res.colors import *
@@ -22,8 +22,39 @@ import getpass
 import sys
 import os
 import re
+from core._dbops_.models.siddhis import Siddhis as VFSD
 
+class describe:
+    def __init__(self, **handler:dict):
+        self.handler = handler
 
+    def siddhi(self, siddhi:VFSD):
+        print("\033c", end="")
+        print()
+
+        print(f"""
+        {cl('Name','blue'):>20} {siddhi.name:>3}
+        {cl('Author','blue'):>20} {siddhi.author:>3}
+        {cl('Info','blue'):>20} {siddhi.info:>3}
+        {cl('Category','blue'):>20} {siddhi.category:>3}
+        {cl('Framework','blue'):>20} {siddhi.framework:>3}
+        {cl('Package','blue'):>20} {siddhi.package:>3}
+        {cl('Type','blue'):>20} {siddhi.type:>3}
+        {cl('Tags','blue'):>20} {','.join(siddhi.tags):>3}""")
+
+        if siddhi.references.get('cwe'):
+            print(f"""{cl('CWE', 'blue'):>28} {','.join([c.split(' - ')[0].split('-')[1]
+                    for c in siddhi.references.get('cwe')]):>3}""")
+        print()
+        for i in siddhi.description.split('\n'):
+            print(f"\t\t{cl(i,'cyan')}")
+
+        print(f"{cl('References', 'blue'):>28}")
+
+        if siddhi.references['links']:
+            for link in siddhi.references['links']:
+                print(f"\t\t{cl(link,'cyan')}")
+            print()
 
 class pshell_set:
     def __init__(self, **handler):
@@ -110,7 +141,9 @@ class pshell_set:
 
         self.valid_run_utils = {
             'wc|web_crawler': 'run crawler plugin against the pre-collected scope (dmt)',
-            'cs|code_scan': 'run the utility against the code snippets of tracebacks (in progress)',
+            'qx|query_extractor': 'run extractor utility looking for SQL metadata on exception leaks',
+            'cx|creds_extractor': 'run extractor utility looking for credentials on exception leaks',
+            'ss|secret_scan': 'run scan utility looking for secret patterns on metadata',
             'bf|brute_force': 'run bruteforce plugin against Django admin portal',
             'it|issues_tracker': 'run issues tracker plugins against framework version'
         }
@@ -124,26 +157,23 @@ class pshell_set:
         ]
 
         self.sec_midd_tbl.align = "l"
-        self.sec_midd_tbl.title = colored(
+        self.sec_midd_tbl.title = cl(
             "~ django.middleware.security.SecurityMiddleware ~",
             "white",attrs=['bold']
         )
-
-
-
 
     def valid_run_option(self,arg):
         if arg not in (
             list(itertools.chain(*[p.split('|') \
                 for p in self.valid_run_utils.keys()]))):
             
-            cprint('\n[run] → Supported plugins:\n','cyan')
+            cprint('\n[run] → Utilities:\n','cyan')
         
             for k,v in self.valid_run_utils.items():
                 print('{:>25} {:>10}   {}'.format(
-                    colored(k.split('|')[1], 'red'),
-                    colored(k.split('|')[0], 'green'),
-                    colored(v, 'blue')
+                    cl(k.split('|')[1], 'red'),
+                    cl(k.split('|')[0], 'green'),
+                    cl(v, 44,841)
                     )
                 )
             print()
@@ -184,9 +214,9 @@ class pshell_set:
             cat,desc = v.split('|')
 
             print('  {:15s}{:25s}{:25s}'.format(
-                colored(str(k) + ': ','blue'),
-                colored(cat.strip(), 'green'),
-                colored("\x1B[3m{}\x1B[0m".format(desc.strip()),'white')
+                cl(str(k) + ': ','blue'),
+                cl(cat.strip(), 'green'),
+                cl("\x1B[3m{}\x1B[0m".format(desc.strip()),'white')
                 )
             )
         print()
@@ -202,7 +232,7 @@ class pshell_set:
             "'",''), 'green')
         print()
         '''
-        num_vars = colored(str(len(self.keyenv_contexts.get(arg))), 'white')
+        num_vars = cl(str(len(self.keyenv_contexts.get(arg))), 'white')
         cprint("[{}]→ Found {} variables for keyword \"{}\"\n".format(cmd, num_vars, arg),"cyan")
 
         for env_match in self.keyenv_contexts.get(arg):

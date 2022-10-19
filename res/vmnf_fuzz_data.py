@@ -53,4 +53,12 @@ class VMNFPayloads:
     def get_pyvars(self):
         with open(settings.common_pyvars) as f:
             return [p.strip('\n') for p in f.readlines()[1:]]
-
+    def get_sqlkw(self):
+        with open(settings.common_sqlkw) as f:
+            return [p.strip('\n') for p in f.readlines()]
+    def get_credskw(self):
+        with open(settings.common_credskw) as f:
+            return [p.strip('\n') for p in f.readlines()]
+    def get_secret_regex(self):
+        with open(settings.common_secrets_re) as f:
+            return [p.strip('\n') for p in f.readlines()[1:]]

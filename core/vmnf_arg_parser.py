@@ -44,7 +44,7 @@ class VimanaParser:
         subparsers = parser.add_subparsers()   
         # -----------------------------------------------------------------
         # Vimana interactive mode 
-        # ----------------------- 
+        # -----------------------------------------------------------------
         # In this mode all required arguments and customizations 
         # will be set step by step, this also allows to configure
         # verbosity, threads, debug, realtime exception catcher etc      	
@@ -57,10 +57,10 @@ class VimanaParser:
         )
     
         # -----------------------------------------------------------------
-        # 'list' command overview 
-        # -----------------------
-        # vimana list --modules -t/-c/-f [options] 
-        # vimana list --exploits [same of `vimana list --modules -t exploit`]
+        # `list` command overview 
+        # -----------------------------------------------------------------
+        # vf list --modules -t/-c/-f [options] 
+        # vf list --exploits [same of `vimana list --modules -t exploit`]
         # -----------------------------------------------------------------
         list_cmd = subparsers.add_parser('list', 
             help='List available resources'
@@ -69,6 +69,8 @@ class VimanaParser:
         list_cmd.add_argument('--cases', action='store_true',dest='list_cases')
         list_cmd.add_argument('--sessions', action='store_true',dest='list_sessions')
         list_cmd.add_argument('--modules', action='store_true',dest='module_list')
+        list_cmd.add_argument('--plugins', action='store_true',dest='module_list')
+        list_cmd.add_argument('--siddhis', action='store_true',dest='module_list')
         list_cmd.add_argument('-t', '--type', action='store')
         list_cmd.add_argument('-c', '--category', action='store', dest='category')
         list_cmd.add_argument('-f', '--framework', action='store', dest='framework')
@@ -77,8 +79,8 @@ class VimanaParser:
 	    choices=('reverse-shell', 'bind-port', 'backdoor', 'exfiltration-server')
         )
         # -----------------------------------------------------------------
-        # 'flush' command overview 
-        # ------------------------
+        # `flush` command overview 
+        # -----------------------------------------------------------------
         # vf flush --session <session_id>
         # vf flush --sessions --xray
         # vf flush --case <case_id>
@@ -91,23 +93,29 @@ class VimanaParser:
         flush_cmd.add_argument('--case',action='store', dest='flush_case')
         flush_cmd.add_argument('--show-details',action='store_true', dest='flush_details')
         flush_cmd.add_argument('--xray',action='store_true', dest='xray_enabled')
+        flush_cmd.add_argument('--fastflush',action='store_true', dest='fastflush')
+        
         
         # -----------------------------------------------------------------
-        # 'load' command overview 
-        # ----------------------
-        # vimana load --session <session_id>
+        # `load` command overview 
+        # -----------------------------------------------------------------
+        # vf load --plugins
+        # vf load --session <session_id>
         # -----------------------------------------------------------------
         load_cmd = subparsers.add_parser('load', add_help=False)
         load_cmd.add_argument('--session', 
             action='store', 
             dest='load_session', 
-            default='_missing_session_id_'
+        ) 
+        load_cmd.add_argument('--plugins', 
+            action='store_true', 
+            dest='load_plugins', 
         ) 
 
         # -----------------------------------------------------------------
-        # 'run' command overview 
-        # ----------------------
-        # vimana run --modules/--fuzzer/--discovery -t https://www.mypyapp.com [-f framewok]
+        # `run` command overview 
+        # -----------------------------------------------------------------
+        # vf run --modules/--fuzzer/--discovery -t https://www.mypyapp.com [-f framewok]
         # -----------------------------------------------------------------
         run_cmd = subparsers.add_parser('run',
             parents=[VimanaSharedArgs().args()],
@@ -118,27 +126,59 @@ class VimanaParser:
         run_cmd.add_argument('--save-case', action='store', dest='save_case')
         run_cmd.add_argument('--case', action='store', dest='case_file')
         run_cmd.add_argument('--flush-cases', action='store_true', dest='flush_cases')
-        run_cmd.add_argument('--module', action='store', dest='module_run')
+        run_cmd.add_argument('-m','--module', action='store', dest='module_run')
+        run_cmd.add_argument('--siddhi', action='store', dest='module_run')
+        run_cmd.add_argument('--plugin', action='store', dest='module_run')
         run_cmd.add_argument('--fuzzer', action='store_true')
         run_cmd.add_argument('--discovery', action='store_true')
         run_cmd.add_argument('--fingerprint', action='store_true')
         run_cmd.add_argument('--exec-case', action='store_true', default=False)
         run_cmd.add_argument("--exit-on-trigger", action="store_true", dest='exit_on_trigger')
-        
+        run_cmd.add_argument("--disable-external", action="store_true", dest='external_disabled')
         # -----------------------------------------------------------------
         # 'info' command overview 
-        # -----------------------
-        # vimana info --module <module_name>
+        # -----------------------------------------------------------------
+        # vf info --module <module_name>
         # -----------------------------------------------------------------
         info_cmd = subparsers.add_parser('info',
             help='Show information about Vimana resources'
         )
-        info_cmd.add_argument('-m', '--module-name',action='store',dest='module_info')
+        info_cmd.add_argument('-m', '--module',action='store',dest='module_info')
+        info_cmd.add_argument('-s', '--siddhi',action='store',dest='module_info')
+        info_cmd.add_argument('-p', '--plugin',action='store',dest='module_info')
         
         # -----------------------------------------------------------------
-        # 'arg' command overview 
+        # 'guide' command overview 
+        # -----------------------------------------------------------------
+        # vf guide --module <module_name> <options>
+        # 
+        # vf guide -m <module>              
+        # vf guide -m <module> --examples
+        # vf guide -m <module> --args
+        # vf guide -m <module> --labs
+        # -----------------------------------------------------------------
+        guide_cmd = subparsers.add_parser('guide',
+            help='Show usage examples'
+        )
+        guide_cmd.add_argument('-m', '--module',action='store',dest='module_guide')
+        guide_cmd.add_argument('-p', '--plugin',action='store',dest='module_guide')
+        guide_cmd.add_argument('-a', '--args',action='store_true',dest='guide_args')
+        guide_cmd.add_argument('-e', '--examples',action='store_true',dest='guide_examples')
+        guide_cmd.add_argument('-l', '--labs',action='store_true',dest='guide_labs')
+        guide_cmd.add_argument('--highlight',action='store_true',dest='highlight_enabled')
+        
+        guide_cmd = subparsers.add_parser('guides',
+            help='Show usage examples'
+        )
+        guide_cmd.add_argument('-m', '--module',action='store',dest='module_guide')
+        guide_cmd.add_argument('-p', '--plugin',action='store',dest='module_guide')
+        guide_cmd.add_argument('-a', '--args',action='store_true',dest='guide_args')
+        guide_cmd.add_argument('-e', '--examples',action='store_true',dest='guide_examples')
+        guide_cmd.add_argument('-l', '--labs',action='store_true',dest='guide_labs')
+        # -----------------------------------------------------------------
+        # 'arg' command overview / disabled on vimana v0.7 → guide cmd
         # ----------------------
-        # vimana arg --module <module_name>
+        # vf arg --module <module_name>
         # -----------------------------------------------------------------
         args_cmd = subparsers.add_parser('args',
             help='Show module arguments'
@@ -146,7 +186,6 @@ class VimanaParser:
         args_cmd.add_argument('-m', '--module',action='store',dest='module_args')
         
         return parser
-
 
     def start_handler(self):
         
@@ -190,7 +229,15 @@ class VimanaParser:
             module          = False,
             modules         = False,
             module_info     = False,
+            module_guide    = False,
+            guide_args      = False,
+            guide_examples  = False,
+            guide_labs      = False,
+            highlight_enabled = False,
             module_run      = False,
+            siddhi_run      = False,
+            plugin_run      = False,
+            external_disabled = False,
             module_list     = False,
             list_payloads   = False,
             list_cases      = False,
@@ -201,14 +248,16 @@ class VimanaParser:
             runner_tasks    = False,
             docker_scope    = False,
             exit_on_trigger = False,
+            vmnf_debugger   = False,
             load_session    = False,
+            load_plugins    = False,
             flush_sessions  = False,
             flush_cases     = False,
             flush_session   = False,
             flush_case      = False,
             endpoint_url    = False,
             xray_enabled    = False,
-            #flush_cases     = False,
+            fastflush       = False,
             module_args     = False,
             framework       = False,
             url_conf        = False,
@@ -255,6 +304,7 @@ class VimanaParser:
         handler_ns.args = vmn_options.parse_known_args(
             namespace=handler_ns)[1]
         
+
         return handler_ns
 
 
