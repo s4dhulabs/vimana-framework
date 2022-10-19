@@ -60,8 +60,8 @@ class DMTEngine(scrapy.Spider):
         super(DMTEngine, self).__init__(*args,**vmnf_handler)
         
         self.tps = False
-        self.f_start = ' _n0p_ '
-        self.f_map = ' _n0p_ '
+        self.f_start = ' _n0p_'
+        self.f_map = ' _n0p_'
         self.vmnf_handler = vmnf_handler
         self.target_url = vmnf_handler.get('target_url')
         self.debug_is_on = vmnf_handler.get('debug')
@@ -115,11 +115,10 @@ class DMTEngine(scrapy.Spider):
         
         # call new djunch engine
         Djunch(**self.vmnf_handler).start()
-
         #os._exit(os.EX_OK)
 
     def start_requests(self):
-        
+
         targets_ports_set = []
         
         # This will be used in future versions to configure the fuzzer options: full, fast, etc.
@@ -128,6 +127,7 @@ class DMTEngine(scrapy.Spider):
             and not self.vmnf_handler['runner_mode']:
 
             print(VimanaSharedArgs().shared_help.__doc__)
+
             try: 
                 sys.exit(1) 
             except builtins.SystemExit:
@@ -173,48 +173,38 @@ class DMTEngine(scrapy.Spider):
             os._exit(os.EX_OK)
 
     def run_passive_fingerprint(self):
+        self.vmnf_handler['search_issues'] = True
+
         sttd = {
             'target_url': self.target_url,
             'siddhi_call': self.vmnf_handler.get('module_run'),
-            'quiet_mode': True,
+            'quiet_mode': False,
             'search_issues':True
         }
         
-        cprint('\n{}Starting passive fingerprint...'.format(self.f_start),'cyan')
+        cprint(f"\n{self.f_start} Starting passive fingerprint...",'cyan')
         sleep(1)
         
         self.found_version = sttinger(**sttd).start()
-        
-        if not self.found_version:
-            print('{} Version not identified'.format(self.f_map))
-            return False
-
-        hl_v = colored(self.found_version.get('versions'),'red',attrs=['bold'])
-
-        print('{} Running Django {} / ({} - {}) → {} associated tags.'.format(
-            self.f_map,hl_v,self.found_version.get('min'),
-            self.found_version.get('max'),len(self.found_version.get('version_list'))
-            )
-        )
-        print('{} {} CVEs'.format(self.f_map,len(self.found_version.get('cves'))))
-        print('{} {} Security Tickets'.format(self.f_map,len(self.found_version.get('tcts'))))
-        
+    
     def status_handler(self,response):
-        self.f_start = colored('▸ ','red',attrs=['bold'])
+        self.f_start = colored('▸','red',attrs=['bold'])
         self.f_map = colored('  ↪','blue')
         self.exit_step = False
 
         if not self.vmnf_handler.get('sample'):
             print()
             for k,v in response.headers.items():
-                print('   - {}: {}'.format(k.decode(),v[0].decode()))
+                print(f"   ◉   {k.decode()}: {colored(v[0].decode(),'green')}")
         
         # passive framework version fingerprint - sttinger
-        if not self.vmnf_handler.get('sample'):
+        if not self.vmnf_handler.get('sample') \
+                and not self.vmnf_handler.get('external_disabled'):
+
             self.run_passive_fingerprint()
         
         if not self.vmnf_handler.get('sample'):
-            cprint('\n{}Checking DEBUG status...'.format(self.f_start),'cyan')
+            cprint(f"\n{self.f_start} Checking DEBUG status...",'cyan')
             sleep(0.20)
 
         if response.status == 404:
@@ -224,8 +214,7 @@ class DMTEngine(scrapy.Spider):
             
             if (exp_msg) is None:
                 exp_msg = colored('Debug is not enabled', 'red')
-                cprint("\n[{}] The target doesn't seem to be vulnerable: {}.\n".format(
-                    datetime.now(), exp_msg), 'magenta')
+                cprint(f"\n[{datetime.now()}] The target doesn't seem to be vulnerable: {exp_msg}.\n",'magenta')
                 os._exit(os.EX_OK)
 
             exp_msg = exp_msg.replace(' ','').strip()
@@ -233,11 +222,11 @@ class DMTEngine(scrapy.Spider):
             if exp_msg != 'DEBUG=True':
                 d = colored('DEBUG', 'red',attrs=['dark'])
                 if not self.vmnf_handler.get('sample'):
-                    print('{} {} mode is disabled.\n'.format(self.f_map,d))
+                    print(f"{self.f_map} {d} mode is disabled.\n")
                     return False
             
             if not self.vmnf_handler.get('sample'):
-                print('{} {} mode is activated.\n'.format(self.f_map,d))
+                print(f"{self.f_map} {d} mode is activated.\n")
                 sleep(1)
             
             if not self.auto_mode \
@@ -260,14 +249,14 @@ class DMTEngine(scrapy.Spider):
             if self.URLconf is not None:
                 hl_uc = colored(self.URLconf, 'blue')
                 if not self.vmnf_handler.get('sample'):
-                    print('{} Dumping APP patterns from URLconf {}'.format(self.f_start,hl_uc))
+                    print(f"{self.f_start} Dumping APP patterns from URLconf {hl_uc}")
                     sleep(0.10)
 
             if not self.app_patterns:
-                
+
                 # get apps patterns
                 self.get_app_patterns(response)
-                
+               
                 # expand patterns 
                 self.patterns_mapper()
                 
@@ -361,9 +350,9 @@ class DMTEngine(scrapy.Spider):
                         print('\n\t→ {}\n'.format(_p_hl.replace(fuzz_flag,ff_hl)))
                         sleep(0.01)
 
-                else:
-                    if not self.vmnf_handler.get('sample'):
-                        print()
+                #else:
+                #    if not self.vmnf_handler.get('sample'):
+                #        print()
 
     def strip_chars(self,pattern):
         return(pattern.replace('^','').replace(
@@ -390,7 +379,7 @@ class DMTEngine(scrapy.Spider):
         hl_total = colored(total_p, 'blue')
         
         if not self.vmnf_handler.get('sample'):
-            print(f'{self.f_start}Starting PatternMapper via {trick}')
+            print(f"{self.f_start} Starting PatternMapper via {trick}")
             sleep(0.30)
         
         for pattern in self.app_patterns:
@@ -421,7 +410,7 @@ class DMTEngine(scrapy.Spider):
             
             try:
                 r = requests.get(self.new_target_url,headers=self.headers)
-            except KeyboardInterrupt: #requests.exceptions.MissingSchema:
+            except requests.exceptions.MissingSchema:
                 print('[DMT:PMap] → Invalid scope: Missing HTTP scheme.\n')
                 return False
 
@@ -429,6 +418,10 @@ class DMTEngine(scrapy.Spider):
             
             if r.status_code == 404:
                 for map_p in self.get_raw_patterns(response):
+
+                    if not map_p:
+                        continue
+
                     map_p_hl = map_p
                     if map_p.startswith(pattern):
                         if '[name=' in map_p:
@@ -457,7 +450,7 @@ class DMTEngine(scrapy.Spider):
             sleep(0.30)
 
             for pattern in self.app_patterns:
-                print(f'   - {pattern}')
+                print(f"   + {colored(pattern,'green')}")
                 sleep(0.05)
             print()
 

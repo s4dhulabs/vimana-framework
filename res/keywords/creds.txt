@@ -1,0 +1,11 @@
+user
+username
+pass
+password
+token
+api_key
+secret_key
+subscription
+usuario
+senha
+secret

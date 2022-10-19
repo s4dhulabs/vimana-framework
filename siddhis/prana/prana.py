@@ -24,59 +24,23 @@ import re
 import sys
 
 from neotermcolor import colored,cprint
-
+from ._putils import pranaset
 
 class siddhi:
-    module_information = collections.OrderedDict()
-    module_information = {
-        "Name":            "Prana",
-        "Acronym":         False,
-        "Category":        "Framework",
-        "Framework":       "Django",
-        "Type":            "Tracker",
-        "Module":          "siddhis/prana",
-        "Author":          "s4dhu <s4dhul4bs[at]prontonmail[dot]ch",
-        "Brief":           "Tracks Django CVE ids",
-        "Description":
-        """
-
-        \r  Simple utility to retrieve CVE ids from official Django security releases page.
-        \r  This module receives a django version as argument and retrieve related CVE ids.
-        \r  Prana is usually used as a resource by other Vimana modules. For example, 
-        \r  DMT (Django Misconfiguration Tracker) uses to correlate the identified 
-        \r  framework version (context 'environment') with the respective CVES.\n
-
-        """
-
-    }
-
-    module_arguments = '''
-    --django-version    Framework version     
-    '''
-
-    def __init__(self, django_version=False):
+    def __init__(self, **vmnf_handler):
        
-        self.django_version = django_version 
-        self.cve_pool =[]
-        self.desc_url = 'https://www.djangoproject.com/weblog/{}/{}/{}/security-releases/'
-        self.sec_rel_url = f'https://docs.djangoproject.com/en/{django_version}/releases/security/'
-        self.cve_register =[]
-        self.nist_endpoint = 'https://nvd.nist.gov/vuln/detail/{}'
-        self.month_num = {
-            'january': 1,
-            'february': 2,
-            'march': 3,
-            'april': 4,
-            'may': 5,
-            'june': 6,
-            'july': 7,
-            'august': 8,
-            'september': 9,
-            'october': 10,
-            'november': 11,
-            'december': 12
-        }
+        # django_version in __init__ class [argument required]
+        if not vmnf_handler.get('django_version'):
+            print("\033[0m")
+            print(f'[prana: {datetime.now()}] Django version is required: --django-version.')
+            sys.exit()
 
+        self.vmnf_handler = vmnf_handler
+        self.django_version = vmnf_handler.get('django_version').strip()
+        self.pset = pranaset()
+        self.cve_pool =[]
+        self.cve_register =[]
+        
     def get_cve_details(self,CVE_ID=False):
 
         # this because this method will be called in other ways in future
@@ -87,7 +51,8 @@ class siddhi:
         self.cve_details = {}
 
         sleep(3)
-        response = requests.get(self.nist_endpoint.format(self.CVE_ID)) 
+
+        response = requests.get(self.pset.nist_endpoint.format(self.CVE_ID)) 
         response_data = response.text
         
         if not response or response.status_code != 200 \
@@ -115,13 +80,34 @@ class siddhi:
 
         return self.cve_details
 
+    def issues_presentation(self):
+        from siddhis.djunch.engines._dju_utils import DJUtils
+
+        tables = DJUtils().get_report_tables()
+        cves_tbl = tables.get('cves')
+        cves_tbl.title = colored(
+            f"CVE IDs for Django {self.django_version}",
+                "white",attrs=['bold']
+        )
+        for entry in self.cve_register:
+            cves_tbl.add_row(
+                [
+                    colored(entry['id'],'green'),
+                    entry['title'].rstrip(),
+                    entry['date'].rstrip()
+
+                ]
+            )
+        
+        print(cves_tbl)
+
     def get_cves(self):
-        '''
-            Get cves from a given Django version
-        '''
+        '''Get cves from a given Django version'''
         
-        response = requests.get(self.sec_rel_url)
-        
+        response = requests.get(
+            self.pset.sec_rel_url.format(self.django_version)
+        )
+
         if response:
             self.soup = BeautifulSoup(response.text,"lxml")  
 
@@ -130,14 +116,13 @@ class siddhi:
                 for tag in item.find_next_sibling('div'):
                     try:
                         issue_text = str(tag.text).strip().encode(
-                            "ascii", errors="ignore"
-                        ).decode()
+                            "ascii", errors="ignore").decode()
                         
-                        affected_versions = re.findall('Django \d{1}\.\d{1}',issue_text)
-                
+                        affected_versions = re.findall('Django \d{1}\.\d{1}', issue_text)
+                        
                         if self.django_version in str(affected_versions):
                             self.CVE_ID  = (re.search('(CVE-\d{4}-\d{4,5})',issue_text).group()).strip()
-                            
+                             
                             if not self.CVE_ID in self.cve_pool:
                                 self.cve_pool.append(self.CVE_ID)
                                 nist_cve = self.CVE_ID.replace('CVE-','')
@@ -165,7 +150,7 @@ class siddhi:
                                 m,d,y = release_date.split()
                                 
                                 release_date = '{}/{}/{}'.format(
-                                    self.month_num[m.lower().rstrip()],
+                                    self.pset.month_num[m.lower().rstrip()],
                                     d.replace(",",'').rstrip(),
                                     y.rstrip()
                                 )
@@ -179,10 +164,10 @@ class siddhi:
                                     'c_version': c_version,
                                     'title': title,
                                     'text': issue_text,
-                                    'full_description': self.desc_url.format(y,m,d),
-                                    'references': 'https://nvd.nist.gov/vuln/detail?vulnId={}'.format(nist_cve)
+                                    'full_description': self.pset.desc_url.format(y,m,d),
+                                    'references': self.pset.nist_detail.format(nist_cve)
                                 }
-                                
+                               
                                 # save entry
                                 self.cve_register.append(cve_entry)
                                 
@@ -191,37 +176,15 @@ class siddhi:
             except TypeError:
                 pass
 
+        # when running prana by command line vf run -m prana
+        if self.vmnf_handler.get('framework_search_version'):
+            self.issues_presentation()
+            
+            return True
+
         return self.cve_register
 
     def start(self):
-        '''
-        acctualy prana doesnt need to implement argparser
-        this module only required a django version and 
-        this argument should be informed by modules 
-        calling prana
-
-        implementing argparser can cause problems 
-        when the module is called by other siddhis (dunno why [yet)
-
-        
-        parser = argparse.ArgumentParser(description='prana parser')
-        parser.add_argument(
-            "--django-version",
-            action='store',
-            required=True
-        )
-        args = parser.parse_args()
-        
-        '''
-
-        # django_version in __init__ class [argument required]
-        if not self.django_version:
-            print('[prana: {}] Django version is required'.format(
-                datetime.now()
-                )
-            )
-            return False
-        
         self.get_cves()
 
         

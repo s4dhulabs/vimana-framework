@@ -35,21 +35,21 @@ guide:
     ⠞ ⠓ ⠎ ⠞ ⠎⠞⠎ ⠞⠊⠞⠓ ⠊⠎⠞⠓⠊  ⠞⠓⠊⠎⠞⠓⠊  TICTRAC GUIDE  ⠞⠓⠊⠎.~ ⠎⠞ ⠞ ⠊⠎ ⠞⠊.⠞ ⠊⠎⠎
     ø----------------------------------------------------------------------ø
 
-     Run tictract directly by command line (vimana run) looking for Django
-     3.1 security tickets:
+        Run tictract by command line (vimana run) looking for Django
+        3.1 security tickets:
      
-     $ vimana run --module tictrac --django-version 3.1
+        $ vimana run --module tictrac --django-version 3.1
 
   lab_setup: |
     ø----------------------------------------------------------------------ø
     │└┘⠞⠓┌┐│└ø└┘┌Þ┐┌┘.┌Þ┬┐þ└┐Þ┘│ĦÞ~  TICTRAC SETUP  Þ┘└┐│Ŋ└┘Ŋµ→┌⠞⠓┬┐┌┐│⠞⠓│┬│
     ø----------------------------------------------------------------------ø
   
-     In this case,  you only need the Django version to look for
-     issues. But if you're researching based on this version,
-     it would be interesting to have some labs running an
-     application to perform some tests. You can see lab
-     examples with:
+        In this case,  you only need the Django version to look for
+        issues. But if you're researching based on this version,
+        it would be interesting to have some labs running an
+        application to perform some tests. You can see lab
+        examples with:
 
-     $ vimana guide -m dmt -l
+        $ vimana guide -m dmt -l
 

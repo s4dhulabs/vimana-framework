@@ -12,6 +12,9 @@
     s4dhu <s4dhul4bs[at]prontonmail[dot]ch
     
 """
+from core.vmnf_engine_exceptions import engineExceptions as vfx
+from neotermcolor import cprint,colored as cl
+
 from scrapy.crawler import CrawlerRunner
 from twisted.internet import reactor
 
@@ -31,26 +34,6 @@ from res.vmnf_banners import load_viwec
 from res import vmnf_banners
 
 class siddhi:   
-    module_information = collections.OrderedDict()
-    module_information = {
-        "Name":            "viwec",
-        "Info":            "Web crawler utility",
-        "Category":        "Framework",
-        "Framework":       "Django",
-        "Type":            "Crawler",
-        "Module":          "siddhis/viwec",
-        "Author":          "s4dhu <s4dhul4bs[at]prontonmail.ch",
-        "Brief":           "Web crawler utility",
-        "Description":     """ 
-        
-        \r  Simple web crawler utility to work isolated (directly by command line), 
-        \r  and also integrated to enrich post-analysis as with DMT. 
-        """
-    }
-
-
-    module_arguments = VimanaSharedArgs().shared_help.__doc__
-
     def __init__(self,**vmnf_handler):
         self.vmnf_handler = vmnf_handler
     
@@ -63,24 +46,23 @@ class siddhi:
         return parser
     
     def start(self):
+
         if not self.vmnf_handler.get('callback_session'):
+
             self.vmnf_handler['scope'] = [
                 self.vmnf_handler.get('target_url')
             ]
-            self.vmnf_handler['scope'] = [
-                f'http://{url}' for url \
-                    in self.vmnf_handler['scope'] \
-                        if not url.startswith('http')
-            ]
+            
             vmnf_banners.load_viwec()
 
         if not self.vmnf_handler.get('scope',False):
             print(VimanaSharedArgs().shared_help.__doc__)
             sys.exit(1)
-    
+
+        if self.vmnf_handler['disable_cache']:
+            settings['HTTPCACHE_ENABLED'] = False
+
         runner = CrawlerRunner(dict(settings))
         daemon = runner.crawl(vwce, **self.vmnf_handler)
         reactor.run(0) 
-
         
-

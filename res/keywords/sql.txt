@@ -1,0 +1,27 @@
+InterfaceError
+DatabaseError
+DataError
+OperationalError
+IntegrityError
+InternalError
+ProgrammingError
+NotSupportedError
+inner join
+select count
+select from
+insert into
+sql_mode
+psycopg2
+basehandler
+queries
+insertquery
+queryset
+postgresql
+databasewrapper
+database
+db
+query
+mysql
+sql
+connection
+conn_params

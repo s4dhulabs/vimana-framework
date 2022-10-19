@@ -35,10 +35,13 @@ def DockerDiscovery(**opts):
             net_settings = container['NetworkSettings']['Networks']
             ports = [p.get('PrivatePort') for p in container['Ports']]
 
-        target = net_settings['bridge'].get('IPAddress')    
-        scope  = [(target + ':' + str(port)) for port in ports]
+        target = [(net_settings[k].get('IPAddress')) \
+            for k in net_settings.keys()
+        ]
+        scope  = [(target[0] + ':' + str(port)) \
+            for port in ports
+        ]
        
-        #scope.append('127.0.0.1:8887')
         d = {
             'IPAddress': target,
             'target_list': list(set(scope)),
@@ -46,7 +49,7 @@ def DockerDiscovery(**opts):
         }
 
         vmnf_scope.append(d) 
-
+    
     return vmnf_scope
     
 

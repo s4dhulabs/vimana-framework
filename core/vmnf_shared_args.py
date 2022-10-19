@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from argparse import SUPPRESS
-import argparse
 from time import sleep
+import argparse
 import sys
 
 sys.path.insert(0, '../../../')
@@ -73,7 +73,7 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument('--target-dir',action='store',dest='target_dir',default=False)
         vmnf_shared_parser.add_argument('--target-url',action='store',dest='target_url',default=False)
         vmnf_shared_parser.add_argument('--filename',action='store',dest='filename',default=False)
-        vmnf_shared_parser.add_argument('--target',action='store',dest='single_target',default=False)
+        vmnf_shared_parser.add_argument('-t','--target',action='store',dest='single_target',default=False)
         vmnf_shared_parser.add_argument('--file',action='store',dest='file_scope',default=False)
         vmnf_shared_parser.add_argument('--ip-range',action='store',dest='ip_range', default=False)
         vmnf_shared_parser.add_argument('--cidr-range',action='store',dest='cidr_range', default=False)
@@ -82,7 +82,7 @@ class VimanaSharedArgs:
         # -------------------------------------------------------------------------------
         # > Scope setting - [ port parser ] 
         # -------------------------------------------------------------------------------
-        vmnf_shared_parser.add_argument("--port",action="store",dest='single_port',default=False)
+        vmnf_shared_parser.add_argument('-p',"--port",action="store",dest='single_port',default=False)
         vmnf_shared_parser.add_argument("--port-list",action="store",nargs='+',dest='port_list',default=False)
         vmnf_shared_parser.add_argument("--port-range",action="store",dest='port_range',default=False)
         vmnf_shared_parser.add_argument('--ignore-state',action='store_true',dest='ignore_state',default=False)
@@ -101,7 +101,8 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--sample", action="store_true",default=False)        
         vmnf_shared_parser.add_argument("--xscope", action="store_true",default=False)        
         vmnf_shared_parser.add_argument("--extended-scope", action="store_true",default=False)        
-        vmnf_shared_parser.add_argument("--tracker_scope", action="store_true",default=False)        
+        vmnf_shared_parser.add_argument("--tracker-scope", action="store_true",default=False)        
+        vmnf_shared_parser.add_argument("--disable-cache", action="store_true",default=False)        
         # -------------------------------------------------------------------------------
         # > Scope setting - [ scope parser options ] 
         # -------------------------------------------------------------------------------
@@ -109,6 +110,16 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--urlconf", action="store", dest='url_conf',default=False)
         vmnf_shared_parser.add_argument("--patterns", action="store", dest='patterns_file',default=False)
         vmnf_shared_parser.add_argument("--view-name", action="store", dest='view_name',default=False)
+        vmnf_shared_parser.add_argument("--passwords", action="store", dest='passwords_file',default=False)
+        vmnf_shared_parser.add_argument("--usernames", action="store", dest='usernames_file',default=False)
+        vmnf_shared_parser.add_argument("--django-version", action="store", dest='django_version',default=False)
+        vmnf_shared_parser.add_argument("--flask-version", action="store", dest='flask_version',default=False)
+        vmnf_shared_parser.add_argument("--tornado-version", action="store", dest='tornado_version',default=False)
+        vmnf_shared_parser.add_argument("--web2py-version", action="store", dest='web2py_version',default=False)
+        vmnf_shared_parser.add_argument("--framework-version", action="store", dest='framework_version',default=False)
+        vmnf_shared_parser.add_argument("--search-version", action="store", dest='framework_search_version',default=False)
+        vmnf_shared_parser.add_argument("--issues-table", action="store_true", dest='issues_table',default=False)
+
         # -------------------------------------------------------------------------------
         # > Connection setting - [ proxy options ] 
         # -------------------------------------------------------------------------------
@@ -126,11 +137,12 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--forward",action="store",dest='forward_session',default=False)
         vmnf_shared_parser.add_argument("--siddhi-call",action="store_true",dest='siddhi_call',default=False)
         vmnf_shared_parser.add_argument("--session-mode",action="store_true",dest='session_mode',default=False)
+        vmnf_shared_parser.add_argument("--listener",action="store_true",dest='listener_mode',default=False)
+        vmnf_shared_parser.add_argument("--auth",action="store_true",dest='auth_mode',default=False)
         vmnf_shared_parser.add_argument("--save-session",action="store_true",dest='save_session',default=False)
         vmnf_shared_parser.add_argument("--callback-session",action="store_true",dest='callback_session',default=False)
         
         return vmnf_shared_parser
-
 
     def shared_help(self):
         

@@ -7,34 +7,67 @@ import sys
 
 class engineExceptions:
 
-    def __init__(
-        self, 
-        args=False, 
-        exception=False
-        ):
+    def __init__(self, args=False, exception=False):
 
         self.args = args
         self.exception = exception
 
+    def PermissionError(self):
+        print("\033c", end="")
+        mdtt1()
+        
+        print(f"""
+
+        Vimana engine got a PermissionError-like exception from
+        a crawler process. To fix this, you have two alternatives:
+
+        Running Vimana with {cl('sudo','green')} at first to allow the engine to
+        create the basic structure of caching and log:
+
+        $ {cl('sudo','green')} {self.args}
+
+        Adding {cl('--disable-cache', 'green')} to the command line:
+
+        $ {self.args} {cl('--disable-cache', 'green')}
+
+        """)
+            
+        #sys.exit(1)
+
+    def unexpected_keyword(self):
+        print("\033c", end="")
+        mdtt1()
+
+        print(f'''
+        Vimana identified some integrity issues related to
+        argparser engine. Check if you have made any changes in
+        these core files and try to fix the issue. Or simply set
+        Vimana again.
+
+        {cl(self.exception,'red')}
+        ''')
+
     def argument_error(self):
 
-        if 'run' and '--module' in self.args:
+        if 'run' and '--module' or '-m' in self.args:
             siddhi = self.args[self.args.index('--module') + 1].strip()
             siddhi_path = 'siddhis.{}.{}'.format(siddhi, siddhi)
 
         conflict_msg = """
+        Vimana exits with an argparse.ArgumentError()
+        exception
 
-        \r Vimana exits with an argparse.ArgumentError() exception
+        This exception usually occurs when an argument
+        present in the shared args has also been
+        specified in the parser of the module to be run.
 
-        \r This exception usually occurs when an argument present in the shared args
-        \r has also been specified in the parser of the module to be run.
-
-        \r If you're using Vimana shared arguments, make sure {} argument
-        \r doesn't exist in module parser in {}.args()
+        If you're using Vimana shared arguments, make
+        sure {} argument doesn't exist in 
+        module parser in {} argparser.
 
         """.format(
-            cl(self.exception.argument_name, 'red'), 
-            cl(siddhi_path, 'red')
+            cl(self.exception.argument_name, 'red'),
+            cl(siddhi, 'red')
         )
 
         print("\033c", end="")
@@ -65,8 +98,8 @@ class engineExceptions:
 
         print('''
         \r{}
-        \r{}: {}
         \r{}
         \r{}
-        '''.format(mark, VIE, ERROR, mark.strip('\n'), MSG))
+        \r{}
+        '''.format(mark,VIE,ERROR,mark.strip('\n'),MSG))
 

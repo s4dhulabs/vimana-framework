@@ -5,7 +5,7 @@ project:
     name: Vimana Framework
     site: https://s4dhulabs.github.io/
     tag: alpha
-    version: v0.6
+    version: v0.7
 settings:
     arg_parser:
         require_args:
@@ -25,13 +25,12 @@ settings:
         - --abduct
         - --module
         - --session
+        - -m
     case_set:
         cases_path: core/cases/
         cases_yf: core/cases/*.yaml
         empty_msg: '[{}] It seems like you didn''t create any case yet, or they were
-            flushed.
-
-            '
+            flushed.'
     sessions: core/sessions/
     siddhis_set:
         dir: siddhis/

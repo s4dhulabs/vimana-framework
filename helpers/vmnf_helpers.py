@@ -1,12 +1,13 @@
 # encoding=utf8
 
 from res.colors import *
+from random import choice
 from res.vmnf_banners import s4dhu0nv1m4n4,vmn05
 from neotermcolor import colored, cprint
 from core.load_settings import _version_
 
 
-class VimanaHelp():
+class VimanaHelp:
     '''
            .__
     ___  _|__| _____ _____    ____ _____
@@ -14,7 +15,7 @@ class VimanaHelp():
      \   /|  |  Y Y  \\/ __ \\|   |  \\/ __ \\_
       \_/ |__|__|_|__(____  /___|  (____  /
                          \\/      \\/     \\/   
-        @s4dhulabs           {}
+        @s4dhulabs           
         
     '''
 
@@ -24,21 +25,26 @@ class VimanaHelp():
     def overview(self):
         ovw = {
             'about' : "About the framework",
-            'args'  : "Show module arguments",
             'flush' : "Remove a recorded resource", 
-            'info'  : "Show information about modules",
-            'list'  : "List available modules",
+            'guide' : "Show plugin usage examples and args",
+            'info'  : "Show information about plugins",
+            'list'  : "List available plugins",
             'load'  : "Load a recorded session (post-analysis)",
-            'run'   : "Run a resource, module or case",
+            'run'   : "Run a resource, plugin or case",
             'start' : "Start Vimana in a interactive mode",
         }
         
+        board_colors = ['white']
+        cmd_hl = choice(['cyan','green','white'])
+
         print('\n\n\n')
-        
+        # ⇀
         for cmd, desc in ovw.items():
-            print("{:>27}  {}  {}".format(
-                colored(cmd, 'green'),
-                colored('⇀ ', 'blue', attrs=['dark']),
+            print("{:>27}  {}    {}".format(
+                colored(cmd,'magenta'),
+                colored(choice(['◍','◎', '◉']) + choice(['◍','◎', '◉']), 
+                    choice(board_colors),attrs=[ choice(['dark','bold'])]
+                ),
                 colored(desc, 'white')
                 )
             )
@@ -83,42 +89,44 @@ class VimanaHelp():
     def save_case(self):
         '''
 
-    [save_case]
-        
-        this option saves the command line to a YAML file. 
-        Making it easy to be executed again using the argument --abduct with command run,
-        or simply vimana run <case_name>
+    [ save_case ]
+      
+    This option saves the command line to a YAML
+    file. Making it easy to be executed again using
+    the argument --abduct with command run, or simply
+    vimana run <case_name>
 
-        This option is especially useful when command lines become huge to remember 
-        or when too many lines were already executed polluting with the terminal history.
-        
-        example: 
+    This option is handy when command lines become
+    huge to remember or when too many lines were
+    already executed, polluting the terminal history.
 
-        vimana run \\
-            --module dmt \\
-            --target-list mydjangodash.com,mydjapp1.com \\
-            --port-list 4440,5001,8000,8888 \\
-            --debug \\
-            --threads 10 \\
-            --save-case app1_dev
+    example: 
 
-        Cases can also be executed during the creation process:
+    $ vimana run \\
+        --module dmt \\
+        --target-list mydjangodash.com,mydjapp1.com \\
+        --port-list 4440,5001,8000,8888 \\
+        --debug \\
+        --threads 10 \\
+        --save-case app1_dev
 
-        vimana run \\
-            --module dmt \\
-            --target-list mydjangodash.com,mydjapp1.com \\
-            --port-list 4440,5001,8000,8888 \\
-            --debug \\
-            --threads 10 \\
-            --save-case app1_dev \\
-            --exec-case
+    Cases can also be executed during the creation process:
+
+    $ vimana run \\
+        --module dmt \\
+        --target-list mydjangodash.com,mydjapp1.com \\
+        --port-list 4440,5001,8000,8888 \\
+        --debug \\
+        --threads 10 \\
+        --save-case app1_dev \\
+        --exec-case
 
         '''
 
     def abduct(self):
         '''
 
-    [abduct]
+    [ abduct ]
 
         this option allows an analysis to be performed from the settings of the specified yaml file. 
         The expected model can be seen in the abd.yaml example.
@@ -130,7 +138,7 @@ class VimanaHelp():
     def general_options(self):
         '''
 
-    [general settings]
+    [ general settings ]
 
         --debug              Display debugging information and findings in realtime
         --verbose            Enable verbose mode (incremental)
@@ -144,7 +152,7 @@ class VimanaHelp():
     def fuzzer_args(self):
         '''
 
-    [fuzzer arguments]
+    [ fuzzer arguments ]
 
         --urlconf            Django URLconf with URL patterns
         --patterns           File with a list of URL patterns
@@ -153,15 +161,44 @@ class VimanaHelp():
 
     def args(self):
         '''
-        [args]
+    [ args ]
 
     Show module arguments 
     → Usage: vimana args --module <module name>
         '''
 
+    def guide(self):
+        '''
+
+    [ guide ]
+
+    Show usage examples
+
+    → Usage: vimana guide --plugin <plugin name> <options>
+    
+    Examples:
+
+        # Show full DMT plugin guide
+        $ vimana guide --module dmt
+        $ vimana guide -m dmt
+
+        # Show DMT plugin arguments with highlights
+        $ vimana guide --module dmt -args --highlights:
+        $ vimana guide -m dmt -a
+
+        # Show only usage examples
+        $ vimana guide --module dmt --examples
+        $ vimana guide -m dmt -e
+
+        # Show lab setup tips:
+        $ vimana guide -m dmt --labs
+        $ vimana guide -m dmt -l
+
+        '''
+
     def start(self): 
         '''
-    [start]
+    [ start ]
     
     Start Vimana in a interactive mode
 
@@ -174,174 +211,211 @@ class VimanaHelp():
     def info(self): 
         '''
 
-    [info]
+    [ info ]
     
     Shows information about siddhi module
 
-    → usage: vimana info --module <module name>
+    → usage: vimana info --siddhi <siddhi name>
 
-    This module retrieve full details about a given Vimana siddhi, including: 
+    Retrieve full details about a given plugin, including: 
         
-        * Module description
+        * Description
         * Author 
         * Type
         * Category
+        * CWEs
+        * Tags
         '''
     
     def flush(self): 
         '''
 
-    [flush]
+    [ flush ]
     
     Remove a recorded resource: sessions/cases
 
-    → usage: vf flush <resource type> <parameters>
+    → usage: vimana flush <resource type> <parameters>
 
     Examples:
         
-        vf flush --sessions                 Remove all sessions
-        vf flush --session 2720b71be1       Remove session 2720b71be1 from database
-        
-        vf flush --case newdjango_apps      Remove newdjango_apps case 
-        vf flush --cases                    Remove all cases
+    $ vimana flush --sessions                 Remove all sessions
+    $ vimana flush --session 2720b71be1       Remove session 2720b71be1 from database
+    $ vimana flush --case newdjango_apps      Remove newdjango_apps case 
+    $ vimana flush --cases                    Remove all cases
         '''
+   
+    def load(self):
+        ''' 
+        
+    [ load ]
+
+    Load recorded resources and plugins.
     
+    → usage: vimana load <resource type> 
+
+    --session   Load a given session by its ID
+    --plugins   Load plugins on Vimana initial setup
+
+    Examples:
+    
+    ◈  Load Vimana plugins during framework setup:
+    
+    $ vimana load --plugins 
+    
+    ◈  Load recorded session with ID 4a0a5a8c99:
+    
+    $ vimana load --session 4a0a5a8c99
+        '''
+
     def list(self):
         '''
 
     [list]
-    
-    List available modules
+   
+    List available resources on the current setup
+    and version of the Vimana Framework. This is
+    a core command used for all sorts of resources
+    such as plugins, cases, sessions, and payloads:
 
-    → usage: list --modules/--cases/--sessions <options>
+    $ vimana list 
+        --plugins  
+        --cases
+        --sessions
+        --payloads 
 
-    Without <option filters> 'list' command will retrieve all modules available in
-    current version of Vimana Framework.
+    --plugins	List all available plugins
 
-    options:
+    Without filters, the list command with --plugins
+    argument will retrieve all plugins available in
+    the current version of Vimana Framework.
 
-    This command accepts a set of options to filter what kind of module will
-    be listed. Suported options are:
+    Lately, it supports the following filters:
 
-        -t  --type
-        -c  --category
-        -f  --framework
+    --framework	    Filter plugins by framework:
 
-    The set of arguments accepted for these options are detailed bellow:
+		    ‣  django 
+		    ‣  flask
 
-    -t  --type  <module type>
+    --category	    Filter plugins by category:
 
-    This option is used for search for a specific module type according
-    with its function on Framework. Supported types:
+		    ‣  framework 
+		    ‣  package
+		    ‣  discovery
 
-        0   tracker
-        1   fuzzer
-        2   attack
-        3   leaker
-        4   exploit
+    --type	    Filter plugins by type:
 
-    In this case could be specified a option name or a identifier number.
-    Usage example: vimana list --modules --type tracker
+		    ‣  fingerprint
+		    ‣  persistence
+		    ‣  tracker 
+		    ‣  exploit 
+		    ‣  fuzzer 
+		    ‣  crawler 
+		    ‣  audit 
+		    ‣  parser
+    Examples:
 
-    -c  --category  <category name>
+    ◈  List all tracking plugins for Django framework:
 
-    This option filter modules by category, accepting follow options:
+    $ vimana list \\
+        --plugins \\
+        --type tracker \\
+        --framework django 
 
-        0   framework
-        1   library
-        2   package
-        3   function
+    ◈  List plugins from type fuzzer:
 
-    Like 'type' option 'category' also accepts name or identifier letter (f,l,p,f)
-    Usage example: vimana list --modules --category framework
+    $ vimana list \\
+        --plugins \\
+        --type fuzzer
 
-    -f  --framework <framework name>
+    ◈  List exploit plugins for Python packages:
 
-    This option allows to filter modules by framework or choose a generic type.
-    Supported types in this version:
+    $ vimana list \\
+        --plugins \\
+        --exploit \\
+        --category package
 
-        0   Django
-        1   Flask
-        2   Generic
-
-    Usage example: vimana list --modules --framework Django
-
-    * Use cases:
-
-    Below are shown some use cases with all the options of the list command together:
-
-    vimana list
-        Lists all available modules
-
-    vimana list --modules --type tracker --category framework -f django
-        Lists all tracker modules for Django applications
-
-    vimana list --modules -t fuzzer -c f
-        Lists all fuzzer modules for framework
-
-    vimana list --modules --type 2 -f flask
-        Lists all generic brute force modules for flask
+    --sessions	    List all recorded sessions
+    --cases	    List all recorded cases
+    --payloads	    List available payloads
         '''
-
+    
     def run(self):
         '''
 
-    [run]
+    [ run ]
     
     Run specific plugin/case directly by command line 
 
-    → usage: run <case_id|name>/--module <module/resource> <arguments> <options>
+    → usage: run <case_id|name>/--plugin <name>/resource> 
+	
+      Examples:
 
-    examples:
-
-             vf run !               run the last case created
-             vf run --case djapp8   run case djapp8
-             vf run djapp8          run case djapp8
-             vf run @cf12           run case id @cf12 (12th case created)    
-             vf run \\
-                --module dmt \\
-                --target mydjapp4.com \\
-                --sample
-                                    run DMT plugin against target application mydjapp4.com
-                                        on port 8889 in sample mode 
-           
-                     
-    options:
-
-    This command is used to run a specific module or resource type. 
-    Current suported options are:
-
-        -m  --module
-        -f  --fuzzer
-        -d  --discovery
-
-    The set of arguments accepted for these options are detailed bellow:
-
-    -m  --module  <module name> <module arguments>
-
-    This option is used for run specific module with a set of arguments.
-    The supported arguments depend on each module, to check the required 
-    and optional arguments run the module without arguments or with help.
-    Usage example: vimana run --module dmt --target http://pyapp.com --debug 
-
-    Common arguments to all modules will be explained at the end.
-
-    --fuzzer <target> <options>
-
-    Starts fuzzing tests against target application 
-
-    --discovery <target> <options>
-
-    Starts application discovery. 
-
-    scope set:
-
-    As stated, although each module executed has its own arguments, 
-    there are some common arguments to all of them that are listed below:
+      Start jungle against the Django application admin
+      portal using a custom password and username lists,
+      setting default proxy (SOCKS5://127.0.0.1:9050)
+      and enabling debug:
+	
+      $ vimana run \\
+        --plugin jungle \\
+	--target-url http://mydjapp1.com:8887 \\
+	--usernames usernames.txt \\
+	--passwords passwords.txt \\
+	--set-proxy \\      
+	--debug
     
-        -t  --target
-        -p  --port
-        -d  --debug 
+    ø------------------------------------------------------------ø
+
+      Run DMT against Django target URL http://djlabs1.com:9001
+      disabling external lookups (like CVE, Tickets, etc)
+      and exiting on the first exception caught. If you are
+      running a Vimana module without sudo, in some cases, if the
+      resource needs to write in disk, for cache http objects,
+      for instance, the analysis could fail. With that in mind,
+      sometimes it is handy to run the same set of arguments
+      adding --disable-cache, but usually, the framework will
+      warn you about that. In addition, this dmt command line
+      enables debug mode and sets confirmations in some steps
+      to Yes.
+
+      $ vimana run \\
+        --plugin dmt \\
+	--target-url http://djlabs1.com:9001 \\
+	--disable-external \\
+	--exit-on-trigger \\
+	--disable-cache \\
+	--debug \\
+	--auto
+
+    ø------------------------------------------------------------ø
+
+      In the example below, we're starting djunch fuzzer against
+      the Django application running on http://mydjapp2.com:8887,
+      passing as scope the url.py used by the application. This
+      can be taken as a kind of gray box perspective:
+		
+      $ vimana run \\
+	--fuzzer \\
+	--target mydjapp.com \\
+	--port 8887 \\
+	--urlconf app/urls.py
+
+     * Running analysis from Vimana cases:
+
+     $ vimana run !               # run the last case 
+     $ vimana run --case djapp8   # run case djapp8
+     $ vimana run djapp8          # run case djapp8
+     $ vimana run @cf12           # run case id @cf12 
+
+
+     ◍  Use `vimana guide --plugin <plugin_name> --args`
+        for more details such as the required arguments
+        and examples for each plugin.
+
+     ◍  Note that the parameter to specify the plugin
+        in Vimana is interchangeable. With that, you
+        can either use --plugin, --siddhi, or --module,
+        they have the same attributes as you will see
+        in guides and examples.
         '''
 
     def basic_help(self):

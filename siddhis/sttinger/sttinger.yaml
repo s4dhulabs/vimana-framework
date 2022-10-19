@@ -22,3 +22,64 @@ references:
   links:
     - https://www.djangoproject.com/
   cwe: False
+guide:
+  args: |
+    ø----------------------------------------------------------------------ø
+    │└┐└┌⠞⠓┬┐│└æ┌┐æ│└æ└┘┌┐┌⠞⠓┬┐æ┘æ└┘ STTINGER ARGS  æ│┘┌⠞⠓┬┐æ│┐æ│┘æ││æ│┘æ│æ│
+    ø-----------+----------------------------------------------------------ø
+    │ scope     └┐                                                         │
+    +------------+---------------------------------------------------------+
+     --target-url        Django application base URL (required)
+     --search-issues     Look for related version issues
+     --issues-table      Shows found issues in table format 
+
+  examples: |
+    ø----------------------------------------------------------------------ø
+    ⠞ ⠓ ⠎ ⠞ ⠎⠞⠎ ⠞⠊⠞⠓ ⠊⠎⠞⠓⠊  ⠞⠓⠊⠎⠞⠓⠊  STTINGER GUIDE  ⠞⠓⠊⠎.~ ⠎⠞ ⠞ ⠊⠎ ⠞⠊.⠞ ⠊⠎⠎
+    ø----------------------------------------------------------------------ø
+
+        Run sttinger against target Django URL application at
+        http://mydjlabapp.com:9921 looking for framework version
+        in passive mode:
+
+        $ vimana run \
+           --module sttinger \
+           --target-url http://mydjlabapp.com:9921 
+
+    ø----------------------------------------------------------------------ø
+
+        Run sttinger passive fingerprint enabling version issues lookup:
+
+        $ vimana run \
+           --module sttinger \
+           --target-url http://mydjlabapp.com:9921 \
+           --search-issues
+
+    ø----------------------------------------------------------------------ø
+
+        Run sttinger passive fingerprint enabling version issues lookup,
+        and showing the results in tables:
+
+        $ vimana run \
+           --module sttinger \
+           --target-url http://mydjlabapp.com:9921 \
+           --search-issues \
+           --issues-table 
+
+    ø----------------------------------------------------------------------ø
+
+        Run sttinger with docker-scope and enabling version issues lookup:
+
+        $ vimana run \
+           --module sttinger \
+           --docker-scope \
+           --search-issues
+
+  lab_setup: |
+    ø----------------------------------------------------------------------ø
+    │└┘⠞⠓┌┐│└⠞⠓└┘┌⠞⠓┐┌┘.┌⠞⠓┬┐.└┐ ┘│  STTINGER SETUP  ┘└┐│.└┘.┌┐│⠞⠓│┬.│⠞└┘┌┌.
+    ø----------------------------------------------------------------------ø
+  
+        You can see lab examples with:
+        $ vimana guide -m dmt -l
+

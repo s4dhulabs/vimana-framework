@@ -69,6 +69,8 @@ def create_status(case_name):
         print(msg.ljust(os.get_terminal_size().columns - 1), end="\r")
 
 def case_header():
+        print("\033c", end="")
+        print()
         cprint("""       *              `'´    *
                     {}          ˙   ٭.    ˖     
                       __'__'__         ,
@@ -80,7 +82,7 @@ def case_header():
 .                 |        *     '  .     -0-
        *  o     .    '       *      .        
        ˖                ˖
-       """.format(G_c, b_c),'blue')
+       \n\n""".format(G_c, b_c),'blue')
 
 
 def sample_mode(mod_stat,_attrs_=['bold','blink']):
@@ -152,37 +154,30 @@ def audit_report_banner(module='', report_type='',cl=Wn_c):
 
 def about_text():
     msg='''
+      Vimana is an experimental tool that aims to provide
+      resources for auditing Python applications (often
+      through vectors and unconventional techniques),
+      enabling manual analyzes, automated scans and
+      application fuzzing in active mode. In post-analysis
+      (passive mode), the framework performs mapping
+      and correlation of vulnerabilities related to the
+      identified versions (framework, libs, etc.), allowing
+      you to interact with issues and create exploitability
+      scenarios where other resources will be triggered.
 
-      Vimana is an experimental tool that aims to provide resources for
-      auditing Python applications (often through vectors and
-      unconventional techniques), enabling manual analyzes, automated
-      scans and application fuzzing in active mode. In post-analysis
-      (passive mode), the framework performs mapping and correlation of
-      vulnerabilities related to the identified versions (framework,
-      libs, etc.), allowing you to interact with issues and create
-      exploitability scenarios where other resources will be triggered.
+      The framework is modular, allowing new modules
+      (siddhis) to be plugged in to expand the range of
+      available resources, being able to support mixed
+      analyzes that start from a black-box approach
+      and culminate in a gray box, increasing the
+      possibilities.
 
-      The framework is modular, allowing new modules (siddhis) to be
-      plugged in to expand the range of available resources, being able
-      to support mixed analyzes that start from a black-box approach
-      and culminate in a gray box, increasing the possibilities.
-
-      A lot of code has been written and rewritten, as well as a lot
-      left out (for now) since the idea of the tool came about 10
-      years ago, however, the framework was still very early and
-      considering that until then, it was only a sadhu (who is not a
-      developer) coding the crazy ideas, indeed, a lot needs to be
-      improved, and many new features can be added (soon).
-
-      So feel free to get in touch suggest ideas and improvements.
-                https://github.com/s4dhulabs/vimana-framework
-
+      https://github.com/s4dhulabs/vimana-framework
                                         s4dhu
 
     '''
     
     return msg
-
 
 def s4dhu0nv1m4n4(vmnf_about=''):
     
@@ -228,7 +223,6 @@ def s4dhu0nv1m4n4(vmnf_about=''):
 
     {vmnf_about}
     """
-
     return about
 
 def load_viwec():
@@ -254,49 +248,37 @@ def load_viwec():
     sleep(1)
 
 def default_vmn_banner(mode_uvb = False):
-    from core.vmnf_manager import vmng
+    from core.vmnf_smng import VFManager as vfmng
     from core.vmnf_payloads import VMNFPayloads
-
-    stat = {'_vmnf_stats_': True}
-    siddhis_info = vmng(**stat)
     payloads = VMNFPayloads()._vmnfp_payload_types_(True,False)
 
     if not mode_uvb:
         print("\033c", end="")
     
-    hl_v = colored('''\r
+    hl_V = colored('''\r
             _ _              
             \\\\/''', 'green', attrs=['bold'])
-    hl_f = colored('''\r
-              __
+    hl_F = colored('''\r
             [|-''','green', attrs=['bold'])
 
-    banner = colored('vimana framework', 'blue', attrs=['blink'])
-    banner=colored('''\r      
-            _ _           __        
-            \\\\/imana  [|-ramew0rk ''', 'blue')            
+    banner=colored(f'''\r      
+            {hl_V}imana {colored(_version_, 'red')} {hl_F}ramewørk ''', 'blue')            
 
-    banner=colored('''\r      
-            {}imana  {}ramew0rk '''.format(hl_v,hl_f), 'blue')            
-
-    print(r"""{}
-        *                       
+    print(f"""
+        *         ⠛                     ⠛ 
                    _^_               .
-        (( ( ____.´-v-`.____  ))) ){}  *         *  
-         {}        `.¨ô¨.´           {}    .
- .   ~|~ {}  .      |^!^|            {}      
-         {}           ¨          .   {} -
+        (( ( ____.´└┘┐`.____  )) ) )  *         *  
+                 `.⠞⠓⠎.´               .
+                  |││||
+                  
+                    ¨          .    -
                  . * .'e .           *
          `*´    .      . xce   .pt      -o-        .
             *               *         io>
-            {}
-    """.format(Rn_c,P_c,Rn_c,Pn_c,Rn_c,P_c,Rn_c,P_c,banner))
-    
-    for k,v in siddhis_info.items():
-        print('{}{}:   {}'.format((' ' * int(5-len(k) + 14)),colored(k,'cyan'),colored(v, 'green')))
-        
-    print('{}{}:   {}'.format((' ' * int(5-len('payloads') + 14)),colored('payloads','cyan'),colored(len(payloads), 'green')))
-    print("\n\n")
+            {banner}
+    """)
+
+    vfmng(**{}).get_siddhis_stats()
 
 def load(target='',maxl=20):
     import os 
@@ -358,7 +340,7 @@ def load(target='',maxl=20):
 
 def mdtt1(cl='blue',attrs=[]):
     ey=colored('-', 'green', attrs=['blink'])
-    cprint(f"""
+    print(f"""
                       ({ey}_{ey})      
                 ٭     _| |_         
                      /__/  \            
@@ -368,5 +350,5 @@ def mdtt1(cl='blue',attrs=[]):
                  {colored('vimanaframework', 'green', attrs=['dark'])}
                  {colored('@s4dhulabs', 'blue', attrs=['dark'])} {colored(_version_, 'green', attrs=['dark'])}
 
-    """, cl, attrs=attrs)
+    """)
 

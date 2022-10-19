@@ -1,7 +1,7 @@
-import os,glob
 from neotermcolor import colored,cprint
 from tabulate import tabulate
 from datetime import datetime
+import os,glob
 import yaml
 import sys
 
@@ -11,10 +11,7 @@ def check_file(file, quiet=False):
 
     if not os.path.exists(file):
         if not quiet:
-            print('''\r{} File not found: {}. Check the file location and try again.\n'''.format(
-                scope_error, file
-                )
-            )
+            print(f"\r{scope_error} File not found: {file}. Check the file location and try again.\n")
         return False
 
     if not os.path.isfile(file) \
@@ -23,18 +20,12 @@ def check_file(file, quiet=False):
         if not quiet:
             arg_msg=''
             arg_msg = 'Requires a configuration file with .yaml extension\n'
-            print('''\r{} Invalid YAML file: {}. {}'''.format(
-                scope_error, file, arg_msg
-                )
-            )
+            print(f"\r{scope_error} Invalid YAML file: {file}. {arg_msg}")
         return False
 
     if os.path.getsize(file) == 0:
         if not quiet:
-            print('''\r{} The file is empty: {}\n'''.format(
-                scope_error, file
-                )
-            )
+            print(f"\r{scope_error} The file is empty: {file}\n")
         return False
 
     return True
@@ -61,7 +52,7 @@ def get_tool_scope(**args):
                 if port not in ports:
                     ports.append(port.strip())
         else:
-            print('[{}] Missing target scope'.format(datetime.now()))
+            print(f'[{datetime.now()}] Missing target scope')
             return False
 
     # ignore-state disabled: port arguments will be tested
@@ -76,10 +67,8 @@ def get_tool_scope(**args):
         if targets and ports:
             for target in targets:
                 for port in ports:
-                    targets_ports_set.append('{}:{}'.format(
-                        target.strip(),
-                        port.strip()
-                        )
+                    targets_ports_set.append(
+                        f'{target.strip()}:{port.strip()}'
                     )
 
     return targets_ports_set

@@ -20,16 +20,21 @@ from res.colors import *
 from time import sleep
 import yaml
 import os
+import re
 
-from siddhis.tictrac import tictrac
+from res.regex.secrets import secrets as secrets_regex
 from siddhis.prana import prana
 
 
 
 class DJUtils:
     def __init__(self, raw_traceback=False, items=False):
+        self.vfp = VMNFPayloads(**{'patterns':1})
         self.traceback = raw_traceback
         self.items = items
+        self.fuzz_handler = {
+            'module_run': 'djunch',
+        }
 
     def parse_raw_tb(self):
         p_t = self.traceback
@@ -105,7 +110,6 @@ class DJUtils:
         return db_settings
     
     def parse_contexts(self,**environment):
-        ''' dummy trick to save exception data in right context and feed traceback object'''
         
         env_contexts = {
             'server': {},
@@ -177,7 +181,6 @@ class DJUtils:
         )
 
     def set_form_fuzz(self, **base_form):
-        from res.vmnf_fuzz_data import VMNFPayloads
        
         fuzz_all = {}
         fuzz_scope = {
@@ -275,12 +278,8 @@ class DJUtils:
         hl_pattern = colored('{} patterns'.format(len(patterns)), 'white')
         
         if not handler.get('sample'):
-            print('\n{} Starting DJunch | {} {}'.format(
-                (Gn_c  + "⠿" + C_c),
-                status,
-                hl_pattern
-                )
-            )
+            print()
+            print(f"\n{Gn_c  + '⠿' + C_c} Starting DJunch | {status} {hl_pattern}")
             sleep(0.40)
 
         self.full_scope=[]
@@ -298,13 +297,19 @@ class DJUtils:
         self.random_pyvars_payloads=[]
         
         if patterns is not None:
+            self.target_zero = self.target 
+
             # build scope from clean patterns
             self.raw_urls = [urljoin(self.target, pattern) \
                 for pattern in patterns \
                     if patterns is not None
             ]
 
+            if not self.target_zero.endswith('/'):
+                self.target_zero = self.target_zero + '/'
+
             self.raw_urls.insert(0,self.target)
+            self.raw_urls.insert(1,self.target_zero)
            
             random_types = self.get_random_data_list()
 
@@ -344,6 +349,7 @@ class DJUtils:
             # build scope from initial raw patterns (dmt input)
             for url in self.raw_urls[1:]:
                 url_path = urlparse(url).path
+
                 for url_p in (url_path.split('/')):
                     if not url_p:
                         continue
@@ -551,26 +557,64 @@ class DJUtils:
      
         }
 
-    def get_version_issues(self,**sampler):
-        
+    def get_tickets_table(self, django_version, tickets=False):
+
         tickets_tbl = self.get_report_tables().get('tickets')
+
+        if not tickets:
+
+            from siddhis.tictrac import tictrac
+
+            self.fuzz_handler['django_version'] = django_version
+            self.tickets = tictrac.siddhi(**self.fuzz_handler).get_ticket_ids()
+
+        else:
+            self.tickets = tickets
+
+        if self.tickets and self.tickets is not None:
+            
+            tickets_tbl.title = colored(
+                f"Security tickets for Django {django_version}",
+                "white", attrs=['bold']
+            )
+
+            for ticket in self.tickets:
+                title = ticket['title']
+
+                if len(title) > 100:
+                    title = str(title[:100]) + '...'
+
+                tickets_tbl.add_row(
+                    [
+                        colored(f"ST{ticket['id']}",'green'),
+                        title
+                    ]
+                )
+
+            return tickets_tbl
+
+        return False
+
+    def get_version_issues(self,**sample):
+        
+        #tickets_tbl = self.get_report_tables().get('tickets')
         cves_tbl = self.get_report_tables().get('cves')
         tickets = None
         cves = None
 
-        sttinger_data = sampler.get('FINGERPRINT',False)
+        sttinger_data = sample.get('fingerprint',False)
 
-        if sampler['EXCEPTION_SUMMARY'].get('Django Version'):
-            django_version = sampler['EXCEPTION_SUMMARY'].get('Django Version').strip()
-            #django_version = x_summary.get('Django Version').strip()
+        if sample['EXCEPTION_SUMMARY'].get('Django Version'):
+            django_version = sample['EXCEPTION_SUMMARY'].get('Django Version').strip()
             
-            installed_items = sampler['INSTALLED_ITEMS']
+            installed_items = sample['INSTALLED_ITEMS']
             
             # if Django Versions is found in Djunch 'environment_context'
             if django_version and django_version is not None:
+
                 if len(django_version.split('.')) >= 3:
                     django_version = '.'.join(django_version.split('.')[:-1])
-                
+
                 # if dmt already retrieve sec issues through passive fingerprint
                 if sttinger_data\
                     and django_version == sttinger_data.get('flag_version',False):
@@ -578,48 +622,24 @@ class DJUtils:
                     if sttinger_data.get('cves',False):
                         cves = sttinger_data.get('cves')
                     
-                    if sttinger_data.get('tcts',False):
-                        tickets = sttinger_data.get('tcts')
+                    if sttinger_data.get('tickets',False):
+                        tickets = sttinger_data.get('tickets')
+
+                    if sttinger_data.get('tickets_tbl'):
+                        tickets_tbl = sttinger_data.get('tickets_tbl')
                 else:
                     # - Get CVEs and security tickets for abducted framework version-
-                    tickets = tictrac.siddhi(django_version).start()
-                    cves = prana.siddhi(django_version).get_cves()
-                
-                if tickets and tickets is not None:
-                    #and security_tickets is not None: 
-                
-                    # Security Tickets table
-                    for ticket in tickets:
-                        title = ticket['title']
-                    
-                        # max text len to pretty result
-                        if len(title) > 100:
-                            title = str(title[:100]) + '...'
-                    
-                        # >> load security tickets 
-                        tickets_tbl.title = colored(
-                            "Security tickets for Django {}".format(django_version),
-                            "white", attrs=['bold']
-                        )
+                    #tickets = tictrac.siddhi(django_version).start()
+                    cves = prana.siddhi(**{'django_version':django_version}).get_cves()
+                    tickets_tbl = self.get_tickets_table(django_version)
 
-                        tickets_tbl.add_row(
-                            [
-                                colored('ST{}'.format(ticket['id']),'green'),
-                                title
-                            ]
-                        )
-                else:
-                    tickets_tbl = False
-                  
                 # CVE table
                 if cves and cves is not None:
+                    cves_tbl.title = colored(
+                        "CVE IDs for Django {}".format(django_version),
+                        "white",attrs=['bold']
+                    )
                     for entry in cves:
-                        # >> load cve ids
-                        cves_tbl.title = colored(
-                            "CVE IDs for Django {}".format(django_version),
-                            "white",attrs=['bold']
-                        )
-                    
                         cves_tbl.add_row(
                             [
                                 colored(entry['id'],'green'),
@@ -628,13 +648,13 @@ class DJUtils:
 
                             ]
                         )
-                else:cves_tbl = False
+                else: 
+                    pass
 
-        
         return {
-            'tickets_tbl': tickets_tbl,
-            'cves_tbl': cves_tbl,
-            'tickets': tickets,
+            'tickets_tbl': tickets_tbl.get_string(),
+            'cves_tbl': cves_tbl.get_string(),
+            'tickets': self.tickets,
             'cves':cves
         }
 
@@ -711,7 +731,6 @@ class DJUtils:
         
         return contexts
 
-
     def get_report_tables(self):
         from . _dju_settings import table_models
         
@@ -724,6 +743,87 @@ class DJUtils:
             'cves': self.get_pretty_table(**table_models().cves_tbl_set),
             'objects': self.get_pretty_table(**table_models().traceback_tbl_set)
         }
+
+    def keyword_match(self): 
+        
+        for keyword in self.kw_collection:
+
+            if not keyword:
+                continue
+            if [kv for kv \
+                    in self.match_key_vals \
+                    if keyword in kv]:
+            #if keyword in self.match_key_vals: 
+                self.match = True
+                return keyword
+        
+        return False
+
+    def secret_scan(self,exception_response):
+        
+        for re_type, regex in secrets_regex.items():
+            print(f"    + Scanning for {colored(re_type,11,988)}...")
+            sleep(0.01)
+
+            rgx_check = re.search(regex,exception_response)
+
+            if rgx_check:
+                print(f"              {colored(rgx_check.group(),'red')}")
+
+    def extract_metadata(self,extract_type,*except_objs):
+        
+        if extract_type in ['ss', 'secret_scan']:
+            self.secret_scan(except_objs[0]['APP_RESPONSE'])
+            return True
+
+        collections = VMNFPayloads(**{'patterns':1})
+        self.match = False
+
+        if extract_type in ['qx', 'query_extractor'] \
+                or extract_type is None:
+            self.kw_collection = collections.get_sqlkw()
+        elif extract_type in ['cx','creds_extractor']:
+            self.kw_collection = collections.get_credskw()
+        
+        for module_trigger_info in except_objs:
+            for key,value in module_trigger_info['MODULE_ARGS'].items():               
+                
+                value = value.replace('khan123khan','h@n1287t4db')
+                value = value.replace('reactcrud.cwi8neqkn8vo.us-east-1.rds.amazonaws.com','cruddjref.tuym2.us-east-1.rds.amazonaws.com')
+                value = value.replace('crud_django','cruddjref')
+
+                self.match_key_vals = [
+                    key,
+                    value,
+                    key.lower(),
+                    value.lower()
+                ]
+                
+                if not self.keyword_match():
+                    continue
+                
+                for mti_key, mti_value in module_trigger_info['MODULE_TRIGGERS'].items():
+                    print('{}{}:\t   {}'.format((' ' + ' ' * int(5-len(key) + 14)),
+                        colored(mti_key, 'blue', attrs=['bold']),
+                        highlight(mti_value,PythonLexer(),TerminalFormatter()).strip()
+                        )
+                    )
+
+                print()
+
+                print('{}{}:\t   {}'.format((' ' * int(5-len(key) + 14)),
+                    colored(key, 'magenta'),
+                    highlight(value,PythonLexer(),TerminalFormatter()).strip()
+                    )
+                )
+                sleep(0.05)
+
+                print('-'*100)
+                sleep(0.10)
+
+        if not self.match:
+            cprint('\t + Nothing to extract here!', 44, 841)
+            sleep(0.20)
 
     def show_module_args(self,*except_objs):
         for module_trigger_info in except_objs:
@@ -749,7 +849,10 @@ class DJUtils:
     def consolidate_issues(self, _issues_, report_items):
         issues_count = _issues_.get('_count_issues_')
 
-        t_x = (R_c + issues_count.get('total_exceptions') + g_c)
+        x_count = issues_count.get('total_exceptions')
+        c_count = len(_issues_.get('CONFIGURATION'))
+
+        t_x = (R_c + x_count + g_c)
         u_x = (R_c + str(len(_issues_.get('EXCEPTIONS')))  + g_c)
         t_l = (R_c + issues_count.get('total_lines') + g_c)
         t_v = (R_c + issues_count.get('total_vars')  + g_c)
@@ -760,25 +863,30 @@ class DJUtils:
         print("\033c", end="")
         vmnf_banners.audit_report_banner('issues references')
 
-        print('''{}
-        \r   Were identified {} exception occurrences related to {} unique
-        \r   exception types.
-        \r'''.format(g_c,t_x,u_x))
-        
+        print(f"""{g_c}
+        \r Vimana has identified {t_x} exception occurrences related to {u_x} unique
+        \r exception types.
+        """)
+
         print(report_items['exceptions'])
 
-        print('''{}
-        \r   This unhandled exceptions issue led to exposure of {} lines of
-        \r   source code, {} application variables, and also server environment
-        \r   with {} variables.
+        print(f'''{g_c}
+        \r    This unhandled exceptions issue led to the exposure
+        \r    of {t_l} lines of source code, {t_v} application
+        \r    variables, and also server environment with {t_e}
+        \r    variables.
+        ''')
+        
+        if c_count > 0:
+            print(f'''{g_c}
+            \r    In addition was identified {t_c} occurrences of
+            \r    {f_v}, which doesn't depend on DEBUG enabled and
+            \r    leads to information leakage that could allow the
+            \r    identification of technologies and versions.
 
-        \r   In addition was identified {} occurrences of {},
-        \r   which doesn't depend on DEBUG enabled, and led to information leakage
-        \r   that could allow identification of technologies and versions.
-
-        \r   These issues are related to the following CWE IDs, described in
-        \r   detail below:{}
-        '''.format(g_c,t_l,t_v,t_e,t_c,f_v,D_c))
+            \r    These issues are related to the following CWE IDs,
+            \r    described in detail below:{D_c}
+            ''')
 
         self.get_cwe_references(mode='full')
 
@@ -840,8 +948,9 @@ class DJUtils:
         traceback_objects = exception['OBJECTS']
 
         print()
-        print('\n      {}'.format(colored('    REQUEST   ', 'white', 'on_red', attrs=['bold'])))
+        print(f"\n      {colored('    REQUEST   ', 'white', 'on_red', attrs=['bold'])}")
         print()
+
         for k,v in (request_headers.items()):
             k = k.decode()
             v = v[0].decode()
@@ -851,6 +960,7 @@ class DJUtils:
 
         print('\n      {}'.format(colored('    SERVER    ', 'white', 'on_red', attrs=['bold'])))
         print()
+        
         for key,value in environment.items():
             if key.strip() in djev().SERVER_:
                 print('{}{}:\t   {}'.format((' ' * int(5-len(key) + 14)),key,colored(value, 'green')))
@@ -861,9 +971,11 @@ class DJUtils:
         print()
 
         values = []
+        
         for key, value in summary.items():
             hl_color = 'green'
             attr=[]
+
             if isinstance(value, (list)):
                 print('{}{}:'.format((' ' * int(5-len(key) + 14)),key))
                 for v in value:
@@ -912,6 +1024,7 @@ class DJUtils:
             )
              
             print()
+
             for key,value in entry['MODULE_TRIGGERS'].items():
                 print('{}{}:\t   {}'.format((' ' * int(5-len(key) + 14)),key,
                     highlight(value,PythonLexer(),TerminalFormatter()).strip()
@@ -938,6 +1051,7 @@ class DJUtils:
 
         print('   {} {}'.format(mark,colored('Traceback Objects', 'cyan')))
         print()
+
         for tb_object in traceback_objects:
             for k,v in tb_object.items():
                 print('{}{}:\t   {}'.format((' ' * int(5-len(k) + 14)),
@@ -951,6 +1065,7 @@ class DJUtils:
 
         print('\n\t{}'.format(colored('    ENVIRONMENT    ', 'white', 'on_red', attrs=['bold'])))
         print()
+
         for key,value in environment.items():
             if isinstance(value, (list)):
                 for v in value:

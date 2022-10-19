@@ -1,6 +1,8 @@
 import socks
 
-
+common_secrets_re='res/regex/secrets.txt'
+common_credskw = 'res/keywords/creds.txt'
+common_sqlkw = 'res/keywords/sql.txt'
 common_pyvars = 'res/pyvars/common_vars.txt'
 ssti_p = 'res/attack/payloads/ssti.txt'
 xss_p  = 'res/attack/payloads/xss.txt'

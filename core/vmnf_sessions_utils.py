@@ -1,17 +1,14 @@
 from res.vmnf_banners import case_header,mdtt1,vmn05
 from pygments.formatters import TerminalFormatter
+from neotermcolor import cprint, colored as cl
 from pygments.lexers import PythonLexer
 from pygments import highlight
-from neotermcolor import cprint
 from random import choice
 from time import sleep
 
 
 
-
-
-
-def abduct_items(**session):
+def abduct_items(**vfres):
     lights = [
         '││├˖┤', '│|│|│',
         ' |│|│', '└┐┌┘│',
@@ -19,7 +16,24 @@ def abduct_items(**session):
         '├˖├˖┤'
     ]
 
-    for k,v in session.items():
+    c,obj = False,False
+
+    if 'guide' in (vfres):
+
+        siddhi = vfres.get('name')
+        brief  = vfres.get('brief')
+        info   = vfres.get('info')
+
+        vfres= {}
+        vfres = {
+            'siddhi': siddhi,
+            siddhi:  brief
+        }
+
+        print(f"\t ⠞⠓⠊⠎ Abducting {cl(siddhi.lower(), 'red', attrs=['bold'])}: {cl(brief,'white')} ...")
+        sleep(0.15)
+
+    for k,v in vfres.items():
         print("\033c", end="")
         vmn05()
 
@@ -49,12 +63,16 @@ def abduct_items(**session):
             print('\n\t\t' + highlight(str(k) + ' -|- ' +  str(v)[:500],PythonLexer(),TerminalFormatter()).strip())
             sleep(0.05)
             continue
-
-        cprint(f"\n\t\t{str(k).upper()} ↓↓↓\n", 'red')
+        
+        cprint(f"\n\t\t{str(k).lower()} ↓↓↓\n", 'red')
 
         try:
             for c,obj in enumerate(v[:20]):
-                print('\t\t → ' + highlight(str(obj),PythonLexer(),TerminalFormatter()).strip())
+                print('\t\t → ' + highlight(
+                    str(obj),
+                    PythonLexer(),
+                    TerminalFormatter()).strip()
+                )
                 sleep(0.01)
             sleep(0.07)
         except TypeError:

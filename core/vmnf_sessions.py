@@ -8,7 +8,7 @@ from core._dbops_.vmnf_dbops import VFDBOps
 
 from scrapy.utils.serialize import ScrapyJSONEncoder
 from neotermcolor import cprint, colored as cl
-from res.vmnf_banners import case_header,mdtt1,vmn05
+from res.vmnf_banners import *
 from core.load_settings import _vfs_
 from urllib.parse import urlparse
 from datetime import datetime
@@ -52,6 +52,8 @@ class VFSession:
             sys.exit(1)
 
     def save_session(self):
+        # {vmnf_log:flag}
+        
         session_hash  = self.hashsession()
         session_id = session_hash[:10]
         session_file = f'{session_id}.yaml' 
@@ -93,13 +95,26 @@ class VFSession:
         target  = cl(self.session['target_url'], 'red')
         session = cl(session_id, 'red')
 
-        vmn05()
+        if self.session['sample']:
+            print("\033c", end="")
+            sample_mode(
+                cl('  sample mode   ','red', 'on_white', attrs=['bold'])
+            )
+        else:
+            vmn05()
+
         print(f"\n\t→ {plugin} session {session} sucessfully recorded for target {target}!")
         sleep(2)
         
-        vmn05()
-        sleep(0.30)
-
+        if self.session['sample']:
+            print("\033c", end="")
+            sample_mode(
+                cl('  sample mode   ','red', 'on_white', attrs=['bold'])
+            )
+        else:
+            vmn05()
+            sleep(0.30)
+        
         return session_id
 
     def flush_session_file(self, session_path):
@@ -116,6 +131,9 @@ class VFSession:
         recorded_sessions = VFDBOps(**self.session).get_all_sessions()
         
         if not recorded_sessions or len(recorded_sessions) == 0:
+            if self.session['runner_mode']:
+                return []
+
             self.handle_no_sessions()
             return False
 
@@ -134,14 +152,26 @@ class VFSession:
 
             vmn05()
             print(f"\n\t Flushing session {session} ({sc}/{total}) / {plugin} → {target} ...\n")
-            sleep(1)
+            
+            if not self.session['fastflush']:
+                sleep(1)
 
             if self.session['xray_enabled']:
-                abduct_items(**self.load_session(_s_.session_id, self.flush_mode))
-        
+                try:
+                    abduct_items(
+                        **self.load_session(
+                            _s_.session_id, 
+                            self.flush_mode
+                        )
+                    )
+                except:
+                    pass
+
             session = VFDBOps(**self.session).flush_session(_s_.session_id)
             self.flush_session_file(_s_.session_path)
-            sleep(1)
+            
+            if not self.session['fastflush']:
+                sleep(1)
         
         cprint(f"\n\t   → {hl_total} sessions flushed!\n\n\n", 'blue')
 
@@ -179,7 +209,6 @@ class VFSession:
                     key=os.path.getctime
             )
         except ValueError:
-            #self.handler_no_sessions()
             self.handle_invalid_session()
             return False
 
@@ -188,13 +217,17 @@ class VFSession:
     def format_date(self):
         return self._s_session_date.strftime("%Y-%m-%d %H:%M:%S")
 
+    def get_total_sessions(self):
+        return len(self.check_sessions())
+
     def list_sessions(self, headless=False):
-        self.check_sessions()
+        _sessions_ = self.check_sessions()
         
         attrs = []
         clc  = 'white'
         
         last_session = self.get_last_session()
+
         if not headless:
             print("\033c", end="")
             case_header()
@@ -214,7 +247,7 @@ class VFSession:
             ]
         )
 
-        for _vs_ in VFDBOps(**self.session).get_all_sessions():
+        for _vs_ in _sessions_:
             clc = 'white'
 
             if _vs_.session_file == last_session:
@@ -235,7 +268,6 @@ class VFSession:
                 ]
             )
 
-
         print(tabulate(
             self.sessions_tbl,
             headers='firstrow',
@@ -247,12 +279,9 @@ class VFSession:
     
     def handle_no_sessions(self):
         # {vmnf_log:flag}
-
-        print("\033c", end="")
-        cprint(f"\n\n\t\t No sessions found!\n\n", 'red')
+        
         case_header()
-        print('\n\n\n')
-
+        cprint(f"\t\t No sessions found!\n\n\n", 'red')
         sys.exit(1)
 
     def handle_invalid_session(self, value):
@@ -299,6 +328,8 @@ class VFSession:
             return False
 
         with open(_session_.session_path, 'r') as _sf_:
+            '''@except yaml.constructor.ConstructorError'''
+
             _session_ = yaml.unsafe_load(_sf_)
             _prompt_ = _session_['prompt']
 

