@@ -130,7 +130,7 @@ class VimanaParser:
         run_cmd.add_argument('--siddhi', action='store', dest='module_run')
         run_cmd.add_argument('--plugin', action='store', dest='module_run')
         run_cmd.add_argument('--fuzzer', action='store_true')
-        run_cmd.add_argument('--discovery', action='store_true')
+        #run_cmd.add_argument('--discovery', action='store_true')
         run_cmd.add_argument('--fingerprint', action='store_true')
         run_cmd.add_argument('--exec-case', action='store_true', default=False)
         run_cmd.add_argument("--exit-on-trigger", action="store_true", dest='exit_on_trigger')

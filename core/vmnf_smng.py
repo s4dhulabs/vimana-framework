@@ -251,7 +251,6 @@ class VFManager:
         from core.vmnf_cases import CasManager
         from res.vmnf_banners import vmn05
         from res import vmnf_banners
-        import sys
 
         targets_ports_set = []
 
