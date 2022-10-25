@@ -67,6 +67,14 @@ class vfasserts:
             or self._vfh_['siddhi_run'] 
         ) else False
     
+    def plugin_payload_set(self):
+        return True if (
+            self._vfh_['module_run']) \
+            and (self._vfh_['flask_pinstealer'] \
+            or self._vfh_['flask_consolehook'] \
+            or self._vfh_['connect_back'] 
+        ) else False
+
     '''
     ** to support future changes
 

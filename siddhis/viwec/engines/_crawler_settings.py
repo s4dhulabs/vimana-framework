@@ -1,5 +1,5 @@
 settings = {
-    'LOG_ENABLED':True,
+    'LOG_ENABLED':False,
     'LOG_LEVEL': "DEBUG",
     'COOKIES_ENABLED':True,
     'TELNETCONSOLE_ENABLED': False,

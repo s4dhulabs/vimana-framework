@@ -52,6 +52,7 @@ from core.vmnf_shared_args import VimanaSharedArgs
 from siddhis.djunch.djunch import siddhi as Djunch
 from res import colors
 
+from rich.prompt import Confirm
 
 class DMTEngine(scrapy.Spider):
     name = 'DMTengineParser'
@@ -231,15 +232,10 @@ class DMTEngine(scrapy.Spider):
             
             if not self.auto_mode \
                 and not self.vmnf_handler.get('sample'):
-
-                confirm_step = 'n'
-                confirm_step = input(colored('[DMT] The target is vulnerable, would you like to continue? (Y/n) → ', 'cyan'))
-            
-                if not confirm_step\
-                    or confirm_step.lower() == 'n':
-                    
-                    self.exit_step=True 
-                    
+                
+                confirmation = Confirm.ask("[DMT] The target is vulnerable, would you like to continue? ▸ ")
+                
+                if not confirmation:
                     cprint('\nSeeya sadhu! Leaving the ship...\n', 'green')
                     sleep(1)
                     os._exit(os.EX_OK)
