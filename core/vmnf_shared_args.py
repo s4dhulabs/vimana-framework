@@ -141,6 +141,16 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--auth",action="store_true",dest='auth_mode',default=False)
         vmnf_shared_parser.add_argument("--save-session",action="store_true",dest='save_session',default=False)
         vmnf_shared_parser.add_argument("--callback-session",action="store_true",dest='callback_session',default=False)
+        vmnf_shared_parser.add_argument("--flask-pinstealer",action="store_true",dest='flask_pinstealer',default=False)
+        vmnf_shared_parser.add_argument("--flask-consolehook",action="store_true",dest='flask_consolehook',default=False)
+        vmnf_shared_parser.add_argument("--connect-back",action="store_true",dest='connect_back',default=False)
+        # -------------------------------------------------------------------------------
+        # > common plugin shared options
+        # -------------------------------------------------------------------------------
+        vmnf_shared_parser.add_argument("--brute-force",action="store_true",dest='brute_force_mode',default=False)
+        vmnf_shared_parser.add_argument("--discovery",action="store_true",dest='discovery_mode',default=False)
+        vmnf_shared_parser.add_argument("--search",action="store",dest='search_mode',default=False)
+        vmnf_shared_parser.add_argument("--dump",action="store",dest='dump_mode',default=False)
         
         return vmnf_shared_parser
 

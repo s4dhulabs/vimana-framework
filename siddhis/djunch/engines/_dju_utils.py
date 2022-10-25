@@ -332,6 +332,7 @@ class DJUtils:
             
             pathtr_vals = [ 
                 'etc/passwd',
+                'urls2.py',
                 'db.sqlite3',
                 '*.sqlite3',
                 'urls.py',
@@ -788,9 +789,8 @@ class DJUtils:
         for module_trigger_info in except_objs:
             for key,value in module_trigger_info['MODULE_ARGS'].items():               
                 
-                value = value.replace('khan123khan','h@n1287t4db')
-                value = value.replace('reactcrud.cwi8neqkn8vo.us-east-1.rds.amazonaws.com','cruddjref.tuym2.us-east-1.rds.amazonaws.com')
-                value = value.replace('crud_django','cruddjref')
+                # pocs
+                #value = value.replace('string','newstring')
 
                 self.match_key_vals = [
                     key,

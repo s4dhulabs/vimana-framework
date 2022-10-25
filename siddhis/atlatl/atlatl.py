@@ -121,6 +121,8 @@ class siddhi:
             return out_text
 
     def console_hook(self,target:False, pin:False):
+        up = urlparse(target)
+        target = '://'.join([up.scheme,up.netloc])
 
         if not target or not pin:
             cprint(f'[{self.siddhi_name}]- Missing scope: Run vf guide -m atlatl <--args,--examples>', 'red')

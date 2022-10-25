@@ -2,17 +2,17 @@
 
 
 from __future__ import unicode_literals
+
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
-#from siddhis.viwec.viwec import siddhi as crawler
-#from siddhis.jungler.jungler import siddhi as bruteforce
+from core._dbops_.models.siddhis import Siddhis as VFSD
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.lexers import PygmentsLexer
+from neotermcolor import cprint, colored as cl
 from prompt_toolkit.shortcuts import prompt
 from prompt_toolkit import PromptSession
 from pygments.lexers.sql import SqlLexer
 from pygments.lexers import PythonLexer
 from prompt_toolkit.styles import Style
-from neotermcolor import cprint, colored as cl
 from prettytable import PrettyTable
 from time import sleep
 from res.colors import *
@@ -22,7 +22,7 @@ import getpass
 import sys
 import os
 import re
-from core._dbops_.models.siddhis import Siddhis as VFSD
+
 
 class describe:
     def __init__(self, **handler:dict):
