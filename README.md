@@ -137,8 +137,10 @@ It will register all vimana modules. At the end of this process, the Framework w
 | jungle   | audit       | framework | brute force utility to audit django administration portal          |
 | viwec    | crawler     | discovery | simple web crawler utility                                         |
 | atlatl   | persistence | framework | capture, authenticate, and persist flask debug console sessions.   |
+| viewscan | audit       | framework | simple static analysis utility for django views                    |
 | tictrac  | tracker     | framework | track bug tickets in django ticket system                          |
 +----------+-------------+-----------+--------------------------------------------------------------------+
+
 
 ```
 
