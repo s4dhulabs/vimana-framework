@@ -1,0 +1,70 @@
+name: viewscan
+author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
+brief: Django View Scanner 
+category: framework
+framework: django
+info:  Simple static analysis utility for Django views
+module: siddhis/viewscan/viewscan.py
+package: Django
+type: audit
+tags:
+  - sast
+  - views
+description: |
+  ViewScan is a tool for identifying potential security
+  issues in Django views. It analyzes the view functions
+  in Django applications and checks for common issues
+  related to authentication, authorization, and sensitive
+  data filtering.
+
+  ViewScan looks for categories of issues such as missing
+  validations, decorators, and parameters that could
+  lead to security vulnerabilities in Django views. By
+  using pattern matching, ViewScan can detect common
+  coding mistakes and misconfigurations that could lead
+  to security breaches.
+
+  While ViewScan does not aim to be a generic scanner
+  for Python applications, it provides a useful tool
+  for identifying potential security risks in Django
+  views. Its pattern matching engine can detect issues
+  related to authentication and authorization, sensitive
+  data filtering, and other categories of issues that
+  may be added in future versions.
+
+  Overall, ViewScan is a valuable tool for Django
+  developers who want to enhance the security of their
+  applications. By using ViewScan to identify potential
+  security risks, developers can ensure that their
+  applications are less vulnerable to attacks and better
+  protected against security breaches.
+references:
+  links: False
+  cwe: False
+guide:
+  args: |
+    ø----------------------------------------------------------------------ø
+    │└┐└┌⠞⠓┬┐│└æ┌┐æ│└æ└┘┌┐┌⠞⠓┬┐æ┘└ VIEWSCAN ARGS  æ│┘┌⠞⠓┬┐æ│┐æ│┘æ││æ│┘æ│~æ-│
+    ø-----------+----------------------------------------------------------ø
+    │ scope     └┐                                                         │
+    +------------+---------------------------------------------------------+
+     --project-dir       Django application's directory 
+
+  examples: |
+    ø----------------------------------------------------------------------ø
+    ⠞  ⠎ ⠞ ⠎⠞⠎ ⠞⠊⠞⠓ ⠊⠎⠞⠓⠊  ⠞⠓⠊⠎⠞⠓⠊ VIEWSCAN GUIDE  ⠞⠓⠊⠎.~ ⠎⠞ ⠞ ⠊⠎ ⠞⠊.⠞ ⠊⠎-.⠎
+    ø----------------------------------------------------------------------ø
+
+        Running viewscan against a target project's directory:
+     
+        $ vimana run --plugin viewscan --project-dir mydjangop_project
+
+  lab_setup: |
+    ø----------------------------------------------------------------------ø
+    ⠞  ⠎ ⠞ ⠎⠞⠎ ⠞⠊⠞⠓ ⠊⠎⠞⠓⠊  ⠞⠓⠊⠎⠞⠓⠊ VIEWSCAN LABS  ⠞⠓⠊⠎.~ ⠎⠞ ⠞ ⠊⠎ ⠞⠊.⠞ ⠊⠎-.⠎
+    ø----------------------------------------------------------------------ø
+  
+        You can easily find some opensource Django project to try it:
+        https://github.com/topics/django-project
+
+

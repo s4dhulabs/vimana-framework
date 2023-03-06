@@ -64,7 +64,6 @@ def abduct():
 
             print(vmnf_cmds[cmd])
             sys.exit(1)
-
         else:
             pass
 
@@ -82,7 +81,6 @@ def abduct():
                 print(vmnf_cmds[cmd])
                 sys.exit(1)
             else:
-                # here we need to present the help about how to use help, e.g:
                 # vimana run --help     shows help about the command run itself
                 pass
 

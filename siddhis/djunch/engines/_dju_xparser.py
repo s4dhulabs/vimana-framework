@@ -80,15 +80,15 @@ class DJEngineParser(scrapy.Spider):
         self.follow_responses = [200, 302]
         self.vmnf_handler = vmnf_handler
         self.target = vmnf_handler.get('target_url')
-        self.debug_is_on = vmnf_handler['debug']
-        self.step_method = vmnf_handler.get('method')
-        self.headers =  vmnf_handler.get('headers')
+        self.debug_is_on = vmnf_handler.get('debug', False)
+        self.step_method = vmnf_handler.get('method',False)
+        self.headers =  vmnf_handler.get('headers',False)
         self.data = self._vmnfp_.get_random_credential()
-        self.cookies = vmnf_handler.get('cookie')
-        self.download_timeout = vmnf_handler.get('download_timeout')
-        self.meta = vmnf_handler.get('meta')
-        self.patterns = vmnf_handler.get('patterns')
-        self.fuzz_step = vmnf_handler.get('fuzz_step')
+        self.cookies = vmnf_handler.get('cookie',False)
+        self.download_timeout = vmnf_handler.get('download_timeout',False)
+        self.meta = vmnf_handler.get('meta',False)
+        self.patterns = vmnf_handler.get('patterns',False)
+        self.fuzz_step = vmnf_handler.get('fuzz_step',False)
         self.caught_exceptions = []
         self.collected_sample = False
         self.set_close = False
@@ -110,12 +110,13 @@ class DJEngineParser(scrapy.Spider):
         self.fuzz_start = True
         self.GenObj = Generic()
         self.General_Traceback_Objects = []
+        self._FuzzURLsPool_ = []
 
     def closed(self,reason):
         self._ISSUES_POOL['GENERAL_OBJECTS'] = self.General_Traceback_Objects
 
         if not self._ISSUES_POOL['EXCEPTIONS']:
-            cprint("\n[{}]→ No exception found with given settings.\n".format(datetime.now()), 'cyan')
+            cprint(f"\n[{datetime.now()}]→ No exception found with given settings.\n",'cyan')
             if self.debug_is_on:
                 for request_status in self._ISSUES_POOL['FUZZ_STATUS_LOG']:
                     print(request_status)
@@ -146,7 +147,7 @@ class DJEngineParser(scrapy.Spider):
         xss_p = self._vmnfp_.get_xss_payloads()
         
         if not self.target or self.target is None:
-            print('[{}:{}]→ Missing target'.format(self.vmnf_handler['module_run'], datetime.now()))
+            print(f"[{self.vmnf_handler['module_run']}:{datetime.now()}]→ Missing target!")
             return False
         
         if not self.vmnf_handler.get('sample'):
@@ -185,6 +186,7 @@ class DJEngineParser(scrapy.Spider):
                 if not self.target in target_url:
                     continue
                  
+                #_fzz_headers_['Cookie'] = f"csrftoken={DJUtils().gen_csrftoken()}"
                 _fzz_headers_['Host'] = '127.0.0.1'
                 _fzz_headers_['Content-Length'] = 123
                 self.step_method = 'GET'
@@ -214,7 +216,8 @@ class DJEngineParser(scrapy.Spider):
                         _fzz_headers_['Content-Type'] = self.GenObj.internet.content_type()
 
                     # random method 2 / other methods to be implemented to enrich fuzzer
-                    self.step_method = choice(['GET','POST','PUT'])
+                    self.step_method = choice(['GET','POST'])
+                    #_fzz_headers_['Cookie'] = f"csrftoken={scope.gen_csrftoken()}"
                     
                     # because in this mode we expect to be faster, set as 1 before
                     if not self.vmnf_handler.get('sample'):
@@ -241,23 +244,13 @@ class DJEngineParser(scrapy.Spider):
                     #stept_space = ' '
 
                     fuzz_step_msg = (f' {step_mark} Fuzzer step ({hl_fuzz_steps}) \t| {hl_method} \t{hl_url_step_type} {stept_space} {urls_step_count}')
-                    """
-                    fuzz_step_msg = (' {} Fuzzer step ({}) | {} {} ({})'.format(
-                        step_mark,
-                        hl_fuzz_steps,
-                        hl_method,
-                        hl_url_step_type,
-                        urls_step_count,
-                        )
-                    )
-                    """
+                    
                     if self.debug_is_on:
                         print(fuzz_step_msg)
                     else:
                         print()
                         print(fuzz_step_msg.ljust(os.get_terminal_size().columns - 1), end="\r")
                 
-
                 _fzz_headers_["Content-Security-Policy"] = "object-src 'none'; base-uri 'none'; default-src 'self';"
                 if url_step_type == 'FUZZ_HEADERS':
 
@@ -394,7 +387,7 @@ class DJEngineParser(scrapy.Spider):
                             print('     + {}: {}'.format(k.decode(),v[0].decode()))
                         print()
                     
-                    return False
+                    return None
 
         elif response.status in self.x_trigger_status:
             self.djx_parser(response)
@@ -417,7 +410,7 @@ class DJEngineParser(scrapy.Spider):
                 status_msg=colored("The application's response does not match with an expected exception. Maybe a server issue:", 'yellow')
                 print("[djunch().status_handler({})] {} \n{}".format(
                     response.status,status_msg,
-                    highlight(str(response_data),HtmlLexer(),TerminalFormatter())
+                    highlight(str(response.body.decode("utf-8")),HtmlLexer(),TerminalFormatter())
                     )
                 )
             return False
@@ -467,7 +460,11 @@ class DJEngineParser(scrapy.Spider):
         # ----------------------------------------------
 
         self.caught_exceptions.append(self.EXCEPTION_ID)
-        REQUEST_HEADERS = response.request.headers
+        try:
+            REQUEST_HEADERS = response.request.headers
+        except AttributeError:
+            REQUEST_HEADERS = response.headers
+
         TRACEBACK_OBJECTS = []
        
         [self.djx_def.__setitem__(x, getattr(django_cx, x).__doc__) \
@@ -521,11 +518,11 @@ class DJEngineParser(scrapy.Spider):
             print("\033c", end="")
             
             vmnf_banners.sample_mode(
-                    colored(
-                        ' sample caught  ',
-                        'white', 'on_red', 
-                        attrs=['bold']
-                    )
+                colored(
+                    ' sample caught  ',
+                    'white', 'on_red', 
+                    attrs=['bold']
+                )
             )
 
             sleep(1)

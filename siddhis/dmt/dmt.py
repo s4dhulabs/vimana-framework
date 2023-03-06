@@ -33,6 +33,7 @@ from res import vmnf_banners
 from .engines._crawler_settings import settings
 from .engines._crawler_settings import headers
 from .engines._dmt_parser import DMTEngine as _dmt_
+from siddhis.djunch.engines._dju_utils import DJUtils
 
 
 
@@ -81,8 +82,11 @@ class siddhi:
             namespace=djunch_handler)[1]
         
         # adjustments to the arguments for an engine
-        headers['Origin']   = self.vmnf_handler['target_url']
-        headers['Referer']  = self.vmnf_handler['target_url']
+        #headers['Authorization'] = 'Basic {b64_credentials}'
+        headers['Origin'] = self.vmnf_handler['target_url']
+        headers['Referer'] = self.vmnf_handler['target_url']
+        headers['Cookie'] = f"csrftoken={DJUtils().gen_csrftoken()}"
+
         self.vmnf_handler['fuzz_settings'] = settings
         self.vmnf_handler['meta'] = {
             "max_retry_times": 3,

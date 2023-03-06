@@ -622,7 +622,7 @@ class vmnfshell:
                             if _iid_ in str(self._issues_['CONFIGURATION']):
                                 for c_issue in self._issues_['CONFIGURATION']:
                                     # show exception details
-                                    if c_issue['iid'] == _iid_:
+                                    if c_issue['IID'] == _iid_:
                                         found_issue = True
                                         print()
 

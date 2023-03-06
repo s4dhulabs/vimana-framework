@@ -40,7 +40,7 @@ class Siddhis(db.Model):
     )
     info = db.Column(
         db.String(100),
-        unique = True,
+        unique = False,
         nullable = False
     )
     module = db.Column(

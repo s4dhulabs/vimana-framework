@@ -263,9 +263,9 @@ class VimanaParser:
             url_conf        = False,
             view_name       = False,
             proxy           = False,
-            proxy_type      = False
+            proxy_type      = False,
+            project_dir     = False
         )
-        
 
         if len(sys.argv) > 1:
             _cmd_ = sys.argv[1]
@@ -293,9 +293,9 @@ class VimanaParser:
             and len(sys.argv[2:]) == 1:
             print(VimanaHelp.args.__doc__)
             sys.exit(1)
-        elif _cmd_ == 'about':
-            print("aboutzz")
-
+        if _cmd_ == 'about':
+            VimanaHelp().basic_help()
+            sys.exit(1)
         try: 
             vmn_options = self.parse_args()
         except argparse.ArgumentError as ArgError:

@@ -1,5 +1,6 @@
 import socks
 
+common_url_patterns='res/patterns/url/common.txt'
 common_secrets_re='res/regex/secrets.txt'
 common_credskw = 'res/keywords/creds.txt'
 common_sqlkw = 'res/keywords/sql.txt'

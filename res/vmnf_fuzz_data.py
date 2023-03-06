@@ -15,6 +15,9 @@ class VMNFPayloads:
         self.settings = settings
         self.patterns = settings.get('patterns', 10)
     
+    def enon(self):
+        return ['None', '[¹→↓?']
+
     def get_random_int(self):
         return randint(0, 
             choice(range(datetime.now().minute \
@@ -62,3 +65,7 @@ class VMNFPayloads:
     def get_secret_regex(self):
         with open(settings.common_secrets_re) as f:
             return [p.strip('\n') for p in f.readlines()[1:]]
+    def get_common_url_patterns(self):
+        with open(settings.common_url_patterns) as f:
+            return [p.strip('\n') for p in f.readlines() if p]
+

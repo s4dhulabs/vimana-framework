@@ -8,11 +8,11 @@ from sqlalchemy import or_, and_
 from sqlalchemy import func,exc,inspect
 from neotermcolor import cprint
 from .config import db, app
+import sqlite3
+import sys
 import os
 
 
-def x():
-    print('in x')
 
 class VFSiddhis:
     def __init__(self, **siddhi_specs:dict):
@@ -25,20 +25,23 @@ class VFSiddhis:
     def register_siddhi(self):
         if not inspect(db.engine).has_table("_SIDDHIS_"):
             self.create_siddhi_tbl()
-
         self.commit(VFSD(**self.siddhi_specs)) 
 
     def handle_OpErr(self, exception):
-        if (str(exception.orig)).startswith('no such table:'):
-            case_header()
-            cprint("[vf:list] It seems like you haven't populated the database yet.\n", 'yellow')
-            os._exit(os.EX_OK)
+        case_header()
+        
+        if exception.startswith('no such table:'):
+            cprint("        It seems like you haven't populated the database yet.\n", 'yellow')
+        elif exception.startswith('db ready'):
+            cprint("        Plugins already loaded. Try vimana list --plugins \n", 'yellow')
+
+        os._exit(os.EX_OK)
 
     def list_siddhis_db(self, filters:list):
         try:
             return (apply_filters(db.session.query(VFSD), filters).all())
         except exc.OperationalError as OE:
-            self.handle_OpErr(OE)
+            self.handle_OpErr(str(OE.orig))
     
     def get_siddhi(self, siddhi_name):
         try:

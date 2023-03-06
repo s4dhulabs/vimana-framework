@@ -59,7 +59,7 @@ class siddhi:
             print(VimanaSharedArgs().shared_help.__doc__)
             sys.exit(1)
 
-        if self.vmnf_handler['disable_cache']:
+        if self.vmnf_handler.get('disable_cache',False):
             settings['HTTPCACHE_ENABLED'] = False
 
         runner = CrawlerRunner(dict(settings))

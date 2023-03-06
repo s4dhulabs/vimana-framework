@@ -36,16 +36,19 @@ from mimesis import Generic
 from urllib.parse import urljoin
 from scrapy.http import HtmlResponse
 
-from scrapy import signals
-from scrapy.shell import inspect_response
+
 from scrapy.spidermiddlewares.httperror import HttpError
 from twisted.internet.error import DNSLookupError
 from scrapy.utils.log import configure_logging  
-from scrapy.http import HtmlResponse
+from scrapy.shell import inspect_response
 from scrapy.http.headers import Headers
+from scrapy.http import HtmlResponse
+from scrapy import signals
+
 from neotermcolor import colored,cprint
 from pygments import highlight
 
+from siddhis.djunch.engines._dju_xparser import DJEngineParser
 from res.vmnf_validators import get_tool_scope as get_scope
 from siddhis.sttinger.sttinger import siddhi as sttinger
 from core.vmnf_shared_args import VimanaSharedArgs
@@ -53,6 +56,7 @@ from siddhis.djunch.djunch import siddhi as Djunch
 from res import colors
 
 from rich.prompt import Confirm
+
 
 class DMTEngine(scrapy.Spider):
     name = 'DMTengineParser'
@@ -84,6 +88,8 @@ class DMTEngine(scrapy.Spider):
         self.raw_patterns =[]
         self.app_patterns =[]
         self.exit_step = False
+        self.exception_found = False
+        self.sample_trigger = urljoin(self.target_url,str(random()))
    
     def get_raw_patterns(self,response):
         return [('/'.join(pattern.split()).replace('//','/'))\
@@ -101,8 +107,9 @@ class DMTEngine(scrapy.Spider):
                 cprint("""[{}] Missing scope!\n""".format(
                     datetime.now()), 'magenta', attrs=['bold'])
             else:
-                cprint("""[{}] The target doesn't seem to be up. Check out if the application is running, and try again.\n""".format(
-                    datetime.now()), 'magenta', attrs=['bold'])
+                if not self.exception_found:
+                    cprint("""[{}] The target doesn't seem to be up. Check out if the application is running, and try again.\n""".format(
+                        datetime.now()), 'magenta', attrs=['bold'])
 
             os._exit(os.EX_OK) 
 
@@ -116,7 +123,7 @@ class DMTEngine(scrapy.Spider):
         
         # call new djunch engine
         Djunch(**self.vmnf_handler).start()
-        #os._exit(os.EX_OK)
+
 
     def start_requests(self):
 
@@ -151,7 +158,7 @@ class DMTEngine(scrapy.Spider):
         c_target = colored(self.target_url,'white')
             
         if not self.vmnf_handler.get('sample'):
-            cprint("\n[{}] Starting DMT against {}...".format(datetime.now(),c_target), 'cyan')
+            cprint(f"\n[{datetime.now()}] Starting DMT against {c_target}...", 'cyan')
             sleep(1)
             
         self.target_trigger = urljoin(self.target_url,str(random()))
@@ -263,6 +270,9 @@ class DMTEngine(scrapy.Spider):
                 self.set_flag_regex_patterns()
                 
                 #return 
+        if response.status == 500:
+            self.exception_found = True            
+            DJEngineParser([],**{}).djx_parser(response)
             
     def get_view_context_patterns(self):
         self.p_context={}
@@ -377,7 +387,7 @@ class DMTEngine(scrapy.Spider):
         if not self.vmnf_handler.get('sample'):
             print(f"{self.f_start} Starting PatternMapper via {trick}")
             sleep(0.30)
-        
+       
         for pattern in self.app_patterns:
             p_count +=1
             hl_p_count = colored(p_count, 'white')
@@ -436,17 +446,45 @@ class DMTEngine(scrapy.Spider):
         if external_mode:
             return self.raw_patterns
 
+    def addapt(self):
+        try:
+            r = requests.get(self.sample_trigger,headers=self.headers)
+            return HtmlResponse(url=self.target_url, body=r.text, encoding='utf-8')
+        except requests.exceptions.ConnectionError:
+            cprint(f"[{datetime.now()}] The target doesn't seem to be up!\n", 'cyan')
+
+            sys.exit(1)
+
     def get_app_patterns(self,response):
+        external = False
+
+        if not response:
+            external = True
+            response = self.addapt()
+
         for pattern in self.get_raw_patterns(response):
            self.app_patterns.append(pattern)
-        
+
+        if external:
+            
+            # mapping for external caller
+            self.patterns_mapper(False)
+
+            # patterns by view
+            self.get_view_context_patterns()
+
+            # set fuzzer flags: antiregex
+            self.set_flag_regex_patterns()
+
+            return self.only_patterns
+
         hl_ap = colored(len(self.app_patterns), 'white')
         if not self.vmnf_handler.get('sample'):
             print(f"{self.f_map} {hl_ap} app patterns\n")
-            sleep(0.30)
+            sleep(0.20)
 
             for pattern in self.app_patterns:
                 print(f"   + {colored(pattern,'green')}")
-                sleep(0.05)
+                sleep(0.03)
             print()
 
