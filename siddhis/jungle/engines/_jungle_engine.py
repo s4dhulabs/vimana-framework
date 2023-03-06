@@ -164,7 +164,6 @@ class jungle_engine(scrapy.Spider):
                 }
             )
             
-
             # return to caller session
             vmnf_callback_session(**self.handler)
         
@@ -182,7 +181,6 @@ class jungle_engine(scrapy.Spider):
         }
         
     def do_logout(self, response):
-        
         client = requests.session()
 
         try:
@@ -311,9 +309,6 @@ class jungle_engine(scrapy.Spider):
             )
         )
         
-    def t(self,):
-        pass
-
     def build_auth_headers(self,response):
         headers = config.headers
         headers.update({'Referer':response.url})
@@ -379,5 +374,4 @@ class jungle_engine(scrapy.Spider):
             if self.build_auth_headers(response):
                 self.list_users(response)
                 self.do_logout(response)
-
 

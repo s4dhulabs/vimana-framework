@@ -49,9 +49,9 @@ class describe:
         for i in siddhi.description.split('\n'):
             print(f"\t\t{cl(i,'cyan')}")
 
-        print(f"{cl('References', 'blue'):>28}")
-
         if siddhi.references['links']:
+            print(f"{cl('References', 'blue'):>28}")
+
             for link in siddhi.references['links']:
                 print(f"\t\t{cl(link,'cyan')}")
             print()

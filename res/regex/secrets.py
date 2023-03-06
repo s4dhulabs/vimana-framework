@@ -6,7 +6,6 @@ secrets = {
   'Slack Token': "(xox[p|b|o|a]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})",
   'RSA private key': "-----BEGIN RSA PRIVATE KEY-----",
   'SSH (DSA) private key': "-----BEGIN DSA PRIVATE KEY-----",
-  'PyObjs':'at ([a-z0-9]{12})',
   'SSH (EC) private key': "-----BEGIN EC PRIVATE KEY-----",
   'PGP private key block': "-----BEGIN PGP PRIVATE KEY BLOCK-----",
   'Amazon AWS Access Key ID': "AKIA[0-9A-Z]{16}",

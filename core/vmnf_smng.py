@@ -8,6 +8,7 @@ from res.vmnf_banners import case_header
 from .vmnf_sessions import VFSession
 from .vmnf_asserts import vfasserts
 from .vmnf_utils import describe
+from sqlalchemy import inspect
 from time import sleep
 import yaml
 import sys
@@ -26,10 +27,14 @@ class VFManager:
 
         if not handler.get('module_run') and not handler.get('load_plugins'):
             ''' We're not going to use query filters with vf run -m '''
-
             self.query_filters = self.get_filters()
 
     def load_siddhis(self):
+        from core._dbops_.config import db
+
+        if inspect(db.engine).has_table("_SIDDHIS_"):
+            VFS().handle_OpErr('db ready')
+            self.list_siddhis()
 
         for s in os.scandir(f'{os.getcwd()}/siddhis/'):
             if (s.is_dir() and not s.name.startswith('_')):
@@ -55,7 +60,6 @@ class VFManager:
         filters = []
 
         for field,value in self.handler.items():
-
             if not value or value is None:
                 continue
             
@@ -73,21 +77,18 @@ class VFManager:
             if field in ['module_info']:
                 self.handler['module'] = \
                         self.handler['module_info']
-
                 self.handler['module_info'] = False
                 field = 'module'
             
             elif field == 'module_guide':
                 self.handler['module'] = \
                         self.handler['module_guide']
-
                 self.handler['module_guide'] = False
                 field = 'module'
 
             elif field == 'module_run':
                 self.handler['module'] = \
                         self.handler['module_run']
-
                 self.handler['module_run'] = False
                 field = 'module'
             
@@ -107,21 +108,17 @@ class VFManager:
             print(f"\t\t{cl(line,'white')}")
 
     def show_guide(self, sguide, sections:list):
-       
         if '-e' in sections:
             for ie in sguide['examples'].split('\n'):
                 self.print_guide_line(ie)
-                
         if '-a' in sections:
             for arg in sguide['args'].split('\n'):
                 self.print_guide_line(arg)
-
         if '-l' in sections:
             for lset in sguide['lab_setup'].split('\n'):
                 self.print_guide_line(lset)
     
     def get_siddhi_guide(self):
-
         siddhi = self.get_siddhi()
         _vfassert_ = vfasserts(**self.handler)
         
@@ -208,11 +205,11 @@ class VFManager:
 
     def run_siddhi(self):
         self.handler['module'] = self.handler['module_run']
-
+        
+        # `project_dir` could also be set right here
         if not self.handler['runner_mode']:
             ''' In Runner mode we already have the scope 
             and everything else in place '''
-
             self.parse_handler_scope()
 
         siddhi = self.get_siddhi()
@@ -224,7 +221,7 @@ class VFManager:
                 cprint("It seems like you haven't populated the database yet.", 'cyan')
                 cprint(f"   Just run load to fix this: {cl('$ vimana load --plugins.','green')}\n", 'cyan')
 
-                return 'blossom'
+                return False
         try:
             _siddhi_ = __import__(module_path, globals(), 'siddhi', 1).siddhi
         except AttributeError as AEX:
@@ -236,14 +233,12 @@ class VFManager:
             run_status = _siddhi_(**self.handler).start()
         except KeyboardInterrupt:
             sys.exit(1)
-
         return True
 
     def set_sessions_control(self):
         return VFDBOps(**self.handler).get_all_sessions() 
 
     def parse_handler_scope(self):
-
         from res.vmnf_validators import get_tool_scope as get_scope
         from core.vmnf_scope_parser import ScopeParser
         from core.vmnf_dscan import DockerDiscovery
@@ -273,7 +268,6 @@ class VFManager:
             ]
             
         if sys.argv[-1] != self.handler['module']:
-
             if self.handler['save_case']:
                 self.handler['args'] = sys.argv
                 CasManager(False,self.handler).save_case()
@@ -289,6 +283,11 @@ class VFManager:
 
                 vmnf_banners.load(self.handler['module'],20)
                 vmnf_banners.default_vmn_banner()
+            
+            # plugins that require 'project_dir' argument doesn't use target scope,e.g: IP's, URLs,etc
+            if self.handler['project_dir']:
+                sleep(1)
+                return True
 
         if not self.handler['docker_scope']:
             self.handler['scope'] = ScopeParser(**self.handler).parse_scope()
@@ -298,25 +297,18 @@ class VFManager:
         self.handler['multi_target'] = True if len_tps > 1 else False
 
         if self.handler['multi_target']:
-            b = self.set_sessions_control()
-            b = 0 if not b else b
-            
-            # if not a loaded case
+            cs_b = len(self.set_sessions_control())
             if not self.handler['args']:
                 self.handler['args'] = sys.argv
 
             self.handler['runner_mode']  = True
             self.handler['runner_tasks'] = targets_ports_set
             rudrunner(**self.handler)
-            
-            a = self.set_sessions_control()
-            
-            if a:
-                new_sessions = len(a) - len(b)
-            
-                if new_sessions >= 1:
-                    cprint(f"\n\t{new_sessions} {self.handler['module_run']} sessions successfuly recorded!\n", 'blue')
+            cs_a = len(self.set_sessions_control())
 
+            if cs_a:
+                new_sessions = cs_a - cs_b
+                cprint(f"\n\t{new_sessions} {self.handler['module_run']} sessions successfuly recorded!\n", 'blue')
             os._exit(os.EX_OK) 
 
         if not _vfassert_.tatic_mode():
@@ -341,5 +333,3 @@ class VFManager:
                     ]
                 }
 
-
-        

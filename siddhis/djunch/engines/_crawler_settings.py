@@ -1,3 +1,4 @@
+from siddhis.djunch.engines._dju_utils import DJUtils
 
 
 headers = {
@@ -11,7 +12,7 @@ headers = {
     'Origin': "http://127.0.0.1:8000",
     'Connection': "close",
     'Referer': False,
-    'Cookie': "csrftoken=" + '00000000000000000000000000000',
+    'Cookie': "csrftoken=__csrftoken__",
     'Upgrade-Insecure-Requests': 1
 }
 

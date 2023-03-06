@@ -5,7 +5,7 @@ project:
     name: Vimana Framework
     site: https://s4dhulabs.github.io/
     tag: alpha
-    version: v0.7
+    version: v0.8
 settings:
     arg_parser:
         require_args:
@@ -25,6 +25,10 @@ settings:
         - --abduct
         - --module
         - --session
+        - --target-url
+        - --project-dir
+        - --target-dir
+        - --project
         - -m
     case_set:
         cases_path: core/cases/
@@ -41,10 +45,12 @@ settings:
         - dmt
         - flame
         - caiman
+        - d4m8
         - sttinger
         - jungle
         - viwec
         - atlatl
+        - viewscan
         - tictrac
     utils:
         random_headers: res/random_headers.yaml

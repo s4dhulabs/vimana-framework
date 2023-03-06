@@ -17,25 +17,22 @@
 import sys, re, os, random, string, platform,signal
 from datetime import datetime
 from time import sleep
+import collections
 import argparse
 
 from core.vmnf_shared_args import VimanaSharedArgs
 from res import vmnf_banners
 
-import collections
-
+from .engines._dju_xparser import DJEngineParser as _djuep_
 from .engines._crawler_settings import settings
 from .engines._crawler_settings import headers
-from .engines._dju_xparser import DJEngineParser as _djuep_
 
-from scrapy.crawler import CrawlerProcess
-#from twisted.internet.error import ReactorAlreadyRunning
-import twisted
-
-from scrapy.crawler import CrawlerRunner
+from siddhis.djunch.engines._dju_utils import DJUtils
 from scrapy.utils.log import configure_logging
-#from scrapy.spiders import Spider
+from scrapy.crawler import CrawlerProcess
+from scrapy.crawler import CrawlerRunner
 from twisted.internet import reactor
+import twisted
 
 
 
@@ -96,6 +93,7 @@ class siddhi:
         csrftoken='0' * 100
         headers['Origin']   = self.vmnf_handler['target_url']
         headers['Referer']  = self.vmnf_handler['target_url']
+        #headers['Cookie'] = f"csrftoken={DJUtils().gen_csrftoken()}"
         self.vmnf_handler['fuzz_settings'] = settings
         self.vmnf_handler['meta'] = {"max_retry_times": 3,'dont_merge_cookies': True}
         self.vmnf_handler['download_timeout'] = 3

@@ -29,7 +29,7 @@ from siddhis.prana import prana
 
 class DJUtils:
     def __init__(self, raw_traceback=False, items=False):
-        self.vfp = VMNFPayloads(**{'patterns':1})
+        #self.vfp = VMNFPayloads(**{'patterns':1})
         self.traceback = raw_traceback
         self.items = items
         self.fuzz_handler = {
@@ -180,8 +180,7 @@ class DJUtils:
             + Generic('fr').person.email()
         )
 
-    def set_form_fuzz(self, **base_form):
-       
+    def set_form_fuzz(self,**base_form):
         fuzz_all = {}
         fuzz_scope = {
             'nullf':[],
@@ -197,12 +196,11 @@ class DJUtils:
             'authfuzz':[]
         }
 
-        base_form = base_form
-        vfp = VMNFPayloads(**{'patterns':1})
-        ssti_payloads   = vfp.get_ssti_payloads()
-        xss_payloads    = vfp.get_xss_payloads()
-        sqli_payloads   = vfp.get_sqli_payloads()
-
+        vfp = VMNFPayloads(**{})
+        sqli_payloads = vfp.get_sqli_payloads()
+        ssti_payloads = vfp.get_ssti_payloads()
+        xss_payloads  = vfp.get_xss_payloads()
+        
         all_payloads = list(
             set(
                 chain(
@@ -213,7 +211,7 @@ class DJUtils:
 
             )
         )    
-        
+            
         # fuzz with empty form / step 0
         fuzz_scope['nullf'].append({})
         fuzz_scope['rawin'].append(base_form)
@@ -251,7 +249,6 @@ class DJUtils:
                 fuzz_scope['authfuzz'].append({"{% debug %}":"{{ messages.storages.0.signer.key }}@{% debug %}"})
                 fuzz_scope['authfuzz'].append({field:"{{ messages.storages.0.signer.key }}@{% debug %}"})
                 fuzz_scope['authfuzz'].append({"{{ messages.storages.0.signer.key }}":self.get_wrmail()})
-
 
         return fuzz_scope
 
@@ -1076,4 +1073,24 @@ class DJUtils:
 
             print('{}{}:\t      {}'.format((' ' * int(5-len(key) + 22)),key,colored(value, 'green')))
         print()
+
+
+    def gen_csrftoken(self):
+        import django
+        from django.conf import settings
+        from django.middleware import csrf
+
+        settings.configure(
+            **{
+                'DEBUG': True,
+                'SECRET_KEY': 'your_secret_key_here',
+                'ALLOWED_HOSTS': ['localhost'],
+                'LOGGING_CONFIG': False
+            }
+        )
+        django.setup()
+        request = django.http.request.HttpRequest()
+        request.META['CSRF_COOKIE_USED'] = True
+
+        return csrf.get_token(request)
 

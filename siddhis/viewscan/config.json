@@ -1,0 +1,15 @@
+{
+    "sensitive_params": [
+        "credit_card_number",
+	"password" 
+    ],
+    "methods": [
+        "GET",
+        "POST"
+    ],
+    "scope": {
+        "var": false,
+        "param": true
+    }
+}
+
