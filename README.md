@@ -52,8 +52,9 @@ $ source scripts/set_env
 ```
 After finishing the setup successfully, your terminal should look like this: 
 
-```python
-                      ø
+
+```text
+
  ˙              ٭                   .    ˖
               .             :. *
                 :  └┐'┌┘          . :  .
@@ -66,21 +67,22 @@ After finishing the setup successfully, your terminal should look like this:
 
 
 
-             about  ⇀   About the framework
-             flush  ⇀   Remove a recorded resource
-             guide  ⇀   Show module usage examples
-              info  ⇀   Show information about modules
-              list  ⇀   List available modules
-              load  ⇀   Load a recorded session (post-analysis)
-               run  ⇀   Run a resource, module or case
-             start  ⇀   Start Vimana in a interactive mode
+             about  ◍◍    About the framework
+             flush  ◍◉    Remove a recorded resource
+             guide  ◎◎    Show plugin usage examples and args
+              info  ◉◉    Show information about plugins
+              list  ◎◍    List available plugins
+              load  ◉◎    Load a recorded session (post-analysis)
+               run  ◉◉    Run a resource, plugin or case
+             start  ◉◎    Start Vimana in a interactive mode
 
 
 (vimana_env) ➟ 
 
 ```
 
-With that, you have the framework itself ready. The last step is to load Vimana plugins, you can do this running: 
+With that, you have the framework itself ready. The last step is to load Vimana plugins. You can do this by running:
+
 ```bash
 
 $ vimana load --plugins
@@ -103,7 +105,7 @@ $ vimana load --plugins
 
 ```
 
-It will register all vimana modules. At the end of this process, the Framework will show a table with all available modules loaded. 
+It will register all vimana plugins. At the end of this process, the framework will show a table with all available modules loaded:
 
 ```python
 þ
