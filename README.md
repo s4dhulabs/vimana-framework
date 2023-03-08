@@ -81,6 +81,30 @@ After finishing the setup successfully, your terminal should look like this:
 
 ```
 
+At this point, if you try to run a plugin, you're going to see the following:
+
+```text
+
+       *              `'´    *
+                              ˙   ٭.    ˖     
+                      __'__'__         ,
+             ˖          `''´   ˙              ٭   .    ˖
+            -o-
+             '          .*       o       .       *
+        o   ˖     |
+           .     -O-            `ç´    
+.                 |        *     '  .     -0-
+       *  o     .    '       *      .        
+       ˖                ˖
+       
+
+
+
+        You haven't populated the database yet. Please run the following to fix it:
+         vimana load --plugins
+
+```
+
 With that, you have the framework itself ready. The last step is to load Vimana plugins. You can do this by running:
 
 ```bash
