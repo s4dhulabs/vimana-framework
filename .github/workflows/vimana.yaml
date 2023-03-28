@@ -14,12 +14,12 @@ jobs:
     - name: Get project name
       run: echo "::set-env name=PROJECT_NAME::$(basename $PWD)"
     - name: Set up Vimana environment
+      runs-on: ubuntu-latest
       run: |
         chmod +x scripts/set_env
         source scripts/set_env
         cd ..
     - name: Run Vimana security scan
-      runs-on: ubuntu-latest
       run: |
         vimana run --plugin viewscan --project-dir ${{ env.PROJECT_NAME }}
       env:
