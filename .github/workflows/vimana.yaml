@@ -1,0 +1,30 @@
+name: Vimana Framework Security Scan
+on:
+  push:
+    branches: [ main ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '>=3.9'
+    - name: Get project name
+      run: echo "::set-env name=PROJECT_NAME::$(basename $PWD)"
+    - name: Set up Vimana environment
+      run: |
+        chmod +x scripts/set_env
+        source scripts/set_env
+        cd ..
+    - name: Run Vimana security scan
+      run: |
+        vimana run --plugin viewscan --project-dir ${{ env.PROJECT_NAME }}
+      env:
+        DJANGO_SETTINGS_MODULE: project.settings
+    - name: Upload SARIF results
+      uses: github/codeql-action/upload-sarif@v1
+      with:
+        sarif_file: /tmp/output.sarif
+
