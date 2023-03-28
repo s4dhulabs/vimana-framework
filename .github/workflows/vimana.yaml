@@ -12,13 +12,14 @@ jobs:
       with:
         python-version: '>=3.9'
     - name: Get project name
-      run: echo "PROJECT_NAME=$(basename $PWD)" >> $GITHUB_ENV
+      run: echo "::set-env name=PROJECT_NAME::$(basename $PWD)"
     - name: Set up Vimana environment
       run: |
         chmod +x scripts/set_env
         source scripts/set_env
         cd ..
     - name: Run Vimana security scan
+      runs-on: ubuntu-latest
       run: |
         vimana run --plugin viewscan --project-dir ${{ env.PROJECT_NAME }}
       env:
