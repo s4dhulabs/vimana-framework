@@ -12,7 +12,7 @@ jobs:
       with:
         python-version: '>=3.9'
     - name: Get project name
-      run: echo "::set-env name=PROJECT_NAME::$(basename $PWD)"
+      run: echo "PROJECT_NAME=$(basename $PWD)" >> $GITHUB_ENV
     - name: Set up Vimana environment
       run: |
         chmod +x scripts/set_env
@@ -27,4 +27,3 @@ jobs:
       uses: github/codeql-action/upload-sarif@v1
       with:
         sarif_file: /tmp/output.sarif
-
