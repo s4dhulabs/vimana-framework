@@ -40,7 +40,7 @@ With time, this project has revealed some promising capabilities to support secu
 The most straightforward approach to get started with Vimana Framework is by running the setup scripts like this on your Linux terminal:
 ```bash
 
-$ curl -s https://raw.githubusercontent.com/s4dhulabs/vimana-framework/main/scripts/get_vimana | bash
+curl -s https://raw.githubusercontent.com/s4dhulabs/vimana-framework/main/scripts/get_vimana | bash
 
 ```
 You can also set it up like this:
