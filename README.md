@@ -1,5 +1,6 @@
 
-![Alt text](https://github.com/s4dhulabs/s4dhulabs.github.io/blob/master/resources/imgs/vimana1.png?raw=true "VIMANAFRAMEWORK")
+<!-- ![Alt text](https://github.com/s4dhulabs/s4dhulabs.github.io/blob/master/resources/imgs/vimana1.png?raw=true "VIMANAFRAMEWORK") -->
+![image](https://user-images.githubusercontent.com/89562876/229259507-fff26785-b2f7-4f0e-ad72-6c62c6b45d1d.png)
 
 <!-- 
 ## Content
@@ -37,19 +38,8 @@ With time, this project has revealed some promising capabilities to support secu
 
 
 ## Getting Started
-The most straightforward approach to get started with Vimana Framework is by running the setup scripts like this on your Linux terminal:
-```bash
+Follow the [installation guide](https://github.com/s4dhulabs/vimana-framework/blob/main/doc/install.md) to get started with Vimana. 
 
-curl -s https://raw.githubusercontent.com/s4dhulabs/vimana-framework/main/scripts/get_vimana | bash
-
-```
-You can also set it up like this:
-```bash
-
-$ git clone https://github.com/s4dhulabs/vimana-framework.git && cd vimana-framework
-$ source scripts/set_env
-
-```
 After finishing the setup successfully, your terminal should look like this: 
 
 
