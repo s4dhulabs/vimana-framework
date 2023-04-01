@@ -38,9 +38,7 @@ With time, this project has revealed some promising capabilities to support secu
 
 
 ## Getting Started
-Follow the [installation guide](https://github.com/s4dhulabs/vimana-framework/blob/main/doc/install.md) to get started with Vimana. 
-
-After finishing the setup successfully, your terminal should look like this: 
+Follow the [installation guide](https://github.com/s4dhulabs/vimana-framework/blob/main/doc/install.md) to get started with Vimana. After finishing the setup successfully, your terminal should look like this: 
 
 
 ```text
