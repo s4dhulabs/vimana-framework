@@ -25,7 +25,8 @@ ENV PYTHONWARNINGS=ignore
 ENV PATH="/vf0.8:${PATH}"
 RUN ln -s /vf0.8/vimana.py /usr/bin/vimana
 CMD ["vimana", "load", "--plugins"]
-ENTRYPOINT ["/usr/bin/vimana"]
+#ENTRYPOINT ["/usr/bin/vimana"]
+CMD ["vimana"]
 
 
 
