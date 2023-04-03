@@ -22,6 +22,7 @@ RUN groupadd -r vimana && \
     chmod -R 750 /vf0.8/core/_dbops_/
 
 ENV PYTHONWARNINGS=ignore
+ENV PATH="/vf0.8:${PATH}"
 RUN ln -s /vf0.8/vimana.py /usr/bin/vimana
 CMD ["vimana", "load", "--plugins"]
 ENTRYPOINT ["vimana"]
