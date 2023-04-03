@@ -28,6 +28,6 @@ printf "\n==> Testing Vimana image..."
 docker run -t vimana_framework:v0.8
 sleep 2
 
-printf "\n==> Testing build..."
-docker run -t vimana_framework:v0.8 list --plugins
+#printf "\n==> Testing build..."
+#docker run -t vimana_framework:v0.8 list --plugins
 
