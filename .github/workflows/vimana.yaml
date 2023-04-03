@@ -1,4 +1,4 @@
-name: Vimana Security Scan
+name: Vimana Framework Security Scan
 on:
   push:
     branches: [ main ]
@@ -12,6 +12,7 @@ jobs:
         chmod +x scripts/build
         export TERM=xterm
         ./scripts/build
-    - name: Run Vimana security scan
+    - name: Runs Vimana security scan
       run: |
-        docker run -t vimana_framework:v0.8 guide --plugin dmt 
+        docker run -t vimana_framework:v0.8 info --plugin viewscan
+        docker run -t vimana_framework:v0.8 run --plugin viewscan --project-dir "${GITHUB_WORKSPACE}"
