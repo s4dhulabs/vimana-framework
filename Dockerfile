@@ -25,6 +25,8 @@ ENV PYTHONWARNINGS=ignore
 RUN echo 'export PATH="$PATH:/vf0.8"' >> /etc/bash.bashrc
 RUN ln -s /vf0.8/vimana.py /usr/bin/vimana
 CMD ["vimana", "load", "--plugins"]
-ENTRYPOINT ["vimana"]
+#ENTRYPOINT ["vimana"]
+CMD ["/usr/bin/python3.9", "/vf0.8/vimana.py"]
+
 
 
