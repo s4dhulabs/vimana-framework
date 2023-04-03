@@ -24,5 +24,5 @@ RUN groupadd -r vimana && \
 ENV PYTHONWARNINGS=ignore
 RUN ln -s /vf0.8/vimana.py /usr/bin/vimana
 RUN vimana load --plugins
-ENTRYPOINT ["vimana"]
+#ENTRYPOINT ["vimana"]
 
