@@ -22,11 +22,11 @@ RUN groupadd -r vimana && \
     chmod -R 750 /vf0.8/core/_dbops_/
 
 ENV PYTHONWARNINGS=ignore
-RUN echo 'export PATH="$PATH:/vf0.8"' >> /etc/bash.bashrc
+ENV PATH="/vf0.8:${PATH}"
 RUN ln -s /vf0.8/vimana.py /usr/bin/vimana
 CMD ["vimana", "load", "--plugins"]
-#ENTRYPOINT ["vimana"]
-CMD ["/usr/bin/python3.9", "/vf0.8/vimana.py"]
+ENTRYPOINT ["vimana"]
+
 
 
 
