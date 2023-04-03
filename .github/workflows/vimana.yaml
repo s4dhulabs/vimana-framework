@@ -14,4 +14,4 @@ jobs:
         ./scripts/build
     - name: Run Vimana security scan
       run: |
-        vimana 
+        vimana_framework:v0.8 guide --plugin dmt 
