@@ -9,7 +9,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Vimana Docker Build
       run: |
-        sudo sh scripts/build
+        sudo ./scripts/build
     - name: Run Vimana security scan
       run: |
         vimana 
