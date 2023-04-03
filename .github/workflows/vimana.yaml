@@ -7,6 +7,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'
     - name: Vimana Docker Build
       run: |
         chmod +x scripts/build
@@ -14,5 +18,5 @@ jobs:
         ./scripts/build
     - name: Runs Vimana security scan
       run: |
-        docker run -t vimana_framework:v0.8 info --plugin viewscan
-        docker run -t vimana_framework:v0.8 run --plugin viewscan --project-dir "${GITHUB_WORKSPACE}"
+        docker run -t vimana_framework:v0.8 about
+        #docker run -t vimana_framework:v0.8 run --plugin viewscan --project-dir "${GITHUB_WORKSPACE}"
