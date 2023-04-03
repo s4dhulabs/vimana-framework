@@ -14,15 +14,95 @@ from pygments.lexers.sql import SqlLexer
 from pygments.lexers import PythonLexer
 from prompt_toolkit.styles import Style
 from prettytable import PrettyTable
+from tabulate import tabulate
 from time import sleep
 from res.colors import *
 import itertools
 import textwrap
 import getpass
+import json
 import sys
 import os
 import re
 
+
+def gen_issues_table(issues: list, issue_type:str):
+    tabulate.PRESERVE_WHITESPACE = False
+    issue_type = issue_type.lower()
+    issues_table = []
+    
+    if issue_type == 'cves':
+        headers = [
+            cl('CVE', 'white'),
+            cl('Description', 'white'),
+            cl('CWE','white'),
+            cl('Score','white'),
+        ]
+    elif issue_type == 'tickets':
+        headers = [
+            cl('iid', 'white'),
+            cl('Title', 'white'),
+        ]
+
+    for issue in issues:
+        if issue_type == 'cves':
+            dec_ref = f"""\n\n\n{issue['ref_url']}\nCVSS Vector: {issue['cvss_vector']}\n"""
+            
+            issues_table.append(
+                [
+                    issue['id'],
+                    issue['description'] + dec_ref,
+                    ','.join(issue['cwes']),
+                    issue['base_score']
+                ]
+            )
+        elif issue_type == 'tickets':
+            title = '\n'.join(textwrap.wrap(issue['title'], width=70))
+            issues_table.append(
+                [
+                    f"ST{issue['id']}",
+                    title
+                ]
+            )
+
+    indexed_data = [[i] + r for i, r in enumerate(issues_table, 1)]
+    table_data = [headers] + indexed_data
+
+    return (
+        tabulate(
+            table_data,
+            headers='firstrow',
+            numalign="center",
+            tablefmt='fancy_grid',
+            stralign='center',
+            missingval='?'
+        )
+    )
+
+def load_plugin_cache(specs:dict):
+    show_status_enabled = specs.get('verbose', False) and specs.get('debug', False)
+    issues_path = specs.get('issues_path')
+    django_version = specs.get('django_version')
+    issue_type = specs.get('issue_type')
+    caller_plugin = cl('⥂ ' + specs.get('module_run') + ' ⥂', 'magenta')
+    
+    if os.path.exists(issues_path):
+        with open(issues_path, 'r') as f:
+            issues = json.load(f)
+
+        if show_status_enabled:
+            print(f"[{caller_plugin}] Loading Django {django_version} issues from cache...")
+            print(f"[{caller_plugin}]   + {cl(len(issues), 'cyan')} {issue_type}s loaded")
+            sleep(1)
+
+        issues_table = gen_issues_table(issues, issue_type)
+        return issues, issues_table
+    
+    if show_status_enabled:
+        print(f"[{caller_plugin}]   ! Issues cache not found for {issue_type}!")
+        sleep(0.30)
+
+    return False
 
 class describe:
     def __init__(self, **handler:dict):

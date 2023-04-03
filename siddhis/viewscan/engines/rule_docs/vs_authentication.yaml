@@ -1,0 +1,248 @@
+vs_rules:
+  login_required_issues:
+    version: 1.0
+    scope: 
+      - decorator
+    alert: Function using login_required decorator but not checking request properly 
+    level: Warning
+    description: |
+      A function that uses the login_required decorator is one
+      that requires a user to be logged in to access it. However,
+      if the function does not check the request object and
+      request.user.is_authenticated attribute, it may be
+      vulnerable to unauthorized access. For example, an attacker
+      could bypass the login requirement by manually constructing
+      a request and sending it to the function, without going
+      through the login process.
+    tags:
+      - login_required
+      - authentication 
+    references:
+      links:
+        - https://docs.djangoproject.com/en/3.2/topics/auth/default/#the-permission-required-decorator
+      cwes:
+        CWE-287: Improper Authentication
+        CWE-602: Client-Side Enforcement of Server-Side Security
+        CWE-732: Incorrect Permission Assignment for Critical Resource
+        CWE-749: Exposed Dangerous Method or Function
+        CWE-807: Reliance on Untrusted Inputs in a Security Decision
+
+  csrf_exempt:
+    version: 1.0
+    scope: 
+      - decorator
+    alert: Function potentially vulnerable to Cross-Site Request Forgery (CSRF) attacks
+    level: Warning
+    description: |
+      Functions that use the csrf_exempt decorator are exempt from
+      Django's Cross-Site Request Forgery (CSRF) protection. This
+      means that they are vulnerable to CSRF attacks, which can
+      allow attackers to perform unauthorized actions on behalf of
+      a user.
+    tags:
+      - CSRF
+      - authentication
+    references:
+      links:
+        - https://docs.djangoproject.com/en/3.2/ref/csrf/
+      cwes:
+        CWE-352: Cross-Site Request Forgery (CSRF)
+        CWE-807: Reliance on Untrusted Inputs in a Security Decision
+        CWE-799: Improper Control of Interaction Frequency (Time and State)
+        CWE-807: Reliance on Untrusted Inputs in a Security Decision
+
+  unchecked_redirects:
+    version: 1.0
+    scope: 
+      - source
+    alert: Function HttpResponseRedirect called without checking next parameter
+    level: Warning
+    description: |
+      The HttpResponseRedirect class in Django allows you to
+      redirect the user to a different URL. It has a next
+      parameter that can be used to specify the URL to redirect
+      to. However, if this parameter is not checked, it could
+      potentially allow attackers to redirect users to malicious
+      websites.
+    tags:
+      - redirects
+      - authentication
+    references:
+      links:
+        - https://docs.djangoproject.com/en/3.2/topics/http/shortcuts/#redirect
+      cwes:
+        CWE-601: URL Redirection to Untrusted Site ('Open Redirect')
+        CWE-610: Externally Controlled Reference to a Resource in Another Sphere
+        CWE-698: Execution of Incorrectly Named Functions
+        CWE-1136: Use of Deprecated Redirector 
+
+  user_objects_create_user:
+    version: 1.0
+    scope: 
+      - source
+    alert: Function using User.objects.create_(super)user without setting password
+    level: Warning
+    description: |
+      The create_user method in Django's User model allows you to
+      create a new user in the database. However, if the password
+      is not set, the user will have a blank password, which is a
+      security vulnerability.
+    tags:
+      - password
+      - authentication
+    references:
+      links:
+        - https://docs.djangoproject.com/en/3.2/topics/auth/default/
+      cwes:
+        CWE-259: Use of Hard-coded Password
+        CWE-521: Weak Password Requirements
+        CWE-798: Use of Hard-coded Credentials
+        CWE-522: Insufficiently Protected Credentials
+
+  password_plaintext:
+    version: 1.0
+    scope: 
+      - source
+    alert: Function using check_password with plaintext password
+    level: Warning
+    description: |
+      The check_password function in Django's auth module allows
+      you to check if a given password is correct for a user.
+      However, if the user's password is not hashed before being
+      checked, it could potentially be stored in plaintext in the
+      database, which is a security vulnerability.
+    tags:
+      - check_password
+      - plaintext_passwords
+      - credentials
+    references:
+      links:
+        - https://docs.djangoproject.com/en/3.2/topics/auth/default/
+      cwes:
+        CWE-259: Use of Hard-coded Password
+        CWE-522: Insufficiently Protected Credentials
+        CWE-798: Use of Hard-coded Credentials
+        CWE-257: Storing Passwords in a Recoverable Format
+        CWE-312: Cleartext Storage of Sensitive Information
+        CWE-521: Weak Password Requirements
+
+  set_password_plaintext:
+    version: 1.0
+    scope: 
+      - source
+    alert: Function using set_password with plaintext password
+    level: Warning
+    description: |
+      If the password is not hashed before being set, it could
+      potentially be stored in plaintext in the database, which is
+      a security vulnerability
+    tags:
+      - set_password
+      - plaintext_passwords
+      - credentials
+    references:
+      links:
+        - https://docs.djangoproject.com/en/3.2/topics/auth/default/
+      cwes:
+        CWE-259: Use of Hard-coded Password
+        CWE-522: Insufficiently Protected Credentials
+        CWE-798: Use of Hard-coded Credentials
+        CWE-257: Storing Passwords in a Recoverable Format
+        CWE-312: Cleartext Storage of Sensitive Information
+        CWE-521: Weak Password Requirements
+
+  auth_login_next:
+    version: 1.0
+    scope: 
+      - source
+    alert: Function using auth.login without setting next parameter
+    level: Warning
+    description: |
+      The login function in Django's auth module allows you to log
+      a user in given a request object and a User object. It has a
+      next parameter that can be used to specify the URL to
+      redirect to after login. However, if this parameter is not
+      set, it could potentially allow attackers to control the
+      redirect URL and potentially phish for sensitive
+      information.
+    tags:
+      - auth.login
+      - redirects
+      - authentication
+    references:
+      links:
+        - https://docs.djangoproject.com/en/3.2/topics/auth/default/
+      cwes:
+        CWE-601: URL Redirection to Untrusted Site ('Open Redirect')
+        CWE-807: Reliance on Untrusted Inputs in a Security Decision
+
+  password_validation_user:
+    version: 1.0
+    scope: 
+      - source
+    alert: Function using password_validation.validate_password without setting user parameter
+    level: Warning
+    description: |
+      The validate_password function in Django's
+      password_validation module allows you to validate a password
+      for a user. It has a user parameter that can be used to
+      specify the user whose password is being validated. If this
+      parameter is not set, the password validation rules may not
+      be applied correctly.
+    tags:
+      - password_validation
+      - authentication
+    references:
+      links:
+        - https://docs.djangoproject.com/en/3.2/topics/auth/default/
+      cwes:
+        CWE-522: Insufficiently Protected Credentials
+        CWE-521: Weak Password Requirements
+
+  authenticate_hardcoded_password:
+    version: 1.0
+    scope: 
+      - source
+    alert: Function using auth.authenticate with hardcoded password
+    level: Warning
+    description: |
+      The authenticate function in Django's auth module allows you
+      to authenticate a user given a username and password. If the
+      password is hardcoded in the function, it could potentially
+      be compromised if the code is not kept secure.
+    tags:
+      - password_validation
+      - authentication
+    references:
+      links:
+        - https://docs.djangoproject.com/en/3.2/topics/auth/default/
+      cwes:
+        CWE-259: Use of Hard-coded Password
+        CWE-522: Insufficiently Protected Credentials
+        CWE-798: Use of Hard-coded Credentials
+        CWE-257: Storing Passwords in a Recoverable Format
+        CWE-312: Cleartext Storage of Sensitive Information
+        CWE-521: Weak Password Requirements
+       
+  password_validation_password:
+    version: 1.0
+    scope: 
+      - source
+    alert: Function using password_validation.validate_password without setting password parameter
+    level: Warning
+    description: |
+      The validate_password function in Django's
+      password_validation module allows you to validate a password
+      for a user. It has a password parameter that specifies the
+      password to validate. If this parameter is not set, the
+      password validation will not be performed.
+    tags:
+      - password_validation
+      - authentication
+    references:
+      links:
+        - https://docs.djangoproject.com/en/3.2/topics/auth/default/
+      cwes:
+        CWE-522: Insufficiently Protected Credentials
+        CWE-521: Weak Password Requirements
+        

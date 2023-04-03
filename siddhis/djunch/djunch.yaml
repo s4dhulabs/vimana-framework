@@ -1,12 +1,12 @@
-name: djunch
+name: DJunch
 author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
 brief: Django application fuzzer
-category: framework
-framework: django
-info: application fuzzer for Django framework  
+category: Framework
+framework: Django
+info: Application fuzzer for Django framework  
 module: siddhis/djunch/djunch.py
 package: Django
-type: fuzzer
+type: Fuzzer
 tags:
   - Exceptions
 description: |

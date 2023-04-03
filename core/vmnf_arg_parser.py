@@ -71,6 +71,7 @@ class VimanaParser:
         list_cmd.add_argument('--modules', action='store_true',dest='module_list')
         list_cmd.add_argument('--plugins', action='store_true',dest='module_list')
         list_cmd.add_argument('--siddhis', action='store_true',dest='module_list')
+        list_cmd.add_argument('--scans', action='store_true',dest='list_scans')
         list_cmd.add_argument('-t', '--type', action='store')
         list_cmd.add_argument('-c', '--category', action='store', dest='category')
         list_cmd.add_argument('-f', '--framework', action='store', dest='framework')
@@ -242,6 +243,7 @@ class VimanaParser:
             list_payloads   = False,
             list_cases      = False,
             list_sessions   = False,
+            list_scans      = False,
             save_case       = False,
             case_file       = False,
             runner_mode     = False,

@@ -1,12 +1,12 @@
-name: sttinger
+name: Sttinger
 author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
 brief: Framework version fingerprint tool
-category: framework
-framework: django
+category: Framework
+framework: Django
 info: Identify the framework version in a passive way
 module: siddhis/sttinger/sttinger.py
 package: Django
-type: fingerprint
+type: Fingerprint
 tags:
   - Django
 description: |
@@ -31,7 +31,11 @@ guide:
     +------------+---------------------------------------------------------+
      --target-url        Django application base URL (required)
      --search-issues     Look for related version issues
-     --issues-table      Shows found issues in table format 
+     --table             Shows found issues in table format 
+     --text              Shows found issues in a text format
+     --disable-cache     Doesn't cache the found issues locally 
+     --ignore-cache      Ignore issues already cached
+     --pause-steps       Make pauses between findings 
 
   examples: |
     ø----------------------------------------------------------------------ø
@@ -51,21 +55,24 @@ guide:
         Run sttinger passive fingerprint enabling version issues lookup:
 
         $ vimana run \
-           --module sttinger \
+           --plugin sttinger \
            --target-url http://mydjlabapp.com:9921 \
            --search-issues
 
     ø----------------------------------------------------------------------ø
 
         Run sttinger passive fingerprint enabling version issues lookup,
-        and showing the results in tables:
+        and showing the results in table format:
 
         $ vimana run \
            --module sttinger \
            --target-url http://mydjlabapp.com:9921 \
            --search-issues \
-           --issues-table 
+           --table \
+           --pause-steps
 
+
+        * Here the parameter `--pause-steps` will pause for each item shown
     ø----------------------------------------------------------------------ø
 
         Run sttinger with docker-scope and enabling version issues lookup:

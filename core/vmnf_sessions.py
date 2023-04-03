@@ -32,6 +32,8 @@ class VFSession:
         self.sessions = self.get_sessions()
         self.sessions_tbl = []
         self.flush_mode = False
+        self.model = '_SESSIONS_'
+        self.obj_id_col = 'session_id'
 
     def hashsession(self):
         self.record_time = datetime.now()
@@ -89,7 +91,7 @@ class VFSession:
                 print(f"[VFSession()] → Error saving session {session_id}")
                 return False
         
-        VFDBOps(**self.session).register_session()
+        VFDBOps(**self.session).register('_SESSIONS_')
         
         plugin  = cl(self.session['module_run'], 'red')
         target  = cl(self.session['target_url'], 'red')
@@ -128,7 +130,7 @@ class VFSession:
         return True
 
     def check_sessions(self):
-        recorded_sessions = VFDBOps(**self.session).get_all_sessions()
+        recorded_sessions = VFDBOps(**self.session).list_resource(self.model,[])
         
         if not recorded_sessions or len(recorded_sessions) == 0:
             if self.session['runner_mode']:
@@ -167,7 +169,10 @@ class VFSession:
                 except:
                     pass
 
-            session = VFDBOps(**self.session).flush_session(_s_.session_id)
+            session = VFDBOps(**self.session).flush_resource(
+                self.model, self.obj_id_col, _s_.session_id
+            )
+
             self.flush_session_file(_s_.session_path)
             
             if not self.session['fastflush']:
@@ -176,6 +181,7 @@ class VFSession:
         cprint(f"\n\t   → {hl_total} sessions flushed!\n\n\n", 'blue')
 
     def flush_session(self):
+
         self.flush_mode = True
         sid = self.session['flush_session']
         _s_ = VFDBOps(**self.session).get_session(sid)
@@ -195,11 +201,13 @@ class VFSession:
         if self.session['xray_enabled']:
                 abduct_items(**self.load_session(_s_.session_id, self.flush_mode))
                 sleep(1)
-
-        if not VFDBOps(**self.session).flush_session(_s_.session_id):
+        
+        if not VFDBOps(**self.session).flush_resource(
+                self.model, self.obj_id_col, _s_.session_id):
             self.handle_invalid_session(_s_.session_id)
             return False
-
+        
+        print()
         os.remove(_s_.session_path)
         
     def get_last_session(self):
@@ -320,8 +328,9 @@ class VFSession:
         In the future we'll play with custom constructors
             to fix it in a elegant way though """
 
-
-        _session_ = VFDBOps(**self.session).get_session(session_id)
+        _session_ = VFDBOps(**self.session).get_by_id(
+            self.model,self.obj_id_col,session_id
+        )
 
         if not _session_ or _session_ is None:
             self.handle_invalid_session(session_id)

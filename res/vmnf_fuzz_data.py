@@ -9,11 +9,11 @@ import settings.vmnf_settings as settings
 
 
 class VMNFPayloads:
-    def __init__(self, **settings):
+    def __init__(self, **vmnf_handler):
         '''VMNF Payloads'''
 
-        self.settings = settings
-        self.patterns = settings.get('patterns', 10)
+        self.vmnf_handler = vmnf_handler
+        self.patterns = vmnf_handler.get('patterns', 10)
     
     def enon(self):
         return ['None', '[¹→↓?']
@@ -38,7 +38,7 @@ class VMNFPayloads:
         return random.random()
     def get_random_credential(self):
         gen = mimesis.Generic(
-            choice([loc for loc in mimesis.locales.LIST_OF_LOCALES])
+            choice([loc for loc in settings.LOCALES])
         )
         return {
             'username':gen.person.username(),

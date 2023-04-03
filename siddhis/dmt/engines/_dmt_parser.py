@@ -90,7 +90,8 @@ class DMTEngine(scrapy.Spider):
         self.exit_step = False
         self.exception_found = False
         self.sample_trigger = urljoin(self.target_url,str(random()))
-   
+        self.caller = self.vmnf_handler.get('module_run')
+
     def get_raw_patterns(self,response):
         return [('/'.join(pattern.split()).replace('//','/'))\
             for pattern in [p.xpath('.//text()').get().strip()\
@@ -123,7 +124,6 @@ class DMTEngine(scrapy.Spider):
         
         # call new djunch engine
         Djunch(**self.vmnf_handler).start()
-
 
     def start_requests(self):
 
@@ -181,19 +181,17 @@ class DMTEngine(scrapy.Spider):
             os._exit(os.EX_OK)
 
     def run_passive_fingerprint(self):
-        self.vmnf_handler['search_issues'] = True
+        self.vmnf_handler.update(
+            {
+                'target_url': self.target_url,
+                'siddhi_call': self.caller,
+                'quiet_mode': False,
+                'search_issues':True,
+                'output_table': True
+            }
+        )
 
-        sttd = {
-            'target_url': self.target_url,
-            'siddhi_call': self.vmnf_handler.get('module_run'),
-            'quiet_mode': False,
-            'search_issues':True
-        }
-        
-        cprint(f"\n{self.f_start} Starting passive fingerprint...",'cyan')
-        sleep(1)
-        
-        self.found_version = sttinger(**sttd).start()
+        self.found_version = sttinger(**self.vmnf_handler).start()
     
     def status_handler(self,response):
         self.f_start = colored('▸','red',attrs=['bold'])
@@ -208,7 +206,6 @@ class DMTEngine(scrapy.Spider):
         # passive framework version fingerprint - sttinger
         if not self.vmnf_handler.get('sample') \
                 and not self.vmnf_handler.get('external_disabled'):
-
             self.run_passive_fingerprint()
         
         if not self.vmnf_handler.get('sample'):
@@ -236,6 +233,8 @@ class DMTEngine(scrapy.Spider):
             if not self.vmnf_handler.get('sample'):
                 print(f"{self.f_map} {d} mode is activated.\n")
                 sleep(1)
+                
+                input() if self.vmnf_handler.get('pause_steps') else None
             
             if not self.auto_mode \
                 and not self.vmnf_handler.get('sample'):
@@ -256,7 +255,6 @@ class DMTEngine(scrapy.Spider):
                     sleep(0.10)
 
             if not self.app_patterns:
-
                 # get apps patterns
                 self.get_app_patterns(response)
                
@@ -326,7 +324,6 @@ class DMTEngine(scrapy.Spider):
                 if c_pattern \
                     and c_pattern\
                     not in self.only_patterns:
-                    
                     self.only_patterns.append(c_pattern)
 
                 for item in _p_.split('/'):
@@ -340,7 +337,6 @@ class DMTEngine(scrapy.Spider):
                                 colored(item.strip(),'magenta',attrs=[])
                                 )
                             )
-
                             print(reg_found.ljust(os.get_terminal_size().columns - 1), end="\r")
                             sleep(0.10)
 
@@ -356,9 +352,7 @@ class DMTEngine(scrapy.Spider):
                         print('\n\t→ {}\n'.format(_p_hl.replace(fuzz_flag,ff_hl)))
                         sleep(0.01)
 
-                #else:
-                #    if not self.vmnf_handler.get('sample'):
-                #        print()
+        input() if self.vmnf_handler.get('pause_steps') else None
 
     def strip_chars(self,pattern):
         return(pattern.replace('^','').replace(
@@ -424,7 +418,6 @@ class DMTEngine(scrapy.Spider):
             
             if r.status_code == 404:
                 for map_p in self.get_raw_patterns(response):
-
                     if not map_p:
                         continue
 
@@ -442,6 +435,8 @@ class DMTEngine(scrapy.Spider):
                             self.raw_patterns.append(map_p)
 
                         sleep(0.02)
+
+        input() if self.vmnf_handler.get('pause_steps') else None
 
         if external_mode:
             return self.raw_patterns
@@ -487,4 +482,5 @@ class DMTEngine(scrapy.Spider):
                 print(f"   + {colored(pattern,'green')}")
                 sleep(0.03)
             print()
+            input() if self.vmnf_handler.get('pause_steps') else None
 

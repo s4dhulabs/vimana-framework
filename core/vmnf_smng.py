@@ -1,11 +1,11 @@
 from siddhis.djunch.engines._dju_settings import table_models
 from siddhis.djunch.engines._dju_utils import DJUtils 
 from core.vmnf_sessions_utils import abduct_items
-from ._dbops_.vmnf_dbops import VFSiddhis as VFS
 from neotermcolor import cprint, colored as cl
 from ._dbops_.vmnf_dbops import VFDBOps
+from ._dbops_.db_utils import handle_OpErr
+
 from res.vmnf_banners import case_header
-from .vmnf_sessions import VFSession
 from .vmnf_asserts import vfasserts
 from .vmnf_utils import describe
 from sqlalchemy import inspect
@@ -24,25 +24,28 @@ class VFManager:
 
         self.handler = handler
         self.query_filters = []
+        self.model = '_SIDDHIS_'
+        self.obj_id_col = 'name'
 
         if not handler.get('module_run') and not handler.get('load_plugins'):
-            ''' We're not going to use query filters with vf run -m '''
+            ''' We're not going to use query filters with vf run -m/-p/-s '''
             self.query_filters = self.get_filters()
 
     def load_siddhis(self):
-        from core._dbops_.config import db
+        if VFDBOps().table_exists('_SIDDHIS_'):
+            handle_OpErr('db ready')
 
-        if inspect(db.engine).has_table("_SIDDHIS_"):
-            VFS().handle_OpErr('db ready')
-            self.list_siddhis()
+        fields = ['name','category','framework','package','type']
 
         for s in os.scandir(f'{os.getcwd()}/siddhis/'):
             if (s.is_dir() and not s.name.startswith('_')):
                 with open(f"{s.path}/{s.name}.yaml", 'r') as f:
                     siddhi = yaml.load(f, Loader=yaml.FullLoader)
-
-                abduct_items(**siddhi)
-                VFS(**siddhi).register_siddhi()
+                
+                siddhi.update((f, siddhi[f].lower()) 
+                    if not isinstance(siddhi[f], bool) \
+                        else (f, siddhi[f]) for f in fields)
+                abduct_items(**siddhi) or VFDBOps(**siddhi).register('_SIDDHIS_')
 
         self.list_siddhis()
     
@@ -52,7 +55,6 @@ class VFManager:
 
         [print(f"\t{filter.get('field'):>15}: {filter.get('value')}") \
             for filter in self.query_filters ]
-
         print()
         print()
 
@@ -159,22 +161,22 @@ class VFManager:
         describe().siddhi(siddhi)
 
     def query_siddhis(self):
-        return (VFS().list_siddhis_db(self.query_filters))
-        
+        return (VFDBOps().list_resource(self.model,self.query_filters))
+
     def get_siddhi(self):
-        return VFS().get_siddhi(self.handler['module'])
+        return VFDBOps().get_by_id(self.model,self.obj_id_col,self.handler['module'])
 
     def get_siddhis_stats(self):
         from core.vmnf_payloads import VMNFPayloads
-        payloads = VMNFPayloads()._vmnfp_payload_types_(True,False)
 
-        siddhis = VFS().get_all_siddhis()       
+        payloads = VMNFPayloads()._vmnfp_payload_types_(True,False)
+        siddhis = VFDBOps().getall(self.model)
         stats = [s.type.lower() for s in siddhis]
         stats = {st:stats.count(st) for st in stats}
         stats['payloads'] = len(payloads)
 
         for k,v in stats.items():
-            print(f"{cl(k, 'cyan'):>32}: {cl(v,'green')}")
+            print(f"{cl(k, 'cyan'):>30}: {cl(v,'green')}")
         
         print()
         print()
@@ -194,10 +196,10 @@ class VFManager:
         for siddhi in matches:
             matches_table.add_row(
                 [
-                    cl(siddhi.name.lower(), 'blue'),
+                    siddhi.name.lower(),
                     siddhi.type.lower(),
                     siddhi.category.lower(),
-                    siddhi.info.lower()
+                    siddhi.info
                 ]
             )
 
@@ -222,6 +224,7 @@ class VFManager:
                 cprint(f"   Just run load to fix this: {cl('$ vimana load --plugins.','green')}\n", 'cyan')
 
                 return False
+
         try:
             _siddhi_ = __import__(module_path, globals(), 'siddhi', 1).siddhi
         except AttributeError as AEX:
@@ -236,7 +239,7 @@ class VFManager:
         return True
 
     def set_sessions_control(self):
-        return VFDBOps(**self.handler).get_all_sessions() 
+        return VFDBOps(**self.handler).getall(self.model) 
 
     def parse_handler_scope(self):
         from res.vmnf_validators import get_tool_scope as get_scope
@@ -256,7 +259,7 @@ class VFManager:
 
         if self.handler['docker_scope'] \
                 and not self.handler['save_case'] \
-                or _vfassert_.exec_enabled():
+            or _vfassert_.exec_enabled():
 
             self.handler['docker_scope'] = DockerDiscovery()
             self.handler['auto'] = True 
@@ -311,7 +314,8 @@ class VFManager:
                 cprint(f"\n\t{new_sessions} {self.handler['module_run']} sessions successfuly recorded!\n", 'blue')
             os._exit(os.EX_OK) 
 
-        if not _vfassert_.tatic_mode():
+        if not vfasserts(**self.handler).tactical_mode():
+            input('nottactical')
             try:
                 self.handler['target_url'] = targets_ports_set[0]
             except IndexError: 

@@ -1,12 +1,12 @@
-name: flame
+name: Flame
 author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
 brief: Flask misconfiguration parser
-category: framework
-framework: flask
+category: Framework
+framework: Flask
 info: Traceback parser for Flask applications
 module: siddhis/flame/flame.py
 package: Flask
-type: parser
+type: Parser
 tags:
   - Flask
   - Jinja2

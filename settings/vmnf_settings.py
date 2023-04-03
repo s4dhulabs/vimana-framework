@@ -1,5 +1,15 @@
 import socks
 
+
+
+LOCALES = [
+    'cs', 'da', 'de', 'de-at', 'de-ch', 'el', 'en', 
+    'en-gb', 'en-au', 'en-ca', 'es', 'es-mx', 'et', 
+    'fa', 'fi', 'fr', 'hu', 'is', 'it', 'ja', 'kk', 
+    'ko', 'nl', 'nl-be', 'no', 'pl', 'pt', 'pt-br', 
+    'ru', 'sk', 'sv', 'tr', 'uk', 'zh'
+]
+
 common_url_patterns='res/patterns/url/common.txt'
 common_secrets_re='res/regex/secrets.txt'
 common_credskw = 'res/keywords/creds.txt'

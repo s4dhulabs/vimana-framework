@@ -1,7 +1,13 @@
 {
     "sensitive_params": [
         "credit_card_number",
-	"password" 
+	"password",
+        "secret",
+	"key",
+	"senha",
+	"cc",
+	"passwd",
+	"card_number"
     ],
     "methods": [
         "GET",

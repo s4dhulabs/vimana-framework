@@ -1,192 +1,182 @@
-# -*- coding: utf-8 -*-
-"""
-             _   _   _   _   _   _  
-            / \ / \ / \ / \ / \ / \ 
-        ((-( V | 1 | M | 4 | N | 4 )-))
-            \_/ \_/ \_/ \_/ \_/ \_/ 
-
-                    - PRANA -
-
-
-    Django CVE tracker module for Vimana Framework 
-    s4dhu <s4dhul4bs[at]prontonmail[dot]ch
-
-"""
-
-
-from time import sleep
-import argparse
+from neotermcolor import cprint,colored as cl
+from string import ascii_uppercase, digits
+from random import choices,uniform
+from tabulate import tabulate
+from mimesis import Generic
 from datetime import datetime
-from bs4 import BeautifulSoup
-import collections
+from time import sleep
+import textwrap
 import requests
-import re
-import sys
+import json
+import os
 
-from neotermcolor import colored,cprint
-from ._putils import pranaset
+from .config import *
+from core.vmnf_utils import (
+    load_plugin_cache,
+    gen_issues_table
+)
 
 class siddhi:
-    def __init__(self, **vmnf_handler):
-       
-        # django_version in __init__ class [argument required]
+    def __init__(self, **vmnf_handler) -> None:
         if not vmnf_handler.get('django_version'):
             print("\033[0m")
             print(f'[prana: {datetime.now()}] Django version is required: --django-version.')
             sys.exit()
 
+        self.caller = vmnf_handler['module_run']
         self.vmnf_handler = vmnf_handler
-        self.django_version = vmnf_handler.get('django_version').strip()
-        self.pset = pranaset()
-        self.cve_pool =[]
-        self.cve_register =[]
+        self.register = []
+        self.django_version = vmnf_handler.get('django_version')
+        issue_type = 'cves'
+        plugin_scope = f'django/{issue_type}'
+        self.cache_dir = f'siddhis/__cache__/{plugin_scope}'
+        self.issues_path = f"{self.cache_dir}/{self.django_version}.json"
+        self.engineitself = True if (self.caller == 'prana') else False
         
-    def get_cve_details(self,CVE_ID=False):
-
-        # this because this method will be called in other ways in future
-        if CVE_ID:
-            self.CVE_ID = CVE_ID
-
-        hyperlinks = []
-        self.cve_details = {}
-
-        sleep(3)
-
-        response = requests.get(self.pset.nist_endpoint.format(self.CVE_ID)) 
-        response_data = response.text
+        self.cache_load_enabled = True \
+            if (not self.vmnf_handler['ignore_cache']) else False
+        self.cache_enabled = True \
+            if (not self.vmnf_handler['disable_cache']) else False
         
-        if not response or response.status_code != 200 \
-            or 'CVE ID Not Found' in response_data:
-            return False
-
-        soup = BeautifulSoup(response_data, "lxml")
-
-        # cve description
-        for i in soup.findAll("div", {"id": "vulnAnalysisDescription"}):
-            description = str(i.find('p').text).rstrip()
-
-        # get hiperlinks
-        for i in soup.findAll("table", {"class": "table table-striped table-condensed table-bordered detail-table"}):
-            for a in i.find_all('a', href=True):
-                link = (a['href']).rstrip().strip("\n")
-                if link not in hyperlinks:
-                    hyperlinks.append(a['href'])
-
-        # save details to 'cve_entry'
-        self.cve_details = {
-            'description': description,     # string
-            'hyperlinks': hyperlinks        # list
-        }
-
-        return self.cve_details
-
-    def issues_presentation(self):
-        from siddhis.djunch.engines._dju_utils import DJUtils
-
-        tables = DJUtils().get_report_tables()
-        cves_tbl = tables.get('cves')
-        cves_tbl.title = colored(
-            f"CVE IDs for Django {self.django_version}",
-                "white",attrs=['bold']
+        self.vmnf_handler.update(
+            {
+                'issues_path': self.issues_path,
+                'django_version': self.django_version,
+                'issue_type': issue_type
+            }
         )
-        for entry in self.cve_register:
-            cves_tbl.add_row(
-                [
-                    colored(entry['id'],'green'),
-                    entry['title'].rstrip(),
-                    entry['date'].rstrip()
-
-                ]
-            )
         
-        print(cves_tbl)
+    def get_session(self):
+        session_id = ''.join(choices(ascii_uppercase + digits, k=10))
+        session = requests.Session()
+        session.headers.update({
+            "User-Agent": Generic().internet.user_agent(),
+        })
+        session.cookies.set("Session-ID", session_id)
+        return session
 
-    def get_cves(self):
-        '''Get cves from a given Django version'''
-        
-        response = requests.get(
-            self.pset.sec_rel_url.format(self.django_version)
-        )
+    def parse_cves(self):
+        for cve in self.cves:
+            base_score = "N/A"
+            cvss_vector = "N/A"
+            cve_id = cve["cve"]["CVE_data_meta"]["ID"]
+            description = cve["cve"]["description"]["description_data"][0]["value"]
+            formatted_description = '\n'.join(textwrap.wrap(description, width=60))
+            cwes = [desc["value"] for desc in cve["cve"]["problemtype"]["problemtype_data"][0]["description"]]
+            cpes = [cpe["cpe23Uri"] for node in cve["configurations"]["nodes"] for cpe in node["cpe_match"]]
+            url = f"{cve_detail_url}/{cve_id}"
 
-        if response:
-            self.soup = BeautifulSoup(response.text,"lxml")  
+            external_references = [ref["url"] \
+                    for ref in cve["cve"]["references"]["reference_data"] \
+                if ref["tags"] == ["External"]
+            ]
 
-        for item in self.soup.find(class_='section'):
+            if len(cwes) == 1 and cwes[0] == 'NVD-CWE-Other':
+                cwes = ['N/A']
+
             try:
-                for tag in item.find_next_sibling('div'):
-                    try:
-                        issue_text = str(tag.text).strip().encode(
-                            "ascii", errors="ignore").decode()
-                        
-                        affected_versions = re.findall('Django \d{1}\.\d{1}', issue_text)
-                        
-                        if self.django_version in str(affected_versions):
-                            self.CVE_ID  = (re.search('(CVE-\d{4}-\d{4,5})',issue_text).group()).strip()
-                             
-                            if not self.CVE_ID in self.cve_pool:
-                                self.cve_pool.append(self.CVE_ID)
-                                nist_cve = self.CVE_ID.replace('CVE-','')
-                                release_date = issue_text.split('-')[0]
-                       
-                                try:
-                                    adv_date = (issue_text.split('\n')[0])
-                                    m = adv_date.split()[0].lower()[:3]
-                                    d = adv_date.split()[1].strip(',')
-                                    y = adv_date.split()[2]
-                                except IndexError:
-                                    pass
-
-                                c_adv_date = colored(adv_date, 'white',attrs=['bold'])
-                                # there is a little bug in this point, long title with new line will not be shown whole
-                                title = str(issue_text.split('\n')[1]).split('.')[0].rstrip('\n')
-                                 
-                                c_title = colored(title, 'yellow')
-                                c_version = colored(self.django_version,'red')
-                                
-                                issue_text = (issue_text.replace(adv_date, c_adv_date))     
-                                issue_text = (issue_text.replace(title,c_title))
-                                issue_text = (issue_text.replace(self.django_version,c_version))
-                                
-                                m,d,y = release_date.split()
-                                
-                                release_date = '{}/{}/{}'.format(
-                                    self.pset.month_num[m.lower().rstrip()],
-                                    d.replace(",",'').rstrip(),
-                                    y.rstrip()
-                                )
-                                
-                                # register new cve entry
-                                cve_entry = {
-                                    'id': self.CVE_ID,
-                                    'date': release_date,
-                                    'c_date': c_adv_date,
-                                    'c_title': c_title,
-                                    'c_version': c_version,
-                                    'title': title,
-                                    'text': issue_text,
-                                    'full_description': self.pset.desc_url.format(y,m,d),
-                                    'references': self.pset.nist_detail.format(nist_cve)
-                                }
-                               
-                                # save entry
-                                self.cve_register.append(cve_entry)
-                                
-                    except AttributeError:
-                        pass
-            except TypeError:
+                base_score = cve["impact"]["baseMetricV3"]["cvssV3"]["baseScore"]
+                cvss_vector = cve["impact"]["baseMetricV3"]["cvssV3"]["vectorString"]
+            except KeyError:
                 pass
 
-        # when running prana by command line vf run -m prana
-        if self.vmnf_handler.get('framework_search_version'):
-            self.issues_presentation()
-            
+            dec_ref = f"""\n\n\n{url}\nCVSS Vector: {cvss_vector}\n"""
+            self.register.append(
+                {
+                    'id': cve_id,
+                    'description': formatted_description,
+                    'cwes': cwes,
+                    'cpes': cpes,
+                    'ref_url': url,
+                    'references': external_references,
+                    'base_score': base_score,
+                    'cvss_vector': cvss_vector
+                }
+            )
+
+    def parse_pages(self):
+        session = self.get_session()
+
+        while self.start_index < self.total_results:
+            self.start_index += self.resper_page
+            if self.start_index >= self.total_results:
+                break
+
+            endpoint = api_endpoint.format(
+                self.start_index,
+                self.resper_page,
+                self.keyword
+            )
+            response = session.get(endpoint)
+            sleep(uniform(3,6))
+            if response.status_code != 200:
+                break
+
+            json_data = response.json()
+            self.cves += json_data["result"]["CVE_Items"]
+
+    def get_cves_for_version(self,django_version:str=False):
+        if django_version:
+            self.django_version = django_version
+
+        if self.cache_load_enabled:
+            try:
+                cves, issues_table = load_plugin_cache(self.vmnf_handler)
+                if self.engineitself:
+                    print(f"[{cl(self.caller,'red')}]→ {cl(len(cves),'green')} CVEs for Django {cl(self.django_version,'green')}")
+                    input() if self.vmnf_handler.get('pause_steps') else sleep(1)
+                    print(issues_table)
+                    return True
+                return cves, issues_table
+            except TypeError:
+                # acquire 
+                pass
+
+        session = self.get_session()
+        sleep(uniform(3,10))
+        self.start_index = 0
+        self.resper_page = 30
+        self.keyword = f'django+{self.django_version}'
+
+        endpoint = api_endpoint.format(
+            self.start_index,
+            self.resper_page, 
+            self.keyword
+        )
+        response = session.get(endpoint)
+        cve_data = response.json()
+
+        if "result" not in cve_data:
+            print(f"No CVEs found for Django {django_version}")
+            return
+
+        self.cves = cve_data["result"]["CVE_Items"]
+        self.total_results = cve_data["totalResults"]
+        
+        if self.total_results > self.resper_page:
+            self.parse_pages()
+
+        self.parse_cves()
+
+        if self.cache_enabled:
+            if not os.path.exists(self.cache_dir):
+                os.makedirs(self.cache_dir)
+       
+            if not os.path.exists(self.issues_path):
+                with open(self.issues_path, 'w') as f:
+                    json.dump(self.register, f, indent=4)
+        
+        issues_table = gen_issues_table(self.register, 'CVEs')
+        
+        if self.engineitself:
+            (f"[{cl(self.caller,'red')}]→ {cl(len(cves),'green')} CVEs for Django {cl(self.django_version,'green')}")
+            input() if self.vmnf_handler.get('pause_steps') else sleep(1)
+            print(issue_table) 
             return True
 
-        return self.cve_register
+        return self.register,issues_table
 
     def start(self):
-        self.get_cves()
+        self.get_cves_for_version()
 
-        
-        
 

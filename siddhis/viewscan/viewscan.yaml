@@ -1,12 +1,12 @@
-name: viewscan
+name: ViewScan
 author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
 brief: Django View Scanner 
-category: framework
-framework: django
+category: Framework
+framework: Django
 info:  Simple static analysis utility for Django views
 module: siddhis/viewscan/viewscan.py
 package: Django
-type: audit
+type: Audit
 tags:
   - sast
   - views
@@ -16,13 +16,6 @@ description: |
   in Django applications and checks for common issues
   related to authentication, authorization, and sensitive
   data filtering.
-
-  ViewScan looks for categories of issues such as missing
-  validations, decorators, and parameters that could
-  lead to security vulnerabilities in Django views. By
-  using pattern matching, ViewScan can detect common
-  coding mistakes and misconfigurations that could lead
-  to security breaches.
 
   While ViewScan does not aim to be a generic scanner
   for Python applications, it provides a useful tool

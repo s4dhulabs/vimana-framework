@@ -21,7 +21,7 @@ class vfasserts:
     def __init__(self, **_vfh_):
         self._vfh_ = _vfh_
 
-    def tatic_mode(self):
+    def tactical_mode(self):
         return False if (
             not self._vfh_['session_mode'] \
             and not self._vfh_['listener_mode'] \
