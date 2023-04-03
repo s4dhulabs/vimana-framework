@@ -25,9 +25,9 @@ printf "\n==> Building Vimana image..."
 docker build --no-cache=true --network=host -t vimana_framework:v0.8 .
 
 printf "\n==> Testing Vimana image..."
-docker run -it vimana_framework:v0.8
+docker run -t vimana_framework:v0.8
 sleep 2
 
 printf "\n==> Testing build..."
-docker run -it vimana_framework:v0.8 list --plugins
+docker run -t vimana_framework:v0.8 list --plugins
 
