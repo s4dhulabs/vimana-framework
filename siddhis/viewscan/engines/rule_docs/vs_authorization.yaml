@@ -1,0 +1,77 @@
+vs_rules:
+  improper_permissions:
+    version: 1.0
+    scope: 
+      - decorator
+    alert: Function using @permission_required decorator with potentially improper permissions
+    level: Warning
+    description: |
+      The view function has improperly configured permissions,
+      which could allow unauthorized users to access sensitive
+      information or perform actions that they should not have
+      access to.
+    tags:
+      - permission_required
+      - authorization
+    references:
+      links:
+        - https://docs.djangoproject.com/en/3.2/topics/auth/default/#the-permission-required-decorator
+      cwes:
+        CWE-285: Improper Authorization
+        CWE-862: Missing Authorization
+        CWE-732: Incorrect Permission Assignment for Critical Resource
+        CWE-691: Insufficient Control Flow Management
+
+  insecure_direct_object_references:
+    version: 1.0
+    scope: 
+      - source
+    alert: Function using potentially unsafe functions ('get','filter' 'get_object_or_404') with user-provided input
+    level: Warning
+    description: |
+      The view function is vulnerable to insecure direct object
+      references, in which an attacker is able to access sensitive
+      information or perform actions on behalf of another user by
+      manipulating object references in the view.
+    tags:
+      - get_object_or_404
+      - filter
+      - idor
+      - get
+    references:
+      links:
+        - https://docs.djangoproject.com/en/3.2/topics/http/shortcuts/#get-object-or-404
+      cwes:
+        CWE-20: Improper Input Validation
+        CWE-285: Improper Authorization
+        CWE-862: Missing Authorization
+        CWE-284: Improper Access Control (Authorization)
+
+  insecure_password_storage:
+    version: 1.0
+    scope: 
+      - source
+    alert: Function using potentially insecure password storage
+    level: Warning
+    description: |
+      The view function is potentially vulnerable to insecure password
+      storage, in which an attacker is able to access sensitive
+      information by manipulating the password storage mechanism.
+      This function checks for the use of insecure password
+      hashing algorithms and for the presence of plaintext
+      passwords in the code and raises an exception if any issues
+      are found.
+    tags:
+      - password_storage
+      - plaintext_password
+      - sensitive_data
+      - credentials
+    references:
+      links:
+        - https://docs.djangoproject.com/en/3.2/topics/auth/passwords/
+      cwes:
+        CWE-257: Storing Passwords in a Recoverable Format
+        CWE-259: Use of Hard-coded Password
+        CWE-521: Weak Password Requirements
+        CWE-522: Insufficiently Protected Credentials
+        CWE-523: Unprotected Transport of Credentials     

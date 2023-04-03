@@ -1,4 +1,4 @@
-from ..config import db
+from ..database import db
 from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy import PickleType
 from sqlalchemy.types import JSON

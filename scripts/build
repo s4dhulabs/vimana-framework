@@ -1,0 +1,33 @@
+#!/bin/bash
+
+clear
+printf """
+
+-----------------------------------------------------
+-.-      VIMANA FRAMEW0RK v0.8| IMAGE BUILDER     -0-
+-----------------------------------------------------
+        https://github.com/s4dhulabs/vimana-framework
+                @s4dhulabs
+                        
+
+                      __'__'__         *
+             *          \`''´   ˙              ٭       
+.                         *       .     -0-
+
+       *  o     .           *      .        
+
+
+"""
+sleep 1
+#timedatectl set-ntp yes
+
+printf "\n==> Building Vimana image..."
+docker build --no-cache=true --network=host -t vimana_framework:v0.8 .
+
+printf "\n==> Testing Vimana image..."
+docker run -it vimana_framework:v0.8
+sleep 2
+
+printf "\n==> Testing build..."
+docker run -it vimana_framework:v0.8 list --plugins
+

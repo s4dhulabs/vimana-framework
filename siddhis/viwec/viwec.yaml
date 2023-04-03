@@ -1,12 +1,12 @@
-name: viwec
+name: ViWeC
 author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
 brief: Vimana Web Crawler 
-category: discovery
-framework: generic
+category: Discovery
+framework: Generic
 info:  Simple web crawler utility
 module: siddhis/viwec/viwec.py
 package: False
-type: crawler
+type: Crawler
 tags:
   - discovery
 description: |

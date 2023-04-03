@@ -1,12 +1,12 @@
 name: 2pacx
 author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
 brief: Unsecure Zip File Extraction Exploit
-category: package
-framework: generic
+category: Package
+framework: Generic
 info: Remote code execution via insecure file extraction
 module: siddhis/2pacx/
-package: zipfile
-type: exploit
+package: Zipfile
+type: Exploit
 tags:
   - Path Traversal
   - Zipfile 

@@ -19,15 +19,18 @@ from neotermcolor import colored, cprint
 from pygments.formatters import TerminalFormatter
 from pygments.lexers import PythonLexer
 from pygments import highlight
+import textwrap
 
+import os
 import sys
 import json
 import requests
 import collections
 from time import sleep
 from bs4 import BeautifulSoup
-
+from tabulate import tabulate
 from requests.exceptions import ConnectionError
+from core.vmnf_utils import load_plugin_cache,gen_issues_table
 
 class siddhi:
     def __init__(self, **vmnf_handler:False):
@@ -68,16 +71,39 @@ class siddhi:
             "params": [self.query]
         }
 
+        django_version = vmnf_handler.get('django_version')
+        issue_type = 'tickets'
+        plugin_scope = f'django/{issue_type}'
+        self.cache_dir = f'siddhis/__cache__/{plugin_scope}'
+        self.issues_path = f"{self.cache_dir}/{django_version}.json"
+
+        self.cache_load_enabled = True \
+            if (not self.vmnf_handler['ignore_cache']) else False
+        self.cache_enabled = True \
+            if (not self.vmnf_handler['disable_cache']) else False
+
+        self.specs = {
+            'issues_path': self.issues_path,
+            'django_version': django_version,
+            'issue_type': issue_type
+        }
+        self.vmnf_handler.update(self.specs)
+
     def get_ticket_ids(self, django_version=False):
         ''' Retrieve all tickets (type:bug) for a given Django version '''
     
         if not django_version:
             if not self.query:
                 print('Missing Django version')
-                
                 return False
-
             django_version = self.query
+       
+        if self.cache_load_enabled:
+            try:
+                tickets, issues_table = load_plugin_cache(self.vmnf_handler)
+                return tickets,issues_table
+            except TypeError:
+                pass
 
         try:
             response = requests.get(self.django_query_url.format(django_version, self.columns))
@@ -101,7 +127,6 @@ class siddhi:
                 if ticket_title != "#{}".format(ticket_id):
                     if not ticket_id in self.tickets:
                         self.tickets.append(link.split('/')[-1])
-                        
                         ticket = {
                             'entry': ticket_entry,
                             'id': ticket_id,
@@ -120,10 +145,18 @@ class siddhi:
             )
 
             print(tickets_table)
-
             return True
-        
-        return self.ticket_register
+       
+        if self.cache_enabled:
+            if not os.path.exists(self.cache_dir):
+                os.makedirs(self.cache_dir)
+
+            if not os.path.exists(self.issues_path):
+                with open(self.issues_path, 'w') as f:
+                    json.dump(self.ticket_register, f, indent=4)
+
+        issues_table = gen_issues_table(self.ticket_register, 'Tickets')
+        return self.ticket_register, issues_table
 
     def get_ticket(self, ticket_id):
         ''' Retrieve details about a given ticket '''

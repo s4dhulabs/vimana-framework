@@ -1,5 +1,5 @@
-cd /tmp/
+cd ~/
 git clone https://github.com/s4dhulabs/vimana-framework.git 
 cd vimana-framework
-source scripts/set_env
+source scripts/setup
 

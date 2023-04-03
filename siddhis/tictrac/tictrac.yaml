@@ -1,12 +1,12 @@
-name: tictrac
+name: Tictrac
 author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
 brief: Django Ticket Tracker
-category: framework
-framework: django
+category: Framework
+framework: Django
 info: Track bug tickets in Django ticket system
 module: siddhis/tictrac/tictrac.py
 package: Django
-type: tracker
+type: Tracker
 tags:
   - Django
 description: |

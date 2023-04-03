@@ -1,8 +1,11 @@
 import os
 import re
 import ast
+import yaml
 import inspect
+import hashlib
 from time import sleep
+from pprint import pprint
 from pygments import lexers
 from pygments import highlight
 from neotermcolor import colored as cl
@@ -15,19 +18,20 @@ from ..tools.vs_tools import (
         get_parsed_code_block,
         extract_from_module,
         extract_decorators,
-        get_node_decorators
+        get_node_decorators,
+        get_mod_hash
     )
 
 
 def parse_view(module_path:str) -> dict:
     try:
-        with open(module_path) as file:
+        with open(module_path,'r') as file:
             module_content = file.read()
             tree = ast.parse(module_content)
     except FileNotFoundError:
         return False
 
-    d = {}
+    view_object = {}
     for node in ast.iter_child_nodes(tree):
         if isinstance(node, 
                 (ast.FunctionDef,ast.ClassDef, ast.Lambda)
@@ -52,7 +56,7 @@ def parse_view(module_path:str) -> dict:
                 module_code_block,lineno
             )
                 
-            d[obj_name] = {
+            view_object[obj_name] = {
                 'node': node,
                 'obj_name': obj_name,
                 'hl_code': parsed_code_block,
@@ -60,6 +64,8 @@ def parse_view(module_path:str) -> dict:
                 'dec_args': decargs,
                 'node_decorators': node_decorators,
                 'view_path': module_path,
+                'view_hash': get_mod_hash(module_content),
+                'algorithm': 'sha-256',
                 'module_code': module_code_block,
                 'node_source': node_source,
                 'obj_line': firstl,
@@ -67,15 +73,13 @@ def parse_view(module_path:str) -> dict:
                 'end': endline
             }
             
-            maxp=30
             obj_loc = f"{lineno}-{endline}"
-            name = ' '*(maxp - len(obj_name))
+            name = ' '*(30 - len(obj_name))
             loc =  ' '*(10 - len(obj_loc))
             obj_id = f"{obj_loc + loc} {firstl}"
             obj_spot = (highlight(obj_id,Python3Lexer(),TerminalFormatter()))
-
             print(f"    {obj_name + name} → {obj_spot.strip()}")
 
-    return d
+    return view_object
 
 

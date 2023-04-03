@@ -103,6 +103,7 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--extended-scope", action="store_true",default=False)        
         vmnf_shared_parser.add_argument("--tracker-scope", action="store_true",default=False)        
         vmnf_shared_parser.add_argument("--disable-cache", action="store_true",default=False)        
+        vmnf_shared_parser.add_argument("--ignore-cache", action="store_true",default=False)        
         # -------------------------------------------------------------------------------
         # > Scope setting - [ scope parser options ] 
         # -------------------------------------------------------------------------------
@@ -119,6 +120,8 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--framework-version", action="store", dest='framework_version',default=False)
         vmnf_shared_parser.add_argument("--search-version", action="store", dest='framework_search_version',default=False)
         vmnf_shared_parser.add_argument("--issues-table", action="store_true", dest='issues_table',default=False)
+        vmnf_shared_parser.add_argument("--table", action="store_true", dest='output_table',default=False)
+        vmnf_shared_parser.add_argument("--text", action="store_true", dest='output_text',default=False)
         vmnf_shared_parser.add_argument("--framework", action="store", dest='framework',default=False)
         vmnf_shared_parser.add_argument("--project-dir", action="store", dest='project_dir',default=False)
         #vmnf_shared_parser.add_argument("--target-dir", action="store", dest='project_dir',default=False)
@@ -156,6 +159,7 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--search",action="store",dest='search_mode',default=False)
         vmnf_shared_parser.add_argument("--dump",action="store",dest='dump_mode',default=False)
         vmnf_shared_parser.add_argument("--search-object",action="store",dest='search_object',default=False)
+        vmnf_shared_parser.add_argument("--output-file",action="store",dest='output_file',default='scan_results.sarif')
         
         return vmnf_shared_parser
 

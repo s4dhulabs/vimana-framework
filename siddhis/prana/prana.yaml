@@ -1,12 +1,12 @@
-name: prana
+name: Prana
 author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
 brief: Tracks Django CVE ids 
-category: framework
-framework: django
-info: Utility to retrieve CVE ids from the official Django security page
+category: Framework
+framework: Django
+info: Utility to retrieve CVE IDs for Django Framework
 module: siddhis/prana/prana.py
 package: Django
-type: tracker
+type: Tracker
 tags:
   - Django 
 description: |

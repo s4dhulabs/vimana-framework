@@ -1,44 +1,28 @@
+###############################################
 ###############################################    
 ##~  Vimana Framework Docker image builder  ~## 
+###############################################   
 ###############################################    
+FROM python:3.9-slim-buster
 
-# ~ Basic information
-FROM ubuntu:18.04
 LABEL MAINTAINER="s4dhu <s4dhul4bs[dot]protonmail[at]ch>"
 MAINTAINER s4dhu <s4dhul4bs[at]protonmail[dot]ch>
 
-# ~ To avoid time sync issue in apt
-VOLUME	/etc/timezone:/etc/timezone:ro
-VOLUME	/etc/localtime:/etc/localtime:ro
+ENV DEBIAN_FRONTEND=noninteractive
+WORKDIR /vf0.8
+COPY . /vf0.8
 
-# ~ update and install required dependencies
-RUN apt-get clean && \
-    apt-get update && \
-    apt-get install --quiet --yes --fix-missing \
-    locales \
-    apt-transport-https \
-    apt-utils \
-    git \
-    python3 \ 
-    python3-pip && \
-    apt-get autoremove --purge -y && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+RUN python3.9 -m pip install --user --no-cache-dir --upgrade pip && \
+    python3.9 -m pip install --user --no-cache-dir -r requirements.txt && \
+    python3.9 -m pip install --user --no-cache-dir -U PyYAML
 
-# ~ environment settings
-RUN locale-gen en_US.UTF-8
-ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
-
-# ~ vimana settings
 RUN groupadd -r vimana && \
-    useradd -r -m -g vimana oper
-RUN usermod -aG sudo oper
+    useradd -r -m -g vimana -G sudo oper && \
+    chown -R oper:vimana /vf0.8/core/_dbops_/ && \
+    chmod -R 750 /vf0.8/core/_dbops_/
 
-USER oper
-RUN mkdir ~/vmnf_alpha
-WORKDIR ~/vmnf_alpha
-COPY . .
-RUN pip3 install -r requirements.txt
+ENV PYTHONWARNINGS=ignore
+RUN ln -s /vf0.8/vimana.py /usr/bin/vimana
+RUN vimana load --plugins
+ENTRYPOINT ["vimana"]
 
-# ~ Vimana entrypoint
-ENTRYPOINT ["python3","vimana.py"]

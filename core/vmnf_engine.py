@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
-
 ''' ~ Vimana Engine ~ '''
 
 import sys
 sys.path.insert(0, '../../../')
 
 from core.vmnf_smng import VFManager as vfmng
-#from core._dbops_.vmnf_dbops import VFSiddhis
 
 from res.vmnf_validators import get_tool_scope as get_scope
 from neotermcolor import cprint, colored as cl
@@ -34,6 +32,7 @@ from core.vmnf_payloads import  VMNFPayloads
 from core.vmnf_dscan import DockerDiscovery
 from core.vmnf_sessions import VFSession
 from core.vmnf_cases import CasManager
+from core.vmnf_scans import VFScan
 from core.vmnf_rrunner import *
 
 # vimana helpers 
@@ -194,11 +193,16 @@ def abduct():
     #~ list all cases
     elif handler_ns.list_cases:
         CasManager(False,handler_ns).list_cases()
+ 
+    #~ list all scans
+    elif handler_ns.list_scans:
+        VFScan(**vars(handler_ns)).list_scans()
 
     #~ flush cases
     elif handler_ns.flush_cases:
         CasManager(False,handler_ns).flush_cases()
-
+    
+    # ~ run
     elif handler_ns.module_run:
         vfmng(**vars(handler_ns)).run_siddhi()
 

@@ -1,12 +1,12 @@
-name: dmt
+name: DMT
 author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
 brief: Django Misconfiguration Tracker
-category: framework
-framework: django 
+category: Framework
+framework: Django 
 info: Tracks and exploits misconfigurations in Django applications
 module: siddhis/dmt/dmt.py 
 package: Django
-type: tracker
+type: Tracker
 tags:
   - Error
   - Debug

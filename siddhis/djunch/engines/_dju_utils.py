@@ -167,7 +167,6 @@ class DJUtils:
             g.person.height(),
             g.hardware.resolution(),
             g.hardware.cpu_frequency(),
-            g.business.cryptocurrency_symbol(),
             g.food.vegetable()
         ]
 
@@ -423,7 +422,7 @@ class DJUtils:
                         [
                             urljoin(self.target, pattern.replace('{{fuzz_flag}}',str(choice(range(9000))))),
                             urljoin(self.target, pattern.replace('{{fuzz_flag}}',Generic().text.word())),
-                            urljoin(self.target, pattern.replace('{{fuzz_flag}}',str(Generic().numbers.float_number()))),
+                            urljoin(self.target, pattern.replace('{{fuzz_flag}}',str(Generic().numeric.float_number()))),
                             urljoin(self.target, pattern.replace('{{fuzz_flag}}',"""${{<%[%'"}}%\.""")),
                             urljoin(self.target, pattern.replace('{{fuzz_flag}}',"{% csrf_token %}")),
                             urljoin(self.target, pattern.replace('{{fuzz_flag}}',"{% include 'admin/base.html' %}"))
@@ -592,6 +591,36 @@ class DJUtils:
             return tickets_tbl
 
         return False
+    
+    def show_cve_txt_details(self, CVES:list):
+        
+        print()
+
+        for CVE in CVES:
+            cprint(f"CVE: {colored(CVE['id'], 44, 867)}")
+
+            print(f"Description:")
+            print()
+            for l in CVE['description'].split('\n'):
+                print(f"    {colored(l,44, 867)}")
+
+            print(f"CWEs: {colored(','.join(CVE['cwes']),44,867)}")
+            if CVE['cpes']:
+                print(f"+ CPEs:")
+                for cpe in CVE['cpes']:
+                    print(f"    + {colored(cpe,44, 867)}")
+                print()
+
+            print(f"URL: {colored(CVE['ref_url'],44, 867)}")
+            if len(CVE['references']) > 0:
+                print(f"* External references:")
+                for ref in CVE['references']:
+                    print(f"    + {colored(ref,44, 867)}")
+
+            print(f"Base Score: {colored(CVE['base_score'],44, 867)}")
+            print(f"CVSS: {colored(CVE['cvss_vector'],44, 867)}")
+            print('-'*100)
+            sleep(1)
 
     def get_version_issues(self,**sample):
         
@@ -785,9 +814,6 @@ class DJUtils:
         
         for module_trigger_info in except_objs:
             for key,value in module_trigger_info['MODULE_ARGS'].items():               
-                
-                # pocs
-                #value = value.replace('string','newstring')
 
                 self.match_key_vals = [
                     key,
@@ -805,7 +831,6 @@ class DJUtils:
                         highlight(mti_value,PythonLexer(),TerminalFormatter()).strip()
                         )
                     )
-
                 print()
 
                 print('{}{}:\t   {}'.format((' ' * int(5-len(key) + 14)),
@@ -1073,7 +1098,6 @@ class DJUtils:
 
             print('{}{}:\t      {}'.format((' ' * int(5-len(key) + 22)),key,colored(value, 'green')))
         print()
-
 
     def gen_csrftoken(self):
         import django

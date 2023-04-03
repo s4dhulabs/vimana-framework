@@ -1,13 +1,12 @@
 ##################################################
-# set an environment to run vimana v0.5 
-# create a simbolic link to vimana handler vf 
-# fix some pip install issues (sometimes)
+# - set an environment to run vimana v0.8
+# - creates a simbolic link to vimana handler vf 
 ##################################################
 python3.9 -m venv ~/vfe0.8
 source ~/vfe0.8/bin/activate
-pip3 install --upgrade pip 
-pip3 install --ignore-installed PyYAML -r requirements.txt
-pip3 install -U PyYAML
+python3.9 -m pip install --upgrade pip 
+python3.9 -m pip install --ignore-installed PyYAML -r requirements.txt
+python3.9 -m pip install -U PyYAML
 sudo ln -s $PWD/vimana.py /usr/bin/vimana
 sudo ln -s $PWD/vimana.py /usr/bin/vf
 vimana

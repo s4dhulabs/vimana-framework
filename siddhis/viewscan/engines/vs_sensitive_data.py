@@ -6,12 +6,15 @@ import inspect
 from time import sleep
 from neotermcolor import cprint,colored as cl
 from ..tools.vs_tools import (
-        docme,
-        is_POST_request, 
-        check_match, 
-        KeywordVisitor, 
-        extract_post_params,
-        inspect_decorator
+    docme,
+    docrule,
+    check_match, 
+    get_mod_hash,
+    KeywordVisitor, 
+    is_POST_request, 
+    inspect_decorator,
+    handle_sast_output,
+    extract_post_params
 )
 
 
@@ -43,38 +46,6 @@ class vs_sensitive_data:
         print()
 
     def sensitive_information_filtering(self, node:ast.AST=False, finished:bool=True):
-        '''
-        The function doesn't prevent the values of sensitive variables from being leaked.
-
-        Django offers a set of function decorators to help you
-        control which information should be filtered out of error
-        reports in a production environment (that is, where DEBUG is
-        set to False): sensitive_variables() and
-        sensitive_post_parameters().
-
-        * sensitive_variables
-
-        If a function (either a view or any regular callback) in
-        your code uses local variables susceptible to contain
-        sensitive information, you may prevent the values of those
-        variables from being included in error reports using the
-        sensitive_variables decorator.
-        
-        To systematically hide all local variables of a function
-        from error logs, do not provide any argument to the
-        sensitive_variables decorator: sensitive_variables()
-       
-        * sensitive_post_parameters
-
-        If one of your views receives an HttpRequest object with
-        POST parameters susceptible to contain sensitive
-        information, you may prevent the values of those parameters
-        from being included in the error reports using the
-        sensitive_post_parameters decorator.
-
-        https://docs.djangoproject.com/en/4.1/howto/error-reporting/#filtering-sensitive-information
-        '''
-        
         if not node:
             node = self.options.get('node')
 
@@ -131,8 +102,10 @@ class vs_sensitive_data:
         
         if finished and self.issues:
             self.__show_code__()
-            docme(self.issues)
-        
+            rule = docrule(self.issues)
+            self.options['rule'] = rule
+            handle_sast_output(self.options).gen_sarif()
+            
     def __status__(self, test_type):
         status_msg = (f"    → Running {cl(test_type, 'red')} tests against {self.object}...")
         print(status_msg.ljust(os.get_terminal_size().columns - 1), end="\r")

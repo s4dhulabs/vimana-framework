@@ -64,8 +64,8 @@ class table_models:
         }
         self.siddhis_tbl_set = {
             'fields': ['Name', 'Type', 'Category', 'Info'],
-            'title' : 'siddhis',
-            'color' : 'yellow',
+            'title' : 'Plugins (Vimana v0.8)',
+            'color' : 'red',
             'attrs' : ['bold'],
             'align' : 'l' 
         }

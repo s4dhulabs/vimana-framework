@@ -1,6 +1,6 @@
 project:
     author: s4dhu
-    email: <s4dhul4bs[at]prontonmail.ch
+    email: <s4dhul4bs[at]prontonmail.ch>
     git: https://github.com/s4dhulabs/vimana-framework
     name: Vimana Framework
     site: https://s4dhulabs.github.io/
@@ -45,7 +45,6 @@ settings:
         - dmt
         - flame
         - caiman
-        - d4m8
         - sttinger
         - jungle
         - viwec

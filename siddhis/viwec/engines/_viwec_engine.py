@@ -125,9 +125,7 @@ class vwce(scrapy.Spider):
                 [f.write(u + '\n') for u in self.discovered_urls]
                 f.close()
             
-            self.discovered_urls.append('http://127.0.0.1:8887/taskManager/1/edit_project/')
             self.handler['scope'] = self.discovered_urls
-
             self.handler['scope'].extend(
                 [urljoin(self.handler['target_url'], p) \
                     for p in self.handler['patterns'] \
