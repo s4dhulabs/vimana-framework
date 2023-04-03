@@ -32,9 +32,9 @@ class VFManager:
             self.query_filters = self.get_filters()
 
     def load_siddhis(self):
-        if VFDBOps().table_exists('_SIDDHIS_'):
+        if VFDBOps().table_exists('_SIDDHIS_') and VFDBOps().getall(self.model):
             handle_OpErr('db ready')
-
+        
         fields = ['name','category','framework','package','type']
 
         for s in os.scandir(f'{os.getcwd()}/siddhis/'):
@@ -45,7 +45,9 @@ class VFManager:
                 siddhi.update((f, siddhi[f].lower()) 
                     if not isinstance(siddhi[f], bool) \
                         else (f, siddhi[f]) for f in fields)
-                abduct_items(**siddhi) or VFDBOps(**siddhi).register('_SIDDHIS_')
+                
+                abduct_items(**siddhi)
+                VFDBOps(**siddhi).register('_SIDDHIS_')
 
         self.list_siddhis()
     
@@ -185,7 +187,8 @@ class VFManager:
         matches = self.query_siddhis()
 
         if not matches:
-            self.no_match() 
+            handle_OpErr('no such table:')
+            #self.no_match() 
             return False
 
         case_header()
