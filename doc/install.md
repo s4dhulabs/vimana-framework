@@ -3,6 +3,9 @@
 
 ![image](https://user-images.githubusercontent.com/89562876/229795288-6994f6e4-735a-4d6a-9dbb-68b9dbe24400.png)
 
+[![Python Version](https://img.shields.io/badge/python-3.9%2B-yellow.svg)](https://www.python.org/downloads/)
+
+
 ## Using Curl
 
 ```bash
