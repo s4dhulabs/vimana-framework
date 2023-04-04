@@ -18,5 +18,4 @@ jobs:
         ./scripts/build
     - name: Runs Vimana security scan
       run: |
-        docker run -t vimana_framework:v0.8 about
-        #docker run -t vimana_framework:v0.8 run --plugin viewscan --project-dir "${GITHUB_WORKSPACE}"
+        docker run -t vimana_framework:v0.8 run --plugin viewscan --project-dir "${GITHUB_WORKSPACE}"
