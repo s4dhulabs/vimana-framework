@@ -1,7 +1,7 @@
 
 # Vimana Framework v0.8 - Installation Guide
 
-![image](https://user-images.githubusercontent.com/89562876/229259675-ff5648aa-8a06-4145-9c6a-673f643ec00b.png)
+![image](https://user-images.githubusercontent.com/89562876/229795288-6994f6e4-735a-4d6a-9dbb-68b9dbe24400.png)
 
 ## Using Curl
 
