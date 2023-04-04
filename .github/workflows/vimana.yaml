@@ -19,3 +19,8 @@ jobs:
     - name: Runs Vimana security scan
       run: |
         docker run -t vimana_framework:v0.8 run --plugin viewscan --project-dir "${GITHUB_WORKSPACE}"
+    - name: Upload SARIF results
+      uses: github/codeql-action/upload-sarif@v1
+      with:
+        sarif_file: viewscan.sarif
+
