@@ -1,3 +1,16 @@
+# -*- coding: utf-8 -*-
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+#
+# Author: s4dhu
+# Email: <s4dhul4bs[at]prontonmail[dot]ch
+# Git: @s4dhulabs
+# Mastodon: @s4dhu
+# 
+# This file is part of Vimana Framework Project.
+
 from .models.sessions import VFSessions as VFS 
 from .models.siddhis import Siddhis as VFSD
 from .models.scans import VFScans
@@ -28,6 +41,9 @@ class VFDBOps:
     
     def list_resource(self, _TABLE_, filters):
         if not self.table_exists(_TABLE_):
+            if _TABLE_ != '_SIDDHIS_':
+                return False
+
             handle_OpErr('no such table:')
 
         vf_model = self.tbl_model[_TABLE_]
@@ -66,10 +82,16 @@ class VFDBOps:
             handle_OpErr(str(OE.orig))
 
     def get_by_id(self, _MODEL_, obj_id_col, obj_id):
+        vf_model = self.tbl_model[_MODEL_]
         if not self.table_exists(_MODEL_):
+            # plugins should be loaded with load --plugins
+            if _MODEL_ not in ['_SIDDHIS_']:
+                self.create_table(vf_model)
+                # id doesn't exist 
+                return False
+
             handle_OpErr('no such table:')
 
-        vf_model = self.tbl_model[_MODEL_]
         model_attr = getattr(vf_model, obj_id_col)
         return vf_model.query.filter(model_attr==obj_id).first()
 

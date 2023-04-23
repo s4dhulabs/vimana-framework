@@ -1,7 +1,16 @@
-##################################################
-# - set an environment to run vimana v0.8
-# - creates a simbolic link to vimana handler vf 
-##################################################
+#! /bin/bash
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+#
+# Author: s4dhu
+# Email: <s4dhul4bs[at]prontonmail[dot]ch
+# Git: @s4dhulabs
+# Mastodon: @s4dhu
+# 
+# This file is part of Vimana Framework Project.
+
 python3.9 -m venv ~/vfe0.8
 source ~/vfe0.8/bin/activate
 python3.9 -m pip install --upgrade pip 

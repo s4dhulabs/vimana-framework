@@ -1,8 +1,15 @@
-###############################################
-###############################################    
-##~  Vimana Framework Docker image builder  ~## 
-###############################################   
-###############################################    
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+#
+# Author: s4dhu
+# Email: <s4dhul4bs[at]prontonmail[dot]ch
+# Git: @s4dhulabs
+# Mastodon: @s4dhu
+# 
+# This file is part of Vimana Framework Project.
+
 FROM python:3.9-slim-buster
 
 LABEL MAINTAINER="s4dhu <s4dhul4bs[dot]protonmail[at]ch>"

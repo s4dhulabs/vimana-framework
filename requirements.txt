@@ -1,3 +1,5 @@
+jsonpickle
+simple-term-menu
 parse-nmap
 python-libnmap
 PySocks

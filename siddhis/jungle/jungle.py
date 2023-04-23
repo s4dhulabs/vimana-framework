@@ -1,17 +1,16 @@
 # -*- coding: utf-8 -*-
-"""
-             _   _   _   _   _   _  
-            / \ / \ / \ / \ / \ / \ 
-        ((-( V | 1 | M | 4 | N | 4 )-))
-            \_/ \_/ \_/ \_/ \_/ \_/ 
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+#
+# Author: s4dhu
+# Email: <s4dhul4bs[at]prontonmail[dot]ch
+# Git: @s4dhulabs
+# Mastodon: @s4dhu
+# 
+# This file is part of Vimana Framework Project.
 
-                - jungler v1 -
-
-
-    Brute-force utility for Vimana Framework 
-    s4dhu <s4dhul4bs[at]prontonmail[dot]ch
-    
-"""
 from scrapy.crawler import CrawlerRunner
 from twisted.internet import reactor
 
@@ -32,28 +31,6 @@ from res import vmnf_banners
 
 
 class siddhi:   
-    module_information = collections.OrderedDict()
-    module_information = {
-        "Name":            "Jungle",
-        "Info":            "Brute force utility to attack Django admin portal",
-        "Category":        "Framework",
-        "Framework":       "Django",
-        "Type":            "Attack",
-        "Module":          "siddhis/jungle",
-        "Author":          "s4dhu <s4dhul4bs[at]prontonmail.ch",
-        "Brief":           "Brute force utility to audit Django admin portal",
-        "Description":     """ 
-        
-        \r  Utility to brute force Django administration portal. 
-        \r  In the present version, the tool adheres to the Django administration endpoint. 
-        \r  Future versions may add other features, such as session auditing and other 
-        \r  authentication endpoints.
-        
-        """
-    }
-
-    module_arguments = VimanaSharedArgs().shared_help.__doc__
-
     def __init__(self,**vmnf_handler):
         self.vmnf_handler = vmnf_handler
     
