@@ -1,9 +1,15 @@
 # -*- coding: utf-8 -*-
-
-# Define your item pipelines here
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
 #
-# Don't forget to add your pipeline to the ITEM_PIPELINES setting
-# See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
+#
+# Author: s4dhu
+# Email: <s4dhul4bs[at]prontonmail[dot]ch
+# Git: @s4dhulabs
+# Mastodon: @s4dhu
+# 
+# This file is part of Vimana Framework Project.
 
 
 class ExceptionsPipeline(object):

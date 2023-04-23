@@ -1,3 +1,16 @@
+# -*- coding: utf-8 -*-
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+#
+# Author: s4dhu
+# Email: <s4dhul4bs[at]prontonmail[dot]ch
+# Git: @s4dhulabs
+# Mastodon: @s4dhu
+# 
+# This file is part of Vimana Framework Project.
+
 
 from res.vmnf_banners import mdtt1,case_header,vmn05,create_status
 from res.vmnf_validators import check_file
@@ -6,12 +19,6 @@ from core.load_settings import _cs_
 from datetime import datetime
 import sys,os,yaml,glob
 from time import sleep
-
-
-
-
-
-
 
 
 class CasManager:

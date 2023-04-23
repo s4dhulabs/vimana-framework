@@ -1,15 +1,26 @@
+# -*- coding: utf-8 -*-
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+#
+# Author: s4dhu
+# Email: <s4dhul4bs[at]prontonmail[dot]ch
+# Git: @s4dhulabs
+# Mastodon: @s4dhu
+# 
+# This file is part of Vimana Framework Project.
+
 import os
 import sys
-
 import argparse
-import importlib
+import jsonpickle
 from time import sleep
 from datetime import datetime
 from django.urls import include, path
 from res.vmnf_banners import case_header
 from neotermcolor import cprint,colored as cl
 
-from .tools.vs_tools import get_views,hashdir,get_django_version,handle_sast_output
 from .parsers.vs_vparser import parse_view
 from .engines.vs_authentication import vs_authentication
 from .engines.vs_authorization import vs_authorization
@@ -17,6 +28,12 @@ from .engines.vs_sensitive_data import vs_sensitive_data
 
 from core._dbops_.vmnf_dbops import VFDBOps
 from core._dbops_.db_utils import get_elapsed_time
+from .tools.vs_tools import (
+    get_views,
+    hashdir,
+    get_django_version,
+    handle_sast_output
+)
 
 class siddhi:
     def __init__(self,**vmnf_handler):
@@ -24,7 +41,7 @@ class siddhi:
         self.vmnf_handler['rule'] = False
         self.model = '_SCANS_'
         self.obj_id_col = 'scan_id'
-
+        self.scan_scope = []
         
         if not vmnf_handler.get('project_dir',False):
             cprint("\n Missing project directory: vimana run --plugin viewscan --project-dir mydjangoapp/\n", "red")
@@ -32,6 +49,14 @@ class siddhi:
         
         self.no_views = []
         self.target_dir = vmnf_handler.get('project_dir',False)
+        if self.target_dir.endswith('/'):
+            self.target_dir = self.target_dir[:-1]
+
+        if os.path.isabs(self.target_dir):
+            self.directory_path = self.target_dir
+            self.target_dir = self.target_dir.split('/')[-1]
+        else:
+            self.directory_path = os.path.join(os.getcwd(), self.target_dir)
 
         self.engines_set = (
             os.path.join(os.path.dirname(__file__), 'engines')
@@ -61,7 +86,8 @@ class siddhi:
         print(f'\n\n * App: {cl(target_app,44, 867, attrs=["underline", "bold"])}\n')
        
         module_obj = parse_view(views_file)
-        
+        self.scan_scope.append(module_obj)
+
         if not module_obj:
             self.no_views.append(target_app)
             return False
@@ -89,7 +115,9 @@ class siddhi:
         scan_hash = hashdir(self.target_dir)
         scan_id = scan_hash[:10]
         scan_done = VFDBOps(**self.vmnf_handler).get_by_id(
-            self.model,self.obj_id_col,scan_id
+            self.model, 
+            self.obj_id_col, 
+            scan_id
         )
 
         if scan_done:
@@ -99,6 +127,11 @@ class siddhi:
             print()
             print(f'[viewscan] No changes on {hl_target} project since the last scan {last_scan}!')
             print()
+
+            if self.vmnf_handler['navigation_mode']:
+                input()
+                return False
+
             sys.exit(1)
         
         views = get_views(self.target_dir)
@@ -160,14 +193,19 @@ class siddhi:
                 'scan_type': 'SAST',
                 'scan_date': datetime.now(),
                 'scan_hash': scan_hash,
-                'scan_target_project': self.target_dir,
+                'scan_target_project': self.target_dir.replace('/',''),
+                'scan_target_full_path': self.directory_path,
                 'scan_cache_dir': self.scan_cache_dir,
                 'scan_output_file':scan_output_file,
                 'project_framework': 'Django',
                 'project_framework_version': django_version_req,
                 'project_framework_total_cves': len(cves),
                 'project_total_requirements': req_number,
-                'project_total_view_modules': len(views)
+                'project_total_view_modules': len(views),
+                'scan_scope': jsonpickle.encode(self.scan_scope),
+                'scan_plugin': self.vmnf_handler['module_run'],
+                'vmnf_handler': jsonpickle.encode(self.vmnf_handler),
+                'plugin_instance': jsonpickle.encode(self)
             }
             VFDBOps(**scan).register('_SCANS_')
 

@@ -1,17 +1,16 @@
 # -*- coding: utf-8 -*-
-"""
-             _   _   _   _   _   _  
-            / \ / \ / \ / \ / \ / \ 
-        ((-( V | 1 | M | 4 | N | 4 )-))
-            \_/ \_/ \_/ \_/ \_/ \_/ 
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+#
+# Author: s4dhu
+# Email: <s4dhul4bs[at]prontonmail[dot]ch
+# Git: @s4dhulabs
+# Mastodon: @s4dhu
+# 
+# This file is part of Vimana Framework Project.
 
-                - VIWEC V1 -
-
-
-    Web Crawler utility for Vimana Framework 
-    s4dhu <s4dhul4bs[at]prontonmail[dot]ch
-    
-"""
 from core.vmnf_engine_exceptions import engineExceptions as vfx
 from neotermcolor import cprint,colored as cl
 

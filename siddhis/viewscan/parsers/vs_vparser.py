@@ -1,3 +1,16 @@
+# -*- coding: utf-8 -*-
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+#
+# Author: s4dhu
+# Email: <s4dhul4bs[at]prontonmail[dot]ch
+# Git: @s4dhulabs
+# Mastodon: @s4dhu
+# 
+# This file is part of Vimana Framework Project.
+
 import os
 import re
 import ast
@@ -48,12 +61,15 @@ def parse_view(module_path:str) -> dict:
             lastl = str_node_source.split('\n')[-1]
             node_decorators = get_node_decorators(node)
             decargs = map_dec_args(raw_decorators)
-            
+
+            #input(f"node_decorators: {node_decorators}")
+            #input(f"raw_decorators: {raw_decorators}")
+
             module_code_block.extend(
                 extract_from_module(module_content,lineno,endline)
             )
             parsed_code_block = get_parsed_code_block(
-                module_code_block,lineno
+                module_code_block,lineno,node_decorators
             )
                 
             view_object[obj_name] = {

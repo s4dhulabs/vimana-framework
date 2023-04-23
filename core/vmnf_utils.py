@@ -1,4 +1,15 @@
-""" [[[V1M4N4FR4M3W0RK]]]   """
+# -*- coding: utf-8 -*-
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+#
+# Author: s4dhu
+# Email: <s4dhul4bs[at]prontonmail[dot]ch
+# Git: @s4dhulabs
+# Mastodon: @s4dhu
+# 
+# This file is part of Vimana Framework Project.
 
 
 from __future__ import unicode_literals
@@ -25,6 +36,32 @@ import sys
 import os
 import re
 
+
+class antiCrashSystem:
+    def __init__(self, vmnf_handler:dict):
+        self.vmnf_handler = vmnf_handler
+
+    def check_feature_status(self,health_flags:list,dump:dict):
+        if sum(1 for state in health_flags if not state) >= 7:
+            cprint('\n[AntiCrashSystem] It Seems like Vimana is facing some storms in this feature lately' + ' ','red', 'on_white', attrs=['bold'])
+            
+            print()
+            for dvar,dval in dump.items():
+                if dvar in ['dump','dvar','dval','ditem','_options_']:
+                    continue
+
+                if isinstance(dval,list):
+                    print(f"{dvar:>15}: ")
+                    for ditem in dval:
+                        print(f"\t\t+ {cl(ditem,'blue')}")
+                        sleep(0.01)
+                    print()
+                    continue
+                
+                dval = str(dval).replace('simple_term_menu.TerminalMenu', 'VimanaSelfDebug')
+                print(f"{dvar:>15}: {cl(dval,'blue')}")
+                sleep(0.01)
+        input()
 
 def gen_issues_table(issues: list, issue_type:str):
     tabulate.PRESERVE_WHITESPACE = False

@@ -1,9 +1,21 @@
+# -*- coding: utf-8 -*-
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+#
+# Author: s4dhu
+# Email: <s4dhul4bs[at]prontonmail[dot]ch
+# Git: @s4dhulabs
+# Mastodon: @s4dhu
+# 
+# This file is part of Vimana Framework Project.
+
 
 from core.vmnf_check_target import CheckTargetScope
 from netaddr.core import AddrFormatError
 from libnmap.parser import NmapParser
 from neotermcolor import colored, cprint
-#from core.vmnf_manager import vmng
 from urllib.parse import urlparse
 from datetime import datetime
 from netaddr import valid_ipv4
@@ -14,7 +26,6 @@ import pathlib
 import socket
 import yaml
 import sys
-#from core.oms import is_target_set
 import os
 
 from .vmnf_asserts import vfasserts

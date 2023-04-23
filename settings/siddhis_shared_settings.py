@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
-'''
-    Setting module for Vimana Framework
-    ===================================
-    
-    This modules shares some django configurations to be used
-    by modules 
-
-'''
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+#
+# Author: s4dhu
+# Email: <s4dhul4bs[at]prontonmail[dot]ch
+# Git: @s4dhulabs
+# Mastodon: @s4dhu
+# 
+# This file is part of Vimana Framework Project.
 
 
 from . __colors import *

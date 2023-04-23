@@ -1,3 +1,17 @@
+# -*- coding: utf-8 -*-
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+#
+# Author: s4dhu
+# Email: <s4dhul4bs[at]prontonmail[dot]ch
+# Git: @s4dhulabs
+# Mastodon: @s4dhu
+# 
+# This file is part of Vimana Framework Project.
+
+
 import re
 import ast
 import json
@@ -12,26 +26,31 @@ from neotermcolor import cprint,colored as cl
 from pygments.lexers import Python3Lexer
 from pkg_resources import resource_filename
 from pygments.formatters import TerminalFormatter
-
+from core.vmnf_navicontrols import normalize, jazzit
 
 
 class handle_sast_output:
-    def __init__(self, findings:dict):
-        self.findings = findings
-        self.rule = findings['rule']
+    def __init__(self, findings:dict=False):
+        if findings:
+            self.findings = findings
+            self.rule = findings['rule']
 
-        if self.findings.get('view_path',False):
-            app_dir = self.findings['view_path'].split('/')[-2].strip()
-            self.scan_dir = f"{self.findings['scan_cache_dir']}/{app_dir}"
+            if self.findings.get('view_path',False):
+                app_dir = self.findings['view_path'].split('/')[-2].strip()
+                self.scan_dir = f"{self.findings['scan_cache_dir']}/{app_dir}"
         
-    def consolidate_sarif_output(self, sarif_files_path:str, output_file:str):
+    def consolidate_sarif_output(
+        self, 
+        sarif_files_path:str, 
+        output_file:str
+        ):
+
         file_list = get_sarif_files(sarif_files_path)
         results = []
 
         for file in file_list:
-            object = '.'.join(file.split('_vs')[-2].split('/')[-2:])
-            rule_signature = file.split('_vs')[-1].split('.')[0]
-
+            object = '.'.join(file.split('_vs_')[-2].split('/')[-2:])
+            rule_signature = file.split('_vs_')[-1].split('.')[0]
             status = (f'➣ Consolidating scan results:{cl(object,"green")}:{rule_signature}...')
             print(status.ljust(os.get_terminal_size().columns - 1), end="\r")
             sleep(0.10)
@@ -39,11 +58,10 @@ class handle_sast_output:
             with open(file, "r") as f:
                 output = json.load(f)
                 results.extend(output["runs"][0]["results"])
-       
+
         sarif_output = self.get_schema()
         sarif_output["runs"][0]["results"].append(results)  
         
-
         with open(output_file, "w") as f:
             json.dump(sarif_output, f, indent=4)
         
@@ -86,7 +104,11 @@ class handle_sast_output:
 
         result = {
             "ruleId": self.rule['name'].strip(),
+            "ruleCategory": self.rule['category'],
             "level": self.rule['level'],
+            "description": {
+                "text": self.rule['description']
+            },
             "message": {
                 "text": self.rule['alert'].strip()
             },
@@ -101,9 +123,11 @@ class handle_sast_output:
                             "endLine": self.findings['end'],
                         },
                         "contextRegion": {
+                            "object": self.findings['obj_name'],
                             "snippet": {
                                 "text": textwrap.dedent(self.findings['node_source']),
-                            }
+                            },
+                            #"variables": self.findings['variables']
                         }
 
                     }
@@ -122,7 +146,7 @@ class handle_sast_output:
 
         object_name = self.findings['obj_name'].strip()
         rule_signature = self.rule['signature'][:10]
-        object_signature = f"{object_name}_vs{rule_signature}.sarif"
+        object_signature = f"{object_name}_vs_{self.rule['name'].strip()}.sarif"
         output_path_file = f"{self.scan_dir}/{object_signature}"
         
         if not os.path.exists(self.scan_dir):
@@ -131,6 +155,50 @@ class handle_sast_output:
         if not os.path.exists(output_path_file):
             with open(output_path_file, "w") as f:
                 json.dump(sarif_output, f, indent=4)
+
+def get_object_issues(
+    search_object:str, 
+    scan_file:str, 
+    obj_source:list, 
+    status_msg:str
+    ) -> list:
+
+    entries = False
+    with open(scan_file, 'r') as f:
+        data = json.load(f)
+        if not data['runs'][0]['results'][0]:
+            scan_id = scan_file.split('/')[-2]
+            project = scan_file.split('/')[-3]
+            normalize(status_msg + " ✖ ",'red')
+            print(f'''
+            The data for scan {scan_id} seems corrupted or incomplete!
+                Consider flushing this scan and running a new one for {project} project!
+            '''
+            )
+            return False
+
+    for run in data['runs']:
+        for result in run['results']:
+            entries = [e for e in result if search_object in [
+                    l['physicalLocation']['contextRegion']['object']
+                for l in e['locations']
+                ]
+            ]
+            for entry in entries:
+                print(f"    Rule: {cl(entry['ruleId'],'green')}")
+                print(f"    Category: {cl(entry['ruleCategory'],'green')}")
+                print(f"    Level: {cl(entry['level'],'green')}")
+                print(f"    Alert: {cl(entry['message']['text'],'green')}")
+                print()
+
+                for line in obj_source:
+                    print(line, end='')
+                    sleep(0.02)
+                print()
+                
+                docrule(False,entry)
+
+    return entries
 
 def to_yaml(node):
     '''
@@ -222,9 +290,12 @@ def map_dec_args(raw_decorators:list) -> dict:
             pass
     return decargs
 
-def get_parsed_code_block(code_block:str, s:int) -> list:
+def get_parsed_code_block(code_block:str, s:int, decorators:list) -> list:
     parsed_code_block = []
-    for lno,line in enumerate(code_block, s):
+
+    fix_start = s - len(decorators)
+
+    for lno,line in enumerate(code_block, fix_start):
         hline = (f"    {lno}   " + highlight(
             line,Python3Lexer(),TerminalFormatter())
         )
@@ -259,7 +330,8 @@ def get_node_decorators(node:(ast.FunctionDef,ast.ClassDef)) -> list:
     return dec_list
 
 def get_sarif_files(project_dir:str=False):
-    pattern = r"_vs[0-9a-f]{10}.sarif$"
+    pattern = r"_vs_([a-zA-Z_]+)\.sarif$"
+
     sarif_files = []
     for dirpath, dirnames, filenames in os.walk(project_dir):
         for filename in filenames:
@@ -283,14 +355,18 @@ def get_patterns_list(urlpatterns: str) -> list:
     return patterns
 
 
-def docrule(issues:list=False):
-    frame = inspect.currentframe().f_back
-    code = frame.f_code
-    rule_name = code.co_name
-    rule_signature = get_mod_hash(rule_name)
-    engine = frame.f_locals.get('self', None).__class__.__name__
+def docrule(issues:list=False, navimode:dict=False):
+    if navimode:
+        engine = navimode['ruleCategory']
+        rule_name = navimode['ruleId']
+    else:
+        frame = inspect.currentframe().f_back
+        code = frame.f_code
+        rule_name = code.co_name
+        rule_signature = get_mod_hash(rule_name)
+        engine = frame.f_locals.get('self', None).__class__.__name__
+    
     module_dir = os.path.dirname(os.path.abspath(__file__))
-    #yaml_path = os.path.join(module_dir, '..', 'engines',f'{engine}.yaml')
     yaml_path = os.path.join(module_dir, '..', 'engines/rule_docs',f'{engine}.yaml')
 
     with open(yaml_path) as f:
@@ -300,11 +376,17 @@ def docrule(issues:list=False):
         rule_description = vs_rule['description'].split('\n')
         rule_references = vs_rule['references']
 
-        print(f"    {cl(vs_rule['alert'], 'red',attrs=['bold'])}")
+        alert = f"    {cl(vs_rule['alert'], 'red',attrs=['bold'])}"
+
+        if navimode:
+            input(alert)
+        else:
+            print(alert)
         print()
 
         for line in rule_description:
             print(f"      {cl(line.strip(),'cyan')}")
+            sleep(0.03)
 
         if issues:
             for issue in issues:
@@ -323,12 +405,14 @@ def docrule(issues:list=False):
                 print(f"      + {cl(cwe,'green')}: {cwe_title}")
         print()
 
-    vs_rule.update(
-        {
-            'name': rule_name,
-            'signature':rule_signature
-        }
-    )
+    if not navimode:
+        vs_rule.update(
+            {
+                'name': rule_name,
+                'category': engine,
+                'signature':rule_signature
+            }
+        )
 
     return vs_rule
 

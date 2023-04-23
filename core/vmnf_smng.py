@@ -1,3 +1,16 @@
+# -*- coding: utf-8 -*-
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+#
+# Author: s4dhu
+# Email: <s4dhul4bs[at]prontonmail[dot]ch
+# Git: @s4dhulabs
+# Mastodon: @s4dhu
+# 
+# This file is part of Vimana Framework Project.
+
 from siddhis.djunch.engines._dju_settings import table_models
 from siddhis.djunch.engines._dju_utils import DJUtils 
 from core.vmnf_sessions_utils import abduct_items
@@ -21,7 +34,6 @@ from pygments import highlight
 
 class VFManager:
     def __init__(self,**handler:False):
-
         self.handler = handler
         self.query_filters = []
         self.model = '_SIDDHIS_'
@@ -75,7 +87,6 @@ class VFManager:
                 'guide_labs',
                 'args'
                 ]:
-
                 continue
             
             if field in ['module_info']:
@@ -121,6 +132,7 @@ class VFManager:
         if '-l' in sections:
             for lset in sguide['lab_setup'].split('\n'):
                 self.print_guide_line(lset)
+        print()
     
     def get_siddhi_guide(self):
         siddhi = self.get_siddhi()
@@ -166,7 +178,9 @@ class VFManager:
         return (VFDBOps().list_resource(self.model,self.query_filters))
 
     def get_siddhi(self):
-        return VFDBOps().get_by_id(self.model,self.obj_id_col,self.handler['module'])
+        return VFDBOps().get_by_id(
+            self.model, self.obj_id_col, self.handler['module']
+        )
 
     def get_siddhis_stats(self):
         from core.vmnf_payloads import VMNFPayloads
@@ -179,7 +193,6 @@ class VFManager:
 
         for k,v in stats.items():
             print(f"{cl(k, 'cyan'):>30}: {cl(v,'green')}")
-        
         print()
         print()
 
@@ -187,8 +200,7 @@ class VFManager:
         matches = self.query_siddhis()
 
         if not matches:
-            handle_OpErr('no such table:')
-            #self.no_match() 
+            self.no_match() 
             return False
 
         case_header()
@@ -207,6 +219,7 @@ class VFManager:
             )
 
         print(matches_table)
+        print()
 
     def run_siddhi(self):
         self.handler['module'] = self.handler['module_run']
@@ -217,8 +230,9 @@ class VFManager:
             and everything else in place '''
             self.parse_handler_scope()
 
+
         siddhi = self.get_siddhi()
-        
+
         try:
             module_path = (siddhi.module.replace('/', '.').replace('\\', '.'))[:-3]
         except AttributeError as aex:
@@ -318,7 +332,6 @@ class VFManager:
             os._exit(os.EX_OK) 
 
         if not vfasserts(**self.handler).tactical_mode():
-            input('nottactical')
             try:
                 self.handler['target_url'] = targets_ports_set[0]
             except IndexError: 

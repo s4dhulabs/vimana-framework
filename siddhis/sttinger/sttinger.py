@@ -1,3 +1,16 @@
+# -*- coding: utf-8 -*-
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+#
+# Author: s4dhu
+# Email: <s4dhul4bs[at]prontonmail[dot]ch
+# Git: @s4dhulabs
+# Mastodon: @s4dhu
+# 
+# This file is part of Vimana Framework Project.
+
 from ..djunch.engines._dju_settings import table_models
 from ..djunch.engines._dju_utils import DJUtils
 
@@ -18,6 +31,7 @@ import json
 import sys
 import os
 
+from core._dbops_.db_utils import get_elapsed_time
 from .tools.sttg_tools import get_release
 
 
@@ -114,10 +128,11 @@ class siddhi:
             f_release_date = ''
             
             release_info = get_release(self.search_version)
-            
+            release_date = release_info.get('upload_time')
+            elapsed_release = get_elapsed_time(False,release_date)
+
             if release_info:
-                release_date = release_info.get('upload_time')
-                f_release_date = f"RLS: {release_date}"
+                f_release_date = f"RLS: {elapsed_release}"
                 python_version = release_info.get('requires_python')
 
             print(f"      {colored('◉','green',attrs=['bold'])}  Running Django {fmk_v_hl} ({str(minv).split(':')[-1]}-{maxv}) / {f_release_date}")
@@ -143,6 +158,7 @@ class siddhi:
             print(f"             ├─ {colored(len(cves),'green')} CVEs")
         if tickets:
             print(f"             └─ {colored(len(tickets),'green')} Security Tickets")
+        print()
         sleep(1)
         
         input() if self.vmnf_handler.get('pause_steps') else None

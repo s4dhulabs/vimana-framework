@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
-
-# Define here the models for your scraped items
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
 #
-# See documentation in:
-# https://docs.scrapy.org/en/latest/topics/items.html
+#
+# Author: s4dhu
+# Email: <s4dhul4bs[at]prontonmail[dot]ch
+# Git: @s4dhulabs
+# Mastodon: @s4dhu
+# 
+# This file is part of Vimana Framework Project.
 
 import scrapy
-#from scrapy.spiders import CrawlSpider, Rule
-#from scrapy.linkextractors import LinkExtractor
 
 
 

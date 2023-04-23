@@ -1,5 +1,18 @@
-from ..database import db
+# -*- coding: utf-8 -*-
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+#
+# Author: s4dhu
+# Email: <s4dhul4bs[at]prontonmail[dot]ch
+# Git: @s4dhulabs
+# Mastodon: @s4dhu
+# 
+# This file is part of Vimana Framework Project.
 
+from ..database import db
+from sqlalchemy.types import JSON
 
 class VFScans(db.Model):
     __tablename__ = '_SCANS_'
@@ -31,6 +44,10 @@ class VFScans(db.Model):
     )
     scan_target_project = db.Column(
         db.String(100),
+        nullable = False
+    ) 
+    scan_target_full_path = db.Column(
+        db.String(300),
         nullable = False
     ) 
     scan_cache_dir = db.Column(
@@ -65,6 +82,26 @@ class VFScans(db.Model):
         db.Integer,
         nullable = False
     )
+    scan_scope = db.Column(
+        JSON,
+        unique = False,
+        nullable = False
+    )
+    scan_plugin = db.Column(
+        db.String(20),
+        unique = False,
+        nullable = True
+    )
+    vmnf_handler = db.Column(
+        JSON,
+        unique = False,
+        nullable = False
+    )
+    plugin_instance = db.Column(
+        JSON,
+        unique = False,
+        nullable = False
+    )
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -73,5 +110,5 @@ class VFScans(db.Model):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
     def __repr__(self):
-        return f"<VFAnalysis: session={self.scan_id}>"
+        return f"<VFScans: scan_id={self.scan_id}>"
 

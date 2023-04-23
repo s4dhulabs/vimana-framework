@@ -1,17 +1,15 @@
 # -*- coding: utf-8 -*-
-"""
-             _   _   _   _   _   _  
-            / \ / \ / \ / \ / \ / \ 
-        ((-( V | 1 | M | 4 | N | 4 )-))
-            \_/ \_/ \_/ \_/ \_/ \_/ 
-
-                    - TICTRACK -
-
-
-    Django security tickets tracker for Vimana Framework 
-    s4dhu <s4dhul4bs[at]prontonmail[dot]ch
-
-"""
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+#
+# Author: s4dhu
+# Email: <s4dhul4bs[at]prontonmail[dot]ch
+# Git: @s4dhulabs
+# Mastodon: @s4dhu
+# 
+# This file is part of Vimana Framework Project.
 
 from ..djunch.engines._dju_utils import DJUtils
 
@@ -34,8 +32,6 @@ from core.vmnf_utils import load_plugin_cache,gen_issues_table
 
 class siddhi:
     def __init__(self, **vmnf_handler:False):
-        ''' Initialize endpoints '''
-        
         if not vmnf_handler:
             cprint("Something went wrong. Missing framework handler while calling tictrac!", 'red')
             sys.exit()

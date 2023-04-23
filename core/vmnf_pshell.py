@@ -1,15 +1,16 @@
-"""
-             _   _   _   _   _   _  
-            / \ / \ / \ / \ / \ / \ 
-        ((-( V | 1 | M | 4 | N | 4 )-))
-            \_/ \_/ \_/ \_/ \_/ \_/ 
+# -*- coding: utf-8 -*-
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+#
+# Author: s4dhu
+# Email: <s4dhul4bs[at]prontonmail[dot]ch
+# Git: @s4dhulabs
+# Mastodon: @s4dhu
+# 
+# This file is part of Vimana Framework Project.
 
-                    - PSHELL -
-
-    PSHELL v2: Prompt shell for Vimana Framework
-    s4dhu <s4dhul4bs[at]prontonmail[dot]ch
-
-"""
 
 from __future__ import unicode_literals
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory

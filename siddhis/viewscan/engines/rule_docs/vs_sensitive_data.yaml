@@ -1,3 +1,16 @@
+# -*- coding: utf-8 -*-
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+#
+# Author: s4dhu
+# Email: <s4dhul4bs[at]prontonmail[dot]ch
+# Git: @s4dhulabs
+# Mastodon: @s4dhu
+# 
+# This file is part of Vimana Framework Project.
+
 vs_rules:
   sensitive_information_filtering:
     version: 1.0
@@ -42,7 +55,8 @@ vs_rules:
       - exception_reporter_filter
     references:
       links:
-        - https://docs.djangoproject.com/en/4.1/howto/error-reporting/#filtering-sensitive-information    
+        - https://docs.djangoproject.com/en/4.1/howto/error-reporting/#filtering-sensitive-information           
+        - https://code.djangoproject.com/ticket/28215#no1
       cwes:
         CWE-200: Exposure of Sensitive Information to an Unauthorized Actor
         CWE-532: Insertion of Sensitive Information into Log File

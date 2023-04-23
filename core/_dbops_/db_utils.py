@@ -1,32 +1,67 @@
+# -*- coding: utf-8 -*-
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+#
+# Author: s4dhu
+# Email: <s4dhul4bs[at]prontonmail[dot]ch
+# Git: @s4dhulabs
+# Mastodon: @s4dhu
+# 
+# This file is part of Vimana Framework Project.
+
 import os
 from datetime import datetime
 from res.vmnf_banners import case_header
 from neotermcolor import cprint,colored as cl
 
-def get_elapsed_time(entry):
-    scan_date = entry.scan_date
-    time_diff = datetime.now() - entry.scan_date
+
+def get_elapsed_time(entry, str_date=False):
+    if str_date:
+        scan_date = datetime.strptime(str_date, '%Y-%m-%dT%H:%M:%S')
+    else:
+        scan_date = entry.scan_date
+
+    time_diff = datetime.now() - scan_date
     hour_ = 'hour'
     minute_ = 'minute'
     day_ = 'day'
+    year_ = 'year'
+    month_ = 'month'
 
-    if time_diff.days > 1:
-        time_ = time_diff.days
+    if time_diff.days > 365:
+        time_ = time_diff.days // 365
         if time_ > 1:
+            year_ += 's'
+        exec_ = f'{time_} {year_} ago'
+
+    elif time_diff.days > 30:
+        time_ = time_diff.days // 30
+        if time_ > 1:
+            month_ += 's'
+        exec_ = f'{time_} {month_} ago'
+
+    elif time_diff.days > 1:
+        if time_diff.days > 1:
             day_ += 's'
-        exec_ = f'{time_} {day_} ago'
+        exec_ = f'{time_diff.days} {day_} ago'
+
     elif time_diff.days == 1:
         exec_ = 'Yesterday'
+
     elif time_diff.seconds >= 3600:
         time_ = time_diff.seconds // 3600
         if time_ > 1:
             hour_ += 's'
         exec_ = f'{time_} {hour_} ago'
+
     elif time_diff.seconds >= 60:
         time_ = time_diff.seconds // 60
         if time_ > 1:
             minute_ += 's'
         exec_ = f'{time_} {minute_} ago'
+
     else:
         exec_ = 'Just now'
 

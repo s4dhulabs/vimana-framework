@@ -1,20 +1,15 @@
 # -*- coding: utf-8 -*-
-"""
-             _   _   _   _   _   _  
-            / \ / \ / \ / \ / \ / \ 
-        ((-( V | 1 | M | 4 | N | 4 )-))
-            \_/ \_/ \_/ \_/ \_/ \_/ 
-
-                    - FLAME -
-
-
-    Flask misconfiguration parser module for Vimana Framework 
-    s4dhu <s4dhul4bs[at]prontonmail[dot]ch
-
-"""
-
-
-
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+#
+# Author: s4dhu
+# Email: <s4dhul4bs[at]prontonmail[dot]ch
+# Git: @s4dhulabs
+# Mastodon: @s4dhu
+# 
+# This file is part of Vimana Framework Project.
 
 
 import sys
@@ -34,7 +29,6 @@ from ._flautils import flamebann
 
 class siddhi:
     def __init__(self,**vmnf_handler):
-        
         self.vmnf_handler = vmnf_handler
         self.debug_msg = 'Werkzeug Debugger'
         self.debug_confirmation = 'friendly Werkzeug powered traceback interpreter.'
@@ -84,7 +78,6 @@ class siddhi:
 
                 exception = ex2tract().get_exception_details(html)
                 exception_frame = ex2tract().get_source(html,_mode_)
-                
                 exception = {
                     'exception': exception,
                     'exception_frame': exception_frame,

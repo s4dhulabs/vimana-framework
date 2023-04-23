@@ -1,5 +1,15 @@
 # -*- coding: utf-8 -*-
-
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+#
+# Author: s4dhu
+# Email: <s4dhul4bs[at]prontonmail[dot]ch
+# Git: @s4dhulabs
+# Mastodon: @s4dhu
+# 
+# This file is part of Vimana Framework Project.
 
 from neotermcolor import colored,cprint
 from datetime import datetime
@@ -72,6 +82,8 @@ class VimanaParser:
         list_cmd.add_argument('--plugins', action='store_true',dest='module_list')
         list_cmd.add_argument('--siddhis', action='store_true',dest='module_list')
         list_cmd.add_argument('--scans', action='store_true',dest='list_scans')
+        list_cmd.add_argument('-i', '--interactive', action='store_true', dest='navigation_mode')
+        list_cmd.add_argument('--nav', action='store_true', dest='navigation_mode')
         list_cmd.add_argument('-t', '--type', action='store')
         list_cmd.add_argument('-c', '--category', action='store', dest='category')
         list_cmd.add_argument('-f', '--framework', action='store', dest='framework')
@@ -136,6 +148,7 @@ class VimanaParser:
         run_cmd.add_argument('--exec-case', action='store_true', default=False)
         run_cmd.add_argument("--exit-on-trigger", action="store_true", dest='exit_on_trigger')
         run_cmd.add_argument("--disable-external", action="store_true", dest='external_disabled')
+        run_cmd.add_argument("--vf-debugger", action="store_true", dest='vf_debugger')
         # -----------------------------------------------------------------
         # 'info' command overview 
         # -----------------------------------------------------------------
@@ -244,13 +257,15 @@ class VimanaParser:
             list_cases      = False,
             list_sessions   = False,
             list_scans      = False,
+            navigation_mode = False,
+            navi            = False,
             save_case       = False,
             case_file       = False,
             runner_mode     = False,
             runner_tasks    = False,
             docker_scope    = False,
             exit_on_trigger = False,
-            vmnf_debugger   = False,
+            vf_debugger     = False,
             load_session    = False,
             load_plugins    = False,
             flush_sessions  = False,
