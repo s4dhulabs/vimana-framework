@@ -20,6 +20,7 @@ info: Application fuzzer for Django framework
 module: siddhis/djunch/djunch.py
 package: Django
 type: Fuzzer
+astt: DAST
 tags:
   - Exceptions
 description: |

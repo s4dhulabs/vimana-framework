@@ -11,9 +11,10 @@
 # 
 # This file is part of Vimana Framework Project.
 
+import os
 from res.colors import *
 from random import choice
-from res.vmnf_banners import s4dhu0nv1m4n4,vmn05
+from res.vmnf_banners import s4dhu0nv1m4n4,vmn05,default_naviban
 from neotermcolor import colored, cprint
 from core.load_settings import _version_
 
@@ -36,27 +37,28 @@ class VimanaHelp:
     def overview(self):
         ovw = {
             'about' : "About the framework",
+            'create': "Create a new resource (env,vars,creds)",
             'flush' : "Remove a recorded resource", 
             'guide' : "Show plugin usage examples and args",
             'info'  : "Show information about plugins",
-            'list'  : "List available plugins",
+            'list'  : "List available resources",
             'load'  : "Load a recorded session (post-analysis)",
             'run'   : "Run a resource, plugin or case",
             'start' : "Start Vimana in a interactive mode",
         }
         
-        board_colors = ['white']
+        board_colors = [1,8,99,2,4,234,7]
         cmd_hl = choice(['cyan','green','white'])
 
-        print('\n\n\n')
+        print()
         # ⇀
         for cmd, desc in ovw.items():
-            print("{:>27}  {}    {}".format(
-                colored(cmd,'magenta'),
+            print("{:>34}  {}  {}".format(
+                colored(cmd,39),
                 colored(choice(['◍','◎', '◉']) + choice(['◍','◎', '◉']), 
                     choice(board_colors),attrs=[ choice(['dark','bold'])]
                 ),
-                colored(desc, 'white')
+                colored(desc, None)
                 )
             )
         print()
@@ -323,6 +325,12 @@ class VimanaHelp:
 		    ‣  crawler 
 		    ‣  audit 
 		    ‣  parser
+
+    You can also change the results table format passing -ft:
+
+    -ft,--fancy-table       change the default table format to fancy grid
+
+
     Examples:
 
     ◈  List all tracking plugins for Django framework:
@@ -345,6 +353,7 @@ class VimanaHelp:
         --exploit \\
         --category package
 
+    
     --sessions	    List all recorded sessions
     --cases	    List all recorded cases
     --payloads	    List available payloads
@@ -430,7 +439,9 @@ class VimanaHelp:
         '''
 
     def basic_help(self):
-        vmn05()
+        #vmn05()
+        os.system('clear')
+        default_naviban()
         self.overview()
 
     def full_help(self):

@@ -16,7 +16,7 @@ import sys
 import collections
 from time import sleep
 from requests.exceptions import *
-from neotermcolor import cprint,colored
+from neotermcolor import cprint,colored as cl
 from res.vmnf_validators import get_tool_scope
 from core.vmnf_shared_args import VimanaSharedArgs
 
@@ -25,15 +25,22 @@ from ._flautils import get_html_content
 from ._flautils import ex2tract 
 from ._flautils import flamebann
 
-
+# vflogging
+import logging
+from core.vmnf_log_utils import configure_logging
+configure_logging(os.path.basename(__file__))
 
 class siddhi:
     def __init__(self,**vmnf_handler):
+        logging.info("Initializing siddhi class...")
+
         self.vmnf_handler = vmnf_handler
         self.debug_msg = 'Werkzeug Debugger'
         self.debug_confirmation = 'friendly Werkzeug powered traceback interpreter.'
         self.pin_test_url = "{}/?__debugger__=yes&cmd=pinauth&pin={}&s={}"
-    
+
+        logging.info("Siddhi class initialized successfully!")
+
     def start(self):
         flamebann()
         """
@@ -67,6 +74,9 @@ class siddhi:
                 target_address = f'http://{target_address}'
         
         response = test_target_connection(target_address)
+        if not response:
+            cprint(f"[!] The target URL {target_address} doesn't seem to be vulnerable. \n", 'green')
+            sys.exit(1)
 
         if response.status_code == 500:
             _mode_ = 'frame'

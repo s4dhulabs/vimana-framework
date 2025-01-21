@@ -96,14 +96,13 @@ class VFScan:
                 color = 'green'
                 attrs=['bold']
 
-            elapsed = get_elapsed_time(_sc_)
+            elapsed = get_elapsed_time(_sc_.scan_date)
             project_framework = f"{_sc_.project_framework} ({_sc_.project_framework_version})"
-            
             self.scans_tbl.append(
                 [
                     cl(_sc_.scan_id,color,attrs=attrs), 
                     cl(_sc_.scan_type,color,attrs=attrs), 
-                    cl(_sc_.scan_target_project,color,attrs=attrs), 
+                    cl(_sc_.scan_target,color,attrs=attrs), 
                     cl(project_framework,color,attrs=attrs), 
                     cl(_sc_.project_framework_total_cves,color,attrs=attrs),
                     cl(_sc_.project_total_view_modules,color,attrs=attrs),

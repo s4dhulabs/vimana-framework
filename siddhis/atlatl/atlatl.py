@@ -25,18 +25,26 @@ from time import sleep
 import socketserver
 import collections
 import requests
+import logging 
 import sys
 import json
 import os
 import re
 
-
+# vflogging
+from core.vmnf_log_utils import configure_logging
+configure_logging(os.path.basename(__file__))
 
 
 class siddhi:
     def __init__(self, **vmnf_handler):
+
+        logging.info("Initializing Atlatl siddhi class...")
+
         self.vmnf_handler = vmnf_handler
         self.siddhi_name = cl('4tl4tl','blue')
+
+        logging.info("Atlatl class initialized successfully!")
 
     class TCPHandler(socketserver.BaseRequestHandler):
         def handle(self):
@@ -69,13 +77,24 @@ class siddhi:
                     setattr(self.server, '_BaseServer__shutdown_request', True)
 
     def get_secret(self,response):
+
+        secret_match = re.search(r'SECRET = "(.*?)"', response.text)
+        if secret_match:
+            return secret_match.group(1)
+        else:
+            return None
+
+        '''
         soup = BeautifulSoup(response.content, 'lxml')
+        input(soup.prettify())
+
         page_head = soup.head.text
 
         return (page_head[
             page_head.find('SECRET')-1:page_head.find(';')
                 ].split('=')[1].replace('"','').strip()
         )
+        '''
 
     def request_url(self,target_url,**headers):
         session = requests.session()
@@ -328,4 +347,4 @@ class siddhi:
             target = self.vmnf_handler.get('local_host','127.0.0.1')
             port = self.vmnf_handler.get('local_port',9000)
             self.getSocketServer(target, port)
-
+        input('HERE ATLATL') 

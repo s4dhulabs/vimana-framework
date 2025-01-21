@@ -64,8 +64,10 @@ def test_target_connection(address):
                 timeout=10
             )
         )
-    except ConnectTimeout:
+    except requests.exceptions.ConnectionError:
         return False
+    #except ConnectTimeout:
+    #    return False
     except ConnectionError:
         return False
 

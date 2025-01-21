@@ -20,6 +20,7 @@ info: Tracks and exploits misconfigurations in Django applications
 module: siddhis/dmt/dmt.py 
 package: Django
 type: Tracker
+astt: DAST
 tags:
   - Error
   - Debug
@@ -54,7 +55,6 @@ description: |
   arguments, syntax, examples, and labs with:
 
   $ vimana guide -m dmt --args/--examples/--labs 
-
 references:
   links:
     - https://www.djangoproject.com/
@@ -66,6 +66,8 @@ references:
     - CWE-756 - Missing Custom Error Page
     - CWE-1295 - Debug Messages Revealing Unnecessary Information
 guide:
+  naviargs: 
+    target_url: False
   args: |
     ø----------------------------------------------------------------------ø
     │└┐└│└┘┌┐│└└┘┌┐┘└┘└┐└┘│└┐┘││└┘│-  DMT ARGS  ┐│││││├┤┘│││┤└┘││└┐└┘│┌┌┐└│┐

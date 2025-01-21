@@ -20,6 +20,7 @@ info: Identify the framework version in a passive way
 module: siddhis/sttinger/sttinger.py
 package: Django
 type: Fingerprint
+astt: DAST
 tags:
   - Django
 description: |
@@ -36,6 +37,8 @@ references:
     - https://www.djangoproject.com/
   cwe: False
 guide:
+  naviargs: 
+    target_url: False
   args: |
     ø----------------------------------------------------------------------ø
     │└┐└┌⠞⠓┬┐│└æ┌┐æ│└æ└┘┌┐┌⠞⠓┬┐æ┘æ└┘ STTINGER ARGS  æ│┘┌⠞⠓┬┐æ│┐æ│┘æ││æ│┘æ│æ│

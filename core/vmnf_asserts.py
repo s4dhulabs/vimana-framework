@@ -19,15 +19,16 @@ require_module = [
 ]
 
 vmnf_cmds = {
-    'about':  s4dhu0nv1m4n4(True),
-    'args' :  VimanaHelp.args.__doc__,
-    'guide':  VimanaHelp.guide.__doc__,
-    'flush':  VimanaHelp.flush.__doc__,
-    'info' :  VimanaHelp.info.__doc__,
-    'list' :  VimanaHelp.list.__doc__,
-    'load' :  VimanaHelp.load.__doc__,
-    'run'  :  VimanaHelp.run.__doc__,
-    'start':  VimanaHelp.start.__doc__
+    'about' :  s4dhu0nv1m4n4(True),
+    'create':  VimanaHelp.guide.__doc__,
+    'args'  :  VimanaHelp.args.__doc__,
+    'guide' :  VimanaHelp.guide.__doc__,
+    'flush' :  VimanaHelp.flush.__doc__,
+    'info'  :  VimanaHelp.info.__doc__,
+    'list'  :  VimanaHelp.list.__doc__,
+    'load'  :  VimanaHelp.load.__doc__,
+    'run'   :  VimanaHelp.run.__doc__,
+    'start' :  VimanaHelp.start.__doc__
 }
 
 class vfasserts:
@@ -37,10 +38,19 @@ class vfasserts:
     def tactical_mode(self):
         return False if (
             not self._vfh_['session_mode'] \
+            and not self._vfh_['request_data_set'] \
+            and not self._vfh_['apispec_enabled'] \
+            and not self._vfh_['inspect'] \
             and not self._vfh_['listener_mode'] \
             and not self._vfh_['auth_mode'] \
             and not self._vfh_['target_url'] \
-            and not self._vfh_['framework_search_version']
+            and not self._vfh_['rule_scan'] \
+            and not self._vfh_['framework_search_version'] \
+            and not self._vfh_['list_specs'] \
+            and not self._vfh_['flush_specs'] \
+            and not self._vfh_['flush_spec'] \
+            and not self._vfh_['fuzzerspec_enabled'] \
+            and not self._vfh_['create_env'] 
         ) else True
 
     def default_guide_mode(self):

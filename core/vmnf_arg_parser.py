@@ -11,6 +11,7 @@
 # 
 # This file is part of Vimana Framework Project.
 
+from res.vmnf_banners import vmn07
 from neotermcolor import colored,cprint
 from datetime import datetime
 from time import sleep
@@ -62,10 +63,19 @@ class VimanaParser:
         start_cmd = subparsers.add_parser('start', 
             help='Start Vimana in a interactive mode'
         )
-        start_cmd.add_argument('-s','--start', default=True, action='store_true', 
+        '''
+        start_cmd.add_argument('-s','--start', default=False, action='store_true', 
 	    help='Start Vimana in interactive mode (default)'
         )
-    
+        '''
+        start_cmd.add_argument('--start-resource', action='store_true',dest='start_resource')
+        start_cmd.add_argument('--collections', action='store_true',dest='start_collections')
+        start_cmd.add_argument('--sessions', action='store_true',dest='start_sessions')
+        start_cmd.add_argument('--plugins', action='store_true',dest='start_plugins')
+        start_cmd.add_argument('--tools', action='store_true',dest='start_tools')
+        start_cmd.add_argument('--scans', action='store_true',dest='start_scans')
+        start_cmd.add_argument('--cases', action='store_true',dest='start_cases')
+
         # -----------------------------------------------------------------
         # `list` command overview 
         # -----------------------------------------------------------------
@@ -88,9 +98,12 @@ class VimanaParser:
         list_cmd.add_argument('-c', '--category', action='store', dest='category')
         list_cmd.add_argument('-f', '--framework', action='store', dest='framework')
         list_cmd.add_argument('-x', '--exploits', action='store_true')
-        list_cmd.add_argument('-p', '--payload',action='store',
-	    choices=('reverse-shell', 'bind-port', 'backdoor', 'exfiltration-server')
-        )
+        list_cmd.add_argument('--astt', action='store',dest='astt')
+        list_cmd.add_argument('-ft', '--fancy-table', action='store_true')
+        #list_cmd.add_argument('-p', '--payload',action='store',
+	    #choices=('reverse-shell', 'bind-port', 'backdoor', 'exfiltration-server')
+        #)
+
         # -----------------------------------------------------------------
         # `flush` command overview 
         # -----------------------------------------------------------------
@@ -107,8 +120,6 @@ class VimanaParser:
         flush_cmd.add_argument('--show-details',action='store_true', dest='flush_details')
         flush_cmd.add_argument('--xray',action='store_true', dest='xray_enabled')
         flush_cmd.add_argument('--fastflush',action='store_true', dest='fastflush')
-        
-        
         # -----------------------------------------------------------------
         # `load` command overview 
         # -----------------------------------------------------------------
@@ -116,15 +127,9 @@ class VimanaParser:
         # vf load --session <session_id>
         # -----------------------------------------------------------------
         load_cmd = subparsers.add_parser('load', add_help=False)
-        load_cmd.add_argument('--session', 
-            action='store', 
-            dest='load_session', 
-        ) 
-        load_cmd.add_argument('--plugins', 
-            action='store_true', 
-            dest='load_plugins', 
-        ) 
-
+        load_cmd.add_argument('--session', action='store', dest='load_session') 
+        load_cmd.add_argument('--plugins', action='store_true', dest='load_plugins') 
+        load_cmd.add_argument('--case', action='store', dest='load_case') 
         # -----------------------------------------------------------------
         # `run` command overview 
         # -----------------------------------------------------------------
@@ -135,13 +140,15 @@ class VimanaParser:
             add_help=False
         )
         # add aditional arguments to complement shared args
+        run_cmd.add_argument('--origin', action='store', dest='origin', default='engine')
         run_cmd.add_argument('--abduct', action='store', dest='abduct_file')
         run_cmd.add_argument('--save-case', action='store', dest='save_case')
-        run_cmd.add_argument('--case', action='store', dest='case_file')
+        #run_cmd.add_argument('--case', action='store', dest='load_case')
+        #run_cmd.add_argument('--case', action='store', dest='case_file')
         run_cmd.add_argument('--flush-cases', action='store_true', dest='flush_cases')
         run_cmd.add_argument('-m','--module', action='store', dest='module_run')
         run_cmd.add_argument('--siddhi', action='store', dest='module_run')
-        run_cmd.add_argument('--plugin', action='store', dest='module_run')
+        run_cmd.add_argument('-p','--plugin', action='store', dest='module_run')
         run_cmd.add_argument('--fuzzer', action='store_true')
         #run_cmd.add_argument('--discovery', action='store_true')
         run_cmd.add_argument('--fingerprint', action='store_true')
@@ -149,6 +156,7 @@ class VimanaParser:
         run_cmd.add_argument("--exit-on-trigger", action="store_true", dest='exit_on_trigger')
         run_cmd.add_argument("--disable-external", action="store_true", dest='external_disabled')
         run_cmd.add_argument("--vf-debugger", action="store_true", dest='vf_debugger')
+        run_cmd.add_argument('-i', '--interactive', action='store_true', dest='navigation_mode')
         # -----------------------------------------------------------------
         # 'info' command overview 
         # -----------------------------------------------------------------
@@ -160,7 +168,6 @@ class VimanaParser:
         info_cmd.add_argument('-m', '--module',action='store',dest='module_info')
         info_cmd.add_argument('-s', '--siddhi',action='store',dest='module_info')
         info_cmd.add_argument('-p', '--plugin',action='store',dest='module_info')
-        
         # -----------------------------------------------------------------
         # 'guide' command overview 
         # -----------------------------------------------------------------
@@ -179,7 +186,8 @@ class VimanaParser:
         guide_cmd.add_argument('-a', '--args',action='store_true',dest='guide_args')
         guide_cmd.add_argument('-e', '--examples',action='store_true',dest='guide_examples')
         guide_cmd.add_argument('-l', '--labs',action='store_true',dest='guide_labs')
-        guide_cmd.add_argument('--highlight',action='store_true',dest='highlight_enabled')
+        guide_cmd.add_argument('-c', '--color',action='store_true',dest='color_enabled')
+        guide_cmd.add_argument('--colors',action='store_true',dest='color_enabled')
         
         guide_cmd = subparsers.add_parser('guides',
             help='Show usage examples'
@@ -189,6 +197,23 @@ class VimanaParser:
         guide_cmd.add_argument('-a', '--args',action='store_true',dest='guide_args')
         guide_cmd.add_argument('-e', '--examples',action='store_true',dest='guide_examples')
         guide_cmd.add_argument('-l', '--labs',action='store_true',dest='guide_labs')
+        guide_cmd.add_argument('-c', '--color',action='store_true',dest='color_enabled')
+        guide_cmd.add_argument('--colors',action='store_true',dest='color_enabled')
+        # -----------------------------------------------------------------
+        # `create` command overview 
+        # -----------------------------------------------------------------
+        # vf create --env/--environment/--project/--workspace/--variable/--var
+        # -----------------------------------------------------------------
+        create_cmd = subparsers.add_parser('create',
+            parents=[VimanaSharedArgs().args()],
+            add_help=False
+        )
+        # add aditional arguments to complement shared args
+        create_cmd.add_argument('--env', action='store_true', dest='create_env', default=False)
+        create_cmd.add_argument('--environment', action='store_true', dest='create_env', default=False)
+        create_cmd.add_argument('--project', action='store', dest='create_project', default=False)
+        create_cmd.add_argument('--workspace', action='store', dest='create_workspace', default=False)
+
         # -----------------------------------------------------------------
         # 'arg' command overview / disabled on vimana v0.7 → guide cmd
         # ----------------------
@@ -234,7 +259,9 @@ class VimanaParser:
             interactive     = False,
             type            = False,
             category        = False,
+            astt            = False,
             exploits        = False,
+            fancy_table     = False,
             payload         = False,
             fuzzer          = False,
             discovery       = False,
@@ -247,20 +274,21 @@ class VimanaParser:
             guide_args      = False,
             guide_examples  = False,
             guide_labs      = False,
-            highlight_enabled = False,
+            color_enabled   = False,
             module_run      = False,
             siddhi_run      = False,
             plugin_run      = False,
             external_disabled = False,
             module_list     = False,
             list_payloads   = False,
+            create_env      = False,
             list_cases      = False,
             list_sessions   = False,
             list_scans      = False,
             navigation_mode = False,
             navi            = False,
             save_case       = False,
-            case_file       = False,
+            load_case       = False,
             runner_mode     = False,
             runner_tasks    = False,
             docker_scope    = False,
@@ -292,6 +320,7 @@ class VimanaParser:
                 vmn05()
                 print(arg_help[sys.argv[-1]])
             
+            vmn07()
             print(f"    \n[vmnf_argparser] Missing value for the argument {colored(sys.argv[-1], 'red')}\n\n")
             
             tools = [
@@ -310,17 +339,32 @@ class VimanaParser:
             and len(sys.argv[2:]) == 1:
             print(VimanaHelp.args.__doc__)
             sys.exit(1)
-        if _cmd_ == 'about':
+
+        elif _cmd_ == 'about':
             VimanaHelp().basic_help()
             sys.exit(1)
+        
+        elif _cmd_ == 'run':
+            m_args = [a for a in sys.argv if a in _ap_['require_args'] 
+                and sys.argv[sys.argv.index(a) + 1].startswith('-')
+            ]
+
+            if m_args:
+                for a in m_args:
+                    print(f"{a} requires a value")
+
+                sys.exit(1)
+        
         try: 
             vmn_options = self.parse_args()
         except argparse.ArgumentError as ArgError:
             engineExceptions(sys.argv, ArgError).argument_error()
 
-        handler_ns.args = vmn_options.parse_known_args(
-            namespace=handler_ns)[1]
-        
+        try:
+            handler_ns.args = vmn_options.parse_known_args(
+                namespace=handler_ns)[1]
+        except UnboundLocalError:
+            return False    
 
         return handler_ns
 

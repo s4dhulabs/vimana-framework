@@ -20,6 +20,7 @@ info: Capture, authenticate, and persist Flask debug console sessions.
 module: siddhis/atlatl/atlatl.py
 package: Werkzeug
 type: Persistence
+astt: DAST
 tags:
   - Console
   - Debug
@@ -37,6 +38,15 @@ references:
     - https://werkzeug.palletsprojects.com/en/2.2.x/debug/
   cwe: False
 guide:
+  naviargs: |
+    auth:
+      - console_pin
+      - target_url
+    listener:
+      - local_host
+      - local_port
+    session:
+      - foward  
   args: |
     o----------------------------------------------------------------------o
     │└┐└│└┘┌┐│└└┘┌└┘└┐└┘└┐││└┘│-  ATLATL ARGS  -└┐ └┘││└┐┌┐││┘└┘││ └┐│┌ ┌┐└│

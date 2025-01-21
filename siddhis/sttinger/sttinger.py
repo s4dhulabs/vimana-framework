@@ -34,11 +34,14 @@ import os
 from core._dbops_.db_utils import get_elapsed_time
 from .tools.sttg_tools import get_release
 
-
+import logging
+from core.vmnf_log_utils import configure_logging
+configure_logging(os.path.basename(__file__))
 
 class siddhi:
     def __init__(self,**vmnf_handler):
-        
+        logging.info("Sttingering siddhi class...")
+
         self.vmnf_handler = vmnf_handler
         self.siddhi = colored('⥂ sttinger ⥂', 'magenta')
         self.target_url = vmnf_handler.get('target_url',False)
@@ -53,6 +56,8 @@ class siddhi:
         
         if not self.target_url.startswith('http'):
             self.target_url = f'http://{self.target_url}' 
+
+        logging.info("Siddhi class initialized successfully!")
 
     def load_config(self):
         yaml_file = str(os.path.dirname(__file__)) + '/config.yaml'

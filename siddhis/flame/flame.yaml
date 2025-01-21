@@ -20,6 +20,7 @@ info: Traceback parser for Flask applications
 module: siddhis/flame/flame.py
 package: Flask
 type: Parser
+astt: DAST
 tags:
   - Flask
   - Jinja2
@@ -40,6 +41,8 @@ references:
     - CWE-756 - Missing Custom Error Page
     - CWE-1295 - Debug Messages Revealing Unnecessary Information
 guide:
+  naviargs: 
+    target_url: False
   args: |
     ø----------------------------------------------------------------------ø
     ⣿⠓⣓⠒⣓⣿⣛⣆⠞⣇⠞⠓⣓⠒⣛⣆⠞⣿⣆⣇⣛⣇⠒⣿⣓⠒⠂ FLAME ARGS  ⠒⠒⣆⣇⠒⣿⣛⣓⠒⠒⣠⣾⠒⣿⣠⣾⣿⠒⣾⣿⠓⣿⣿⠒⠒⣓⣿⠒⣓⣿⠒⣓

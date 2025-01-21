@@ -1,16 +1,3 @@
-# -*- coding: utf-8 -*-
-#  __ _
-#   \/imana 2016
-#   [|-ramewørk
-#
-#
-# Author: s4dhu
-# Email: <s4dhul4bs[at]prontonmail[dot]ch
-# Git: @s4dhulabs
-# Mastodon: @s4dhu
-# 
-# This file is part of Vimana Framework Project.
-
 project:
     author: s4dhu
     email: <s4dhul4bs[at]prontonmail.ch>
@@ -42,7 +29,24 @@ settings:
         - --project-dir
         - --target-dir
         - --project
+        - --use-request
+        - --plugin
+        - --case
+        - --data
+        - --form-input-target
+        - --target-input
+        - --django-version
+        - --inspect
+        - --methods
+        - --method
+        - --fuzzspecs
+        - --fuzzspec
         - -m
+        - --flush-spec
+        - --set-path
+        - --custom-variations
+        - --set-parameter
+        - --set-param
     case_set:
         cases_path: core/cases/
         cases_yf: core/cases/*.yaml
@@ -57,7 +61,6 @@ settings:
         - prana
         - dmt
         - flame
-        - caiman
         - sttinger
         - jungle
         - viwec

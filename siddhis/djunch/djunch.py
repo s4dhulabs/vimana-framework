@@ -32,10 +32,14 @@ from scrapy.crawler import CrawlerRunner
 from twisted.internet import reactor
 import twisted
 
-
+# vflogging
+import logging
+from core.vmnf_log_utils import configure_logging
+configure_logging(os.path.basename(__file__))
 
 class siddhi:   
     def __init__(self,**vmnf_handler):
+        logging.info("Initializing Djunch siddhi class...")
     
         self.pattern = '<dmt_trigger>'
         self._trigger_= {
@@ -55,6 +59,8 @@ class siddhi:
         self.verbose = self.vmnf_handler['verbose']
         self.quiet_mode = True if not self.verbose else False
         self.catched_exceptions = []
+        
+        logging.info("Djunch class initialized successfully!")
 
     def parse_args(self):
         ''' ~ siddhi needs only shared arguments from VimanaSharedArgs() ~'''

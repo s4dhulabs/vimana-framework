@@ -80,6 +80,14 @@ def gen_issues_table(issues: list, issue_type:str):
             cl('iid', 'white'),
             cl('Title', 'white'),
         ]
+    elif issue_type == 'plugins':
+        headers = [
+            cl('Name', 'white'),
+            cl('Type', 'white'),
+            cl('Category','white'),
+            cl('Scope','white'),
+            cl('Description','white')
+        ]
 
     for issue in issues:
         if issue_type == 'cves':
@@ -87,7 +95,7 @@ def gen_issues_table(issues: list, issue_type:str):
             
             issues_table.append(
                 [
-                    issue['id'],
+                    cl(issue['id'],'green'),
                     issue['description'] + dec_ref,
                     ','.join(issue['cwes']),
                     issue['base_score']
@@ -97,8 +105,18 @@ def gen_issues_table(issues: list, issue_type:str):
             title = '\n'.join(textwrap.wrap(issue['title'], width=70))
             issues_table.append(
                 [
-                    f"ST{issue['id']}",
+                    f"{cl('ST' + issue['id'],'green')}",
                     title
+                ]
+            )
+        elif issue_type == 'plugins':
+            issues_table.append(
+                [
+                    issue.name.lower(),
+                    issue.type.lower(),
+                    issue.category.lower(),
+                    issue.astt.upper(),
+                    issue.info
                 ]
             )
 
@@ -119,8 +137,10 @@ def gen_issues_table(issues: list, issue_type:str):
 def load_plugin_cache(specs:dict):
     show_status_enabled = specs.get('verbose', False) and specs.get('debug', False)
     issues_path = specs.get('issues_path')
+
     django_version = specs.get('django_version')
     issue_type = specs.get('issue_type')
+
     caller_plugin = cl('⥂ ' + specs.get('module_run') + ' ⥂', 'magenta')
     
     if os.path.exists(issues_path):
@@ -356,3 +376,25 @@ class pshell_set:
             print('\t+ {}'.format(env_match))
         print()
         '''
+
+def find_requirements_file(path):
+    for dirpath, dirnames, filenames in os.walk(path):
+        if 'requirements.txt' in filenames:
+            return os.path.join(dirpath, 'requirements.txt')
+    return None
+
+def get_django_version(project_dir:str):
+    requirements_file = find_requirements_file(project_dir)
+    django_version = False
+    reqs=[]
+
+    if requirements_file:
+        with open(requirements_file, 'r') as f:
+            reqs = f.readlines()
+
+            for req in reqs:
+                if 'Django' in req:
+                    django_version = req.strip().split('==')[1]
+                    break
+
+    return django_version,len(reqs)

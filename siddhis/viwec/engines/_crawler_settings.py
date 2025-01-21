@@ -1,5 +1,7 @@
 settings = {
-    'LOG_ENABLED':False,
+    'LOG_ENABLED':True,
+    #'DUPEFILTER_CLASS': 'scrapy.dupefilters.BaseDupeFilter',
+    'REQUEST_FINGERPRINTER_IMPLEMENTATION':"2.7",
     'LOG_LEVEL': "DEBUG",
     'COOKIES_ENABLED':True,
     'TELNETCONSOLE_ENABLED': False,

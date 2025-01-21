@@ -17,6 +17,8 @@ from core.vmnf_sessions_utils import abduct_items
 from neotermcolor import cprint, colored as cl
 from ._dbops_.vmnf_dbops import VFDBOps
 from ._dbops_.db_utils import handle_OpErr
+from .vmnf_navi_siddhis import navisiddhis 
+from .setevars import set_vimana_path
 
 from res.vmnf_banners import case_header
 from .vmnf_asserts import vfasserts
@@ -30,7 +32,7 @@ import os
 from pygments.formatters import TerminalFormatter
 from pygments.lexers import PythonLexer
 from pygments import highlight
-
+from core.vmnf_utils import gen_issues_table
 
 class VFManager:
     def __init__(self,**handler:False):
@@ -38,12 +40,24 @@ class VFManager:
         self.query_filters = []
         self.model = '_SIDDHIS_'
         self.obj_id_col = 'name'
-
-        if not handler.get('module_run') and not handler.get('load_plugins'):
+        self.interactive_mode = handler.get('navigation_mode',False)
+        
+        if not handler.get('module_run',False) and not handler.get('load_plugins',False) and not self.interactive_mode:
             ''' We're not going to use query filters with vf run -m/-p/-s '''
             self.query_filters = self.get_filters()
 
+    def load_tools(self):
+        if VFDBOps().table_exists('_TOOLS_') and VFDBOps().getall('_TOOLS_'):
+            handle_OpErr('db ready')
+
+        with open(f'{os.getcwd()}/tools/tools.yaml', 'r') as f:
+            tools = yaml.load(f, Loader=yaml.FullLoader)
+            
+            for tool in tools['tools']:
+                VFDBOps(**tool).register('_TOOLS_')
+            
     def load_siddhis(self):
+        
         if VFDBOps().table_exists('_SIDDHIS_') and VFDBOps().getall(self.model):
             handle_OpErr('db ready')
         
@@ -61,6 +75,10 @@ class VFManager:
                 abduct_items(**siddhi)
                 VFDBOps(**siddhi).register('_SIDDHIS_')
 
+        vf_path  = '/'.join(os.path.abspath(os.path.dirname(__file__)).split('/')[:-1])
+        set_vimana_path(vf_path)
+        
+        self.load_tools()
         self.list_siddhis()
     
     def no_match(self):
@@ -80,6 +98,9 @@ class VFManager:
                 continue
             
             if field in [
+                'fancy_table',
+                'color_enabled',
+                'colors_enabled',
                 'highlight_enabled',
                 'guide_examples', 
                 'module_list', 
@@ -107,17 +128,23 @@ class VFManager:
                 self.handler['module_run'] = False
                 field = 'module'
             
+            # recorded as is: uppercase stuff
+            if field in ['astt']:
+                value = value.upper()
+            else:
+                value = value.lower()
+
             filters.append({
                 'field': field,
                 'op': '==',
-                'value': value.lower()
+                'value': value
                 }
             )
 
         return filters
 
     def print_guide_line(self, line):
-        if self.handler['highlight_enabled']:
+        if self.handler['color_enabled']:
             print(f"\t\t{highlight(line,PythonLexer(),TerminalFormatter()).strip()}")
         else:
             print(f"\t\t{cl(line,'white')}")
@@ -197,35 +224,47 @@ class VFManager:
         print()
 
     def list_siddhis(self):
+
+        if self.interactive_mode:
+            navisiddhis(self.handler).manage()
+            return True
+
+        _plugins_table_ = False
         matches = self.query_siddhis()
 
         if not matches:
             self.no_match() 
             return False
-
+        
         case_header()
-        matches_table = DJUtils().get_pretty_table(
-            **table_models().siddhis_tbl_set
-        )
 
-        for siddhi in matches:
-            matches_table.add_row(
-                [
-                    siddhi.name.lower(),
-                    siddhi.type.lower(),
-                    siddhi.category.lower(),
-                    siddhi.info
-                ]
+        if self.handler.get('fancy_table'):
+            _plugins_table_ = gen_issues_table(matches, 'plugins')
+
+        else:
+            _plugins_table_ = DJUtils().get_pretty_table(
+                **table_models().siddhis_tbl_set
             )
 
-        print(matches_table)
+            for siddhi in matches:
+                _plugins_table_.add_row(
+                    [
+                        cl(siddhi.name.lower(),64),
+                        siddhi.type.lower(),
+                        siddhi.category.lower(),
+                        siddhi.astt.upper(),
+                        siddhi.info
+                    ]
+                )
+                
+        print(_plugins_table_)
         print()
 
     def run_siddhi(self):
         self.handler['module'] = self.handler['module_run']
-        
+
         # `project_dir` could also be set right here
-        if not self.handler['runner_mode']:
+        if not self.handler['runner_mode'] and not self.handler['request_data_set']:
             ''' In Runner mode we already have the scope 
             and everything else in place '''
             self.parse_handler_scope()
@@ -239,7 +278,6 @@ class VFManager:
             if "no attribute 'module'" in aex.args[0]:
                 cprint("It seems like you haven't populated the database yet.", 'cyan')
                 cprint(f"   Just run load to fix this: {cl('$ vimana load --plugins.','green')}\n", 'cyan')
-
                 return False
 
         try:
@@ -248,7 +286,7 @@ class VFManager:
             if self.handler['debug']:
                 _ex_().template_atribute_error(AEX,module_name)
             sys.exit(1)
-
+        
         try:
             run_status = _siddhi_(**self.handler).start()
         except KeyboardInterrupt:
@@ -290,7 +328,7 @@ class VFManager:
         if sys.argv[-1] != self.handler['module']:
             if self.handler['save_case']:
                 self.handler['args'] = sys.argv
-                CasManager(False,self.handler).save_case()
+                CasManager(self.handler).save_case()
 
             if self.handler['sample']:
                 print("\033c", end="")
@@ -301,7 +339,7 @@ class VFManager:
             if not self.handler['session_mode']\
                     and not self.handler['sample']:
 
-                vmnf_banners.load(self.handler['module'],20)
+                vmnf_banners.load(self.handler['module'],3)
                 vmnf_banners.default_vmn_banner()
             
             # plugins that require 'project_dir' argument doesn't use target scope,e.g: IP's, URLs,etc
@@ -352,4 +390,3 @@ class VFManager:
                         self.handler.get('target_url')
                     ]
                 }
-

@@ -123,7 +123,6 @@ class ScopeParser:
                         self.target_scope[str(target.address)] = target_list
             print()
 
-
         # ***   scope: single target   *** 
         elif self.handler_ns['single_target']:
             if "," in str(self.handler_ns['single_target']):

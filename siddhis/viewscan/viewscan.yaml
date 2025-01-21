@@ -20,6 +20,7 @@ info:  Simple static analysis utility for Django views
 module: siddhis/viewscan/viewscan.py
 package: Django
 type: Audit
+astt: SAST
 tags:
   - sast
   - views

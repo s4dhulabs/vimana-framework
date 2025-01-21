@@ -83,6 +83,7 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument('--endpoint-url',action='store',dest='endpoint_url',default=False)
         vmnf_shared_parser.add_argument('--target-dir',action='store',dest='target_dir',default=False)
         vmnf_shared_parser.add_argument('--target-url',action='store',dest='target_url',default=False)
+        #vmnf_shared_parser.add_argument('--target',action='store',dest='target',default=False)
         vmnf_shared_parser.add_argument('--filename',action='store',dest='filename',default=False)
         vmnf_shared_parser.add_argument('-t','--target',action='store',dest='single_target',default=False)
         vmnf_shared_parser.add_argument('--file',action='store',dest='file_scope',default=False)
@@ -90,14 +91,15 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument('--cidr-range',action='store',dest='cidr_range', default=False)
         vmnf_shared_parser.add_argument('--target-list',action='store',dest='list_target', default=False)
         vmnf_shared_parser.add_argument('--nmap-xml',action='store',dest='nmap_xml', default=False)
+        vmnf_shared_parser.add_argument('--target-input',action='store',dest='target_input', default=False)
+        vmnf_shared_parser.add_argument('--form-input-target',action='store',dest='target_input', default=False)
         # -------------------------------------------------------------------------------
         # > Scope setting - [ port parser ] 
         # -------------------------------------------------------------------------------
-        vmnf_shared_parser.add_argument('-p',"--port",action="store",dest='single_port',default=False)
+        vmnf_shared_parser.add_argument("--port",action="store",dest='single_port',default=False)
         vmnf_shared_parser.add_argument("--port-list",action="store",nargs='+',dest='port_list',default=False)
         vmnf_shared_parser.add_argument("--port-range",action="store",dest='port_range',default=False)
         vmnf_shared_parser.add_argument('--ignore-state',action='store_true',dest='ignore_state',default=False)
-        vmnf_shared_parser.add_argument('--search-issues',action='store_true',dest='search_issues',default=False)
         # -------------------------------------------------------------------------------
         # > Analysis - [ configuration options ] 
         # -------------------------------------------------------------------------------
@@ -105,16 +107,27 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--verbose", '-v', action='count', default=False)
         vmnf_shared_parser.add_argument("--random", action="store_true",default=False)
         vmnf_shared_parser.add_argument("--wait", action="store", default=False)      
-        vmnf_shared_parser.add_argument("--threads",action="store", type=int, default=3)
+        vmnf_shared_parser.add_argument("--threads",action="store", type=int, default=10)
         vmnf_shared_parser.add_argument("--timeout", action="store", type=int, default=5)
         vmnf_shared_parser.add_argument("--pause-steps", action="store_true",default=False) 
         vmnf_shared_parser.add_argument("--auto", action="store_true",default=False)        
         vmnf_shared_parser.add_argument("--sample", action="store_true",default=False)        
-        vmnf_shared_parser.add_argument("--xscope", action="store_true",default=False)        
+        vmnf_shared_parser.add_argument("--xscope", action="store_true", dest='extended_scope',default=False)        
         vmnf_shared_parser.add_argument("--extended-scope", action="store_true",default=False)        
         vmnf_shared_parser.add_argument("--tracker-scope", action="store_true",default=False)        
         vmnf_shared_parser.add_argument("--disable-cache", action="store_true",default=False)        
         vmnf_shared_parser.add_argument("--ignore-cache", action="store_true",default=False)        
+        vmnf_shared_parser.add_argument("--agressive", action="store_true",dest='agressive_mode',default=False)        
+        vmnf_shared_parser.add_argument("--slow", action="store_true", dest='slow_mode',default=False)        
+        vmnf_shared_parser.add_argument('--search-issues',action='store_true',dest='search_issues',default=False)
+        vmnf_shared_parser.add_argument('--fuzzspec',action='store',dest='fuzzerspec_enabled',default=False)
+        vmnf_shared_parser.add_argument('--fuzzspec-file',action='store',dest='use_fuzzerspec_file',default=False)
+        vmnf_shared_parser.add_argument('-cv','--custom-variations',action='store',dest='fuzzer_custom_variations',type=int, default=3)
+        vmnf_shared_parser.add_argument('--verbose-logging',action='store_true',dest='verbose_logging',default=False)
+        vmnf_shared_parser.add_argument('--debug-logging',action='store_true',dest='debug_logging',default=False)
+        vmnf_shared_parser.add_argument('--schemavalidate',action='store_true',dest='schema_validate',default=False)
+        vmnf_shared_parser.add_argument('--show-response',action='store_true',dest='show_response',default=False)
+        vmnf_shared_parser.add_argument('--describe',action='store_true',dest='describe_mode_enabled',default=False)
         # -------------------------------------------------------------------------------
         # > Scope setting - [ scope parser options ] 
         # -------------------------------------------------------------------------------
@@ -132,12 +145,14 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--search-version", action="store", dest='framework_search_version',default=False)
         vmnf_shared_parser.add_argument("--issues-table", action="store_true", dest='issues_table',default=False)
         vmnf_shared_parser.add_argument("--table", action="store_true", dest='output_table',default=False)
+        vmnf_shared_parser.add_argument("-ot","--output-table", action="store_true", dest='output_table',default=False)
         vmnf_shared_parser.add_argument("--text", action="store_true", dest='output_text',default=False)
         vmnf_shared_parser.add_argument("--framework", action="store", dest='framework',default=False)
         vmnf_shared_parser.add_argument("--project-dir", action="store", dest='project_dir',default=False)
-        #vmnf_shared_parser.add_argument("--target-dir", action="store", dest='project_dir',default=False)
-        #vmnf_shared_parser.add_argument("--project", action="store", dest='project_dir',default=False)
-
+        vmnf_shared_parser.add_argument("--data", action="store", dest='data_set',default=False)
+        vmnf_shared_parser.add_argument("--use-request", action="store", dest='request_data_set',default=False)
+        vmnf_shared_parser.add_argument("--object", action="store", dest='filter_by_objects',default=False)
+        vmnf_shared_parser.add_argument("--plugin-target", action="store", dest='set_plugin_target',default=False)
         # -------------------------------------------------------------------------------
         # > Connection setting - [ proxy options ] 
         # -------------------------------------------------------------------------------
@@ -162,6 +177,10 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--flask-pinstealer",action="store_true",dest='flask_pinstealer',default=False)
         vmnf_shared_parser.add_argument("--flask-consolehook",action="store_true",dest='flask_consolehook',default=False)
         vmnf_shared_parser.add_argument("--connect-back",action="store_true",dest='connect_back',default=False)
+
+        vmnf_shared_parser.add_argument("--split-payload",action="store",dest='split_payload',default=False, type=int)
+        vmnf_shared_parser.add_argument("--random-vars",action="store_true",dest='random_vars',default=False)
+        vmnf_shared_parser.add_argument("--max-var-length",action="store",dest='max_var_length',default=False, type=int)
         # -------------------------------------------------------------------------------
         # > common plugin shared options
         # -------------------------------------------------------------------------------
@@ -171,6 +190,64 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--dump",action="store",dest='dump_mode',default=False)
         vmnf_shared_parser.add_argument("--search-object",action="store",dest='search_object',default=False)
         vmnf_shared_parser.add_argument("--output-file",action="store",dest='output_file',default='scan_results.sarif')
+        vmnf_shared_parser.add_argument("--cmd",action="store",dest='run_cmd',default=False)
+        vmnf_shared_parser.add_argument("--read-file",action="store",dest='read_file',default=False)
+
+        vmnf_shared_parser.add_argument("--package",action="store_true",dest='search_package',default=False)
+        vmnf_shared_parser.add_argument("--class",action="store_true",dest='search_class',default=False)
+        vmnf_shared_parser.add_argument("--subclass",action="store_true",dest='search_subclass',default=False)
+        vmnf_shared_parser.add_argument("--attr",action="store_true",dest='search_attr',default=False)
+
+        vmnf_shared_parser.add_argument("--double-encode",action="store_true",dest='double_encode',default=False)
+        vmnf_shared_parser.add_argument("--single-encode",action="store_true",dest='single_encode',default=False)
+        vmnf_shared_parser.add_argument("--no-encode",action="store_true",dest='no_encode',default=False)
+        vmnf_shared_parser.add_argument("--sleep",action="store",dest='set_sleep',default=1)
+        vmnf_shared_parser.add_argument("--show-details",action="store_true",dest='show_details',default=False)
+
+        vmnf_shared_parser.add_argument("--flush-specs",action="store_true",dest='flush_specs',default=False)
+        vmnf_shared_parser.add_argument("--flush-spec",action="store",dest='flush_spec',default=False)
+        vmnf_shared_parser.add_argument("--list-specs",action="store_true",dest='list_specs',default=False)
+        vmnf_shared_parser.add_argument("--list-paths",action="store_true",dest='list_paths',default=False)
+        vmnf_shared_parser.add_argument("--list-op-ids",action="store_true",dest='list_op_ids',default=False)
+        vmnf_shared_parser.add_argument("--list-opids",action="store_true",dest='list_op_ids',default=False) 
+        vmnf_shared_parser.add_argument("--list-schemas",action="store_true",dest='list_schemas',default=False)
+        vmnf_shared_parser.add_argument("--list-parameters",action="store_true",dest='list_parameters',default=False) 
+        vmnf_shared_parser.add_argument("--list-response-codes",action="store_true",dest='list_response_codes',default=False) 
+        vmnf_shared_parser.add_argument("--list-examples",action="store_true",dest='list_examples',default=False) 
+        vmnf_shared_parser.add_argument("--list-tags",action="store_true",dest='list_tags',default=False) 
+        vmnf_shared_parser.add_argument("--list-descriptions",action="store_true",dest='list_descriptions',default=False) 
+        vmnf_shared_parser.add_argument("--list-description",action="store_true",dest='list_descriptions',default=False) 
+        vmnf_shared_parser.add_argument("--list-response-headers",action="store_true",dest='list_response_headers',default=False) 
+
+        vmnf_shared_parser.add_argument("--apispec",action="store",dest='apispec_enabled',default=False)
+        vmnf_shared_parser.add_argument("--oas",action="store",dest='apispec_enabled',default=False)
+        vmnf_shared_parser.add_argument("--path",action="store",dest='set_path_scope',default=False)
+        vmnf_shared_parser.add_argument("--set-path",action="store",dest='set_path_scope',default=False)
+        vmnf_shared_parser.add_argument("--set-parameter",action="store",dest='set_param_scope',default=False)
+        vmnf_shared_parser.add_argument("--set-param",action="store",dest='set_param_scope',default=False)
+        #vmnf_shared_parser.add_argument("--spec",action="store",dest='apispec_enabled',default=False)
+
+        vmnf_shared_parser.add_argument("--inspect",action="store",dest='inspect',default=False)
+        vmnf_shared_parser.add_argument("--highlight",action="store_true",dest='highlight_enabled',default=False)
+        vmnf_shared_parser.add_argument("--api-fingerprint",action="store_true",dest='api_fingerprint',default=False)
+        vmnf_shared_parser.add_argument("--methods",action="store",dest='filter_by_method',default=False)
+        vmnf_shared_parser.add_argument("--method",action="store",dest='filter_by_method',default=False)
+        vmnf_shared_parser.add_argument("--operation",action="store",dest='filter_by_opid',default=False)
+        vmnf_shared_parser.add_argument("--operation-id",action="store",dest='filter_by_opid',default=False)
+        vmnf_shared_parser.add_argument("--tags",action="store",dest='filter_by_tag',default=False)
+
+        vmnf_shared_parser.add_argument("--export-body",action="store_true",dest='export_body',default=False)
+        vmnf_shared_parser.add_argument("-nc","--no-colors",action="store_true",dest='colors_disabled',default=False)
+        vmnf_shared_parser.add_argument("--pretty",action="store_true",dest='pretty_output',default=False)
+        vmnf_shared_parser.add_argument("--app-scope",action="store_true",dest='app_scope',default=False)
+
+        # -------------------------------------------------------------------------------
+        # > Rules settings
+        # -------------------------------------------------------------------------------
+        vmnf_shared_parser.add_argument("--use-rules",action="store_true",dest='rule_scan',default=False)
+        vmnf_shared_parser.add_argument("--scan-rules",action="store_true",dest='rule_scan',default=False)
+        vmnf_shared_parser.add_argument("--scan-rule",action="store_true",dest='rule_scan',default=False)
+        vmnf_shared_parser.add_argument("--rule",action="store_true",dest='rule_scan',default=False)
         
         return vmnf_shared_parser
 

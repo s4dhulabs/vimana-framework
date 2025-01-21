@@ -20,6 +20,7 @@ info: Brute force utility to audit Django administration portal
 module: siddhis/jungle/jungle.py
 package: Django
 type: Audit
+astt: DAST
 tags:
   - Django
   - portal 
@@ -33,6 +34,8 @@ references:
   links: False
   cwe: False
 guide:
+  naviargs: 
+    target_url: False
   args: |
     ø----------------------------------------------------------------------ø
     │└┐└│└┘┌┐~│└└┘┌┐┘└┘└┐└┘│└┐┘││└┘│ JUNGLE ARGS  └│┘┌│┐└│┘┌│┐└│┘┌│┐└│┘┌│┐└│

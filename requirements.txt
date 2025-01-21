@@ -44,3 +44,7 @@ SQLAlchemy-Utils
 sqlparse
 Flask
 rich
+aiohttp
+asyncio
+jsonpickle
+simple-term-menu

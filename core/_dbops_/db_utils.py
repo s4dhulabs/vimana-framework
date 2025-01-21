@@ -21,7 +21,8 @@ def get_elapsed_time(entry, str_date=False):
     if str_date:
         scan_date = datetime.strptime(str_date, '%Y-%m-%dT%H:%M:%S')
     else:
-        scan_date = entry.scan_date
+        #scan_date = entry.scan_date
+        scan_date = entry
 
     time_diff = datetime.now() - scan_date
     hour_ = 'hour'

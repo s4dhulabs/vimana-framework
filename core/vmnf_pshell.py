@@ -30,6 +30,7 @@ from res.colors import *
 from time import sleep
 import itertools
 import textwrap
+import inspect
 import getpass
 import sys
 import os
@@ -101,6 +102,11 @@ class vmnfshell:
                     r_cmd = r_cmd.strip()
 
                     if r_cmd == 'exit':
+                        origin = self._vmnf_session_.get('origin',False)
+
+                        if origin and origin == 'naviSessions.manage':
+                            break
+                        
                         cprint('↓↓↓ Exiting Vimana...','blue')
                         sleep(1)
                         os._exit(os.EX_OK)
@@ -440,7 +446,9 @@ class vmnfshell:
                                         print()
 
                                         # get ticket details
-                                        tictrac.siddhi(_issue_).start()
+                                        #tictrac.siddhi(_issue_).start()
+                                        self._vmnf_session_['django_version'] = _issue_
+                                        tictrac.siddhi(**self._vmnf_session_).get_ticket(_issue_)
                             else:  
                                 self._reason_ = 'Ticket not found'
                                 _pset_.handle_inspect_msg(

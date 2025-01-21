@@ -111,7 +111,6 @@ class resultParser:
         else:
             vmnf_banners.sample_mode(colored('       DMT      ','white', 'on_red', attrs=['bold']),['bold'])
             print('\n\n')
-            
         
         if not self.fuzz_report:
             print('[result_parser: {}] Missing fuzzing result after {} execution'.format(
@@ -150,7 +149,7 @@ class resultParser:
                     x_c = colored(x_ref,'red',attrs=['bold','blink'])
                     x = x.replace(x_ref,x_c)
                 print(x)
-                sleep(0.04)
+                sleep(0.01)
             sleep(0.14)
 
         _prana_ = []
@@ -310,7 +309,7 @@ class resultParser:
                 # mapped URL patterns (reusing dmt construted table here)
                 for pattern in self.raw_patterns:
                     print('   + {}'.format(pattern))
-                    sleep(0.03)
+                    sleep(0.02)
         
         ##################
         ### exceptions ###
@@ -357,10 +356,18 @@ class resultParser:
                 cprint(f']]- CVE IDs ({cve_siddhi})', 'magenta')
                 print(self.cves_tbl)
         
+        try:
+            if len(self.tickets_tbl._rows) == 0:
+                self.tickets_tbl = self.tickets_tbl.get_string()
+            if len(self.cves_tbl._rows) == 0:
+                self.cves_tbl = self.cves_tbl.get_string()
+        except AttributeError:
+            pass
+
         report_tables = {
             'summary': self.summary_tbl.get_string(),
-            'tickets': self.tickets_tbl if self.tickets_tbl else '?',
-            'cves': self.cves_tbl if self.cves_tbl else '?',
+            'tickets': self.tickets_tbl,
+            'cves': self.cves_tbl,
             'exceptions': self.exceptions_tbl.get_string(),
             'configuration': self.config_issues_tbl.get_string(),
             'contexts': self.envleak_tbl.get_string(),

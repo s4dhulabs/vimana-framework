@@ -13,19 +13,35 @@
 
 
 from res.vmnf_banners import mdtt1,case_header,vmn05,create_status
+from .vmnf_navi_cases import naviCases
+from ._dbops_.vmnf_dbops import VFDBOps
+from ._dbops_.db_utils import get_elapsed_time
 from res.vmnf_validators import check_file
 from neotermcolor import colored,cprint
-from core.load_settings import _cs_
+from .load_settings import _cs_
+from tabulate import tabulate
 from datetime import datetime
 import sys,os,yaml,glob
 from time import sleep
+import subprocess 
+import jsonpickle
+import itertools
+import hashlib
+import re
 
 
 class CasManager:
-    def __init__(self, search_case, handler):
+    def __init__(self, handler):
         self.handler = handler
-        self.search_case = search_case
-        self.case_files = self.get_cases()
+        self.model = '_CASES_'
+        self.obj_id_col = 'case_id'
+       
+    def handle_case_id(self, case_id):
+        if not re.match(r"^[a-fA-F0-9]{10}$", case_id):
+            self.obj_id_col = 'case_name'
+
+    def get_cases(self):
+        self._cases_ = VFDBOps().getall(self.model)
 
     def handler_no_case(self):
         print("\033c", end="")
@@ -35,168 +51,180 @@ class CasManager:
             ), 'cyan'
         )
         print()
+
+        if self.handler.navigation_mode:
+            return True
         sys.exit(1)
 
+    def case_table_exists(self):
+        if VFDBOps().table_exists(self.model) and VFDBOps().getall(self.model):
+            return True
+        return False
+
+    def case_exists(self, case_id):
+        return case_id in itertools.chain.from_iterable(
+                [(c.case_id, c.case_name) 
+                    for c in self._cases_]
+        )
+    
+    def flush_case(self, case_id):
+        self.get_cases()
+        self.handle_case_id(case_id)
+        
+        if not self.case_exists(case_id):
+            _cs_['empty_msg'] = f'\t\tInvalid case: {case_id}'
+            self.handler_no_case()
+
+        VFDBOps().flush_resource(self.model,self.obj_id_col, case_id)
+        _cs_['empty_msg'] = f'\t\t{colored(case_id, "red")} case flushed!'
+        self.handler_no_case()
+        
     def flush_cases(self):
-        if len(self.case_files) == 0:
+        self.get_cases()
+
+        if not self._cases_:
             self.handler_no_case()
         
+        total_cases = len(self._cases_)
         vmn05()
-        for file in os.scandir(_cs_['cases_path']):
-            fmsg = ('          \t- flushing {}'.format(
-                colored(file.name.split('_')[-1].split('.')[0], 'red')
-                )
-            )
+        print()
+
+        for c in self._cases_:
+            fmsg = colored(f'          \t- flushing {c.case_id} → {c.case_name} ','red')
             print(fmsg.ljust(os.get_terminal_size().columns - 1), end="\r")
             sleep(0.10)
-            os.remove(file.path)
-        
-        smsg = colored('          \t* {} cases flushed'.format(
-            len(self.case_files)), 'green')
-
+            VFDBOps().flush_resource(self.model,self.obj_id_col, c.case_id)
+            
+        smsg = colored(f'          \t* {total_cases} cases flushed','green')
         print(smsg.ljust(os.get_terminal_size().columns - 1), end="\r")
         print('\n\n\n')
-
+        sleep(1)
         return 
 
-    def update_handler(self,case_file):
-        with open(case_file) as file:
-            case_set = yaml.load(
-                file, Loader=yaml.FullLoader
-            )
+    def list_cases(self):
+        if self.handler.navigation_mode:
+            naviCases(vars(self.handler)).manage()
 
-            try:
-                vars(self.handler).update(case_set)
-            except TypeError:
-                return False
-
-        return self.handler
-
-    def load_case(self):
-        ccount = 0
-        for entry in self.case_files:
-            ccount +=1
-            cs_id = '@cf' + str(ccount)
-            
-            if self.search_case == '!':
-                return self.update_handler(
-                    _cs_['cases_path'] + self.get_last_case()
-                )
-
-            if entry.endswith(self.search_case)\
-                or self.search_case == cs_id :
-                
-                rel_handler = self.update_handler(_cs_['cases_path'] + entry)
-                if not rel_handler:
-                    print('\n[run]→ Malformed file: {}. Check it out and try again.\n'.format(
-                        entry
-                        )
-                    )
-                    sys.exit(1)
-
-                return rel_handler
-
-        self.list_cases()
-
-    def get_cases(self):
-        with os.scandir(_cs_['cases_path']) as saved_cases:
-            return [entry.name \
-                for entry in saved_cases \
-                    if entry.is_file()
-            ]
-
-    def get_last_case(self):
-        try:
-            lentry = max(
-                glob.iglob(_cs_['cases_yf']),
-                    key=os.path.getctime
-            )
-        except ValueError:
+        if not self.case_table_exists():
             self.handler_no_case()
 
-        return lentry.split('/')[-1]
-        
-    def list_cases(self):
-        lcase = self.get_last_case()
+        self.get_cases()
+
+        if not self._cases_:
+            self.handler_no_case()
+
+        attrs=[]
+        color = 'green'
+        cases_tbl = []
+        cases_tbl.append(
+            [
+                colored('id', 'cyan', attrs=[]),
+                colored('plugin','cyan', attrs=[]),
+                colored('target','cyan', attrs=[]),
+                colored('name','cyan', attrs=[]),
+                colored('type','cyan', attrs=[]),
+                colored('astt','cyan', attrs=[]),
+                colored('date','cyan', attrs=[]),
+            ]
+        )
+
+        for c in self._cases_:
+            if os.path.isabs(c.case_target):
+                c.case_target = c.case_target.split('/')[-1]
+
+            c.case_date = get_elapsed_time(c.case_date)
+            cases_tbl.append(
+                [
+                    c.case_id, 
+                    c.case_plugin, 
+                    c.case_target,
+                    c.case_name, 
+                    c.case_plugin_type,
+                    c.case_plugin_astt,
+                    c.case_date
+                ]
+            )
+
         print("\033c", end="")
         case_header()
-        cprint("\n→ Available cases:\n",'cyan')
+        cprint("\n→ Available cases:",'cyan')
 
-        print('{:>19}{:>25}{:>35}{:>49}\n'.format(
-            colored('id','white',attrs=['bold']),
-            colored('plugin','white',attrs=['bold']),
-            colored('date','white',attrs=['bold']),
-            colored('case','white',attrs=['bold'])
+        print(tabulate(
+            cases_tbl,
+            headers='firstrow',
+            numalign="left",
+            tablefmt='pretty',missingval='?'
             )
         )
 
-        ccount = 0
-        for entry in self.case_files:
-            ccount +=1
-            c_index = '@cf' + str(ccount)
+    def load_case(self, case_id):
+        self.handle_case_id(case_id)
+        _case_ = VFDBOps().get_by_id(
+            self.model,
+            self.obj_id_col,
+            case_id
+        )
+        
+        if _case_ is None:
+            _cs_['empty_msg'] = f'\t Invalid case: {case_id}'
+            self.handler_no_case()
 
-            r_entry = entry.split('_')
-            module = r_entry[0]
-            date = r_entry[1]
-            time = r_entry[2].split('.')[0].strip()
-            exec_time = date + ' ' + time
-            file_name = '_'.join(r_entry[3:]).split('.')[0]
-
-            if entry == lcase:
-                msg = ('{:>6}{:>11}{:>31}{:>31}'.format(
-                    c_index,module,exec_time,file_name)
-                )
-
-                cprint(msg, 'white', 'on_green',attrs=['bold'])
-                continue
-
-            print('{:>15}{:>20}{:>40}{:>40}'.format(
-                colored(c_index,'green'),
-                colored(module,'green'),
-                colored(exec_time, 'cyan'),
-                colored(file_name, 'blue'))
-            )
-
-        print()
-        sys.exit(1)
+        case_ns = jsonpickle.decode(_case_.case_ns)
+        case_args = case_ns.args
+        sc_index = case_args.index('--save-case')
+        del case_args[sc_index + 1] 
+        del case_args[sc_index] 
+        subprocess.run(case_args)
 
     def save_case(self):
+        case_date = datetime.now()
+        dt_str = case_date.strftime('%Y-%m-%d %H:%M:%S')
+        args_str = ' '.join(self.handler.args)
+        case_sign = f"{dt_str}: {args_str}"  
+        case_target = False
 
-        if self.handler['save_case'].endswith('.yaml'):
-            self.handler['save_case'] = self.handler['save_case'].replace('.yaml','')
+        case_hash = hashlib.sha256(case_sign.encode('utf-8')).hexdigest()
+        case_id = case_hash[:10]
+        case_name = self.handler.save_case.split('.')[0]
+        case_ns = jsonpickle.encode(self.handler)
+        case_plugin = self.handler.module_run
+
+        siddhi = VFDBOps().get_by_id(
+            '_SIDDHIS_', 'name', case_plugin
+        )
         
-        case_name = self.handler['save_case']
-        exec_time = str(datetime.now()).replace(' ','_') + '_'
-        file_name = str(self.handler['module_run']) + '_'\
-            + exec_time + self.handler['save_case'] + '.yaml'
 
-        file_path = _cs_['cases_path'] + file_name
-        self.handler['save_case'] = False
+        if self.handler.target_url:
+            case_target = self.handler.target_url
 
-        with open(file_path, 'w') as file:
-            yaml.dump(
-                self.handler,
-                file,
-                default_flow_style=False
-            )
-            
-        if not check_file(file_path,True):
-            print("\n Error while creating case!")
-            sys.exit(1)
+        elif self.handler.single_target:
+            case_target = self.handler.single_target
 
-        create_status(case_name)
+        elif self.handler.project_dir:
+            case_target = self.handler.project_dir
+
+        elif self.handler.request_data_set:
+            request_file = self.handler.request_data_set
+
+            if os.path.isabs(request_file):
+                case_target = request_file
+            else:
+                case_target = os.path.join(os.getcwd(), request_file)
+
+        case = {
+            'case_id': case_id,
+            'case_hash': case_hash,
+            'case_name': case_name,
+            'case_target': case_target,
+            'case_date': case_date,
+            'case_plugin': case_plugin,
+            'case_plugin_info': siddhi.info,
+            'case_plugin_type': siddhi.type,
+            'case_plugin_astt': siddhi.astt,
+            'case_ns': case_ns
+        }
         
-        ''' optionally cases can be executed during creation: 
-            --exec-case '''
-        if not self.handler['exec_case']:
-            sys.exit(0)
-
-    def get_exec_case(self,argv):
-        exec_case = str(argv[2]) + '.yaml'\
-            if not str(argv[2]).endswith('.yaml') \
-            and not str(argv[2]).startswith(('@cf','!'),0)\
-            else str(argv[2])
-
-        return exec_case
+        VFDBOps(**case).register(self.model)
+        sys.exit(1)
 
 

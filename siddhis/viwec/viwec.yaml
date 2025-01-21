@@ -20,6 +20,7 @@ info:  Simple web crawler utility
 module: siddhis/viwec/viwec.py
 package: False
 type: Crawler
+astt: DAST
 tags:
   - discovery
 description: |

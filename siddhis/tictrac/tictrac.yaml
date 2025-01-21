@@ -20,6 +20,7 @@ info: Track bug tickets in Django ticket system
 module: siddhis/tictrac/tictrac.py
 package: Django
 type: Tracker
+astt: DAST
 tags:
   - Django
 description: |
@@ -35,9 +36,11 @@ references:
     - https://www.djangoproject.com
   cwe: False
 guide:
+  naviargs: 
+    django_version: False
   args: |
     ø----------------------------------------------------------------------ø
-    │└┐└┌⠞⠓┬┐│└æ┌┐æ│└æ└┘┌┐┌⠞⠓┬┐æ┘æ└┘ TICTRAC ARGS  æ│┘┌⠞⠓┬┐æ│┐æ│┘æ││æ│┘æ│~æ│
+    │└┐└┌⠞⠓┬┐│└æ┌┐æ│└æ└┘┌┐┌⠞⠓┬┐æ┘æ└┘ TICTRAC ARGS   æ│┘┌⠞⠓┬┐æ│┐æ│┘æ││æ│┘.æ│
     ø-----------+----------------------------------------------------------ø
     │ scope     └┐                                                         │
     +------------+---------------------------------------------------------+

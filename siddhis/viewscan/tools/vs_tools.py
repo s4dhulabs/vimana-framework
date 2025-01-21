@@ -274,7 +274,6 @@ def hashdir(directory):
 
     return sha256.hexdigest()
 
-
 def map_dec_args(raw_decorators:list) -> dict:
     pattern = r"\s*@(?P<name>\w+)\((?P<args>.+)\)"
     decargs = {}
@@ -353,7 +352,6 @@ def get_patterns_list(urlpatterns: str) -> list:
         ):
         patterns.append(match.group(0))
     return patterns
-
 
 def docrule(issues:list=False, navimode:dict=False):
     if navimode:

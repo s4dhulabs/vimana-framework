@@ -20,6 +20,7 @@ info: Utility to retrieve CVE IDs for Django Framework
 module: siddhis/prana/prana.py
 package: Django
 type: Tracker
+astt: DAST
 tags:
   - Django 
 description: |

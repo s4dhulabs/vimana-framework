@@ -20,6 +20,7 @@ from twisted.internet import reactor
 from twisted.internet.error import ReactorAlreadyRunning
 import sys, re, os, random, string, platform,signal
 from scrapy.crawler import CrawlerProcess
+from twisted.internet import defer
 from datetime import datetime
 from time import sleep
 import collections
@@ -32,8 +33,14 @@ from .engines._crawler_settings import settings
 from res.vmnf_banners import load_viwec
 from res import vmnf_banners
 
+# vflogging
+import logging
+from core.vmnf_log_utils import configure_logging
+configure_logging(os.path.basename(__file__))
+
 class siddhi:   
     def __init__(self,**vmnf_handler):
+        logging.info("Initializing siddhi class...")
         self.vmnf_handler = vmnf_handler
     
     def parse_args(self):
@@ -45,6 +52,7 @@ class siddhi:
         return parser
     
     def start(self):
+        from twisted.internet import error 
 
         if not self.vmnf_handler.get('callback_session'):
 
@@ -60,8 +68,15 @@ class siddhi:
 
         if self.vmnf_handler.get('disable_cache',False):
             settings['HTTPCACHE_ENABLED'] = False
-
+        
         runner = CrawlerRunner(dict(settings))
         daemon = runner.crawl(vwce, **self.vmnf_handler)
-        reactor.run(0) 
-        
+        d = defer.Deferred()
+        daemon.addBoth(lambda _: d.callback(None))
+
+        try:
+            reactor.run()
+        except KeyboardInterrupt:
+            if reactor.running:
+                d.addBoth(lambda _: reactor.stop)
+                d.addBoth(lambda _: sys.exit(1))

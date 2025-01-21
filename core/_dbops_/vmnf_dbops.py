@@ -11,9 +11,13 @@
 # 
 # This file is part of Vimana Framework Project.
 
+from .models.specs import VFSpecs as VFSpecs
+from .models.exceptions import VFExceptions as VFX
 from .models.sessions import VFSessions as VFS 
 from .models.siddhis import Siddhis as VFSD
+from .models.tools import Tools as VFTools
 from .models.scans import VFScans
+from .models.cases import VFCases
 
 from sqlalchemy_utils.functions import database_exists as db_exists
 from .db_utils import filter_ops, handle_OpErr,get_filter_clauses
@@ -33,13 +37,21 @@ class VFDBOps:
         self.vmnf_handler = vmnf_handler
         self.session = self.vmnf_handler.get('_session_',False)
         self.tbl_model = {
+            '_EXCEPTIONS_': VFX,
             '_SIDDHIS_' : VFSD,
             '_SESSIONS_': VFS,
-            '_SCANS_'   : VFScans
+            '_SCANS_'   : VFScans,
+            '_CASES_'   : VFCases,
+            '_TOOLS_'   : VFTools,
+            '_SPECS_'   : VFSpecs
         }
         self.create_db()
     
+    def get_model_dict(self, model):
+        return {c.name: False for c in inspect(self.tbl_model[model.upper()]).columns if c.name != 'index'}
+
     def list_resource(self, _TABLE_, filters):
+        
         if not self.table_exists(_TABLE_):
             if _TABLE_ != '_SIDDHIS_':
                 return False
@@ -50,6 +62,7 @@ class VFDBOps:
         query = db.session.query(vf_model)
         filter_clauses = get_filter_clauses(vf_model,filters)
         query = query.filter(*filter_clauses)
+
         return query.all()
 
     def create_table(self, vf_model):
@@ -66,23 +79,31 @@ class VFDBOps:
         return False
 
     def clean_table(self, _MODEL_):
-        vf_model = self.tbl_model[_MODEL_]
+        try:
+            vf_model = self.tbl_model[_MODEL_]
+        except KeyError:
+            return False
 
         try:
             num_rows_deleted = db.session.query(vf_model).delete()
             db.session.commit()
         except:
             db.session.rollback()
+            return False
+
+        return True
    
     def getall(self, _MODEL_):
         vf_model = self.tbl_model[_MODEL_]
+
         try:
             return vf_model.query.all()
         except exc.OperationalError as OE:
             handle_OpErr(str(OE.orig))
 
-    def get_by_id(self, _MODEL_, obj_id_col, obj_id):
+    def get_by_id(self, _MODEL_, obj_id_col, obj_id, getall:bool=False):
         vf_model = self.tbl_model[_MODEL_]
+
         if not self.table_exists(_MODEL_):
             # plugins should be loaded with load --plugins
             if _MODEL_ not in ['_SIDDHIS_']:
@@ -93,6 +114,9 @@ class VFDBOps:
             handle_OpErr('no such table:')
 
         model_attr = getattr(vf_model, obj_id_col)
+
+        if getall:
+            return vf_model.query.filter(model_attr==obj_id).all()
         return vf_model.query.filter(model_attr==obj_id).first()
 
     def flush_resource(self, _TABLE_, obj_id_col, obj_id):
@@ -104,6 +128,7 @@ class VFDBOps:
             db.session.delete(flush_obj)
             db.session.commit()
             return flush_obj
+
         return False
 
     def commit(self,entry):
@@ -116,16 +141,19 @@ class VFDBOps:
     def create_db(self):
         if not db_exists(app.config["SQLALCHEMY_DATABASE_URI"]):
             db.create_all()
+
             if self.vmnf_handler.get('debug', False):
                 print(f'[{dt.now()}] DB sucessfully created!')
 
     def register(self,_TABLE_):
         vf_model = self.tbl_model[_TABLE_]
+
         if not self.table_exists(_TABLE_):
             self.create_table(vf_model)
         
         # session is stored in a dedicate object due to some adaptation
         if _TABLE_ == '_SESSIONS_':
             self.vmnf_handler = self.session
+
         self.commit(vf_model(**self.vmnf_handler))
 

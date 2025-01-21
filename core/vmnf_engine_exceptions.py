@@ -62,32 +62,37 @@ class engineExceptions:
         ''')
 
     def argument_error(self):
-
-        if 'run' and '--module' or '-m' in self.args:
-            siddhi = self.args[self.args.index('--module') + 1].strip()
+        if 'run' in self.args and ('--module' in self.args or '--plugin' in self.args or '-m' in self.args):
+            if '--module' in self.args:
+                siddhi = self.args[self.args.index('--module') + 1].strip()
+            elif '--plugin' in self.args:
+                siddhi = self.args[self.args.index('--plugin') + 1].strip()
+            else:
+                siddhi = self.args[self.args.index('-m') + 1].strip()
+            
             siddhi_path = 'siddhis.{}.{}'.format(siddhi, siddhi)
 
-        conflict_msg = """
-        Vimana exits with an argparse.ArgumentError()
-        exception
+            conflict_msg = """
+            Vimana exited with an argparse.ArgumentError()
+            exception
 
-        This exception usually occurs when an argument
-        present in the shared args has also been
-        specified in the parser of the module to be run.
+            This exception usually occurs when an argument
+            present in the shared args has also been
+            specified in the parser of the module to be run.
 
-        If you're using Vimana shared arguments, make
-        sure {} argument doesn't exist in 
-        module parser in {} argparser.
+            If you're using Vimana shared arguments, make
+            sure {} argument doesn't exist in 
+            module parser in {} argparser.
 
-        """.format(
-            cl(self.exception.argument_name, 'red'),
-            cl(siddhi, 'red')
-        )
+            """.format(
+                cl(self.exception.argument_name, 'red'),
+                cl(siddhi, 'red')
+            )
 
-        print("\033c", end="")
-        print(conflict_msg)
-        mdtt1()
-        sys.exit(1)
+            print("\033c", end="")
+            print(conflict_msg)
+            mdtt1()
+            sys.exit(1)
 
     def template_atribute_error(self, AEX, module):
 
