@@ -3,9 +3,9 @@ project:
     email: <s4dhul4bs[at]prontonmail.ch>
     git: https://github.com/s4dhulabs/vimana-framework
     name: Vimana Framework
-    site: https://s4dhulabs.github.io/
+    site: https://sadhulabs.substack.com/
     tag: alpha
-    version: v0.8
+    version: v0.9
 settings:
     arg_parser:
         require_args:
@@ -61,6 +61,7 @@ settings:
         - prana
         - dmt
         - flame
+        - d4m8
         - sttinger
         - jungle
         - viwec

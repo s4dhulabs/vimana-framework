@@ -1,0 +1,42 @@
+{
+    "FUZZER_SETTINGS": {
+	"silent": true
+    },
+    "REQUEST": {
+        "request_method": "POST",
+        "request_urls": [
+	    "http://127.0.0.1:8887/taskManager/forgot_password/"
+	],
+        "form_target_input_data": {
+	    "email": "/tmp/d4m8_test_emails.txt"
+	},
+        "use_post_data": false,
+        "use_request_file": false
+    },
+    "RESPONSE": {
+        "target_exception_types": [
+	    "ConnectionRefusedError"
+	],
+        "target_modules": [
+	    "views.py"
+	],
+        "target_module_functions": [
+	    "forgot_password",
+	    "recover_password"
+	]
+    },
+    "ACTIONS":[
+        {
+            "action_type": "extract_function_vars",
+	    "function_vars": {
+                "reset_user":"<User:\\s*(.*?)>",
+                "t_email":false,
+                "reset_token":false,
+		"res":false
+	    }
+        }		
+    ],
+    "OUTPUT":  {
+    	"format": "table"
+    }
+}

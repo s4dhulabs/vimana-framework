@@ -398,6 +398,7 @@ class DMTEngine(scrapy.Spider):
             sleep(0.10)
        
         for pattern in self.app_patterns:
+            
             p_count +=1
             hl_p_count = colored(p_count, 'white')
             if p_count == total_p:
@@ -476,7 +477,6 @@ class DMTEngine(scrapy.Spider):
            self.app_patterns.append(pattern)
 
         if external:
-            
             # mapping for external caller
             self.patterns_mapper(False)
 

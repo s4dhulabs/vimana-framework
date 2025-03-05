@@ -27,6 +27,7 @@ from .. res import config
 from pathlib import Path
 from res.colors import *
 from time import sleep 
+import hashlib
 import requests
 import pathlib
 import scrapy
@@ -204,9 +205,12 @@ class vwce(scrapy.Spider):
             )
 
             
-            from siddhis.jcolt.utils import get_hash
+            #from siddhis.jcolt.utils import get_hash
+            scan_id = str(self.handler['scope']).encode('utf-8')
+            scan_id = (hashlib.sha256(scan_id).hexdigest())
 
-            scan_id = get_hash(str(self.handler['scope']))[:10]
+
+            #scan_id = get_hash(str(self.handler['scope']))[:10]
             full_output_path = f"{self.abs_cache_path}/{scan_id}.txt"
             os.makedirs(os.path.dirname(full_output_path), exist_ok=True)
             

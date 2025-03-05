@@ -398,3 +398,38 @@ def get_django_version(project_dir:str):
                     break
 
     return django_version,len(reqs)
+
+
+def generate_exception_id(response_text, additional_entropy=None):
+    """
+    Generate a unique exception ID with 'x-' prefix and 5 hex digits.
+    
+    Args:
+        response_text: The response text to hash
+        additional_entropy: Any additional data to ensure uniqueness (timestamp, request path, etc.)
+    
+    Returns:
+        A unique exception ID in the format 'x-xxxxx'
+    """
+    from datetime import datetime
+    import hashlib
+
+    # Create a base from response text
+    text_to_hash = response_text
+    
+    # Add timestamp for uniqueness
+    timestamp = datetime.now().isoformat()
+    text_to_hash += timestamp
+    
+    # Add any additional entropy if provided
+    if additional_entropy:
+        if isinstance(additional_entropy, dict):
+            text_to_hash += json.dumps(additional_entropy, sort_keys=True)
+        else:
+            text_to_hash += str(additional_entropy)
+    
+    # Generate the hash
+    hash_digest = hashlib.sha256(text_to_hash.encode('utf-8')).hexdigest()
+    
+    # Return the exception ID in your preferred format
+    return f"x-{hash_digest[:5]}"

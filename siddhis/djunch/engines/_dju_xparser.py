@@ -63,6 +63,7 @@ from . exceptions._items import IssuesPool
 from res.vmnf_fuzz_data import VMNFPayloads 
 from res.colors import *
 
+from core.api.dashboard_utils import send_to_dashboard, prepare_dashboard_data
 
 
 class DJEngineParser(scrapy.Spider):
@@ -90,6 +91,8 @@ class DJEngineParser(scrapy.Spider):
         self.caught_exceptions = []
         self.collected_sample = False
         self.set_close = False
+        self.first_run = True
+        self.app_name = None
         
         _ISSUES_ = IssuesPool()
         _ISSUES_['ISSUES'] = {
@@ -390,8 +393,44 @@ class DJEngineParser(scrapy.Spider):
         elif response.status in self.x_trigger_status:
             self.djx_parser(response)
         
+    def handle_exception_item(self, response):
+        ''' Handle exception item: Vimana Monitor API '''
+        
+        from siddhis.djunch.engines._djxip import ParseXItem
+        from core.vmnf_utils import generate_exception_id
+
+        exception_id = generate_exception_id(response.text)
+        self.exception_parser = ParseXItem(response)
+        exception_info = self.exception_parser.dump_traceback()
+        exception_info['meta'] = response.meta
+        exception_info['exception_id'] = exception_id
+
+        dashboard_data = prepare_dashboard_data(
+            response=response,
+            exception_info=exception_info,
+            extracted_vars=False
+        )
+        if not self.app_name:
+            environment = self.exception_parser.dump_environment()
+            
+            if 'ROOT_URLCONF' in environment:
+                self.app_name = environment['ROOT_URLCONF'].split('.')[0].strip().replace("'", "").replace(",", "")
+
+                if self.app_name:
+                    send_to_dashboard(app_env={self.app_name: environment})
+
+        dashboard_data['exception_meta']['view_trigger']['app_name'] = self.app_name
+        dashboard_data['exception_meta']['plugin'] = self.vmnf_handler.get('module_run', 'djunch')
+        send_to_dashboard(data=dashboard_data)
+    
     def djx_parser(self, response):
         ''' Parse and register a new exception '''
+        
+        '''
+        # >> Vimana API connector
+        if response.xpath('//div[@id="summary"]//tr'):
+            self.handle_exception_item(response)
+        '''
 
         try:
             self.EXCEPTION_PATTERN = (response.xpath('//div[@id="summary"]//tr'))

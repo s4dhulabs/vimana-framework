@@ -347,4 +347,3 @@ class siddhi:
             target = self.vmnf_handler.get('local_host','127.0.0.1')
             port = self.vmnf_handler.get('local_port',9000)
             self.getSocketServer(target, port)
-        input('HERE ATLATL') 

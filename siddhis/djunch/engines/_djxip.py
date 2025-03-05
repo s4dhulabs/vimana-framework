@@ -12,15 +12,12 @@
 # This file is part of Vimana Framework Project.
 
 from siddhis.djunch.engines._dju_utils import DJUtils
-
 from pygments.formatters import TerminalFormatter
 from neotermcolor import colored, cprint
 from pygments.lexers import PythonLexer
 from pygments import highlight
 
 import django.core.exceptions as django_cx
-#from django import db
-#import django.db
 import builtins
 
 
@@ -78,14 +75,30 @@ class ParseXItem:
 
             EXCEPTION_SUMMARY[key] = value
 
-    
-        XType = EXCEPTION_SUMMARY['Exception Type']
+        XType = EXCEPTION_SUMMARY.get('Exception Type',None)
+        if not XType:
+            return EXCEPTION_SUMMARY
+
         for category, exceptions in self.djx_definitions.items():
             if XType in exceptions:
                 EXCEPTION_SUMMARY['Reason'] = exceptions[XType]
                 EXCEPTION_SUMMARY['Category'] = f"{category.title()} Exceptions"
 
         return EXCEPTION_SUMMARY
+
+    def dump_environment(self):
+        ENVIRONMENT = {}
+        REQS_TABLES = self.response.xpath('//*[@class="req"]//tbody')
+        TABLES_ROWS = REQS_TABLES.xpath('.//tr')
+        
+        for ROW in TABLES_ROWS:
+            if not ROW:
+                continue
+
+            key, value = (ROW.xpath('td//text()').getall())
+            ENVIRONMENT[key] = value
+        
+        return ENVIRONMENT
 
     def dump_traceback(self):
         trace_count = 0
@@ -94,14 +107,21 @@ class ParseXItem:
         TRACEBACK_OBJECTS = []
         SUMMARY = self.parse_xsummary()
         module_args = {} 
+        ENVIRONMENT = {}
         TRACEBACK_COLLECTOR = []
         FRAME_USER = self.response.xpath('//div[@id="traceback"]//li[@class="frame user"]')
         EXCEPTION_TRACEBACK = self.response.xpath('//div[@id="traceback"]//li[@class="frame django"]')
         EXCEPTION_TRACEBACK.extend(FRAME_USER)
-       
-        VIEW_TRIGGER = [ f.xpath('.//code/text()').getall() for f in FRAME_USER ][0] 
-        VIEW_PATH = VIEW_TRIGGER[0]
-        VIEW_OBJECT = VIEW_TRIGGER[1]
+        LINE_NUMBER = None
+        LINE_TRIGGER = None
+
+        if FRAME_USER:
+            VIEW_TRIGGER = [ f.xpath('.//code/text()').getall() for f in FRAME_USER ][0]
+            VIEW_PATH = VIEW_TRIGGER[0]
+        else:
+            VIEW_TRIGGER = []
+            VIEW_PATH = None
+        VIEW_OBJECT = VIEW_TRIGGER[1] if len(VIEW_TRIGGER) > 1 else None
 
         for entry in EXCEPTION_TRACEBACK:
             highlight_code_snippets = []
@@ -198,7 +218,7 @@ class ParseXItem:
             'traceback': TRACEBACK_COLLECTOR,
             'view_trigger': {
                 'fullpath': VIEW_PATH,
-                'shortpath': '.'.join(VIEW_PATH.split('/')[-2:]).replace('.py',''),
+                'shortpath': '.'.join(VIEW_PATH.split('/')[-2:]).replace('.py','') if VIEW_PATH else None,
                 'object': VIEW_OBJECT,
                 'line_number': LINE_NUMBER,
                 'trigger_line': LINE_TRIGGER
