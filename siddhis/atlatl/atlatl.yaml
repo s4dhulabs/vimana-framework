@@ -37,6 +37,8 @@ references:
     - https://flask.palletsprojects.com/en/2.1.x/debugging/
     - https://werkzeug.palletsprojects.com/en/2.2.x/debug/
   cwe: False
+vfset:
+  parse_plugin_scope: True
 guide:
   naviargs: |
     auth:

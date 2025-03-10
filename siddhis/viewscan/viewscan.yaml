@@ -48,6 +48,8 @@ description: |
 references:
   links: False
   cwe: False
+vfset:
+  parse_plugin_scope: True
 guide:
   args: |
     ø----------------------------------------------------------------------ø

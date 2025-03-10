@@ -149,7 +149,7 @@ class ScopeParser:
                     self.target_list.append(target)
             
         # ***   scope: "file" with targets   ***
-        elif self.handler_ns['file_scope']:
+        elif self.handler_ns['vf_file_scope_enabled']:
             scope_file = self.handler_ns['file_scope']
             scope_location = str(pathlib.Path().absolute()) + '/' + scope_file
 
@@ -166,7 +166,7 @@ class ScopeParser:
 
             fh = open(self.handler_ns['file_scope'], 'r')
             fh = fh.readlines()
-
+            
             for target in fh:
                 target = target.strip()
                 if target.find(":"):

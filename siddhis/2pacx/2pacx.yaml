@@ -59,6 +59,8 @@ references:
   cwe:
     - CWE-22 - Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')
     - CWE-73 - External Control of File Name or Path
+vfset:
+  parse_plugin_scope: True
 guide:
   args: |
     o----------------------------------------------------------------------o

@@ -91,6 +91,11 @@ class Siddhis(db.Model):
         unique = False,
         nullable = False
     )
+    vfset = db.Column(
+        JSON,
+        unique = False,
+        nullable = False
+    )
     guide = db.Column(
         JSON,
         unique = True,

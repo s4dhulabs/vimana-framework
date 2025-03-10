@@ -81,6 +81,8 @@ references:
     - CWE-20 - Improper Input Validation
     - CWE-79 - Improper Neutralization of Input During Web Page Generation
     - CWE-352 - Cross-Site Request Forgery
+vfset:
+  parse_plugin_scope: True
 guide:
   naviargs: 
     target_url: True

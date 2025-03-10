@@ -7,7 +7,6 @@
 # Author: s4dhu
 # Email: <s4dhul4bs[at]prontonmail[dot]ch
 # Git: @s4dhulabs
-# Mastodon: @s4dhu
 # 
 # This file is part of Vimana Framework Project.
 
@@ -265,11 +264,15 @@ class VFManager:
     def run_siddhi(self):
         self.handler['module'] = self.handler['module_run']
 
+        siddhi = self.get_siddhi()
+
         # `project_dir` could also be set right here
         if not self.handler['runner_mode'] and not self.handler['request_data_set']:
             ''' In Runner mode we already have the scope 
             and everything else in place '''
-            self.parse_handler_scope()
+            # new stuff here
+            if siddhi.vfset.get('parse_plugin_scope'):
+                self.parse_handler_scope()
 
 
         siddhi = self.get_siddhi()
@@ -353,8 +356,12 @@ class VFManager:
             self.handler['scope'] = ScopeParser(**self.handler).parse_scope()
             targets_ports_set = get_scope(**self.handler)
 
-        len_tps = len(targets_ports_set)
-        self.handler['multi_target'] = True if len_tps > 1 else False
+        if targets_ports_set:
+            len_tps = len(targets_ports_set)
+        else:
+            len_tps = False
+
+        self.handler['multi_target'] = True if len_tps and len_tps> 1 else False
 
         if self.handler['multi_target']:
             cs_b = len(self.set_sessions_control())

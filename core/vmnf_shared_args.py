@@ -87,6 +87,9 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument('--filename',action='store',dest='filename',default=False)
         vmnf_shared_parser.add_argument('-t','--target',action='store',dest='single_target',default=False)
         vmnf_shared_parser.add_argument('--file',action='store',dest='file_scope',default=False)
+        vmnf_shared_parser.add_argument('--vffile',action='store',dest='vf_file_scope_enabled',default=False)
+        
+
         vmnf_shared_parser.add_argument('--ip-range',action='store',dest='ip_range', default=False)
         vmnf_shared_parser.add_argument('--cidr-range',action='store',dest='cidr_range', default=False)
         vmnf_shared_parser.add_argument('--target-list',action='store',dest='list_target', default=False)
@@ -108,7 +111,7 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--random", action="store_true",default=False)
         vmnf_shared_parser.add_argument("--wait", action="store", default=False)      
         vmnf_shared_parser.add_argument("--threads",action="store", type=int, default=10)
-        vmnf_shared_parser.add_argument("--timeout", action="store", type=int, default=5)
+        vmnf_shared_parser.add_argument("--timeout", action="store", type=int, default=10, help='Request timeout in seconds (default: 10)')
         vmnf_shared_parser.add_argument("--pause-steps", action="store_true",default=False) 
         vmnf_shared_parser.add_argument("--auto", action="store_true",default=False)        
         vmnf_shared_parser.add_argument("--sample", action="store_true",default=False)        
@@ -204,6 +207,10 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--sleep",action="store",dest='set_sleep',default=1)
         vmnf_shared_parser.add_argument("--show-details",action="store_true",dest='show_details',default=False)
 
+
+        vmnf_shared_parser.add_argument('--stealth', action='store_true', help='Enable stealth mode (slower but less detectable)',default=False)
+        
+
         vmnf_shared_parser.add_argument("--flush-specs",action="store_true",dest='flush_specs',default=False)
         vmnf_shared_parser.add_argument("--flush-spec",action="store",dest='flush_spec',default=False)
         vmnf_shared_parser.add_argument("--list-specs",action="store_true",dest='list_specs',default=False)
@@ -239,7 +246,24 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--export-body",action="store_true",dest='export_body',default=False)
         vmnf_shared_parser.add_argument("-nc","--no-colors",action="store_true",dest='colors_disabled',default=False)
         vmnf_shared_parser.add_argument("--pretty",action="store_true",dest='pretty_output',default=False)
+        vmnf_shared_parser.add_argument('--output', '-o', help='Output file for results (JSON format)')
         vmnf_shared_parser.add_argument("--app-scope",action="store_true",dest='app_scope',default=False)
+        
+        vmnf_shared_parser.add_argument('--no-evidence', action='store_true', help='Hide evidence details in console output')
+        vmnf_shared_parser.add_argument('--no-metadata', action='store_true', help='Hide framework metadata in console output')
+        vmnf_shared_parser.add_argument('--summary-only', action='store_true', help='Show only summary results (when scanning multiple targets)')
+        
+        # Detection control
+        vmnf_shared_parser.add_argument('--passive-only', action='store_true', help='Use only passive detection techniques')
+        vmnf_shared_parser.add_argument('--frameworks', help='Comma-separated list of frameworks to check')
+        vmnf_shared_parser.add_argument('--min-confidence', type=int, default=0, 
+                            help='Minimum confidence threshold for displaying frameworks (0-100)')
+        
+        # Advanced options
+        vmnf_shared_parser.add_argument('--min-delay', type=float, default=0.5, help='Minimum delay between requests in stealth mode')
+        vmnf_shared_parser.add_argument('--max-delay', type=float, default=2.0, help='Maximum delay between requests in stealth mode')
+        vmnf_shared_parser.add_argument('--max-retries', type=int, default=3, help='Maximum number of request retries')
+        vmnf_shared_parser.add_argument('--user-agent', help='Custom User-Agent string')
 
         # -------------------------------------------------------------------------------
         # > Rules settings

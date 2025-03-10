@@ -36,6 +36,8 @@ references:
   links:
     - https://www.djangoproject.com/
   cwe: False
+vfset:
+  parse_plugin_scope: True
 guide:
   naviargs: 
     target_url: False

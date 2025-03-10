@@ -48,6 +48,8 @@ references:
     - CWE-209 - Generation of Error Message Containing Sensitive Information
     - CWE-756 - Missing Custom Error Page
     - CWE-1295 - Debug Messages Revealing Unnecessary Information
+vfset:
+  parse_plugin_scope: True
 guide:
   args: |
     ø----------------------------------------------------------------------o
