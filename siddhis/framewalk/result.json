@@ -1,0 +1,46 @@
+{
+  "summary": {
+    "target_count": 3,
+    "scan_time": 14.206542015075684,
+    "timestamp": "2025-03-06 18:24:10",
+    "framework_distribution": {
+      "Django": 3,
+      "Flask": 2,
+      "FastAPI": 3,
+      "Pyramid": 2,
+      "Bottle": 2
+    },
+    "average_scan_time": 4.735514005025228,
+    "total_frameworks_detected": 12,
+    "total_components_detected": 6
+  },
+  "targets": [
+    {
+      "url": "http://127.0.0.1:8887",
+      "top_framework": "Django",
+      "confidence": 100,
+      "scan_time": 13.944069623947144,
+      "detected_frameworks": 5,
+      "components": 1,
+      "version": "All"
+    },
+    {
+      "url": "http://127.0.0.1:5000",
+      "top_framework": "Flask",
+      "confidence": 23,
+      "scan_time": 0.14595413208007812,
+      "detected_frameworks": 5,
+      "components": 0,
+      "version": "Werkzeug 2.0.3"
+    },
+    {
+      "url": "http://127.0.0.1:8000",
+      "top_framework": "FastAPI",
+      "confidence": 73,
+      "scan_time": 0.11651825904846191,
+      "detected_frameworks": 2,
+      "components": 5,
+      "version": "0.89+"
+    }
+  ]
+}

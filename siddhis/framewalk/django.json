@@ -1,0 +1,63 @@
+{
+  "target": "http://127.0.0.1:8887",
+  "scan_time": 8.854857683181763,
+  "timestamp": "2025-03-07 15:40:57",
+  "ip_info": {
+    "hostname": "127.0.0.1",
+    "ip": "127.0.0.1"
+  },
+  "server_info": {},
+  "security": {
+    "headers": {
+      "present": [
+        "X-Frame-Options"
+      ],
+      "missing": [
+        "HSTS",
+        "CSP",
+        "X-Content-Type-Options",
+        "X-XSS-Protection",
+        "Referrer-Policy",
+        "Permissions-Policy",
+        "COEP",
+        "COOP",
+        "CORP"
+      ],
+      "values": {
+        "X-Frame-Options": "SAMEORIGIN"
+      }
+    }
+  },
+  "frameworks": [
+    {
+      "name": "FastAPI",
+      "confidence": 3,
+      "version": "Unknown",
+      "components": [],
+      "vulnerabilities": [
+        {
+          "id": "CVE-2023-37920",
+          "description": "Path traversal vulnerability in file upload",
+          "severity": "unknown"
+        },
+        {
+          "id": "CVE-2022-41340",
+          "description": "Denial of service via unlimited depth of JSON data",
+          "severity": "unknown"
+        }
+      ],
+      "metadata": {
+        "description": "Modern, fast, web framework for building APIs",
+        "website": "https://fastapi.tiangolo.com/"
+      },
+      "evidence": {
+        "Header": [
+          "Header contains Python reference: server"
+        ],
+        "Server": [
+          "Python version leak: 3.6.9"
+        ]
+      }
+    }
+  ]
+}
