@@ -95,6 +95,9 @@ guide:
      --target-url         Run D4M8 against a specific target URL
      --use-request        Load request parameters from a text file
      --scan-rules         Run D4M8 in rule-based scanning mode
+     --set-path           Set a specific path to fuzz
+     --target-exceptions  Set a specific exception to target
+     --skip-exceptions    Set a specific exception to skip
     +-----------+----------------------------------------------------------+
     │ data      └┐                                                         │     
     +------------+---------------------------------------------------------+
