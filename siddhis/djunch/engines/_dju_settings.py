@@ -77,9 +77,9 @@ class table_models:
         }
         self.siddhis_tbl_set = {
             'fields': [cl('Name',94), cl('Type',94), cl('Category',94), cl('Scope',94), cl('Info',94)],
-            'title' : 'Plugins (Vimana v0.8)',
-            'color' : 'red',
-            'attrs' : [],
+            'title' : 'Plugins',
+            'color' : 'white',
+            'attrs' : ['bold'],
             'align' : 'l' 
         }
         self.sttinger_findings_set = {

@@ -74,6 +74,7 @@ def configure_logging(handler):
         indented_json = '\n'.join(['\t' + line if line.strip() else line for line in json_dump.split('\n')])
         logging.info("Initializing engines with parameters:\n → cmd_line: %s\n → handler:\n%s", 
                         cmd_line, indented_json)
+        
     elif hasattr(handler, 'verbose_logging') and handler.verbose_logging:
         cmd_line = ' '.join(sys.argv)
         logging.info("Initializing engines with parameters:\n\t→ cmd_line: %s", cmd_line)
@@ -159,8 +160,12 @@ def abduct():
                     handler_ns.start_resource = []
 
                 handler_ns.start_resource.append(arg)
-        
-    # runner doesn't require validations 
+
+    # ~ new in vimana 1.0 - run plugin by name directly
+    if hasattr(handler_ns, 'plugin_name') and handler_ns.plugin_name:
+        handler_ns.module_run = handler_ns.plugin_name
+    
+    # ~ runner doesn't require validations 
     if handler_ns.runner_mode:
         vfmng(**vars(handler_ns)).run_siddhi()
         return True
@@ -253,9 +258,10 @@ def abduct():
         vfmng(**vars(handler_ns)).run_siddhi()
 
     elif handler_ns.create_env:
-        from core.envops.set_env import EnvCLI
-        EnvCLI().start()
-        #print('Wait future releases for this feature. [:')
+        #from core.envops.set_env import EnvCLI
+        #EnvCLI().start()
+        print("Stay tuned for this feature in future releases. [:")
+
 
 
 

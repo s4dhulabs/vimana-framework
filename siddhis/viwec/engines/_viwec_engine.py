@@ -80,6 +80,10 @@ class vwce(scrapy.Spider):
         sleep(1)        
     
     def parse(self,response):
+        if self.handler.get('set_path_scope'):
+            self.started = True
+            return
+
         self.started = True
         depth = response.meta.get('depth', 0)
 
@@ -132,17 +136,10 @@ class vwce(scrapy.Spider):
                     callback=self.parse,
                     meta={'depth': depth + 1}
                 )
-                '''
-                yield scrapy.Request(
-                    _url_item_['url'], 
-                    callback=self.parse
-                )
-                '''
+
             cprint(f"    + {_url_item_['url'].strip()}", 'blue', attrs=attrs)
             yield _url_item_
-        
 
-        #print()
 
     def closed(self,reason):
         from scrapy.crawler import CrawlerProcess
@@ -151,6 +148,7 @@ class vwce(scrapy.Spider):
         from siddhis.d4m8.engines._d4m8_engine import d4m8
         from siddhis.d4m8.engines._crawler_settings import settings
     
+        
         if self.single_target and not self.started:
             cprint("[{}] Connection failure: check the HTTP scheme and try again.\n".format(
                 datetime.now()), 'red')
@@ -195,20 +193,22 @@ class vwce(scrapy.Spider):
                 [f.write(u + '\n') for u in self.discovered_urls]
                 f.close()
             
-            self.handler['scope'].extend(self.discovered_urls)
-            self.handler['scope'].append(self.handler['target_url'])
-            self.handler['scope'].extend(
-                [urljoin(self.handler['target_url'], p) \
-                    for p in self.handler['patterns'] \
-                        if p and p is not None 
-                ]
-            )
+            if not self.handler.get('set_path_scope'):
+                self.handler['scope'].extend(self.discovered_urls)
+                self.handler['scope'].append(self.handler['target_url'])
 
-            
+                self.handler['scope'].extend(
+                    [urljoin(self.handler['target_url'], p) \
+                        for p in self.handler['patterns'] \
+                            if p and p is not None 
+                    ]
+                )
+            else:
+                self.handler['scope'] = [urljoin(self.handler['target_url'], self.handler['set_path_scope'])]
+
             #from siddhis.jcolt.utils import get_hash
             scan_id = str(self.handler['scope']).encode('utf-8')
             scan_id = (hashlib.sha256(scan_id).hexdigest())
-
 
             #scan_id = get_hash(str(self.handler['scope']))[:10]
             full_output_path = f"{self.abs_cache_path}/{scan_id}.txt"

@@ -210,9 +210,6 @@ class DJUtils:
 
     def set_form_fuzz(self, base_form:dict, data_set:dict=False) -> dict:
 
-        #print(base_form)
-        #input('inside set_form_fuzz')
-
         fuzz_all = {}
         fuzz_scope = {
             'mixed_data': [],
@@ -291,15 +288,6 @@ class DJUtils:
                 for key in base_form}
         )
         
-        '''
-        for fuzz_type, forms in fuzz_scope.items():
-            for fform in forms:
-                print(fform)
-                print('-'*100)
-
-        input('fuzzs_cope')
-        '''
-        #return fuzz_scope
 
         keys = list(base_form.keys())
         for i in range(1, len(keys) + 1):
@@ -345,6 +333,7 @@ class DJUtils:
                 fuzz_scope['authfuzz'].append({field:f"{self.get_wrmail()} {choice(all_payloads)}"})
 
         if data_set:
+
             fuzzsets = self.parse_data_set(data_set, base_form, all_payloads)
             fuzz_scope['mixed_data'].extend(fuzzsets)
 

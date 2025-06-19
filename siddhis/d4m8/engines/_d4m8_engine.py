@@ -63,8 +63,9 @@ from ..utils import (
 
 from siddhis.djunch.engines._djxip import ParseXItem
 from core.vmnf_utils import generate_exception_id
-from core.api.dashboard_utils import send_to_dashboard
-from core.api.dashboard_utils import prepare_dashboard_data
+# connect to dashboard api
+#from core.api.dashboard_utils import send_to_dashboard
+#from core.api.dashboard_utils import prepare_dashboard_data
 
 
 class d4m8(scrapy.Spider):
@@ -229,12 +230,21 @@ class d4m8(scrapy.Spider):
         csrftoken = response.css(token_input_value).extract_first()
         self.csrftokens.append(csrftoken)
         base_form = get_form_dict(response)
-        fuzz_forms = DJUtils(False,False).set_form_fuzz(base_form, data_set)
+
+        if self.handler.get('set_path_scope') and data_set:
+            fuzz_forms = {
+                'custom': [data_set]
+            }
+        else:
+            fuzz_forms = DJUtils(False,False).set_form_fuzz(base_form, data_set)
+
         fields = response.xpath('//form//input').extract()
 
         for fuzz_type, forms in fuzz_forms.items():
             for fform in forms:
-
+                if self.handler.get('debug'):
+                    print(f"===> in the loop: {fform}")
+                    
                 meta = {
                     'fuzz_type': fuzz_type,
                     'form_data':fform, 
@@ -319,8 +329,32 @@ class d4m8(scrapy.Spider):
 
     def parse_exception(self, response):
         if response.status == 500 and is_django_exception(response):
+
             if self.RULE_SCAN_MODE and not self.exception_match(response):
                 return
+                
+            if self.handler.get('target_exception'):
+                if self.handler.get('target_exception') not in response.text:
+                    return
+                
+            if self.handler.get('target_exceptions'):
+                target_exceptions = self.handler.get('target_exceptions')
+                if isinstance(target_exceptions, str):
+                    target_exceptions = [x.strip() for x in target_exceptions.replace(',', ' ').split()]
+                if not any(exc in response.text for exc in target_exceptions):
+                    return
+
+            if self.handler.get('skip_exception'):
+                if self.handler.get('skip_exception') in response.text:
+                    return
+                
+            if self.handler.get('skip_exceptions'):
+                skip_exceptions = self.handler.get('skip_exceptions')
+                if isinstance(skip_exceptions, str):
+                    skip_exceptions = [x.strip() for x in skip_exceptions.replace(',', ' ').split()]
+                if any(exc in response.text for exc in skip_exceptions):
+                    return
+                
 
             module_args = {}
             extracted_vars = {}

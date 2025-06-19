@@ -18,6 +18,7 @@ from .models.siddhis import Siddhis as VFSD
 from .models.tools import Tools as VFTools
 from .models.scans import VFScans
 from .models.cases import VFCases
+from .models.envs import VFEnvs
 
 from sqlalchemy_utils.functions import database_exists as db_exists
 from .db_utils import filter_ops, handle_OpErr,get_filter_clauses
@@ -43,7 +44,8 @@ class VFDBOps:
             '_SCANS_'   : VFScans,
             '_CASES_'   : VFCases,
             '_TOOLS_'   : VFTools,
-            '_SPECS_'   : VFSpecs
+            '_SPECS_'   : VFSpecs,
+            '_ENVS_'    : VFEnvs
         }
         self.create_db()
     

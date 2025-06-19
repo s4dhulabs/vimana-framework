@@ -50,7 +50,9 @@ class vfasserts:
             and not self._vfh_['flush_specs'] \
             and not self._vfh_['flush_spec'] \
             and not self._vfh_['fuzzerspec_enabled'] \
-            and not self._vfh_['create_env'] 
+            and not self._vfh_['create_env'] \
+            and not self._vfh_['load_from_env'] \
+            and not self._vfh_['api_scan_enabled'] \
         ) else True
 
     def default_guide_mode(self):

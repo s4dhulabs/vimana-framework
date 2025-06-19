@@ -63,7 +63,7 @@ from . exceptions._items import IssuesPool
 from res.vmnf_fuzz_data import VMNFPayloads 
 from res.colors import *
 
-from core.api.dashboard_utils import send_to_dashboard, prepare_dashboard_data
+#from core.api.dashboard_utils import send_to_dashboard, prepare_dashboard_data
 
 
 class DJEngineParser(scrapy.Spider):

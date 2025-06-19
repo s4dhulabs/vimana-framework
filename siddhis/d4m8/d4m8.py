@@ -66,6 +66,11 @@ class siddhi:
         #############################
         # -> D4M8 ANALYSIS SETTINGS
         #############################
+        URL_patterns = []
+
+        if self.vmnf_handler.get('set_path_scope'):
+            URL_patterns = [self.vmnf_handler['set_path_scope']]
+
         if self.vmnf_handler.get('agressive_mode', False):
             C_REQUEST = settings['CONCURRENT_REQUESTS'] * 5
             settings['CONCURRENT_REQUESTS'] = C_REQUEST
@@ -81,8 +86,8 @@ class siddhi:
             settings['AUTOTHROTTLE_MAX_DELAY'] = 40.0
             settings['AUTOTHROTTLE_TARGET_CONCURRENCY'] = 0.5
 
-        URL_patterns = []
-        self.vmnf_handler['patterns'] = ['admin/']
+        
+        self.vmnf_handler['patterns'] = [] 
         framework_defined = 'django' # self.vmnf_handler.get('framework')
         self.vmnf_handler['auto'] = True
         RULE_SCOPE_SET = False
@@ -91,7 +96,7 @@ class siddhi:
         # -> D4M8 RULE SCANS
         #############################
         # rules just requires a JSON rule in d4m8/rules, no enrichment steps
-        if self.vmnf_handler['rule_scan']:
+        if self.vmnf_handler['rule_scan'] and not self.vmnf_handler.get('set_path_scope'):
             # IN RULE SCAN MODE WE ALREADY HAVE EVERYTHING
             runner = CrawlerRunner(dict(settings))
             daemon = runner.crawl(d4m8, **self.vmnf_handler)
@@ -140,7 +145,7 @@ class siddhi:
                 self.vmnf_handler['request_data_set'] = data_set
                 self.vmnf_handler['endpoint_set'] = endpoint
 
-        if framework_defined:
+        if framework_defined and not self.vmnf_handler.get('set_path_scope'):
             if framework_defined.lower() == 'django':
                 from ..dmt.engines._crawler_settings import headers
 
@@ -152,11 +157,16 @@ class siddhi:
                 URL_patterns.extend(
                     dmt(**self.vmnf_handler).get_app_patterns(False)
                 )
+                if self.vmnf_handler.get('debug'):
+                    for pattern in URL_patterns:
+                        print(f"+ {pattern}")
+                    
 
-        if self.vmnf_handler['extended_scope']:
+        if self.vmnf_handler['extended_scope'] and not self.vmnf_handler.get('set_path_scope'):
             URL_patterns.extend(
                 vfp(**self.vmnf_handler).get_common_url_patterns()
             )
+
 
         self.vmnf_handler['patterns'] = URL_patterns
 

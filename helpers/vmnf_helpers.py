@@ -192,20 +192,20 @@ class VimanaHelp:
     Examples:
 
         # Show full DMT plugin guide
-        $ vimana guide --module dmt
-        $ vimana guide -m dmt
+        $ vimana guide --plugin dmt
+        $ vimana guide -p dmt
 
         # Show DMT plugin arguments with highlights
-        $ vimana guide --module dmt -args --highlights:
-        $ vimana guide -m dmt -a
+        $ vimana guide --plugin dmt --args --highlights:
+        $ vimana guide -p dmt -a
 
         # Show only usage examples
-        $ vimana guide --module dmt --examples
-        $ vimana guide -m dmt -e
+        $ vimana guide --plugin dmt --examples
+        $ vimana guide -p dmt -e
 
         # Show lab setup tips:
-        $ vimana guide -m dmt --labs
-        $ vimana guide -m dmt -l
+        $ vimana guide -p dmt --labs
+        $ vimana guide -p dmt -l
 
         '''
 

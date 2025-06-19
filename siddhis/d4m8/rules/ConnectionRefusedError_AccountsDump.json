@@ -5,7 +5,7 @@
     "REQUEST": {
         "request_method": "POST",
         "request_urls": [
-	    "http://127.0.0.1:8887/taskManager/forgot_password/"
+	    "http://127.0.0.1:8000/taskManager/forgot_password/"
 	],
         "form_target_input_data": {
 	    "email": "/tmp/d4m8_test_emails.txt"

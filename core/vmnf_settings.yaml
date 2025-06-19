@@ -36,17 +36,17 @@ settings:
         - --form-input-target
         - --target-input
         - --django-version
-        - --inspect
         - --methods
         - --method
         - --fuzzspecs
-        - --fuzzspec
         - -m
         - --flush-spec
         - --set-path
         - --custom-variations
         - --set-parameter
         - --set-param
+        - --jwt
+        - --auth-refresh-token
     case_set:
         cases_path: core/cases/
         cases_yf: core/cases/*.yaml
@@ -61,6 +61,8 @@ settings:
         - prana
         - dmt
         - flame
+        - jcolt
+        - caiman
         - d4m8
         - sttinger
         - jungle
@@ -69,5 +71,6 @@ settings:
         - atlatl
         - viewscan
         - tictrac
+        - fff
     utils:
         random_headers: res/random_headers.yaml

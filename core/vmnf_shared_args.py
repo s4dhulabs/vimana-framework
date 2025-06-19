@@ -81,6 +81,7 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument('--multi-target',action='store_true',dest='multi_target',default=False)
         vmnf_shared_parser.add_argument('--docker-scope',action='store_true',dest='docker_scope',default=False)
         vmnf_shared_parser.add_argument('--endpoint-url',action='store',dest='endpoint_url',default=False)
+        vmnf_shared_parser.add_argument('--endpoint',action='store',dest='endpoint',default=False, nargs='?')
         vmnf_shared_parser.add_argument('--target-dir',action='store',dest='target_dir',default=False)
         vmnf_shared_parser.add_argument('--target-url',action='store',dest='target_url',default=False)
         #vmnf_shared_parser.add_argument('--target',action='store',dest='target',default=False)
@@ -107,7 +108,7 @@ class VimanaSharedArgs:
         # > Analysis - [ configuration options ] 
         # -------------------------------------------------------------------------------
         vmnf_shared_parser.add_argument("--debug",action="store_true",default=False)
-        vmnf_shared_parser.add_argument("--verbose", '-v', action='count', default=False)
+        vmnf_shared_parser.add_argument("--verbose", dest='verbose', action='store_true', default=False)
         vmnf_shared_parser.add_argument("--random", action="store_true",default=False)
         vmnf_shared_parser.add_argument("--wait", action="store", default=False)      
         vmnf_shared_parser.add_argument("--threads",action="store", type=int, default=10)
@@ -123,7 +124,7 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--agressive", action="store_true",dest='agressive_mode',default=False)        
         vmnf_shared_parser.add_argument("--slow", action="store_true", dest='slow_mode',default=False)        
         vmnf_shared_parser.add_argument('--search-issues',action='store_true',dest='search_issues',default=False)
-        vmnf_shared_parser.add_argument('--fuzzspec',action='store',dest='fuzzerspec_enabled',default=False)
+        vmnf_shared_parser.add_argument('--fuzzspec',action='store',dest='fuzzerspec_enabled',nargs='?',const='ENV_FALLBACK',default=False)
         vmnf_shared_parser.add_argument('--fuzzspec-file',action='store',dest='use_fuzzerspec_file',default=False)
         vmnf_shared_parser.add_argument('-cv','--custom-variations',action='store',dest='fuzzer_custom_variations',type=int, default=3)
         vmnf_shared_parser.add_argument('--verbose-logging',action='store_true',dest='verbose_logging',default=False)
@@ -131,6 +132,9 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument('--schemavalidate',action='store_true',dest='schema_validate',default=False)
         vmnf_shared_parser.add_argument('--show-response',action='store_true',dest='show_response',default=False)
         vmnf_shared_parser.add_argument('--describe',action='store_true',dest='describe_mode_enabled',default=False)
+        vmnf_shared_parser.add_argument('--scan-api',action='store',dest='api_scan_enabled',nargs='?',const='ENV_FALLBACK',default=False)
+        vmnf_shared_parser.add_argument('--api-scan',action='store',dest='api_scan_enabled',nargs='?',const='ENV_FALLBACK',default=False)
+        vmnf_shared_parser.add_argument('--check-debug',action='store_true',dest='check_debug',default=False)
         # -------------------------------------------------------------------------------
         # > Scope setting - [ scope parser options ] 
         # -------------------------------------------------------------------------------
@@ -156,6 +160,12 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--use-request", action="store", dest='request_data_set',default=False)
         vmnf_shared_parser.add_argument("--object", action="store", dest='filter_by_objects',default=False)
         vmnf_shared_parser.add_argument("--plugin-target", action="store", dest='set_plugin_target',default=False)
+        vmnf_shared_parser.add_argument("--jwt", action="store", dest='jwt_token',default=False)
+        vmnf_shared_parser.add_argument("--token", action="store", dest='auth_token',default=False)
+        vmnf_shared_parser.add_argument("--target-exception", action="store", dest='target_exception',default=False)
+        vmnf_shared_parser.add_argument("--target-exceptions", action="store", dest='target_exceptions',default=False)
+        vmnf_shared_parser.add_argument("--skip-exception", action="store", dest='skip_exception',default=False)
+        vmnf_shared_parser.add_argument("--skip-exceptions", action="store", dest='skip_exceptions',default=False)
         # -------------------------------------------------------------------------------
         # > Connection setting - [ proxy options ] 
         # -------------------------------------------------------------------------------
@@ -184,6 +194,12 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--split-payload",action="store",dest='split_payload',default=False, type=int)
         vmnf_shared_parser.add_argument("--random-vars",action="store_true",dest='random_vars',default=False)
         vmnf_shared_parser.add_argument("--max-var-length",action="store",dest='max_var_length',default=False, type=int)
+
+        vmnf_shared_parser.add_argument("--payload-size",action="store",dest='payload_size',default=1, type=int)
+        vmnf_shared_parser.add_argument("--duration",action="store",dest='duration',default=60, type=int)
+        vmnf_shared_parser.add_argument("--max-workers",action="store",dest='max_workers',default=5, type=int)
+        vmnf_shared_parser.add_argument("--requests",action="store",dest='requests',default=10, type=int)
+        
         # -------------------------------------------------------------------------------
         # > common plugin shared options
         # -------------------------------------------------------------------------------
@@ -207,10 +223,8 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--sleep",action="store",dest='set_sleep',default=1)
         vmnf_shared_parser.add_argument("--show-details",action="store_true",dest='show_details',default=False)
 
-
         vmnf_shared_parser.add_argument('--stealth', action='store_true', help='Enable stealth mode (slower but less detectable)',default=False)
         
-
         vmnf_shared_parser.add_argument("--flush-specs",action="store_true",dest='flush_specs',default=False)
         vmnf_shared_parser.add_argument("--flush-spec",action="store",dest='flush_spec',default=False)
         vmnf_shared_parser.add_argument("--list-specs",action="store_true",dest='list_specs',default=False)
@@ -226,15 +240,24 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--list-description",action="store_true",dest='list_descriptions',default=False) 
         vmnf_shared_parser.add_argument("--list-response-headers",action="store_true",dest='list_response_headers',default=False) 
 
+        # pydantic nameaspaces
+        vmnf_shared_parser.add_argument("--list-pydantic-models",action="store_true",dest='list_pydantic_models',default=False)
+        vmnf_shared_parser.add_argument("--list-field-constraints",action="store_true",dest='list_field_constraints',default=False)
+        vmnf_shared_parser.add_argument("--list-endpoint-models",action="store_true",dest='list_endpoint_models',default=False)
+        vmnf_shared_parser.add_argument("--list-security-fields", action="store_true",dest='list_security_fields',default=False)
+        vmnf_shared_parser.add_argument("--list-enums", action="store_true",dest='list_enums',default=False)
+        vmnf_shared_parser.add_argument("--list-model-relationships", action="store_true",dest='list_model_relationships',default=False)
+        vmnf_shared_parser.add_argument("--list-validation-coverage", action="store_true",dest='list_validation_coverage',default=False)
+
         vmnf_shared_parser.add_argument("--apispec",action="store",dest='apispec_enabled',default=False)
-        vmnf_shared_parser.add_argument("--oas",action="store",dest='apispec_enabled',default=False)
+        vmnf_shared_parser.add_argument("--oas",action="store",nargs='?',dest='apispec_enabled',default=False)
         vmnf_shared_parser.add_argument("--path",action="store",dest='set_path_scope',default=False)
         vmnf_shared_parser.add_argument("--set-path",action="store",dest='set_path_scope',default=False)
         vmnf_shared_parser.add_argument("--set-parameter",action="store",dest='set_param_scope',default=False)
         vmnf_shared_parser.add_argument("--set-param",action="store",dest='set_param_scope',default=False)
-        #vmnf_shared_parser.add_argument("--spec",action="store",dest='apispec_enabled',default=False)
+        vmnf_shared_parser.add_argument("--use-env",action="store",dest='load_from_env',default=False)
 
-        vmnf_shared_parser.add_argument("--inspect",action="store",dest='inspect',default=False)
+        vmnf_shared_parser.add_argument("--inspect",action="store",nargs='?',dest='inspect',const='ENV_FALLBACK',default=False)
         vmnf_shared_parser.add_argument("--highlight",action="store_true",dest='highlight_enabled',default=False)
         vmnf_shared_parser.add_argument("--api-fingerprint",action="store_true",dest='api_fingerprint',default=False)
         vmnf_shared_parser.add_argument("--methods",action="store",dest='filter_by_method',default=False)
@@ -272,6 +295,81 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--scan-rules",action="store_true",dest='rule_scan',default=False)
         vmnf_shared_parser.add_argument("--scan-rule",action="store_true",dest='rule_scan',default=False)
         vmnf_shared_parser.add_argument("--rule",action="store_true",dest='rule_scan',default=False)
+        
+
+        # Authentication options
+        vmnf_shared_parser.add_argument("--auth-file", help="Path to authentication configuration file")
+        vmnf_shared_parser.add_argument("--auth-type", choices=["basic", "form", "api_key", "jwt", "oauth2", "custom"],
+                            help="Authentication type")
+        vmnf_shared_parser.add_argument("--auth-interactive", action="store_true",
+                            help="Prompt for authentication details interactively")
+        
+        # Common authentication parameters
+        vmnf_shared_parser.add_argument("--auth-username", help="Username for authentication")
+        vmnf_shared_parser.add_argument("--auth-password", help="Password for authentication")
+        
+        # Form authentication parameters
+        vmnf_shared_parser.add_argument("--auth-login-url", help="Login URL for form authentication")
+        vmnf_shared_parser.add_argument("--auth-username-field", help="Username field name for form authentication")
+        vmnf_shared_parser.add_argument("--auth-password-field", help="Password field name for form authentication")
+        vmnf_shared_parser.add_argument("--auth-success-indicator", help="Success indicator for form authentication")
+        
+        # API key authentication parameters
+        vmnf_shared_parser.add_argument("--auth-api-key", help="API key for API key authentication")
+        vmnf_shared_parser.add_argument("--auth-header-name", help="Header name for API key authentication")
+        vmnf_shared_parser.add_argument("--auth-as-query-param", action="store_true",
+                            help="Send API key as query parameter")
+        vmnf_shared_parser.add_argument("--auth-param-name", help="Parameter name for API key authentication")
+        
+        # JWT authentication parameters
+        vmnf_shared_parser.add_argument("--auth-token", help="JWT token for JWT authentication")
+        vmnf_shared_parser.add_argument("--auth-refresh-token", help="Refresh token for JWT authentication")
+        vmnf_shared_parser.add_argument("--auth-url", help="Authentication URL for JWT authentication")
+        
+        # OAuth2 authentication parameters
+        vmnf_shared_parser.add_argument("--auth-client-id", help="Client ID for OAuth2 authentication")
+        vmnf_shared_parser.add_argument("--auth-client-secret", help="Client secret for OAuth2 authentication")
+        vmnf_shared_parser.add_argument("--auth-token-url", help="Token URL for OAuth2 authentication")
+        vmnf_shared_parser.add_argument("--auth-scope", help="Scope for OAuth2 authentication")
+        
+        # Pydantic Model Testing arguments
+        vmnf_shared_parser.add_argument("--pydantic-test", action="store_true", dest='pydantic_test', 
+                                    help="Run Pydantic model testing on API schema")
+
+        vmnf_shared_parser.add_argument("--serialization-test", action="store_true", dest='serialization_test', 
+                                    help="Run serialization tests on API schema")
+        
+        vmnf_shared_parser.add_argument("--custom-test", action="store", dest='custom_test', 
+                                    help="Run custom test on API schema")
+        
+        vmnf_shared_parser.add_argument("--pt", action="store_true", dest='pydantic_test', 
+                                    help="Run Pydantic model testing on API schema")
+        
+        vmnf_shared_parser.add_argument("--pydantic-test-type", action="store", nargs='?', dest='pydantic_test_types', default=False,
+                                    help="Specify test types to run (comma-separated: type-confusion,validation-bypass,boundary-testing,special-chars,injection)")
+        
+        vmnf_shared_parser.add_argument("--ptt", action="store", nargs='?', dest='pydantic_test_types', default=False,
+                                    help="Specify test types to run (comma-separated: type-confusion,validation-bypass,boundary-testing,special-chars,injection)")
+        
+        vmnf_shared_parser.add_argument("--test-model", action="store", dest='pydantic_models', default=False,
+                                    help="Target specific model(s) for testing (comma-separated)")
+        
+        vmnf_shared_parser.add_argument("--export-format", action="store", dest='export_format', default='json',
+                                    help="Export format for results (json, html, csv, pdf)")
+        
+        vmnf_shared_parser.add_argument("--test-categories", action="store", nargs='?', dest='test_categories', default=False,
+                                    help="Specify test categories to run (comma-separated: type-confusion,validation-bypass,boundary-testing,special-chars,injection)")
+        
+        vmnf_shared_parser.add_argument("--test-category", action="store", nargs='?', dest='test_categories', default=False,
+                                    help="Specify test categories to run (comma-separated: type-confusion,validation-bypass,boundary-testing,special-chars,injection)")
+        
+        vmnf_shared_parser.add_argument("--ptc", action="store", nargs='?', dest='test_categories', default=False,
+                                    help="Specify test categories to run (comma-separated: type-confusion,validation-bypass,boundary-testing,special-chars,injection)")
+
+        vmnf_shared_parser.add_argument("--set-custom-payload", action="store_true", dest='set_custom_payload', default=False)
+
+        vmnf_shared_parser.add_argument("--test-type", nargs='?', choices=["single", "concurrent", "progressive", "sustained", "ieee754", "precision", "mathematical", "confusion", "comprehensive"], 
+                        default=False, help="Type of test to run")
         
         return vmnf_shared_parser
 

@@ -10,6 +10,9 @@ from pygments.formatters import TerminalFormatter
 from colorama import init, Fore, Style
 
 from res.vmnf_banners import case_header
+from core._dbops_.vmnf_dbops import VFDBOps
+from datetime import datetime
+
 
 # Inicializa o colorama
 init(autoreset=True)
@@ -98,7 +101,7 @@ class EnvCLI(cmd.Cmd):
                 print(f"{Fore.YELLOW}Variable '{var_name}' added with value '{var_value}'{Style.RESET_ALL}")
 
     # Comando para carregar variáveis de um arquivo JSON
-    def do_load_var(self, line):
+    def do_load_vars(self, line):
         "Load variables from a JSON file: load_var <file.json>"
         if not line.strip():
             print(f"{Fore.RED}Please provide a JSON file path.{Style.RESET_ALL}")
@@ -216,6 +219,16 @@ class EnvCLI(cmd.Cmd):
         # Exibir o JSON com sintaxe destacada
         print("\nEnvironment JSON Summary:")
         print(self.highlight_json(env_data))
+        
+        add_env = {
+            'env_id': f'vfe-{len(VFDBOps().getall("_ENVS_")) + 1}',
+            'env_name': self.env_name,
+            'env_description': 'test',
+            'env_file_path': 'test',
+            'env_data': env_data,
+            'env_date': datetime.now()
+        }
+        VFDBOps(**add_env).register('_ENVS_')
 
     # Comando de reset
     def do_reset(self, line):
