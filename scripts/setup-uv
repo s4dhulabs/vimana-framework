@@ -36,7 +36,11 @@ echo "💡 Use 'uv run python -m vimana' to run with proper environment"
 
 # Activate the virtual environment in the current shell
 echo "🔧 Activating virtual environment..."
+export VIRTUAL_ENV_DISABLE_PROMPT=1
 source .venv/bin/activate
+
+# Set custom prompt for the virtual environment
+export PS1="(vimana-framework) > "
 
 echo "🎉 Virtual environment activated! You can now use:"
 echo "   - vimana (or vf) - to run the framework"
