@@ -1,22 +1,40 @@
-FROM python:3.9-slim
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+#
+# Author: s4dhu
+# Email: <s4dhul4bs[dot]protonmail[at]ch>
+# Git: @s4dhulabs
+# Mastodon: @s4dhu
+# 
+# This file is part of Vimana Framework Project.
 
-WORKDIR /app
+FROM python:3.9-slim-buster
 
-# Install curl for healthcheck
-RUN apt-get update && \
-    apt-get install -y curl && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+LABEL MAINTAINER="s4dhu <s4dhul4bs[dot]protonmail[at]ch>"
+MAINTAINER s4dhu <s4dhul4bs[at]protonmail[dot]ch>
 
-# Copy requirements first for better caching
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+ENV DEBIAN_FRONTEND=noninteractive
+WORKDIR /vf0.1
+COPY . /vf0.1
 
-# Copy application code
-COPY . .
+RUN python3.9 -m pip install --user --no-cache-dir --upgrade pip && \
+    python3.9 -m pip install --user --no-cache-dir -r requirements.txt && \
+    python3.9 -m pip install --user --no-cache-dir -U PyYAML
 
-# Expose the application port
-EXPOSE 8000
+RUN groupadd -r vimana && \
+    useradd -r -m -g vimana -G sudo oper && \
+    chown -R oper:vimana /vf0.1/core/_dbops_/ && \
+    chmod -R 750 /vf0.1/core/_dbops_/
 
-# Run the application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+ENV PYTHONWARNINGS=ignore
+ENV PATH="/vf0.1:${PATH}"
+RUN ln -s /vf0.1/vimana.py /usr/bin/vimana
+CMD ["vimana", "load", "--plugins"]
+ENTRYPOINT ["vimana"]
+
+
+
+
+

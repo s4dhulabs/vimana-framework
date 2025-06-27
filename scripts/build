@@ -11,12 +11,37 @@
 #
 # This file is part of Vimana Framework Project.
 
+set -e  # Exit on any error
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Function to print colored output
+print_status() {
+    echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+print_success() {
+    echo -e "${GREEN}[SUCCESS]${NC} $1"
+}
+
+print_warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $1"
+}
+
+print_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
 
 clear
 printf """
 
 -----------------------------------------------------
--.-      VIMANA FRAMEW0RK v0.8| IMAGE BUILDER     -0-
+-.-      VIMANA FRAMEW0RK v0.1| IMAGE BUILDER     -0-
 -----------------------------------------------------
         https://github.com/s4dhulabs/vimana-framework
                 @s4dhulabs
@@ -31,15 +56,47 @@ printf """
 
 """
 sleep 1
-#timedatectl set-ntp yes
 
-printf "\n==> Building Vimana image..."
-docker build --no-cache=true --network=host -t vimana_framework:v0.8 .
+# Check if Docker is running
+if ! docker info > /dev/null 2>&1; then
+    print_error "Docker is not running. Please start Docker and try again."
+    exit 1
+fi
 
-printf "\n==> Testing Vimana image..."
-docker run -t vimana_framework:v0.8
-sleep 2
+# Check if Dockerfile exists
+if [ ! -f "Dockerfile" ]; then
+    print_error "Dockerfile not found in current directory."
+    exit 1
+fi
 
-printf "\n==> Testing build..."
-docker run -t vimana_framework:v0.8 list --plugins
+print_status "Building Vimana Docker image..."
+if docker build --no-cache=true --network=host -t vimana_framework:v0.1 .; then
+    print_success "Docker image built successfully!"
+else
+    print_error "Failed to build Docker image."
+    exit 1
+fi
+
+print_status "Testing Vimana image..."
+if docker run --rm -t vimana_framework:v0.1 --help > /dev/null 2>&1; then
+    print_success "Docker image test passed!"
+else
+    print_warning "Docker image test failed, but continuing..."
+fi
+
+print_status "Testing Vimana plugins..."
+if docker run --rm -t vimana_framework:v0.1 list --plugins; then
+    print_success "Plugin test completed!"
+else
+    print_warning "Plugin test failed, but image is built."
+fi
+
+print_success "Vimana Framework Docker image is ready!"
+echo ""
+echo "Usage:"
+echo "  docker run -it vimana_framework:v0.1"
+echo "  docker run -it vimana_framework:v0.1 --help"
+echo "  docker run -it vimana_framework:v0.1 list --plugins"
+echo ""
+print_status "You can also use docker-compose: docker-compose up"
 

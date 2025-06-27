@@ -1,0 +1,41 @@
+#! /bin/bash
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+#
+# Author: s4dhu
+# Email: <s4dhul4bs[at]prontonmail[dot]ch
+# Git: @s4dhulabs
+# Mastodon: @s4dhu
+# 
+# This file is part of Vimana Framework Project.
+
+echo "🚀 Setting up Vimana Framework with uv..."
+
+# Check if uv is installed
+if ! command -v uv &> /dev/null; then
+    echo "📦 Installing uv..."
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    source ~/.bashrc
+fi
+
+# Create virtual environment and install dependencies
+echo "🔧 Creating virtual environment..."
+uv venv ~/vfe0.1-uv
+source ~/vfe0.1-uv/bin/activate
+
+echo "📚 Installing dependencies with uv sync..."
+uv sync
+
+# Create symlinks
+echo "🔗 Creating symlinks..."
+sudo ln -sf $PWD/vimana.py /usr/bin/vimana
+sudo ln -sf $PWD/vimana.py /usr/bin/vf
+
+echo "✅ Vimana Framework setup complete!"
+echo "🎯 Run 'vimana' or 'vf' to start the framework"
+echo "🌐 Virtual environment: ~/vfe0.1-uv"
+
+# Start Vimana
+vimana 
