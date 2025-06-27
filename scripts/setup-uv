@@ -22,10 +22,6 @@ fi
 
 # Create virtual environment and install dependencies
 echo "🔧 Creating virtual environment..."
-uv venv ~/vfe0.1-uv
-source ~/vfe0.1-uv/bin/activate
-
-echo "📚 Installing dependencies with uv sync..."
 uv sync
 
 # Create symlinks
@@ -35,7 +31,8 @@ sudo ln -sf $PWD/vimana.py /usr/bin/vf
 
 echo "✅ Vimana Framework setup complete!"
 echo "🎯 Run 'vimana' or 'vf' to start the framework"
-echo "🌐 Virtual environment: ~/vfe0.1-uv"
+echo "🌐 Virtual environment: .venv (in project directory)"
+echo "�� Use 'uv run python -m vimana' to run with proper environment"
 
-# Start Vimana
-vimana 
+# Start Vimana using UV's run command with the module approach
+uv run python -m vimana 

@@ -88,10 +88,6 @@ dependencies = [
     "simple-term-menu",
 ]
 
-[project.scripts]
-vimana = "vimana:main"
-vf = "vimana:main"
-
 [project.urls]
 Homepage = "https://github.com/s4dhulabs/vimana-framework"
 Repository = "https://github.com/s4dhulabs/vimana-framework"
