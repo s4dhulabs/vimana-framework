@@ -32,7 +32,16 @@ sudo ln -sf $PWD/vimana.py /usr/bin/vf
 echo "✅ Vimana Framework setup complete!"
 echo "🎯 Run 'vimana' or 'vf' to start the framework"
 echo "🌐 Virtual environment: .venv (in project directory)"
-echo "�� Use 'uv run python -m vimana' to run with proper environment"
+echo "💡 Use 'uv run python -m vimana' to run with proper environment"
 
-# Start Vimana using UV's run command with the module approach
-uv run python -m vimana 
+# Activate the virtual environment in the current shell
+echo "🔧 Activating virtual environment..."
+source .venv/bin/activate
+
+echo "🎉 Virtual environment activated! You can now use:"
+echo "   - vimana (or vf) - to run the framework"
+echo "   - python -m vimana - alternative way to run"
+echo "   - deactivate - to exit the virtual environment"
+
+# Start Vimana using the activated environment
+vimana 
