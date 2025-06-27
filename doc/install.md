@@ -1,6 +1,6 @@
 # Vimana Framework v0.1 - Installation Guide
 
-![image](https://user-images.githubusercontent.com/89562876/229795288-6994f6e4-735a-4d6a-9dbb-68b9dbe24400.png)
+![image](https://github.com/user-attachments/assets/7b84db0a-0cc2-4a17-a10b-fac8b93d3927)
 
 [![Python Version](https://img.shields.io/badge/python-3.9%2B-yellow.svg)](https://www.python.org/downloads/)
 [![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://www.docker.com/)
@@ -158,6 +158,96 @@ jobs:
         
         # Add more plugins as needed
         # vimana run --plugin other_plugin --options
+```
+
+## 🚀 GitLab/Jenkins Integration
+
+Vimana Framework can be integrated into GitLab CI/CD and Jenkins pipelines for automated security testing.
+
+### GitLab CI/CD Pipeline
+
+Create a `.gitlab-ci.yml` file in your repository:
+
+```yaml
+stages:
+  - security-test
+
+vimana-security-scan:
+  stage: security-test
+  image: python:3.9-slim
+  before_script:
+    - curl -LsSf https://astral.sh/uv/install.sh | sh
+    - source ~/.bashrc
+    - uv sync
+    - sudo ln -sf $PWD/vimana.py /usr/bin/vimana
+  script:
+    - vimana load --plugins
+    - vimana list --plugins
+    - vimana run d4m8 --target-url $TARGET_URL
+    - vimana run viewscan --project-dir "${CI_PROJECT_DIR}"
+  variables:
+    TARGET_URL: "http://localhost:8000"
+  artifacts:
+    paths:
+      - core/_dbops_/
+      - "*.log"
+      - "*.json"
+      - "*.xml"
+    expire_in: 1 week
+```
+
+### Jenkins Pipeline
+
+Create a `Jenkinsfile` in your repository:
+
+```groovy
+pipeline {
+    agent any
+    
+    environment {
+        TARGET_URL = 'http://localhost:8000'
+    }
+    
+    stages {
+        stage('Setup Vimana') {
+            steps {
+                sh '''
+                    curl -LsSf https://astral.sh/uv/install.sh | sh
+                    source ~/.bashrc
+                    uv sync
+                    sudo ln -sf $PWD/vimana.py /usr/bin/vimana
+                '''
+            }
+        }
+        
+        stage('Load Plugins') {
+            steps {
+                sh '''
+                    vimana load --plugins
+                    vimana list --plugins
+                '''
+            }
+        }
+        
+        stage('Security Scan') {
+            steps {
+                sh '''
+                    # Run D4M8 form fuzzing (Django Web Forms)
+                    vimana run d4m8 --target-url $TARGET_URL
+                    
+                    # Run ViewScan for code analysis (Django Views)
+                    vimana run viewscan --project-dir "${WORKSPACE}"
+                '''
+            }
+        }
+    }
+    
+    post {
+        always {
+            archiveArtifacts artifacts: 'core/_dbops_/,*.log,*.json,*.xml', fingerprint: true
+        }
+    }
+}
 ```
 
 ### Plugin Architecture

@@ -154,7 +154,7 @@ def default_naviban(status=''):
                     `.⠞⠓⠎.´               .
                      |││||
                  _ _
-                 \\\/imana<{colored('v0.8',32)}>
+                 \\\/imana<{colored('v1.0',32)}>
                   ||-ramewørk
 
                      |││||
