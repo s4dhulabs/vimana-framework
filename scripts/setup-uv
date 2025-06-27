@@ -47,13 +47,20 @@ echo "   - vimana (or vf) - to run the framework"
 echo "   - python -m vimana - alternative way to run"
 echo "   - deactivate - to exit the virtual environment"
 
-# Start Vimana using the activated environment
-vimana 
+# Test the setup
+echo "🧪 Testing setup..."
 sleep 1 && echo "Loading plugins..."
 vimana load --plugins
 sleep 1 && echo "Testing: Listing plugins..."
 vimana list --plugins
-sleep 1 && echo "Testing: Running guide..."
-vimana run guide --plugin d4m8
-sleep 1 && echo "Done!"
-vimana 
+sleep 1 && echo "Testing: Running plugin guide..."
+vimana rguide --plugin d4m8
+sleep 1 && echo "✅ All tests completed!"
+
+echo ""
+echo "🚀 Setup complete! Your virtual environment is active."
+echo "   Run 'vimana' to start the framework."
+echo "   Run 'deactivate' to exit the virtual environment."
+echo ""
+echo "Your prompt should now show: (vimana-framework) >"
+echo "" 
