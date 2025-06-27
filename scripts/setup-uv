@@ -49,3 +49,11 @@ echo "   - deactivate - to exit the virtual environment"
 
 # Start Vimana using the activated environment
 vimana 
+sleep 1 && echo "Loading plugins..."
+vimana load --plugins
+sleep 1 && echo "Testing: Listing plugins..."
+vimana list --plugins
+sleep 1 && echo "Testing: Running guide..."
+vimana run guide --plugin d4m8
+sleep 1 && echo "Done!"
+vimana 
