@@ -49,13 +49,13 @@ echo "   - deactivate - to exit the virtual environment"
 
 # Test the setup
 echo "🧪 Testing setup..."
-sleep 1 && echo "Loading plugins..."
+echo "Loading plugins..."
 vimana load --plugins
-sleep 1 && echo "Testing: Listing plugins..."
+echo "Testing: Listing plugins..."
 vimana list --plugins
-sleep 1 && echo "Testing: Running plugin guide..."
+echo "Testing: Running plugin guide..."
 vimana rguide --plugin d4m8
-sleep 1 && echo "✅ All tests completed!"
+echo "✅ All tests completed!"
 
 echo ""
 echo "🚀 Setup complete! Your virtual environment is active."

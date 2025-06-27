@@ -13,9 +13,10 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/s4dhulabs/vimana-framework.git && cd vimana-framework
+git clone -b develop https://github.com/s4dhulabs/vimana-framework.git && cd vimana-framework
 
 # Setup with uv (automatically installs uv if not present)
+# IMPORTANT: Use 'source' to maintain the virtual environment
 source scripts/setup-uv
 ```
 
@@ -25,6 +26,8 @@ source scripts/setup-uv
 - Built-in virtual environment management
 - Lock file support for reproducible builds
 - Uses `uv sync` for optimal project setup
+
+**Important:** Always use `source scripts/setup-uv` (not `./scripts/setup-uv`) to ensure the virtual environment stays active in your current shell session.
 
 ### Option 2: One-liner Installation (Quick testing)
 
@@ -315,6 +318,18 @@ source scripts/setup
 # Reinstall uv
 curl -LsSf https://astral.sh/uv/install.sh | sh
 source ~/.bashrc
+```
+
+**Virtual Environment Not Active:**
+```bash
+# If you see the default prompt instead of (vimana-framework) >
+# Make sure you used 'source' not './' to run the setup script
+source scripts/setup-uv
+
+# Or manually activate the environment
+source .venv/bin/activate
+export VIRTUAL_ENV_DISABLE_PROMPT=1
+export PS1="(vimana-framework) > "
 ```
 
 **GitHub Actions Issues:**

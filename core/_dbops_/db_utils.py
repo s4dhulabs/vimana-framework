@@ -81,7 +81,8 @@ def handle_OpErr(exception):
     elif exception.startswith('db ready'):
         cprint("        Plugins already loaded. Try vimana list --plugins \n", 'yellow')
 
-    os._exit(os.EX_OK)
+    #os._exit(os.EX_OK)
+    return
 
 filter_ops = {
     '==': '__eq__',
