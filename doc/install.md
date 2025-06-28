@@ -9,14 +9,20 @@
 
 ## 🚀 Quick Start
 
-### Option 1: Super Quick Setup (One-liner)
+### Option 1: UV Installation (Recommended - Fastest)
 
 ```bash
-curl -s https://raw.githubusercontent.com/s4dhulabs/vimana-framework/develop/scripts/quick-setup | bash
+# Super short one-liner
+curl -s https://raw.githubusercontent.com/s4dhulabs/vimana-framework/develop/scripts/install | bash
 ```
 
-### Option 2: UV Installation (Recommended - Fastest)
+**Or even shorter clone + setup:**
+```bash
+# Clone to 'v' directory for brevity
+git clone -b develop https://github.com/s4dhulabs/vimana-framework.git v && cd v && source scripts/setup-uv
+```
 
+**Or traditional way:**
 ```bash
 # Clone the repository and set Vimana using uv
 git clone -b develop https://github.com/s4dhulabs/vimana-framework.git && cd vimana-framework && source scripts/setup-uv
@@ -32,13 +38,13 @@ git clone -b develop https://github.com/s4dhulabs/vimana-framework.git && cd vim
 
 **Important:** Always use `source scripts/setup-uv` (not `./scripts/setup-uv`) to ensure the virtual environment stays active in your current shell session.
 
-### Option 3: One-liner Installation (Legacy - Quick testing)
+### Option 2: One-liner Installation (Quick testing)
 
 ```bash
 curl -s https://raw.githubusercontent.com/s4dhulabs/vimana-framework/main/scripts/abduct | bash
 ```
 
-### Option 4: Manual Setup with Python Virtual Environment
+### Option 3: Manual Setup with Python Virtual Environment
 
 ```bash
 git clone https://github.com/s4dhulabs/vimana-framework.git && cd vimana-framework
