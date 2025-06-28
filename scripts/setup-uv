@@ -65,10 +65,12 @@ export PS1="(vimana-framework) ⚡ "
 unset PYTHONWARNINGS
 
 echo ""
+echo ""
 echo "🎊 Vimana Framework Setup completed successfully!"
 echo "💡 Run 'vimana' or 'vf' to start the framework"
 echo "🌐 Virtual environment: $PWD/.venv (in project directory)"
 echo "💡 Use 'uv run vf' to run with proper environment"
+echo ""
 
 
 

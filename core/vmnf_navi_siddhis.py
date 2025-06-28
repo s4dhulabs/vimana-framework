@@ -175,7 +175,8 @@ class navisiddhis:
                 show_search_hint_text=" ",
                 accept_keys=['p', 'o','enter','s', 'g', 'r','c', 'y', 'b', 'd','i', 'ctrl-y'],
                 cursor_index=current_index,
-                raise_error_on_interrupt=False
+                raise_error_on_interrupt=False,
+                accept_sigwinch=False
             )
             
             plugin_index = terminal_menu.show()
