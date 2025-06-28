@@ -12,31 +12,69 @@
 # This file is part of Vimana Framework Project.
 
 import os
-import subprocess
+import json
+from pathlib import Path
 
+def set_vimana_path(vimana_path):
+    """
+    Store Vimana installation path in a simple config file.
+    This approach is more reliable than modifying shell configs.
+    """
+    # Use user's home directory for config
+    config_dir = Path.home() / '.vimana'
+    config_file = config_dir / 'config.json'
+    
+    # Create config directory if it doesn't exist
+    config_dir.mkdir(exist_ok=True)
+    
+    # Load existing config or create new one
+    config = {}
+    if config_file.exists():
+        try:
+            with open(config_file, 'r') as f:
+                config = json.load(f)
+        except (json.JSONDecodeError, IOError):
+            config = {}
+    
+    # Update the path
+    config['vimana_path'] = str(vimana_path)
+    config['last_updated'] = str(Path(vimana_path).stat().st_mtime)
+    
+    # Save config
+    with open(config_file, 'w') as f:
+        json.dump(config, f, indent=2)
+    
+    # Also set for current session
+    os.environ['VIMANA_PATH'] = str(vimana_path)
+    
+    return str(vimana_path)
 
-
-def set_vimana_path(env_var_value):
-    env_var_name = "vimana_path"
-    user_shell = os.path.basename(os.environ['SHELL'])
-    config_files = [".bashrc", ".zshrc", ".bash_profile", ".profile"]
-    config_file = None
-
-    for file in config_files:
-        potential_config_file = os.path.expanduser(f"~/{file}")
-        if os.path.isfile(potential_config_file):
-            config_file = potential_config_file
-            break
-
-    if config_file:
-        source_config = f'source {config_file} && exec $SHELL'
-        export_vfvar = f'export {env_var_name}="{env_var_value}"\n'
-
-        with open(config_file, "a") as f:
-            f.write(export_vfvar)
-
-        subprocess.run(
-            [user_shell, "-c", source_config], shell=True
-        )
+def get_vimana_path():
+    """
+    Get Vimana installation path from config file or environment.
+    """
+    # First try environment variable
+    if 'VIMANA_PATH' in os.environ:
+        return os.environ['VIMANA_PATH']
+    
+    # Try config file
+    config_file = Path.home() / '.vimana' / 'config.json'
+    if config_file.exists():
+        try:
+            with open(config_file, 'r') as f:
+                config = json.load(f)
+                return config.get('vimana_path')
+        except (json.JSONDecodeError, IOError):
+            pass
+    
+    # Fallback: try to detect from current file location
+    current_file = Path(__file__).resolve()
+    if 'vimana' in current_file.parts:
+        # Go up until we find the vimana root
+        for parent in current_file.parents:
+            if (parent / 'vimana.py').exists() or (parent / 'core').exists():
+                return str(parent)
+    
+    return None
 
 

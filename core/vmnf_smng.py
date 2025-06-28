@@ -17,7 +17,7 @@ from neotermcolor import cprint, colored as cl
 from ._dbops_.vmnf_dbops import VFDBOps
 from ._dbops_.db_utils import handle_OpErr
 from .vmnf_navi_siddhis import navisiddhis 
-from .setevars import set_vimana_path
+#from .setevars import set_vimana_path
 
 from res.vmnf_banners import case_header
 from .vmnf_asserts import vfasserts
@@ -59,6 +59,7 @@ class VFManager:
         
         if VFDBOps().table_exists('_SIDDHIS_') and VFDBOps().getall(self.model):
             handle_OpErr('db ready')
+            return True  
         
         fields = ['name','category','framework','package','type']
 
@@ -76,8 +77,8 @@ class VFManager:
                 abduct_items(**siddhi)
                 VFDBOps(**siddhi).register('_SIDDHIS_')
 
-        vf_path  = '/'.join(os.path.abspath(os.path.dirname(__file__)).split('/')[:-1])
-        set_vimana_path(vf_path)
+        # No need for global path tracking - just use relative paths
+        vimana_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  
         
         self.load_tools()
         self.list_siddhis()
