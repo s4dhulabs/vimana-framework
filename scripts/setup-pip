@@ -1,0 +1,67 @@
+#! /bin/bash
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+#
+# Author: s4dhu
+# Email: <s4dhul4bs[at]prontonmail[dot]ch
+# Git: @s4dhulabs
+# Mastodon: @s4dhu
+# 
+# This file is part of Vimana Framework Project.
+
+echo "🚀 Setting up Vimana Framework with pip..."
+
+# Create virtual environment
+echo "🔧 Creating virtual environment..."
+python3 -m venv .venv
+
+# Activate virtual environment
+source .venv/bin/activate
+
+# Upgrade pip and install dependencies
+echo "📦 Installing dependencies..."
+python -m pip install --upgrade pip
+python -m pip install --ignore-installed PyYAML -r requirements.txt
+python -m pip install -U PyYAML
+
+# Create symlinks
+echo "🔗 Creating symlinks..."
+sudo ln -sf $PWD/vimana.py /usr/bin/vimana
+sudo ln -sf $PWD/vimana.py /usr/bin/vf
+
+# Set custom prompt to show we're in Vimana environment
+export PS1="(vimana-framework) ⚡ "
+
+echo "🧪 Testing setup..."
+echo "Testing: Loading/Listing plugins..."
+
+# Suppress Python warnings during setup for clean output
+export PYTHONWARNINGS="ignore::SyntaxWarning,ignore::DeprecationWarning,ignore::PendingDeprecationWarning"
+
+# Load plugins (non-interactive)
+vimana load --plugins
+
+# Re-activate environment after vimana command
+source .venv/bin/activate
+export PS1="(vimana-framework) ⚡ "
+
+# List plugins to verify
+vimana list --plugins
+
+# Re-activate environment one final time
+source .venv/bin/activate
+export PS1="(vimana-framework) ⚡ "
+
+# Unset warning suppression for normal usage
+unset PYTHONWARNINGS
+
+echo ""
+echo ""
+echo "🎊 Vimana Framework Setup completed successfully!"
+echo "💡 Run 'vimana' or 'vf' to start the framework"
+echo "🌐 Virtual environment: $PWD/.venv (in project directory)"
+echo "💡 Use 'python -m vimana' as alternative"
+echo ""
+
