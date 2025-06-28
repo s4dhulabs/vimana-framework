@@ -1,0 +1,25 @@
+#!/bin/bash
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+# One-liner installer for Vimana Framework
+# Usage: curl -s https://raw.githubusercontent.com/s4dhulabs/vimana-framework/develop/scripts/install | bash
+
+echo "🚀 Installing Vimana Framework..."
+
+# Clone the repository
+if ! git clone -b develop https://github.com/s4dhulabs/vimana-framework.git vimana-framework; then
+    echo "❌ Failed to clone repository"
+    exit 1
+fi
+
+# Change to directory and run setup
+cd vimana-framework
+
+# Make the script executable and source it
+chmod +x scripts/setup-uv
+source scripts/setup-uv
+
+echo "🎉 Vimana Framework installation complete!"
+echo "💡 You're now in the vimana-framework directory with the environment activated" 
