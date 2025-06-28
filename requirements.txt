@@ -6,7 +6,7 @@ email-validator>=2.0.0
 python-jose>=3.3.0
 passlib>=1.7.4
 python-multipart>=0.0.6
-bcrypt>=4.0.1(vfe0.8) ➟ 
+bcrypt>=4.0.1 
 simple-term-menu
 parse-nmap
 python-libnmap
