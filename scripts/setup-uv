@@ -43,23 +43,8 @@ echo "Testing: Loading/Listing plugins..."
 # Suppress Python warnings during setup for clean output
 export PYTHONWARNINGS="ignore::SyntaxWarning,ignore::DeprecationWarning,ignore::PendingDeprecationWarning"
 
-# Re-activate environment (in case vimana affects it)
-source .venv/bin/activate
-export PS1="(vimana-framework) ⚡ "
-
 # Load plugins (non-interactive)
 vimana load --plugins
-
-# Re-activate environment after vimana command
-source .venv/bin/activate
-export PS1="(vimana-framework) ⚡ "
-
-# List plugins to verify
-vimana list --plugins
-
-# Re-activate environment one final time
-source .venv/bin/activate
-export PS1="(vimana-framework) ⚡ "
 
 # Unset warning suppression for normal usage
 unset PYTHONWARNINGS

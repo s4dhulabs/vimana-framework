@@ -20,6 +20,3 @@ cd vimana-framework
 # Make the script executable and source it
 chmod +x scripts/setup-uv
 source scripts/setup-uv
-
-echo "🎉 Vimana Framework installation complete!"
-echo "💡 You're now in the vimana-framework directory with the environment activated" 
