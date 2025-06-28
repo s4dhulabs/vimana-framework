@@ -31,9 +31,6 @@ source "$HOME/vimana-framework/.venv/bin/activate"
 export PS1="(vimana-framework) ⚡ "
 
 # Change to Vimana directory
-cd "$HOME/vimana-framework"
+cd "$HOME/vimana-framework" 
+vimana
 
-echo "✅ Vimana Framework Environment activated!"
-echo "📁 Current directory: $(pwd)"
-echo "🎯 You can now run 'vimana' or any other commands"
-echo "💡 Run 'deactivate' to exit the environment" 
