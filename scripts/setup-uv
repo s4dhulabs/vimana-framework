@@ -29,39 +29,47 @@ echo "🔗 Creating symlinks..."
 sudo ln -sf $PWD/vimana.py /usr/bin/vimana
 sudo ln -sf $PWD/vimana.py /usr/bin/vf
 
-echo "✅ Vimana Framework setup complete!"
-echo "🎯 Run 'vimana' or 'vf' to start the framework"
-echo "🌐 Virtual environment: .venv (in project directory)"
-echo "💡 Use 'uv run python -m vimana' to run with proper environment"
-
-# Activate the virtual environment in the current shell
+# Activate virtual environment
 echo "🔧 Activating virtual environment..."
-export VIRTUAL_ENV_DISABLE_PROMPT=1
 source .venv/bin/activate
 
-# Set custom prompt for the virtual environment
+# Set custom prompt to show we're in Vimana environment
 export PS1="(vimana-framework) ⚡ "
 
-echo "🎉 Virtual environment activated! You can now use:"
-echo "   - vimana (or vf) - to run the framework"
-echo "   - python -m vimana - alternative way to run"
-echo "   - deactivate - to exit the virtual environment"
-sleep 1
-
-# Test the setup
+# Test the setup with suppressed warnings
 echo "🧪 Testing setup..."
-
 echo "Testing: Loading/Listing plugins..."
+
+# Suppress Python warnings during setup for clean output
+export PYTHONWARNINGS="ignore::SyntaxWarning,ignore::DeprecationWarning,ignore::PendingDeprecationWarning"
+
+# Re-activate environment (in case vimana affects it)
+source .venv/bin/activate
+export PS1="(vimana-framework) ⚡ "
+
+# Load plugins (non-interactive)
 vimana load --plugins
-sleep 1
 
+# Re-activate environment after vimana command
+source .venv/bin/activate
+export PS1="(vimana-framework) ⚡ "
 
-echo "✅ All tests completed!"
+# List plugins to verify
+vimana list --plugins
+
+# Re-activate environment one final time
+source .venv/bin/activate
+export PS1="(vimana-framework) ⚡ "
+
+# Unset warning suppression for normal usage
+unset PYTHONWARNINGS
 
 echo ""
-echo "🚀 Setup complete! Your virtual environment is active."
-echo "   Run 'vimana' to start the framework."
-echo "   Run 'deactivate' to exit the virtual environment."
-echo ""
-echo "Your prompt should now show: (vimana-framework) >"
-echo "" 
+echo "🎊 Vimana Framework Setup completed successfully!"
+echo "💡 Run 'vimana' or 'vf' to start the framework"
+echo "🌐 Virtual environment: $PWD/.venv (in project directory)"
+echo "💡 Use 'uv run vf' to run with proper environment"
+
+
+
+

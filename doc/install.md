@@ -26,6 +26,7 @@ source scripts/setup-uv
 - Built-in virtual environment management
 - Lock file support for reproducible builds
 - Uses `uv sync` for optimal project setup
+- **Clean setup experience** - warnings are suppressed during installation
 
 **Important:** Always use `source scripts/setup-uv` (not `./scripts/setup-uv`) to ensure the virtual environment stays active in your current shell session.
 
