@@ -6,10 +6,19 @@
 # One-liner installer for Vimana Framework
 # Usage: curl -s https://raw.githubusercontent.com/s4dhulabs/vimana-framework/develop/scripts/install | bash
 
-echo "🚀 Installing Vimana Framework..."
+echo "🚀 Installing Vimana Framework to ~/vimana-framework..."
 
-# Clone the repository
-if ! git clone -b develop https://github.com/s4dhulabs/vimana-framework.git vimana-framework; then
+# Change to home directory
+cd ~
+
+# Remove existing installation if it exists
+if [ -d "vimana-framework" ]; then
+    echo "🗑️  Removing existing installation..."
+    rm -rf vimana-framework
+fi
+
+# Clone the repository to home directory
+if ! git clone -b develop https://github.com/s4dhulabs/vimana-framework.git; then
     echo "❌ Failed to clone repository"
     exit 1
 fi
@@ -20,3 +29,7 @@ cd vimana-framework
 # Make the script executable and source it
 chmod +x scripts/setup-uv
 source scripts/setup-uv
+source ~/vimana-framework/.venv/bin/activate
+export PS1="(vimana-framework) ⚡ "
+vimana
+

@@ -12,7 +12,7 @@
 ### Option 1: UV Installation (Recommended - Fastest)
 
 ```bash
-# Super short one-liner
+# Super short one-liner (installs to ~/vimana-framework)
 curl -s https://raw.githubusercontent.com/s4dhulabs/vimana-framework/develop/scripts/install | bash
 ```
 
@@ -37,6 +37,20 @@ git clone -b develop https://github.com/s4dhulabs/vimana-framework.git && cd vim
 - **Clean setup experience** - warnings are suppressed during installation
 
 **Important:** Always use `source scripts/setup-uv` (not `./scripts/setup-uv`) to ensure the virtual environment stays active in your current shell session.
+
+## 🔄 Using Vimana After Installation
+
+If you used the one-liner installer, Vimana is installed to `~/vimana-framework`. To use it in future sessions:
+
+```bash
+# Quick activation
+source ~/vimana-framework/scripts/setup-uv
+
+# Or manual activation
+source ~/vimana-framework/.venv/bin/activate
+export PS1="(vimana-framework) ⚡ "
+cd ~/vimana-framework
+```
 
 ### Option 2: One-liner Installation (Quick testing)
 
