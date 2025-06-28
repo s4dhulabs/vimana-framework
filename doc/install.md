@@ -38,16 +38,8 @@ If you used the one-liner installer, Vimana is installed to `~/vimana-framework`
 
 ```bash
 # Super quick activation:
-source vfe           # Activate environment from anywhere
+source vfe          # Activate environment from anywhere
 vimana              # Run Vimana (after activation)
-
-# Or quick activation with setup script:
-source ~/vimana-framework/scripts/setup-uv
-
-# Or manual activation:
-source ~/vimana-framework/.venv/bin/activate
-export PS1="(vimana-framework) ⚡ "
-cd ~/vimana-framework
 ```
 
 **What is `vfe`?**
@@ -57,18 +49,18 @@ cd ~/vimana-framework
 - Automatically checks if Vimana is properly installed
 - Use `deactivate` to exit the environment
 
-### Option 2: One-liner Installation (Quick testing)
+### Option 2: Pip Installation (Traditional)
 
 ```bash
-curl -s https://raw.githubusercontent.com/s4dhulabs/vimana-framework/main/scripts/abduct | bash
+# Clone to home directory and set Vimana using pip
+cd ~ && git clone -b develop https://github.com/s4dhulabs/vimana-framework.git && cd vimana-framework && source scripts/setup-pip
 ```
 
-### Option 3: Manual Setup with Python Virtual Environment
-
-```bash
-git clone https://github.com/s4dhulabs/vimana-framework.git && cd vimana-framework
-source scripts/setup
-```
+**Traditional Python setup:**
+- Uses standard `python -m venv` and `pip`
+- Compatible with all Python environments
+- Familiar workflow for Python developers
+- Same clean setup experience as UV
 
 ## 🐳 Docker Installation
 
@@ -385,4 +377,4 @@ export PS1="(vimana-framework) > "
 
 ---
 
-**Note**: UV is the recommended installation method for the fastest development experience, while Docker is preferred for production deployments. GitHub Actions integration enables automated security testing in CI/CD pipelines.
+**Note**: *UV is the recommended installation method for the fastest development experience, while Docker is preferred for production deployments. GitHub Actions integration enables automated security testing in CI/CD pipelines.*
