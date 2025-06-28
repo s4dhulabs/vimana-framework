@@ -4,14 +4,14 @@
 #   [|-ramewørk
 #
 # Vimana Framework Environment (VFE) - Quick activation script
-# Usage: vfe
+# Usage: source vfe  OR  . vfe
 
 # Check if Vimana is installed in home directory
 if [ ! -d "$HOME/vimana-framework" ]; then
     echo "❌ Vimana Framework not found in ~/vimana-framework"
     echo "💡 Install it first with:"
     echo "   curl -s https://raw.githubusercontent.com/s4dhulabs/vimana-framework/develop/scripts/install | bash"
-    exit 1
+    return 1 2>/dev/null || exit 1
 fi
 
 # Check if virtual environment exists
@@ -35,7 +35,5 @@ cd "$HOME/vimana-framework"
 
 echo "✅ Vimana Framework Environment activated!"
 echo "📁 Current directory: $(pwd)"
-echo "🎯 Starting Vimana..."
-
-# Start Vimana
-vimana 
+echo "🎯 You can now run 'vimana' or any other commands"
+echo "💡 Run 'deactivate' to exit the environment" 
