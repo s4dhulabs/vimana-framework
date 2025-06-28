@@ -18,15 +18,18 @@ ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /vf0.1
 COPY . /vf0.1
 
-# Install system dependencies
+# Install system dependencies and build tools
 RUN apt-get update && apt-get install -y \
     sudo \
+    gcc \
+    python3-dev \
+    && python -m pip install --user --no-cache-dir --upgrade pip \
+    && python -m pip install --user --no-cache-dir -r requirements.txt \
+    && python -m pip install --user --no-cache-dir -U PyYAML \
+    && apt-get remove -y gcc python3-dev \
+    && apt-get autoremove -y \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-
-# Install Python dependencies
-RUN python -m pip install --user --no-cache-dir --upgrade pip && \
-    python -m pip install --user --no-cache-dir -r requirements.txt && \
-    python -m pip install --user --no-cache-dir -U PyYAML
 
 # Create user and set permissions
 RUN groupadd -r vimana && \
