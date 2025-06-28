@@ -18,7 +18,7 @@ curl -s https://raw.githubusercontent.com/s4dhulabs/vimana-framework/develop/scr
 
 **Or even shorter clone + setup:**
 ```bash
-# Clone to 'v' directory for brevity
+# Clone to 'v' directory for brevity (no 'vfe' command created)
 git clone -b develop https://github.com/s4dhulabs/vimana-framework.git v && cd v && source scripts/setup-uv
 ```
 
@@ -43,14 +43,23 @@ git clone -b develop https://github.com/s4dhulabs/vimana-framework.git && cd vim
 If you used the one-liner installer, Vimana is installed to `~/vimana-framework`. To use it in future sessions:
 
 ```bash
-# Quick activation
+# Super quick - just run from anywhere:
+vfe
+
+# Or quick activation with setup script:
 source ~/vimana-framework/scripts/setup-uv
 
-# Or manual activation
+# Or manual activation:
 source ~/vimana-framework/.venv/bin/activate
 export PS1="(vimana-framework) ⚡ "
 cd ~/vimana-framework
 ```
+
+**What is `vfe`?**
+- **V**imana **F**ramework **E**nvironment
+- One command to activate environment and start Vimana
+- Works from any directory
+- Automatically checks if Vimana is properly installed
 
 ### Option 2: One-liner Installation (Quick testing)
 

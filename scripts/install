@@ -30,4 +30,18 @@ cd vimana-framework
 chmod +x scripts/setup-uv
 source scripts/setup-uv
 
+# Create symlink for vfe (Vimana Framework Environment)
+echo "🔗 Creating vfe symlink for easy access..."
+sudo ln -sf "$PWD/scripts/vfe" /usr/bin/vfe
 
+echo ""
+echo "🎉 Vimana Framework installation complete!"
+echo "📁 Installed to: ~/vimana-framework"
+echo ""
+echo "🚀 Quick start - just run:"
+echo "   vfe"
+echo ""
+echo "💡 Or manually activate with:"
+echo "   source ~/vimana-framework/.venv/bin/activate"
+echo "   export PS1=\"(vimana-framework) ⚡ \""
+echo "   cd ~/vimana-framework"
