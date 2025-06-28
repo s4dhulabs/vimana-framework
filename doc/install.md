@@ -68,16 +68,16 @@ cd ~ && git clone -b develop https://github.com/s4dhulabs/vimana-framework.git &
 
 ```bash
 # Clone the repository
-git clone https://github.com/s4dhulabs/vimana-framework.git && cd vimana-framework
+git clone -b develop https://github.com/s4dhulabs/vimana-framework.git && cd vimana-framework
 
-# Start with docker-compose
-docker-compose up -d
+# Start with docker compose
+docker compose up -d
 
 # Or run interactively
-docker-compose run --rm vimana
+docker compose run --rm vimana
 
 # Stop the services
-docker-compose down
+docker compose down
 ```
 
 **Benefits of Docker Compose:**
@@ -90,7 +90,7 @@ docker-compose down
 
 ```bash
 # Clone the repository
-git clone https://github.com/s4dhulabs/vimana-framework.git && cd vimana-framework
+git clone -b develop https://github.com/s4dhulabs/vimana-framework.git && cd vimana-framework
 
 # Build and run using the build script
 sudo sh scripts/build

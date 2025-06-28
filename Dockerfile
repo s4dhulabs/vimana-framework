@@ -10,27 +10,38 @@
 # 
 # This file is part of Vimana Framework Project.
 
-FROM python:3.9-slim-buster
+FROM python:3.11-slim
 
-LABEL MAINTAINER="s4dhu <s4dhul4bs[dot]protonmail[at]ch>"
-MAINTAINER s4dhu <s4dhul4bs[at]protonmail[dot]ch>
+LABEL maintainer="s4dhu <s4dhul4bs[dot]protonmail[at]ch>"
 
 ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /vf0.1
 COPY . /vf0.1
 
-RUN python3.9 -m pip install --user --no-cache-dir --upgrade pip && \
-    python3.9 -m pip install --user --no-cache-dir -r requirements.txt && \
-    python3.9 -m pip install --user --no-cache-dir -U PyYAML
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    sudo \
+    && rm -rf /var/lib/apt/lists/*
 
+# Install Python dependencies
+RUN python -m pip install --user --no-cache-dir --upgrade pip && \
+    python -m pip install --user --no-cache-dir -r requirements.txt && \
+    python -m pip install --user --no-cache-dir -U PyYAML
+
+# Create user and set permissions
 RUN groupadd -r vimana && \
     useradd -r -m -g vimana -G sudo oper && \
     chown -R oper:vimana /vf0.1/core/_dbops_/ && \
     chmod -R 750 /vf0.1/core/_dbops_/
 
-ENV PYTHONWARNINGS=ignore
+# Set environment variables
+ENV PYTHONWARNINGS=ignore::SyntaxWarning,ignore::DeprecationWarning,ignore::PendingDeprecationWarning
 ENV PATH="/vf0.1:${PATH}"
+
+# Create symlink
 RUN ln -s /vf0.1/vimana.py /usr/bin/vimana
+
+# Set default command
 CMD ["vimana", "load", "--plugins"]
 ENTRYPOINT ["vimana"]
 
