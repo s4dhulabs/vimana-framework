@@ -29,7 +29,5 @@ cd vimana-framework
 # Make the script executable and source it
 chmod +x scripts/setup-uv
 source scripts/setup-uv
-source ~/vimana-framework/.venv/bin/activate
-export PS1="(vimana-framework) ⚡ "
-vimana
+
 
