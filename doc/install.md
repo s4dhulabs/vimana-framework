@@ -22,6 +22,8 @@ curl -s https://raw.githubusercontent.com/s4dhulabs/vimana-framework/develop/scr
 git clone -b develop https://github.com/s4dhulabs/vimana-framework.git && cd vimana-framework && source scripts/setup-uv
 ```
 
+[![asciicast](https://asciinema.org/a/J7S2zdrmPqv6qkMfo2nW0jVAZ.svg)](https://asciinema.org/a/J7S2zdrmPqv6qkMfo2nW0jVAZ)
+
 **Why UV?**
 - 10-100x faster than pip
 - Automatic dependency resolution
