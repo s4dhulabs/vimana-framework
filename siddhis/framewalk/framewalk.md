@@ -72,11 +72,11 @@ Analyzes server headers, response patterns, and infrastructure indicators to ide
 - Infrastructure fingerprints
 
 #### 🌐 Endpoint Probing Engine  
-Systematically probes common framework-specific endpoints to confirm framework presence. This includes:
-- Admin interfaces (`/admin/`, `/wp-admin/`)
+Systematically probes common Python framework-specific endpoints to confirm framework presence. This includes:
+- Django admin interfaces (`/admin/`)
 - API documentation endpoints (`/docs`, `/redoc`, `/api/`)
-- Debug interfaces and development tools
-- Framework-specific resource paths
+- Debug interfaces and development tools (`/console`, `/_debug_toolbar/`)
+- Python framework-specific resource paths
 
 #### 📄 Content Analysis Engine
 Examines response content for framework-specific patterns, templates, and artifacts:
@@ -691,10 +691,10 @@ For targets not running the specified framework:
 #### Strategic Applications of Framework Filtering
 
 ##### Penetration Testing Scenarios
-1. **API-Focused Assessments**: Filter for FastAPI, Django REST, Flask-RESTX
-2. **CMS Targeting**: Focus on Django admin, WordPress, Drupal
-3. **Legacy System Identification**: Target older framework versions
-4. **Microservice Analysis**: Identify specific service frameworks
+1. **API-Focused Assessments**: Filter for FastAPI, Django REST Framework, Flask-RESTX
+2. **Admin Interface Targeting**: Focus on Django admin interfaces and authentication systems
+3. **Legacy Python System Identification**: Target older Python framework versions
+4. **Microservice Analysis**: Identify Python-based microservice frameworks
 
 ##### Red Team Operations
 1. **Framework-Specific Exploits**: Target known vulnerabilities in specific frameworks
