@@ -155,8 +155,11 @@ The output shows the multi-engine detection system in action:
 #### 🔍 Comprehensive Analysis Results
 
 ![image](https://github.com/user-attachments/assets/c9f86131-4b95-40e2-af9e-61b8c3354c53)
+![image](https://github.com/user-attachments/assets/290d5931-bf8d-490e-940e-badbf3550f59)
 
-The scan results provide multiple layers of intelligence:
+
+
+The scan results provide multiple layers of information:
 
 ##### Target Information
 - **Target**: `http://127.0.0.1:5000/`
@@ -708,7 +711,7 @@ For targets not running the specified framework:
 3. **Security Baseline**: Assess security posture of specific framework families
 4. **Compliance Monitoring**: Track framework security configurations
 
-## Machine-Readable Intelligence
+## Machine-Readable Output
 
 ### JSON Output Format
 

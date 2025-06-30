@@ -223,13 +223,15 @@ class framewalkOrchestrator:
         from ..engines.content import ContentEngine
         from ..engines.error import ErrorEngine
         from ..engines.static import StaticResourceEngine
+        from ..engines.vulnerability import VulnerabilityEngine
         
         self.engines = [
             PassiveEngine(self.request_manager, self.result_manager),
             HeaderEngine(self.request_manager, self.result_manager),
             ContentEngine(self.request_manager, self.result_manager),
             ErrorEngine(self.request_manager, self.result_manager),
-            StaticResourceEngine(self.request_manager, self.result_manager)
+            StaticResourceEngine(self.request_manager, self.result_manager),
+            VulnerabilityEngine(self.request_manager, self.result_manager)
         ]
         
     def _init_detectors(self) -> None:

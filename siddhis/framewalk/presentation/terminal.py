@@ -256,15 +256,41 @@ class TerminalPresenter:
                 
                 vuln_table = Table(show_header=True, header_style="bold white on black", box=ROUNDED)
                 vuln_table.add_column("CVE ID", style="bold red")
+                vuln_table.add_column("Severity", style="bold")
+                vuln_table.add_column("CVSS", style="bold")
                 vuln_table.add_column("Description")
+                vuln_table.add_column("Year")
                 
                 for vuln in vulnerabilities:
+                    # Determine severity color
+                    severity = vuln.get('severity', 'UNKNOWN')
+                    severity_color = {
+                        'HIGH': 'red',
+                        'MEDIUM': 'yellow', 
+                        'LOW': 'green',
+                        'UNKNOWN': 'white'
+                    }.get(severity, 'white')
+                    
+                    # Format CVSS score
+                    cvss_score = vuln.get('cvss_score', 'N/A')
+                    cvss_text = f"{cvss_score}" if cvss_score != 'N/A' else 'N/A'
+                    
                     vuln_table.add_row(
                         vuln.get('id', 'Unknown'),
-                        vuln.get('description', 'No description')
+                        f"[{severity_color}]{severity}[/{severity_color}]",
+                        cvss_text,
+                        vuln.get('description', 'No description'),
+                        str(vuln.get('year', 'N/A'))
                     )
                     
                 self.console.print(vuln_table)
+                
+                # Show additional vulnerability details if available
+                for vuln in vulnerabilities:
+                    if 'affected_versions' in vuln and vuln['affected_versions']:
+                        self.console.print(f"\n[dim]  {vuln.get('id', 'Unknown')} - Affected versions: {', '.join(vuln['affected_versions'])}[/dim]")
+                    if 'fixed_versions' in vuln and vuln['fixed_versions']:
+                        self.console.print(f"[dim]  {vuln.get('id', 'Unknown')} - Fixed in: {', '.join(vuln['fixed_versions'])}[/dim]")
                 
         # Show evidence if requested with improved styling
         if self.show_evidence and 'evidence' in results:
@@ -376,7 +402,7 @@ class TerminalPresenter:
             if self.show_metadata and 'metadata' in fw and fw['metadata']:
                 meta = fw['metadata']
                 if HAS_COLOR:
-                    print(f"  {Fore.WHITE}{Style.DIM}{meta.get('description', '')}{Style.RESET_ALL}")
+                    print(f"\n  {Fore.WHITE}{Style.DIM}{meta.get('description', '')}{Style.RESET_ALL}")
                     print(f"  {Fore.BLUE}{Style.DIM}{meta.get('website', '')}{Style.RESET_ALL}")
                 else:
                     print(f"  {meta.get('description', '')}")
@@ -391,10 +417,36 @@ class TerminalPresenter:
                         print("\n  Potential vulnerabilities:")
                         
                     for vuln in vulnerabilities[:3]:  # Show top 3 CVEs
+                        severity = vuln.get('severity', 'UNKNOWN')
+                        cvss_score = vuln.get('cvss_score', 'N/A')
+                        year = vuln.get('year', 'N/A')
+                        
                         if HAS_COLOR:
-                            print(f"  - {Fore.RED}{vuln.get('id', 'Unknown')}{Style.RESET_ALL}: {vuln.get('description', '')}")
+                            # Color severity
+                            severity_color = {
+                                'HIGH': Fore.RED,
+                                'MEDIUM': Fore.YELLOW,
+                                'LOW': Fore.GREEN,
+                                'UNKNOWN': Fore.WHITE
+                            }.get(severity, Fore.WHITE)
+                            
+                            print(f"  - {Fore.RED}{vuln.get('id', 'Unknown')}{Style.RESET_ALL} [{severity_color}{severity}{Style.RESET_ALL}] CVSS:{cvss_score} ({year})")
+                            print(f"    {vuln.get('description', '')}")
+                            
+                            # Show version info if available
+                            if 'affected_versions' in vuln and vuln['affected_versions']:
+                                print(f"    {Fore.CYAN}Affected: {', '.join(vuln['affected_versions'])}{Style.RESET_ALL}")
+                            if 'fixed_versions' in vuln and vuln['fixed_versions']:
+                                print(f"    {Fore.GREEN}Fixed in: {', '.join(vuln['fixed_versions'])}{Style.RESET_ALL}")
                         else:
-                            print(f"  - {vuln.get('id', 'Unknown')}: {vuln.get('description', '')}")
+                            print(f"  - {vuln.get('id', 'Unknown')} [{severity}] CVSS:{cvss_score} ({year})")
+                            print(f"    {vuln.get('description', '')}")
+                            
+                            # Show version info if available
+                            if 'affected_versions' in vuln and vuln['affected_versions']:
+                                print(f"    Affected: {', '.join(vuln['affected_versions'])}")
+                            if 'fixed_versions' in vuln and vuln['fixed_versions']:
+                                print(f"    Fixed in: {', '.join(vuln['fixed_versions'])}")
                             
             print("")  # Empty line between frameworks
             

@@ -330,8 +330,16 @@ class ResultManager:
                 components = list(self.components.get(framework, set()))
                 
                 # Get relevant CVEs based on detected version
-                #cves = self._get_relevant_cves(framework, version)
-                cves = []
+                cves = self._get_relevant_cves(framework, version)
+                
+                # Get vulnerability data from vulnerability engine if available
+                vulnerability_data = getattr(self, 'vulnerability_data', {}).get(framework, [])
+                component_vulnerability_data = getattr(self, 'component_vulnerability_data', {}).get(framework, {})
+                
+                # Combine all vulnerability data
+                all_vulnerabilities = cves + vulnerability_data
+                for component_vulns in component_vulnerability_data.values():
+                    all_vulnerabilities.extend(component_vulns)
                 
                 results["frameworks"].append({
                     "name": framework,
@@ -339,7 +347,7 @@ class ResultManager:
                     "score": score,
                     "version": version,
                     "components": components,
-                    "vulnerabilities": cves,
+                    "vulnerabilities": all_vulnerabilities,
                     "metadata": FRAMEWORK_METADATA.get(framework, {})
                 })
         
