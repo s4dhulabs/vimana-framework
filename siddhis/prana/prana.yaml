@@ -13,57 +13,70 @@
 
 name: Prana
 author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
-brief: Tracks Django CVE ids 
+brief: Tracks CVE IDs for Python web frameworks (Django, Flask, FastAPI, etc.)
 category: Framework
-framework: Django
-info: Utility to retrieve CVE IDs for Django Framework
+framework: Python
+info: Utility to retrieve CVE IDs for Python web frameworks (Django, Flask, FastAPI, Pyramid, Bottle, etc.)
 module: siddhis/prana/prana.py
-package: Django
+package: Python Web Frameworks
 type: Tracker
 astt: DAST
 tags:
-  - Django 
+  - Django
+  - Flask
+  - FastAPI
+  - Pyramid
+  - Bottle
+  - Security
+  - CVE
 description: |
-  Simple utility to retrieve CVE ids from the official
-  Django security releases page. This module receives a
-  Django version as an argument and retrieves related CVE
-  ids. Prana is usually used as a resource by other Vimana
-  modules. For example, DMT (Django Misconfiguration
-  Tracker) uses to correlate the identified framework
-  version (context 'environment') with the respective CVES.
+  Prana is a unified utility to retrieve CVE IDs from the OSV
+  (Open Source Vulnerabilities) database for Python web
+  frameworks such as Django, Flask, FastAPI, Pyramid, Bottle,
+  and more. It receives a framework name and version as
+  arguments and retrieves related CVEs. Prana is used as a
+  resource by other Vimana modules (e.g., Framewalk, DMT) to
+  correlate the identified framework version with the
+  respective CVEs. It uses a smart local cache and only
+  queries the OSV API if needed.
 references:
   links:
+    - https://osv.dev/
     - https://www.djangoproject.com/
+    - https://flask.palletsprojects.com/
+    - https://fastapi.tiangolo.com/
   cwe: False
 vfset:
-  parse_plugin_scope: True
+  parse_plugin_scope: False
 guide:
   args: |
-    ø----------------------------------------------------------------------ø
-    │└┐└│└┘┌┐~│└└┘┌┐┘└┘└┐└┘│└┐┘││└┘│ PRANA ARGS  └ │┘┌│┐└│┘┌│*└│┘*│┐=│┘┌│┐=│
-    ø-----------+----------------------------------------------------------ø
-    │ scope     └┐                                                         │
-    +------------+---------------------------------------------------------+
-     --django-version        Django version to look for issues, ie. 1.8
-    
+    ø--------------------------------------------------------------------------------ø
+    │ PRANA ARGS                                                                     │
+    ø-----------+--------------------------------------------------------------------ø
+    │ scope     └┐                                                                   │
+    +------------+-------------------------------------------------------------------+
+     --framework           Framework to look for issues (e.g. django, flask, fastapi)
+     --framework-version   Framework version to look for issues (e.g. 1.8, 2.0, 3.1)
+
   examples: |
-    ø----------------------------------------------------------------------ø
-    ⠞ ⠓ ⠎ ⠞ ⠎⠞⠎ ⠞⠊⠞⠓ ⠊⠎⠞⠓⠊  ⠞⠓⠊⠎⠞⠓⠊  PRANA GUIDE  ⠞⠓⠊⠎.~ ⠎⠞ ⠞ ⠊⠎ ⠞⠊.⠞ ⠊⠎ ⠊⠎
-    ø----------------------------------------------------------------------ø
-
+    ø--------------------------------------------------------------------------------ø
+    │ PRANA GUIDE                                                                    │
+    ø--------------------------------------------------------------------------------ø
         Start prana looking for Django 1.8 issues:
-        $ vimana run -m prana --django-version 1.8 
+        $ vimana run -m prana --framework django --framework-version 1.8
 
-        * Note that prana is focused on just retrieving CVEs from
-        a given Django version. To perform a passive fingerprint
-        of a version running with an application, take a look at 
-        sttinger usage examples: $ vimana run -m sttinger -e
+        Start prana looking for Flask 3.0 issues:
+        $ vimana run -m prana --framework flask --framework-version 3.0
+
+        * Note: Prana is now the unified CVE provider for all Vimana plugins.
+        * To perform passive fingerprinting of a running application, use Framewalk:
+          $ vimana run -m framewalk --target http://example.com
 
   lab_setup: |
-    ø----------------------------------------------------------------------ø
-    │└┘⠞⠓┌┐│└⠞⠓└┘┌⠞⠓┐┌┘.┌⠞⠓┬┐.└┐ ┘│  PRANA SETUP  ┘└┐│.└┘.┌┐│⠞⠓│┬.│⠞└┘┌┬┐└┌.
-    ø----------------------------------------------------------------------ø
-  
+    ø--------------------------------------------------------------------------------ø
+    │ PRANA SETUP                                                                    │  
+    ø--------------------------------------------------------------------------------ø
+
         You can see lab examples with:
         $ vimana guide -m dmt -l
 
