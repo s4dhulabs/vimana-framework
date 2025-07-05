@@ -1,5 +1,5 @@
 settings = {
-    'LOG_ENABLED':True,
+    'LOG_ENABLED':False,
     #'DUPEFILTER_CLASS': 'scrapy.dupefilters.BaseDupeFilter',
     'REQUEST_FINGERPRINTER_IMPLEMENTATION':"2.7",
     'LOG_LEVEL': "DEBUG",

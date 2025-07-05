@@ -14,22 +14,25 @@
 name: D4M8
 author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
 brief: Django Web Form Fuzzer for Mapping Exceptions
-category: Framework
+category: Fuzzer
 framework: Django 
 info: Fuzz tests Django web forms to map and exploit unhandled exceptions
 module: siddhis/d4m8/d4m8.py 
 package: Django
-type: Fuzzer
+type: DAST
 astt: DAST
 tags:
-  - Error
-  - Debug
-  - Exceptions
+  - Django
   - Fuzzing
-  - Vulnerability
-  - Security
-  - WebForms
+  - Exceptions
+  - WebForm
   - InputValidation
+composition: 
+  mode: Orchestrator
+  plugin_chain:
+    recon:
+      - dmt
+      - viwec
 description: |
   D4M8 (Django Web Form Fuzzer for Mapping Exceptions) is an advanced
   fuzzing tool specifically designed to probe Django web form implementations

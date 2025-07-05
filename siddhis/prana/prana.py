@@ -175,11 +175,10 @@ class siddhi:
             self.django_version = django_version
 
         hl_django_version = cl(self.django_version,'green')
-
+        
         if self.cache_load_enabled:
             try:
                 cves, issues_table = load_plugin_cache(self.vmnf_handler)
-
                 if self.engineitself:
                     print(f"[{cl(self.caller,'red')}]→ {cl(len(cves),'green')} CVEs for Django {hl_django_version}")
                     input() if self.vmnf_handler.get('pause_steps') else sleep(1)
@@ -256,6 +255,15 @@ class siddhi:
             try:
                 with open(cache_path, 'r', encoding='utf-8') as f:
                     cves = json.load(f)
+                # Patch: ensure all CVEs have 'ref_url'
+                def get_ref_url(cve_id):
+                    if cve_id.startswith('CVE-'):
+                        return f"https://nvd.nist.gov/vuln/detail/{cve_id}"
+                    else:
+                        return f"https://osv.dev/vulnerability/{cve_id}"
+                for cve in cves:
+                    if 'ref_url' not in cve and 'id' in cve:
+                        cve['ref_url'] = get_ref_url(cve['id'])
                 return cves
             except Exception as e:
                 print(f"[prana]→ Error loading cache: {e}")
@@ -296,6 +304,7 @@ class siddhi:
         import traceback
         from packaging import version as pkg_version
         filtered = []
+        v = pkg_version.parse(version)
         for vuln in vulns:
             if not isinstance(vuln, dict):
                 print(f"[prana]→ Skipping non-dict CVE entry: {vuln}")
@@ -305,19 +314,28 @@ class siddhi:
                 for aff in vuln.get('affected', []):
                     for rng in aff.get('ranges', []):
                         if rng.get('type') == 'ECOSYSTEM':
+                            introduced = None
+                            fixed = None
+                            excluded = set()
                             for event in rng.get('events', []):
                                 if 'introduced' in event:
-                                    try:
-                                        if pkg_version.parse(version) >= pkg_version.parse(event['introduced']):
-                                            affected = True
-                                    except Exception:
-                                        pass
+                                    introduced = pkg_version.parse(event['introduced'])
                                 if 'fixed' in event:
+                                    fixed = pkg_version.parse(event['fixed'])
+                                if 'excluded' in event:
                                     try:
-                                        if pkg_version.parse(version) < pkg_version.parse(event['fixed']):
-                                            affected = True
+                                        excluded.add(pkg_version.parse(event['excluded']))
                                     except Exception:
                                         pass
+                            # Check if version is in range
+                            if introduced and v < introduced:
+                                continue
+                            if fixed and v >= fixed:
+                                continue
+                            if v in excluded:
+                                continue
+                            # If all checks pass, version is affected
+                            affected = True
                 if affected:
                     try:
                         filtered.append(self._process_osv_vuln(vuln))
@@ -339,10 +357,22 @@ class siddhi:
         description = summary or details or 'No description available'
         severity = 'UNKNOWN'
         cvss_score = 'N/A'
+        # Parse CVSS from OSV
+        if 'cvss' in vuln and isinstance(vuln['cvss'], list):
+            v3 = [c for c in vuln['cvss'] if c.get('version', '').startswith('3')]
+            v2 = [c for c in vuln['cvss'] if c.get('version', '').startswith('2')]
+            if v3:
+                cvss_score = str(v3[0].get('score', 'N/A'))
+            elif v2:
+                cvss_score = str(v2[0].get('score', 'N/A'))
+            else:
+                scores = [c.get('score') for c in vuln['cvss'] if 'score' in c]
+                if scores:
+                    cvss_score = str(max(scores))
         severity_info = vuln.get('database_specific', {}).get('severity')
         if isinstance(severity_info, dict):
             severity = severity_info.get('type', 'UNKNOWN').upper()
-            if 'score' in severity_info:
+            if 'score' in severity_info and cvss_score == 'N/A':
                 cvss_score = severity_info['score']
         elif isinstance(severity_info, str):
             severity = severity_info.upper()
@@ -374,6 +404,12 @@ class siddhi:
             url = ref.get('url')
             if url:
                 references.append(url)
+        # Always add ref_url
+        def get_ref_url(cve_id):
+            if cve_id.startswith('CVE-'):
+                return f"https://nvd.nist.gov/vuln/detail/{cve_id}"
+            else:
+                return f"https://osv.dev/vulnerability/{cve_id}"
         return {
             'id': vuln_id,
             'description': description,
@@ -385,7 +421,8 @@ class siddhi:
             'source': 'OSV',
             'published': vuln.get('published', ''),
             'modified': vuln.get('modified', ''),
-            'references': references
+            'references': references,
+            'ref_url': get_ref_url(vuln_id)
         }
 
     def start(self):
@@ -396,13 +433,10 @@ class siddhi:
             print(f"[prana]→ {cl(len(cves),'green')} CVEs for {hl_framework} {hl_version}")
             sleep(1)
             if cves:
-                print(tabulate(
-                    [[c['id'], c['severity'], c['cvss_score'], c['description'][:60] + ('...' if len(c['description']) > 60 else '')] for c in cves],
-                    headers=["CVE ID", "Severity", "CVSS", "Description"],
-                    tablefmt="fancy_grid"
-                ))
+                print(gen_issues_table(cves, 'CVEs'))
             else:
                 print(f"[prana]→ No CVEs found for {hl_framework} {hl_version}")
+
         return cves
 
 # For import by other plugins

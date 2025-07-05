@@ -13,19 +13,21 @@
 name: Framewalk
 author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch>
 brief: Python Web Framework Detection Tool
-category: Framework
-framework: All 
+category: Fingerprint
+framework: Python 
 info: Identifies Python web frameworks using advanced fingerprinting techniques
 module: siddhis/framewalk/framewalk.py 
 package: Multi
-type: Reconnaissance
+type: DAST
 astt: DAST
 tags:
-  - Detection
-  - Fingerprinting
-  - Framework
   - Reconnaissance
+  - Framework Detection
+  - Fingerprinting
+  - Enumeration
   - WebApp
+composition: 
+  mode: Standalone
 description: |
   Framewalk is a sophisticated Python web framework detection plugin 
   designed to identify frameworks, versions, and components 
@@ -77,10 +79,8 @@ guide:
     +------------+-------------------------------------------------------------------+
     │ target    └┐                                                                   │
     +------------+-------------------------------------------------------------------+
-     URL                Run Framewalk against a single target (positional)
-     --url              Run Framewalk against single or multiple targets
-                        (comma-separated)
-     --file             Run Framewalk loading targets from a file (one per line)
+     --target-url      Run Framewalk against a single target
+     --file            Run Framewalk loading targets from a file (one per line)
     +------------+-------------------------------------------------------------------+
     │ output    └┐                                                                   │
     +------------+-------------------------------------------------------------------+

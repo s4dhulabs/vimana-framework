@@ -153,8 +153,13 @@ class siddhi:
     def search_issues(self):
         from siddhis.prana.prana import siddhi as prana
         from siddhis.tictrac.tictrac import siddhi as tictrac
-        
+
+        tickets,tickets_table,cves,cves_table = False,False,False,False
+
+        #import ipdb; ipdb.set_trace()
         self.vmnf_handler['django_version'] = self.search_version
+        self.vmnf_handler['framework'] = 'django'
+        self.vmnf_handler['framework_version'] = self.search_version
 
         tickets,tickets_table = tictrac(**self.vmnf_handler).get_ticket_ids()
         cves,cves_table = prana(**self.vmnf_handler).get_cves_for_version()

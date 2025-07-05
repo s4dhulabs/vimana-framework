@@ -14,17 +14,21 @@
 name: Atlatl
 author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
 brief: Flask console hook utility
-category: Framework
+category: Persistence
 framework: Flask
 info: Capture, authenticate, and persist Flask debug console sessions.
 module: siddhis/atlatl/atlatl.py
 package: Werkzeug
-type: Persistence
+type: DAST
 astt: DAST
 tags:
-  - Console
+  - Werkzeug
   - Debug
-  - PIN 
+  - PIN
+  - Persistence
+  - Console
+composition: 
+  mode: Standalone
 description: |
   This module is intended to act as a specific listener
   to capture and authenticate Flask debug console sessions

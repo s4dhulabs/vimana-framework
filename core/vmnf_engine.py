@@ -137,7 +137,7 @@ def abduct():
         print('[vmnf_engine] Something went wrong during scope validation. Check syntax and try again')
         print()
         sys.exit(1)
-
+    
     configure_logging(handler_ns)
 
     # run vimana in full navigation mode
@@ -163,7 +163,10 @@ def abduct():
 
     # ~ new in vimana 1.0 - run plugin by name directly
     if hasattr(handler_ns, 'plugin_name') and handler_ns.plugin_name:
-        handler_ns.module_run = handler_ns.plugin_name
+        from core.vmnf_smng import VFManager
+        plugin_check = VFManager(module=handler_ns.plugin_name).get_siddhi()
+        if plugin_check:
+            handler_ns.module_run = handler_ns.plugin_name
     
     # ~ runner doesn't require validations 
     if handler_ns.runner_mode:
@@ -262,6 +265,11 @@ def abduct():
         #EnvCLI().start()
         print("Stay tuned for this feature in future releases. [:")
 
-
+    elif handler_ns.workflow:
+        # Workflow mode: delegate to VimanaWorkflow in core/workflow
+        #from core.workflow.vimana_workflow import VimanaWorkflow
+        #VimanaWorkflow(handler_ns.workflow, handler_ns).run()
+        print("Stay tuned for this feature in future releases. [:")
+        sys.exit(1)
 
 

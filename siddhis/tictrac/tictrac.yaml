@@ -14,15 +14,21 @@
 name: Tictrac
 author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
 brief: Django Ticket Tracker
-category: Framework
+category: Tracker
 framework: Django
 info: Track bug tickets in Django ticket system
 module: siddhis/tictrac/tictrac.py
 package: Django
-type: Tracker
+type: DAST
 astt: DAST
 tags:
   - Django
+  - Ticket Tracker
+  - Audit
+  - Bug
+  - Issue Tracking
+composition: 
+  mode: Standalone
 description: |
   This module implements methods for querying bug ticket
   details using the official Django ticket system. The tool

@@ -14,17 +14,21 @@
 name: Jungle
 author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
 brief: Brute force utility 
-category: Framework
+category: Audit
 framework: Django
 info: Brute force utility to audit Django administration portal
 module: siddhis/jungle/jungle.py
 package: Django
-type: Audit
+type: DAST
 astt: DAST
 tags:
-  - Django
-  - portal 
+  - Admin
+  - Authentication
+  - Login
   - Brute-Force
+  - Django
+composition: 
+  mode: Standalone
 description: |
   Utility to brute force Django administration portal. 
   In the present version, the tool adheres to the Django

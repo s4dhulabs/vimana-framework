@@ -333,14 +333,9 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--auth-scope", help="Scope for OAuth2 authentication")
         
         # Pydantic Model Testing arguments
-        vmnf_shared_parser.add_argument("--pydantic-test", action="store_true", dest='pydantic_test', 
-                                    help="Run Pydantic model testing on API schema")
-
-        vmnf_shared_parser.add_argument("--serialization-test", action="store_true", dest='serialization_test', 
-                                    help="Run serialization tests on API schema")
-        
-        vmnf_shared_parser.add_argument("--custom-test", action="store", dest='custom_test', 
-                                    help="Run custom test on API schema")
+        vmnf_shared_parser.add_argument("--pydantic-test", action="store_true", dest='pydantic_test', help="Run Pydantic model testing on API schema")
+        vmnf_shared_parser.add_argument("--serialization-test", action="store_true", dest='serialization_test', help="Run serialization tests on API schema")
+        vmnf_shared_parser.add_argument("--custom-test", action="store", dest='custom_test', help="Run custom test on API schema")
         
         vmnf_shared_parser.add_argument("--pt", action="store_true", dest='pydantic_test', 
                                     help="Run Pydantic model testing on API schema")
@@ -371,6 +366,8 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--test-type", nargs='?', choices=["single", "concurrent", "progressive", "sustained", "ieee754", "precision", "mathematical", "confusion", "comprehensive"], 
                         default=False, help="Type of test to run")
         
+        #vmnf_shared_parser.add_argument('plugin_name', nargs='?', default=None, help='Nome do plugin a ser executado')
+
         return vmnf_shared_parser
 
     def shared_help(self):

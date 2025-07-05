@@ -14,15 +14,21 @@
 name: Sttinger
 author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
 brief: Framework version fingerprint tool
-category: Framework
+category: Fingerprint
 framework: Django
 info: Identify the framework version in a passive way
 module: siddhis/sttinger/sttinger.py
 package: Django
-type: Fingerprint
+type: DAST
 astt: DAST
 tags:
-  - Django
+  - Reconnaissance
+  - Framework Detection
+  - Fingerprinting
+  - Enumeration
+  - WebApp
+composition: 
+  mode: Standalone
 description: |
   This tool was designed to passively identify the Python
   framework version, acquiring and analyzing standard

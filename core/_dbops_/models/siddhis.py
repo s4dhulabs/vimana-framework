@@ -81,6 +81,11 @@ class Siddhis(db.Model):
         unique = False,
         nullable = False
     )
+    composition = db.Column(
+        JSON,
+        unique = False,
+        nullable = False
+    )
     description = db.Column(
         db.String(1000),
         unique = True,

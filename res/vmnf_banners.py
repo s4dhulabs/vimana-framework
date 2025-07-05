@@ -134,7 +134,7 @@ def case_header(msg=''):
 .                 |        *     '  .     -0-
        *  o     .    '       *      .        
        ˖                ˖
-       \n\n""".format(G_c, b_c),'blue')
+       \n""".format(G_c, b_c),'blue')
 
 
 def minimalnavi(s=''):

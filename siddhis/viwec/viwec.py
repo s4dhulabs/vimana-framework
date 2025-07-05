@@ -55,12 +55,14 @@ class siddhi:
         from twisted.internet import error 
 
         if not self.vmnf_handler.get('callback_session'):
-
+            
+            
             self.vmnf_handler['scope'] = [
                 self.vmnf_handler.get('target_url')
             ]
-            
-            vmnf_banners.load_viwec()
+
+            if self.vmnf_handler.get('module_run') == 'viwec':
+                vmnf_banners.load_viwec()
 
         if not self.vmnf_handler.get('scope',False):
             print(VimanaSharedArgs().shared_help.__doc__)
@@ -73,7 +75,7 @@ class siddhi:
         daemon = runner.crawl(vwce, **self.vmnf_handler)
         d = defer.Deferred()
         daemon.addBoth(lambda _: d.callback(None))
-
+        
         try:
             reactor.run()
         except KeyboardInterrupt:

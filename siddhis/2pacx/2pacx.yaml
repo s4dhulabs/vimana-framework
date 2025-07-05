@@ -14,16 +14,21 @@
 name: 2pacx
 author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
 brief: Unsecure Zip File Extraction Exploit
-category: Package
-framework: Generic
+category: Exploit
+framework: Python
 info: Remote code execution via insecure file extraction
-module: siddhis/2pacx/
+module: siddhis/2pacx/2pacx.py
 package: Zipfile
-type: Exploit
+type: DAST
 astt: DAST
 tags:
   - Path Traversal
-  - Zipfile 
+  - Zipfile
+  - Remote Code Execution
+  - Python
+  - File Write
+composition: 
+  mode: Standalone
 description: |
   The vulnerability occurs when a zipped file is sent to a
   Python application that uses the zipfile.ZipInfo() method

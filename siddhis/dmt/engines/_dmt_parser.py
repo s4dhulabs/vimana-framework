@@ -189,6 +189,12 @@ class DMTEngine(scrapy.Spider):
             }
         )
 
+        if not self.vmnf_handler.get('sample'):
+            self.vmnf_handler['frameworks'] = 'django'  
+            from siddhis.framewalk.framewalk import siddhi as framewalk_siddhi
+            framewalk_result = framewalk_siddhi(**self.vmnf_handler).start()
+
+        # Now call sttinger as usual
         self.found_version = sttinger(**self.vmnf_handler).start()
     
     def status_handler(self,response):
@@ -209,6 +215,10 @@ class DMTEngine(scrapy.Spider):
         if not self.vmnf_handler.get('sample') \
                 and not self.vmnf_handler.get('external_disabled'):
             self.run_passive_fingerprint()
+        
+        # run viwec against the target url
+        from siddhis.viwec.viwec import siddhi as viwec_siddhi
+        viwec_result = viwec_siddhi(**self.vmnf_handler).start()
         
         if not self.vmnf_handler.get('sample'):
             cprint(f"\n{self.f_start} Checking DEBUG status...",'cyan')

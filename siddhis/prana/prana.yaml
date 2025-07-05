@@ -14,21 +14,21 @@
 name: Prana
 author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
 brief: Tracks CVE IDs for Python web frameworks (Django, Flask, FastAPI, etc.)
-category: Framework
+category: Tracker
 framework: Python
-info: Utility to retrieve CVE IDs for Python web frameworks (Django, Flask, FastAPI, Pyramid, Bottle, etc.)
+info: Utility to retrieve CVE IDs for Python web frameworks 
 module: siddhis/prana/prana.py
 package: Python Web Frameworks
-type: Tracker
+type: DAST
 astt: DAST
 tags:
-  - Django
-  - Flask
-  - FastAPI
-  - Pyramid
-  - Bottle
-  - Security
+  - Security Advisory
+  - Vulnerability Intelligence
   - CVE
+  - Database
+  - WebApp
+composition: 
+  mode: Standalone
 description: |
   Prana is a unified utility to retrieve CVE IDs from the OSV
   (Open Source Vulnerabilities) database for Python web

@@ -67,13 +67,12 @@ def gen_issues_table(issues: list, issue_type:str):
     tabulate.PRESERVE_WHITESPACE = False
     issue_type = issue_type.lower()
     issues_table = []
-    
     if issue_type == 'cves':
         headers = [
-            cl('CVE', 'white'),
+            cl('ID', 'white'),
+            cl('Severity', 'white'),
+            cl('CVSS', 'white'),
             cl('Description', 'white'),
-            cl('CWE','white'),
-            cl('Score','white'),
         ]
     elif issue_type == 'tickets':
         headers = [
@@ -82,54 +81,53 @@ def gen_issues_table(issues: list, issue_type:str):
         ]
     elif issue_type == 'plugins':
         headers = [
-            cl('Name', 'white'),
-            cl('Type', 'white'),
-            cl('Category','white'),
-            cl('Scope','white'),
-            cl('Description','white')
+            cl('Name', 'white',attrs=['bold']),
+            cl('Category', 'white',attrs=['bold']),
+            cl('Framework','white',attrs=['bold']),
+            cl('Mode','white',attrs=['bold']),
+            cl('Type','white',attrs=['bold']),
+            cl('Description','white',attrs=['bold'])
         ]
-
     for issue in issues:
         if issue_type == 'cves':
-            dec_ref = f"""\n\n\n{issue['ref_url']}\nCVSS Vector: {issue['cvss_vector']}\n"""
-            
-            issues_table.append(
-                [
-                    cl(issue['id'],'green'),
-                    issue['description'] + dec_ref,
-                    ','.join(issue['cwes']),
-                    issue['base_score']
-                ]
-            )
+            # New prana/OSV format: id, severity, cvss_score, description, ref_url
+            cve_id = issue.get('id', '?')
+            severity = issue.get('severity', '?')
+            cvss = issue.get('cvss_score') or issue.get('base_score') or 'N/A'
+            desc = issue.get('description', '')
+            ref_url = issue.get('ref_url', '')
+            short_desc = desc[:60] + ('...' if len(desc) > 60 else '')
+            desc_with_ref = short_desc + (f"\n{ref_url}" if ref_url else '')
+            issues_table.append([
+                cl(cve_id, 'green'),
+                severity,
+                cvss,
+                desc_with_ref
+            ])
         elif issue_type == 'tickets':
             title = '\n'.join(textwrap.wrap(issue['title'], width=70))
-            issues_table.append(
-                [
-                    f"{cl('ST' + issue['id'],'green')}",
-                    title
-                ]
-            )
+            issues_table.append([
+                f"{cl('ST' + issue['id'],'green')}",
+                title
+            ])
         elif issue_type == 'plugins':
-            issues_table.append(
-                [
-                    issue.name.lower(),
-                    issue.type.lower(),
-                    issue.category.lower(),
-                    issue.astt.upper(),
-                    issue.info
-                ]
-            )
-
+            issues_table.append([
+                cl(issue.name.lower(), 77,attrs=['bold']),
+                issue.category.lower(),
+                issue.framework.title(),
+                issue.composition.get('mode', '?'),
+                issue.type.upper(),
+                issue.info
+            ])
     indexed_data = [[i] + r for i, r in enumerate(issues_table, 1)]
     table_data = [headers] + indexed_data
-
     return (
         tabulate(
             table_data,
             headers='firstrow',
             numalign="center",
             tablefmt='fancy_grid',
-            stralign='center',
+            stralign='left',
             missingval='?'
         )
     )
@@ -152,7 +150,10 @@ def load_plugin_cache(specs:dict):
             print(f"[{caller_plugin}]   + {cl(len(issues), 'cyan')} {issue_type}s loaded")
             sleep(1)
 
+        #input(f">>> load_plugin_cache.issue_type:{issue_type}")
+
         issues_table = gen_issues_table(issues, issue_type)
+        #input(f">>> load_plugin_cache.issues_table:{issues_table}")
         return issues, issues_table
     
     if show_status_enabled:

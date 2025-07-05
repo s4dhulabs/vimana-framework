@@ -40,6 +40,7 @@ class VFManager:
         self.model = '_SIDDHIS_'
         self.obj_id_col = 'name'
         self.interactive_mode = handler.get('navigation_mode',False)
+        self.handler['fancy_table'] = True 
         
         if not handler.get('module_run',False) and not handler.get('load_plugins',False) and not self.interactive_mode:
             ''' We're not going to use query filters with vf run -m/-p/-s '''
@@ -238,8 +239,23 @@ class VFManager:
             self.no_match() 
             return False
         
-        case_header()
+        #case_header()
+        print("\033c", end="")
+        vimana_version = cl('Vimana v1.0', 77,attrs=['bold'])
+        vimana_desc = cl('(Security & Automation Tools for Python Web Frameworks)', 77,attrs=['bold'])
+        plugin_catalog = cl('Plugin Catalog', 15)  # or 97 for bright white
 
+        vimana_banner = f"""
+        
+                      __'__'__         
+                        `''´          
+                   {vimana_version} - {plugin_catalog}
+                   {vimana_desc}
+        """
+
+        cprint(vimana_banner, 77)
+
+        
         if self.handler.get('fancy_table'):
             _plugins_table_ = gen_issues_table(matches, 'plugins')
 
@@ -259,6 +275,7 @@ class VFManager:
                     ]
                 )
                 
+        #cprint(f"\n❖ Vimana Plugin Catalog:", "white",attrs=['bold'])
         print(_plugins_table_)
         print()
 

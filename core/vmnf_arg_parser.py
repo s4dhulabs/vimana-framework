@@ -157,7 +157,8 @@ class VimanaParser:
         run_cmd.add_argument("--disable-external", action="store_true", dest='external_disabled')
         run_cmd.add_argument("--vf-debugger", action="store_true", dest='vf_debugger')
         run_cmd.add_argument('-i', '--interactive', action='store_true', dest='navigation_mode')
-        run_cmd.add_argument('plugin_name', nargs='?', default=None, help='Nome do plugin a ser executado')
+        run_cmd.add_argument('plugin_name', nargs='?', default=None, help='Plugin name to run')
+        run_cmd.add_argument('--workflow', action='store', nargs='?', default=False, dest='workflow')
 
         # -----------------------------------------------------------------
         # 'info' command overview 

@@ -9,23 +9,36 @@
 # Git: @s4dhulabs
 # Mastodon: @s4dhu
 # 
-# This file is part of Vimana Framework Project.
+# This file is part of Vimana Framework Project. 
 
 name: DMT
 author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
 brief: Django Misconfiguration Tracker
-category: Framework
+category: Tracker
 framework: Django 
 info: Tracks and exploits misconfigurations in Django applications
 module: siddhis/dmt/dmt.py 
 package: Django
-type: Tracker
+type: DAST
 astt: DAST
 tags:
-  - Error
-  - Debug
+  - Django
   - Exceptions
-  - Misconfiguration 
+  - Misconfiguration
+  - Scanner
+  - Tracker
+composition: 
+  mode: Orchestrator
+  plugin_chain:
+    recon:
+      - framewalk
+      - sttinger
+      - prana
+      - tictrac
+      - viwec
+    fuzz:
+      - djunch
+      - d4m8
 description: |
   This tool was designed to audit applications running
   with the Django framework. Acts as an input module for
