@@ -109,83 +109,147 @@ docker run -it vimana_framework:v0.1
 
 Vimana Framework supports running security scans directly in GitHub Actions CI/CD pipelines using various plugins.
 
-### Option 1: Manual Trigger
-
-1. Go to your repository's Actions tab
-2. Select "Vimana Framework Security Testing" workflow
-3. Click "Run workflow"
-4. Configure parameters:
-   - **Target URL**: Your target (e.g., `http://localhost:8000`)
-   - **Plugin**: Select the plugin you want to use
-   - **Scan Mode**: Choose from available modes
-5. Click "Run workflow"
-
-### Option 2: Automated Scanning in Your Repository
+### Automated Scanning in Your Repository
 
 Add this to your repository to run Vimana on every push:
 
 ```yaml
-name: Vimana Security Scan
-on: [push, pull_request]
+name: Vimana Workflow
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  vimana-scan:
-    runs-on: ubuntu-latest
+  vimana_scan:
+    runs-on: ubuntu-22.04   
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v4
-      with:
-        python-version: '3.9'
-    - uses: astral-sh/setup-uv@v1
-      with:
-        version: "latest"
-    - run: |
-        uv sync
-        sudo ln -sf $PWD/vimana.py /usr/bin/vimana
-        vimana load --plugins
-        vimana list --plugins 
+      - uses: actions/checkout@v4
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install Vimana
+        run: |
+          curl -s https://raw.githubusercontent.com/s4dhulabs/vimana-framework/develop/scripts/install | bash
+          export PATH="$HOME/.local/bin:$PATH"
+          source $HOME/.local/bin/env || true
+
 ```
 
-### Option 3: Custom Workflow with Multiple Plugins
+When the workflow runs successfully, you'll see output similar to the images below, showing:
+
+1. The successful installation and setup of Vimana Framework
+2. The environment configuration and path setup
+3. A list of available security scanning plugins ready to be used in your CI/CD pipeline
+
+These screenshots demonstrate that Vimana is properly integrated into your GitHub Actions workflow and ready to perform security scans:
+
+
+![image](https://github.com/user-attachments/assets/03a894c2-285d-403e-9b10-f03c5dad439c)
+![image](https://github.com/user-attachments/assets/d5580dc5-6d45-414b-a426-e3162159b6b3)
+![image](https://github.com/user-attachments/assets/c6d71535-76cd-4c66-8969-a27dc1348a5c)
+![image](https://github.com/user-attachments/assets/7f82e021-8ab0-438d-955a-778eb9364a73)
+
+### Running plugins (framewalk workflow)
+
+Below is an example workflow that demonstrates how to use Vimana's framewalk plugin to scan a Django application for security vulnerabilities. The workflow will:
+
+1. Install and configure Vimana Framework
+2. Start a Django test application 
+3. Run the framewalk plugin against the application
+4. Generate and store the scan report artifact
+
+Here's the complete workflow:
 
 ```yaml
-name: Comprehensive Security Testing
+name: Vimana Framewalk Scan
+
 on:
-  workflow_dispatch:
-    inputs:
-      target_url:
-        description: 'Target URL'
-        required: true
-        default: 'http://localhost:8000'
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  security-testing:
-    runs-on: ubuntu-latest
+  build_app:
+    runs-on: ubuntu-22.04   
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v4
-      with:
-        python-version: '3.9'
-    - uses: astral-sh/setup-uv@v1
-    - run: |
-        uv sync
-        sudo ln -sf $PWD/vimana.py /usr/bin/vimana
-        
-        # Load plugins
-        vimana load --plugins
+      - uses: actions/checkout@v4
 
-        # List plugins
-        vimana list --plugins
-        
-        # Run D4M8 form fuzzing (Django Web Forms)
-        vimana run d4m8 --target-url ${{ github.event.inputs.target_url }}
-        
-        # Run ViewScan for code analysis (Django Views)
-        vimana run viewscan --project-dir "${GITHUB_WORKSPACE}"
-        
-        # Add more plugins as needed
-        # vimana run --plugin other_plugin --options
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install venv and distutils for Python
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3.10-venv python3.10-distutils
+
+      - name: Set up venv and install dependencies
+        run: |
+          python3.10 -m venv env
+          source env/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          python manage.py check
+
+  run_app_and_scan:
+    runs-on: ubuntu-22.04   
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install venv and distutils for Python
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3.10-venv python3.10-distutils
+
+      - name: Set up venv and run the App
+        run: |
+          python3.10 -m venv env
+          source env/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          nohup python manage.py runserver 0.0.0.0:8000 & sleep 10
+
+      - name: Install Vimana
+        run: |
+          curl -s https://raw.githubusercontent.com/s4dhulabs/vimana-framework/develop/scripts/install | bash
+          export PATH="$HOME/.local/bin:$PATH"
+          source $HOME/.local/bin/env || true
+
+      - name: Run Vimana Framewalk
+        env:
+          PYTHONWARNINGS: ignore
+        run: |
+          cd ~/vimana-framework && source .venv/bin/activate
+          export REPORT=framewalk_report_$(date +%Y%m%d_%H%M%S).json
+          vimana run framewalk --target-url http://127.0.0.1:8000/ --output $REPORT
+          echo "REPORT=$REPORT" >> $GITHUB_ENV
+          echo "* Final plugin report: $REPORT"
+
+      - name: Upload Framewalk Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: framewalk-report
+          path: ~/vimana-framework/${{ env.REPORT }}
+
 ```
+![image](https://github.com/user-attachments/assets/44e7dffc-a034-400c-ab73-9e9d470459a9)
+![image](https://github.com/user-attachments/assets/5bd90ec8-cf36-4e98-85a7-a8053cd84907)
+![image](https://github.com/user-attachments/assets/0a7d00b3-2028-4ce2-9df1-d56333229ca5)
+![image](https://github.com/user-attachments/assets/4b60d400-c817-4fe8-b226-eb9fb7f93b88)
+
 
 ## 🚀 GitLab/Jenkins Integration
 
