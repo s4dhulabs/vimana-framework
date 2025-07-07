@@ -7,6 +7,25 @@
 [![GitHub Actions](https://img.shields.io/badge/github%20actions-ready-green.svg)](https://github.com/features/actions)
 [![GitLab/Jenkins](https://img.shields.io/badge/gitlab%2Fjenkins-ready-orange.svg)](https://gitlab.com/)
 
+## 📋 Installation Quick Navigator
+
+Choose your preferred installation method and jump directly to the instructions:
+
+| 🚀 **Quick & Easy** | 🔧 **Development** | 🏗️ **CI/CD Integration** |
+|---|---|---|
+| [**One-Line Install**](#-quick-start)<br/>*Fastest way to get started*<br/>`curl \| bash` | [**Manual Setup**](#-manual-installation)<br/>*Full control & customization*<br/>`git clone + setup` | [**GitHub Actions**](#-github-actions-integration)<br/>*Automated security scanning*<br/>`.github/workflows/` |
+| [**UV Package Manager**](#-installation-with-uv)<br/>*Modern Python tooling*<br/>`uv add vimana` | [**Docker Container**](#-docker-installation)<br/>*Isolated environment*<br/>`docker run` | [**CircleCI**](#-circleci-integration)<br/>*Enterprise CI/CD*<br/>`.circleci/config.yml` |
+| [**System Package**](#-system-package-installation)<br/>*OS-level installation*<br/>`apt/yum install` | [**Virtual Environment**](#-virtual-environment-setup)<br/>*Python isolation*<br/>`venv + pip` | [**GitLab/Jenkins**](#-gitlabjenkins-integration)<br/>*Self-hosted pipelines*<br/>`.gitlab-ci.yml` |
+
+### 🎯 **Recommended Paths:**
+
+- **🆕 New Users**: Start with [**One-Line Install**](#-quick-start) → Get running in 30 seconds
+- **👨‍💻 Developers**: Use [**Manual Setup**](#-manual-installation) → Full development environment  
+- **🏢 Enterprise**: Implement [**CI/CD Integration**](#-github-actions-integration) → Automated security testing
+- **🐳 DevSecOps**: Deploy with [**Docker**](#-docker-installation) → Containerized security scanning
+
+---
+
 ## 🚀 Quick Start
 
 ### Option 1: UV Installation (Recommended - Fastest)
@@ -249,6 +268,204 @@ jobs:
 ![image](https://github.com/user-attachments/assets/5bd90ec8-cf36-4e98-85a7-a8053cd84907)
 ![image](https://github.com/user-attachments/assets/0a7d00b3-2028-4ce2-9df1-d56333229ca5)
 ![image](https://github.com/user-attachments/assets/4b60d400-c817-4fe8-b226-eb9fb7f93b88)
+
+
+## 🔄 CircleCI Integration
+
+Vimana Framework integrates seamlessly with CircleCI for automated security testing in your CI/CD pipeline. This example demonstrates how to set up a Django application with Vimana Framewalk scanning.
+
+### Pipeline Overview
+
+The CircleCI workflow consists of five sequential jobs that build, test, and security-scan a Django application:
+
+1. **Build** - Sets up Python environment and validates Django application
+2. **Test** - Runs Django unit tests to ensure application functionality
+3. **Run App and Scan** - Deploys Django app and performs Vimana Framewalk security analysis
+4. **Integration** - Integration testing phase
+5. **Prod** - Production deployment (requires manual approval)
+
+### CircleCI Configuration
+
+Create a `.circleci/config.yml` file in your Django project:
+
+```yaml
+version: 2.1
+
+jobs:
+  build:
+    docker:
+      - image: python:3.10
+    steps:
+      - checkout
+      - run:
+          name: Install system dependencies
+          command: |
+            apt-get update
+            apt-get install -y python3-venv curl
+      - run:
+          name: Set up virtual environment and install dependencies
+          command: |
+            python -m venv env
+            source env/bin/activate
+            pip install --upgrade pip
+            pip install -r requirements.txt
+            python manage.py check
+
+  test:
+    docker:
+      - image: python:3.10
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies and run tests
+          command: |
+            python -m venv env
+            source env/bin/activate
+            pip install --upgrade pip
+            pip install -r requirements.txt
+            python manage.py test taskManager
+
+  run_app_and_scan:
+    docker:
+      - image: python:3.10
+    steps:
+      - checkout
+      - run:
+          name: Install system dependencies
+          command: |
+            apt-get update
+            apt-get install -y python3-venv curl sudo
+      - run:
+          name: Set up virtual environment and run Django app
+          command: |
+            python -m venv env
+            source env/bin/activate
+            pip install --upgrade pip
+            pip install -r requirements.txt
+            nohup python manage.py runserver 0.0.0.0:8000 & sleep 10
+          background: true
+      - run:
+          name: Install Vimana Framework
+          command: |
+            curl -s https://raw.githubusercontent.com/s4dhulabs/vimana-framework/develop/scripts/install | bash
+      - run:
+          name: Create workspace directory
+          command: mkdir -p /tmp/workspace
+      - run:
+          name: Run Vimana Framewalk Scan
+          environment:
+            PYTHONWARNINGS: ignore
+          command: |
+            cd ~/vimana-framework && source .venv/bin/activate
+            export REPORT=framewalk_report_$(date +%Y%m%d_%H%M%S).json
+            vimana run framewalk --target-url http://127.0.0.1:8000/ --output $REPORT
+            echo "* Final plugin report: $REPORT"
+            # Copy report to workspace for artifact storage
+            cp $REPORT /tmp/workspace/
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - framewalk_report_*.json
+      - store_artifacts:
+          path: /tmp/workspace
+          destination: vimana-reports
+
+  integration:
+    docker:
+      - image: python:3.10
+    steps:
+      - checkout
+      - run:
+          command: |
+            echo "~ Integration step"
+            exit 1
+          when: on_fail
+
+  prod:
+    docker:
+      - image: python:3.10
+    steps:
+      - checkout
+      - run: echo "~ Deploy step"
+
+workflows:
+  version: 2
+  django_with_vimana:
+    jobs:
+      - build
+      - test:
+          requires:
+            - build
+      - run_app_and_scan:
+          requires:
+            - test
+      - integration:
+          requires:
+            - test
+            - run_app_and_scan
+      - prod:
+          type: approval
+          requires:
+            - integration
+```
+
+### Pipeline Execution Flow
+
+#### 1. Pipeline Overview
+The CircleCI dashboard shows the complete workflow execution with visual status indicators for each job. The pipeline runs sequentially with dependency management ensuring proper build order.
+![image](https://github.com/user-attachments/assets/a7cc14ee-a283-47c9-826c-a97ecd02ed30)
+![image](https://github.com/user-attachments/assets/2a3fba0f-2959-4aa3-b438-2b2879601bcc)
+
+#### 2. Vimana Installation Process
+The installation step demonstrates:
+- **Automated Setup**: Vimana Framework downloads and configures automatically
+- **Environment Creation**: Virtual environment setup at `/root/vimana-framework/.venv`
+- **Dependency Resolution**: All required packages installed and validated
+- **Symlink Creation**: Global `vimana` command made available system-wide
+![image](https://github.com/user-attachments/assets/893f1b91-e96d-4803-83f5-281238a2ea7b)
+![image](https://github.com/user-attachments/assets/3ed9ba95-fca6-4bf1-ac7c-32a29fabdb4a)
+![image](https://github.com/user-attachments/assets/a8352b43-2cb1-42d9-8cb5-0a5f4d2a4f14)
+
+#### 3. Security Scanning Execution
+The Framewalk scan process shows:
+- **Target Detection**: Django application running on `localhost:8000`
+- **Framework Analysis**: Comprehensive Django security assessment
+- **Report Generation**: Timestamped JSON report with findings
+- **Passive Scanning**: Non-intrusive analysis maintaining application stability
+![image](https://github.com/user-attachments/assets/84d15de8-3bba-4650-98fe-92c45768d94e)
+![image](https://github.com/user-attachments/assets/e3d33e19-6166-4e46-a0e5-924e2def3fea)
+
+#### 4. Artifact Management
+The pipeline automatically:
+- **Generates Reports**: Creates timestamped security analysis files
+- **Stores Artifacts**: Preserves scan results for download and analysis
+- **Workspace Persistence**: Maintains reports across pipeline stages
+- **Download Access**: Provides easy access to security findings
+![image](https://github.com/user-attachments/assets/0d041b39-5bcc-4994-bdc7-78238d7664b3)
+![image](https://github.com/user-attachments/assets/a7cd9fe6-2ad5-44df-9c19-c9bea22773dd)
+
+### Key Benefits
+
+- **🔄 Automated Security**: Every code change triggers security analysis
+- **📊 Comprehensive Reports**: Detailed Django framework vulnerability assessment
+- **🎯 Passive Scanning**: Non-disruptive analysis during CI/CD process
+- **📦 Artifact Storage**: Persistent security reports for compliance and analysis
+- **🚀 Parallel Execution**: Security scanning runs alongside other pipeline jobs
+- **🛡️ Framework-Specific**: Targeted Django security analysis with Framewalk plugin
+
+### Usage Examples
+
+```bash
+# Trigger pipeline on push
+git push origin main
+
+# Download security reports
+# Available in CircleCI Artifacts tab: vimana-reports/framewalk_report_*.json
+
+# View scan results
+curl -H "Circle-Token: $CIRCLECI_TOKEN" \
+  "https://circleci.com/api/v1.1/project/github/$USER/$REPO/latest/artifacts"
+```
 
 
 ## 🚀 GitLab/Jenkins Integration
