@@ -35,7 +35,7 @@ Choose your preferred installation method and jump directly to the instructions:
 curl -s https://raw.githubusercontent.com/s4dhulabs/vimana-framework/develop/scripts/install | bash
 ```
 
-**Or traditional way:**
+**Or traditional way (UV):**
 ```bash
 # Clone the repository and set Vimana using uv
 git clone -b develop https://github.com/s4dhulabs/vimana-framework.git && cd vimana-framework && source scripts/setup-uv
@@ -466,6 +466,8 @@ The installation step demonstrates:
 - **Environment Creation**: Virtual environment setup at `/root/vimana-framework/.venv`
 - **Dependency Resolution**: All required packages installed and validated
 - **Symlink Creation**: Global `vimana` command made available system-wide
+
+
 ![image](https://github.com/user-attachments/assets/893f1b91-e96d-4803-83f5-281238a2ea7b)
 ![image](https://github.com/user-attachments/assets/3ed9ba95-fca6-4bf1-ac7c-32a29fabdb4a)
 ![image](https://github.com/user-attachments/assets/a8352b43-2cb1-42d9-8cb5-0a5f4d2a4f14)
@@ -476,6 +478,8 @@ The Framewalk scan process shows:
 - **Framework Analysis**: Comprehensive Django security assessment
 - **Report Generation**: Timestamped JSON report with findings
 - **Passive Scanning**: Non-intrusive analysis maintaining application stability
+
+
 ![image](https://github.com/user-attachments/assets/84d15de8-3bba-4650-98fe-92c45768d94e)
 ![image](https://github.com/user-attachments/assets/e3d33e19-6166-4e46-a0e5-924e2def3fea)
 
@@ -485,6 +489,8 @@ The pipeline automatically:
 - **Stores Artifacts**: Preserves scan results for download and analysis
 - **Workspace Persistence**: Maintains reports across pipeline stages
 - **Download Access**: Provides easy access to security findings
+
+
 ![image](https://github.com/user-attachments/assets/0d041b39-5bcc-4994-bdc7-78238d7664b3)
 ![image](https://github.com/user-attachments/assets/a7cd9fe6-2ad5-44df-9c19-c9bea22773dd)
 
@@ -689,9 +695,9 @@ export PS1="(vimana-framework) > "
 
 ### Getting Help
 
-- 📖 [Documentation](https://github.com/s4dhulabs/vimana-framework)
+- 📖 [Documentation](https://github.com/s4dhulabs/vimana-framework/docs)
 - 🐛 [Report Issues](https://github.com/s4dhulabs/vimana-framework/issues)
-- 💬 [Discussions](https://github.com/s4dhulabs/vimana-framework/discussions)
+
 
 ## 🔒 Security Considerations
 
@@ -703,6 +709,4 @@ export PS1="(vimana-framework) > "
 - Only scan authorized targets
 - Be mindful of rate limiting and legal compliance
 
----
 
-**Note**: *UV is the recommended installation method for the fastest development experience, while Docker is preferred for production deployments. GitHub Actions integration enables automated security testing in CI/CD pipelines.*
