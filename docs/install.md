@@ -13,9 +13,9 @@ Choose your preferred installation method and jump directly to the instructions:
 
 | 🚀 **Quick & Easy** | 🔧 **Development** | 🏗️ **CI/CD Integration** |
 |---|---|---|
-| [**One-Line Install**](#-quick-start)<br/>*Fastest way to get started*<br/>`curl \| bash` | [**Manual Setup**](#-manual-installation)<br/>*Full control & customization*<br/>`git clone + setup` | [**GitHub Actions**](#-github-actions-integration)<br/>*Automated security scanning*<br/>`.github/workflows/` |
-| [**UV Package Manager**](#option-1-uv-installation-recommended---fastest)<br/>*Modern Python tooling*<br/>`setup-uv script` | [**Docker Container**](#-docker-installation)<br/>*Isolated environment*<br/>`docker run` | [**CircleCI**](#-circleci-integration)<br/>*Enterprise CI/CD*<br/>`.circleci/config.yml` |
-| [**Pip Installation**](#option-2-pip-installation-traditional)<br/>*Traditional Python setup*<br/>`setup-pip script` | [**Virtual Environment**](#option-2-pip-installation-traditional)<br/>*Python isolation*<br/>`venv + pip` | [**GitLab/Jenkins**](#-gitlabjenkins-integration)<br/>*Self-hosted pipelines*<br/>`.gitlab-ci.yml` |
+| [**One-Line Install**](#-quick-start)<br/>*Fastest way to get started*<br/>`curl \| bash` | [**Manual Setup**](#-manual-installation)<br/>*Full control & customization*<br/>`git clone + setup` | [**⚡ GitHub Actions**](#-github-actions-integration)<br/>*Automated security scanning*<br/>`.github/workflows/` |
+| [**UV Package Manager**](#option-1-uv-installation-recommended---fastest)<br/>*Modern Python tooling*<br/>`setup-uv script` | [**Docker Container**](#-docker-installation)<br/>*Isolated environment*<br/>`docker run` | [**⭕ CircleCI**](#-circleci-integration)<br/>*Enterprise CI/CD*<br/>`.circleci/config.yml` |
+| [**Pip Installation**](#option-2-pip-installation-traditional)<br/>*Traditional Python setup*<br/>`setup-pip script` | [**Virtual Environment**](#option-2-pip-installation-traditional)<br/>*Python isolation*<br/>`venv + pip` | [**🦊 GitLab & 🔧 Jenkins**](#-gitlab--jenkins-integration)<br/>*Self-hosted pipelines*<br/>`.gitlab-ci.yml` |
 
 ### 🎯 **Recommended Paths:**
 
@@ -168,13 +168,30 @@ docker build -t vimana_framework:v0.1 .
 docker run -it vimana_framework:v0.1
 ```
 
-## 🔄 GitHub Actions Integration
+## ⚡ GitHub Actions Integration
 
 Vimana Framework supports running security scans directly in GitHub Actions CI/CD pipelines using various plugins.
 
+### Quick Setup
+
+Copy our ready-to-use template:
+```bash
+# Create workflow directory
+mkdir -p .github/workflows
+
+# Copy template
+curl -O https://raw.githubusercontent.com/s4dhulabs/vimana-framework/develop/docs/pipelines/github-actions-basic.yml
+mv github-actions-basic.yml .github/workflows/vimana-scan.yml
+
+# Commit and push
+git add .github/workflows/vimana-scan.yml
+git commit -m "Add Vimana security scanning workflow"
+git push
+```
+
 ### Automated Scanning in Your Repository
 
-Add this to your repository to run Vimana on every push:
+Or create your own workflow file:
 
 ```yaml
 name: Vimana Workflow
@@ -219,6 +236,13 @@ These screenshots demonstrate that Vimana is properly integrated into your GitHu
 ![image](https://github.com/user-attachments/assets/7f82e021-8ab0-438d-955a-778eb9364a73)
 
 ### Running plugins (framewalk workflow)
+
+For complete Django security analysis, use our comprehensive template:
+```bash
+# Copy Django-specific template
+curl -O https://raw.githubusercontent.com/s4dhulabs/vimana-framework/develop/docs/pipelines/github-actions-django.yml
+mv github-actions-django.yml .github/workflows/vimana-django-scan.yml
+```
 
 Below is an example workflow that demonstrates how to use Vimana's framewalk plugin to scan a Django application for security vulnerabilities. The workflow will:
 
@@ -314,9 +338,26 @@ jobs:
 ![image](https://github.com/user-attachments/assets/4b60d400-c817-4fe8-b226-eb9fb7f93b88)
 
 
-## 🔄 CircleCI Integration
+## ⭕ CircleCI Integration
 
 Vimana Framework integrates seamlessly with CircleCI for automated security testing in your CI/CD pipeline. This example demonstrates how to set up a Django application with Vimana Framewalk scanning.
+
+### Quick Setup
+
+Copy our ready-to-use template:
+```bash
+# Create config directory
+mkdir -p .circleci
+
+# Copy template
+curl -O https://raw.githubusercontent.com/s4dhulabs/vimana-framework/develop/docs/pipelines/circleci-config.yml
+mv circleci-config.yml .circleci/config.yml
+
+# Commit and push
+git add .circleci/config.yml
+git commit -m "Add Vimana security scanning pipeline"
+git push
+```
 
 ### Pipeline Overview
 
@@ -518,45 +559,196 @@ curl -H "Circle-Token: $CIRCLECI_TOKEN" \
 ```
 
 
-## 🚀 GitLab/Jenkins Integration
+## 🦊 GitLab & 🔧 Jenkins Integration
 
 Vimana Framework can be integrated into GitLab CI/CD and Jenkins pipelines for automated security testing.
 
-### GitLab CI/CD Pipeline
+### 🦊 GitLab CI/CD Pipeline
 
-Create a `.gitlab-ci.yml` file in your repository:
+#### Quick Setup
 
+Copy our ready-to-use template:
+```bash
+# Copy basic template
+curl -O https://raw.githubusercontent.com/s4dhulabs/vimana-framework/develop/docs/pipelines/gitlab-ci-basic.yml
+mv gitlab-ci-basic.yml .gitlab-ci.yml
+
+# Or copy Django-specific template
+curl -O https://raw.githubusercontent.com/s4dhulabs/vimana-framework/develop/docs/pipelines/gitlab-ci-django.yml
+mv gitlab-ci-django.yml .gitlab-ci.yml
+
+# Commit and push
+git add .gitlab-ci.yml
+git commit -m "Add Vimana security scanning pipeline"
+git push
+```
+
+#### Manual Configuration
+
+Or create your own `.gitlab-ci.yml` file:
+
+#### Basic Setup - Framework Installation Only
 ```yaml
 stages:
   - security-test
 
-vimana-security-scan:
+vimana-framework-setup:
   stage: security-test
-  image: python:3.9-slim
-  before_script:
-    - curl -LsSf https://astral.sh/uv/install.sh | sh
-    - source ~/.bashrc
-    - uv sync
-    - sudo ln -sf $PWD/vimana.py /usr/bin/vimana
-  script:
-    - vimana load --plugins
-    - vimana list --plugins
-    - vimana run d4m8 --target-url $TARGET_URL
-    - vimana run viewscan --project-dir "${CI_PROJECT_DIR}"
+  image: python:3.10
   variables:
-    TARGET_URL: "http://localhost:8000"
-  artifacts:
-    paths:
-      - core/_dbops_/
-      - "*.log"
-      - "*.json"
-      - "*.xml"
-    expire_in: 1 week
+    PYTHONWARNINGS: ignore
+  before_script:
+    - apt-get update && apt-get install -y curl sudo git
+    - curl -s https://raw.githubusercontent.com/s4dhulabs/vimana-framework/develop/scripts/install | bash
+  script:
+    - source vfe 
+    - vimana list --plugins
 ```
 
-### Jenkins Pipeline
+**Pipeline execution showing successful Vimana installation:**
+![image](https://github.com/user-attachments/assets/7512bef2-244e-4ef4-9379-e06f2097a727)
 
-Create a `Jenkinsfile` in your repository:
+**Framework activation and plugin catalog display:**
+![image](https://github.com/user-attachments/assets/8b7d717f-aa47-406f-b692-f2f933a5bd39)
+
+#### Complete Pipeline - Django Application Security Analysis (Passive Framework Fingerprint)
+
+```yaml
+image: docker:20.10
+
+services:
+  - docker:dind
+
+stages:
+  - build
+  - test
+  - security-scan
+  - integration
+  - prod
+
+variables:
+  PYTHONWARNINGS: ignore
+
+build:
+  stage: build
+  image: python:3.10
+  before_script:
+    - pip3 install --upgrade virtualenv
+  script:
+    - virtualenv env
+    - source env/bin/activate
+    - pip install -r requirements.txt
+    - python manage.py check
+  artifacts:
+    paths:
+      - env/
+    expire_in: 1 hour
+
+test:
+  stage: test
+  image: python:3.10
+  dependencies:
+    - build
+  script:
+    - source env/bin/activate
+    - python manage.py test taskManager
+
+vimana_framewalk_scan:
+  stage: security-scan
+  image: python:3.10
+  variables:
+    PYTHONWARNINGS: ignore
+  dependencies:
+    - build
+  before_script:
+    - apt-get update && apt-get install -y curl sudo git
+    - echo "Installing Vimana Security Framework"
+    - curl -s https://raw.githubusercontent.com/s4dhulabs/vimana-framework/develop/scripts/install | bash
+  script:
+    - echo "Starting Django development server"
+    - source env/bin/activate
+    - nohup python manage.py runserver 0.0.0.0:8000 > django.log 2>&1 &
+    - sleep 15
+    - echo "Verifying Django server accessibility"
+    - curl -L http://127.0.0.1:8000/taskManager/ || echo "Django server not accessible"
+    - echo "Executing Vimana Framewalk security scan"
+    - cd ~/vimana-framework && source .venv/bin/activate
+    - export REPORT_NAME="framewalk_security_report_$(date +%Y%m%d_%H%M%S).json"
+    - export REPORT_PATH="/tmp/$REPORT_NAME"
+    - vimana run framewalk --target-url http://127.0.0.1:8000/ --output $REPORT_PATH
+    - echo "Security analysis completed"
+    - echo "Report size: $(du -h $REPORT_PATH | cut -f1)"
+    - head -20 $REPORT_PATH || echo "Report file not found or empty"
+  artifacts:
+    name: "vimana-security-report-$CI_COMMIT_SHORT_SHA"
+    paths:
+      - /tmp/framewalk_security_report_*.json
+    when: always
+    expire_in: one week
+  allow_failure: true
+
+integration:
+  stage: integration
+  image: python:3.10
+  script:
+    - echo "Running integration tests"
+    - echo "This is an integration step"
+    - exit 1
+  allow_failure: true
+
+prod:
+  stage: prod
+  image: python:3.10
+  script:
+    - echo "Deploying to production"
+    - echo "This is a deploy step"
+  when: manual
+  only:
+    - main
+    - master  
+```
+
+**Complete pipeline execution with all stages:**
+![image](https://github.com/user-attachments/assets/ec3ea405-20c9-407b-b9ce-0d480dcdf899)
+
+**Framewalk security scan execution and framework discovery:**
+![image](https://github.com/user-attachments/assets/f5f70d0e-d1fb-49ba-8fe4-ff4888251068)
+
+**Security analysis report generation and artifact collection:**
+![image](https://github.com/user-attachments/assets/cccfe374-f794-4d31-8562-bd3849cae749)
+
+
+### Key Benefits
+
+- **🔄 Automated Security**: Security scanning integrated into GitLab CI/CD pipeline
+- **📊 Detailed Reports**: Comprehensive vulnerability assessment reports
+- **🎯 Flexible Integration**: Works with both basic and Django-specific pipelines
+- **📦 Artifact Storage**: Security reports preserved as pipeline artifacts
+- **🚀 Multi-Stage Pipeline**: Security testing alongside other CI/CD stages
+- **🛡️ Customizable**: Adaptable to different project security requirements
+
+### Usage Examples
+
+
+
+### 🔧 Jenkins Pipeline
+
+#### Quick Setup
+
+Copy our ready-to-use template:
+```bash
+# Copy template
+curl -O https://raw.githubusercontent.com/s4dhulabs/vimana-framework/develop/docs/pipelines/Jenkinsfile
+
+# Commit and push
+git add Jenkinsfile
+git commit -m "Add Vimana security scanning pipeline"
+git push
+```
+
+#### Manual Configuration
+
+Or create your own `Jenkinsfile`:
 
 ```groovy
 pipeline {
@@ -617,6 +809,17 @@ Vimana is a modular framework that works with plugins. Each plugin has specific 
 - **Other plugins**: Various security testing capabilities
 
 All plugins follow the syntax: `vimana run <plugin_name> <plugin_options>`
+
+## 📁 Pipeline Templates
+
+Complete pipeline templates are available in the [`docs/pipelines/`](./pipelines/) directory:
+
+- **⚡ GitHub Actions**: `github-actions-basic.yml`, `github-actions-django.yml`
+- **🦊 GitLab CI/CD**: `gitlab-ci-basic.yml`, `gitlab-ci-django.yml`
+- **⭕ CircleCI**: `circleci-config.yml`
+- **🔧 Jenkins**: `Jenkinsfile`
+
+These templates provide production-ready configurations that can be customized for your specific needs.
 
 ## 📋 System Requirements
 

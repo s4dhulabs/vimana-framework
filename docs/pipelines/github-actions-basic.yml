@@ -1,0 +1,24 @@
+name: Vimana Workflow
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  vimana_scan:
+    runs-on: ubuntu-22.04   
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install Vimana
+        run: |
+          curl -s https://raw.githubusercontent.com/s4dhulabs/vimana-framework/develop/scripts/install | bash
+          export PATH="$HOME/.local/bin:$PATH"
+          source $HOME/.local/bin/env || true 

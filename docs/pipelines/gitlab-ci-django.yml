@@ -1,0 +1,92 @@
+image: docker:20.10
+
+services:
+  - docker:dind
+
+stages:
+  - build
+  - test
+  - security-scan
+  - integration
+  - prod
+
+variables:
+  PYTHONWARNINGS: ignore
+
+build:
+  stage: build
+  image: python:3.10
+  before_script:
+    - pip3 install --upgrade virtualenv
+  script:
+    - virtualenv env
+    - source env/bin/activate
+    - pip install -r requirements.txt
+    - python manage.py check
+  artifacts:
+    paths:
+      - env/
+    expire_in: 1 hour
+
+test:
+  stage: test
+  image: python:3.10
+  dependencies:
+    - build
+  script:
+    - source env/bin/activate
+    - python manage.py test taskManager
+
+vimana_framewalk_scan:
+  stage: security-scan
+  image: python:3.10
+  variables:
+    PYTHONWARNINGS: ignore
+  dependencies:
+    - build
+  before_script:
+    - apt-get update && apt-get install -y curl sudo git
+    - echo "Installing Vimana Security Framework"
+    - curl -s https://raw.githubusercontent.com/s4dhulabs/vimana-framework/develop/scripts/install | bash
+  script:
+    - echo "Starting Django development server"
+    - source env/bin/activate
+    - nohup python manage.py runserver 0.0.0.0:8000 > django.log 2>&1 &
+    - sleep 15
+    - echo "Verifying Django server accessibility"
+    - curl -L http://127.0.0.1:8000/taskManager/ || echo "Django server not accessible"
+    - echo "Executing Vimana Framewalk security scan"
+    - cd ~/vimana-framework && source .venv/bin/activate
+    - export REPORT_NAME="framewalk_security_report_$(date +%Y%m%d_%H%M%S).json"
+    - export REPORT_PATH="/tmp/$REPORT_NAME"
+    - vimana run framewalk --target-url http://127.0.0.1:8000/ --output $REPORT_PATH
+    - echo "Security analysis completed"
+    - echo "Report size: $(du -h $REPORT_PATH | cut -f1)"
+    - head -20 $REPORT_PATH || echo "Report file not found or empty"
+  artifacts:
+    name: "vimana-security-report-$CI_COMMIT_SHORT_SHA"
+    paths:
+      - /tmp/framewalk_security_report_*.json
+    when: always
+    expire_in: one week
+  allow_failure: true
+
+integration:
+  stage: integration
+  image: python:3.10
+  script:
+    - echo "Running integration tests"
+    - echo "This is an integration step"
+    - exit 1
+  allow_failure: true
+
+prod:
+  stage: prod
+  image: python:3.10
+  script:
+    - echo "Deploying to production"
+    - echo "This is a deploy step"
+  when: manual
+  only:
+    - main
+    - master 

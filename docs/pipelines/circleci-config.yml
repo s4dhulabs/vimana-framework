@@ -1,0 +1,118 @@
+version: 2.1
+
+jobs:
+  build:
+    docker:
+      - image: python:3.10
+    steps:
+      - checkout
+      - run:
+          name: Install system dependencies
+          command: |
+            apt-get update
+            apt-get install -y python3-venv curl
+      - run:
+          name: Set up virtual environment and install dependencies
+          command: |
+            python -m venv env
+            source env/bin/activate
+            pip install --upgrade pip
+            pip install -r requirements.txt
+            python manage.py check
+
+  test:
+    docker:
+      - image: python:3.10
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies and run tests
+          command: |
+            python -m venv env
+            source env/bin/activate
+            pip install --upgrade pip
+            pip install -r requirements.txt
+            python manage.py test taskManager
+
+  run_app_and_scan:
+    docker:
+      - image: python:3.10
+    steps:
+      - checkout
+      - run:
+          name: Install system dependencies
+          command: |
+            apt-get update
+            apt-get install -y python3-venv curl sudo
+      - run:
+          name: Set up virtual environment and run Django app
+          command: |
+            python -m venv env
+            source env/bin/activate
+            pip install --upgrade pip
+            pip install -r requirements.txt
+            nohup python manage.py runserver 0.0.0.0:8000 & sleep 10
+          background: true
+      - run:
+          name: Install Vimana Framework
+          command: |
+            curl -s https://raw.githubusercontent.com/s4dhulabs/vimana-framework/develop/scripts/install | bash
+      - run:
+          name: Create workspace directory
+          command: mkdir -p /tmp/workspace
+      - run:
+          name: Run Vimana Framewalk Scan
+          environment:
+            PYTHONWARNINGS: ignore
+          command: |
+            cd ~/vimana-framework && source .venv/bin/activate
+            export REPORT=framewalk_report_$(date +%Y%m%d_%H%M%S).json
+            vimana run framewalk --target-url http://127.0.0.1:8000/ --output $REPORT
+            echo "* Final plugin report: $REPORT"
+            # Copy report to workspace for artifact storage
+            cp $REPORT /tmp/workspace/
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - framewalk_report_*.json
+      - store_artifacts:
+          path: /tmp/workspace
+          destination: vimana-reports
+
+  integration:
+    docker:
+      - image: python:3.10
+    steps:
+      - checkout
+      - run:
+          command: |
+            echo "~ Integration step"
+            exit 1
+          when: on_fail
+
+  prod:
+    docker:
+      - image: python:3.10
+    steps:
+      - checkout
+      - run: echo "~ Deploy step"
+
+workflows:
+  version: 2
+  django_with_vimana:
+    jobs:
+      - build
+      - test:
+          requires:
+            - build
+      - run_app_and_scan:
+          requires:
+            - test
+      - integration:
+          requires:
+            - test
+            - run_app_and_scan
+      - prod:
+          type: approval
+          requires:
+            - integration 
