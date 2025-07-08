@@ -26,11 +26,29 @@ Vimana bridges offensive and defensive security. Whether you're a developer, sec
 
 ## Getting Started
 
-Follow the [Installation Guide](https://github.com/s4dhulabs/vimana-framework/blob/develop/docs/install.md) to set up Vimana.
+**📚 [Installation Guide](docs/install.md)** - Complete setup instructions with multiple installation methods:
+- **🚀 Quick Start** - One-line installation
+- **🔧 Development Setup** - Manual installation & Docker
+- **🏗️ CI/CD Integration** - GitHub Actions, GitLab CI/CD, CircleCI, Jenkins
 
-- **Native install:** After setup, running `vimana` in your terminal will show:
-  ![image](https://github.com/user-attachments/assets/9f643e5b-760b-4a9a-be5e-d4f9d8e5d8a6)
-- **Docker:** The interface and prompt may differ, but all core features are available.
+After installation, running `vimana` shows the main interface:
+![image](https://github.com/user-attachments/assets/9f643e5b-760b-4a9a-be5e-d4f9d8e5d8a6)
+
+---
+
+## CI/CD Integration
+
+Vimana supports automated security testing in modern CI/CD pipelines with ready-to-use templates for:
+
+**⚡ GitHub Actions** • **🦊 GitLab CI/CD** • **⭕ CircleCI** • **🔧 Jenkins**
+
+- **Automated Security Scanning** - Integrate into existing workflows
+- **Multi-Plugin Support** - Run any Vimana plugin in your pipeline
+- **Report Generation** - Security analysis artifacts
+- **Production-Ready Templates** - One-command setup
+
+📚 **Setup Guide:** [Installation & CI/CD Documentation](docs/install.md)  
+📁 **Templates:** [Pipeline Templates](docs/pipelines/)
 
 ---
 
