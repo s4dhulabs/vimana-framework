@@ -5,6 +5,7 @@
 [![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://www.docker.com/)
 [![GitHub Actions](https://img.shields.io/badge/github%20actions-ready-green.svg)](https://github.com/features/actions)
 [![GitLab/Jenkins](https://img.shields.io/badge/gitlab%2Fjenkins-ready-orange.svg)](https://gitlab.com/)
+[![CircleCI](https://img.shields.io/badge/circleci-ready-brightgreen.svg)](https://circleci.com/)
 [![Platform](https://img.shields.io/badge/platform-linux-lightgrey.svg)](https://www.linux.org/)
 
 ## Overview
@@ -15,10 +16,11 @@ Vimana started as a web fuzzer for Python exceptions and has evolved into a comp
 
 - Persistence analysis
 - Crawling and discovery
-- Vulnerability tracking & CVE intelligence
+- Vulnerability tracking
 - Exploitation & fuzzing
 - Parsing & static analysis
 - Auditing & compliance
+- Post-Exploitation 
 
 Vimana bridges offensive and defensive security. Whether you're a developer, security engineer, or bug hunter, Vimana provides a research-driven toolkit to enhance your workflow.
 
