@@ -14,8 +14,8 @@ Choose your preferred installation method and jump directly to the instructions:
 | 🚀 **Quick & Easy** | 🔧 **Development** | 🏗️ **CI/CD Integration** |
 |---|---|---|
 | [**One-Line Install**](#-quick-start)<br/>*Fastest way to get started*<br/>`curl \| bash` | [**Manual Setup**](#-manual-installation)<br/>*Full control & customization*<br/>`git clone + setup` | [**GitHub Actions**](#-github-actions-integration)<br/>*Automated security scanning*<br/>`.github/workflows/` |
-| [**UV Package Manager**](#-installation-with-uv)<br/>*Modern Python tooling*<br/>`uv add vimana` | [**Docker Container**](#-docker-installation)<br/>*Isolated environment*<br/>`docker run` | [**CircleCI**](#-circleci-integration)<br/>*Enterprise CI/CD*<br/>`.circleci/config.yml` |
-| [**System Package**](#-system-package-installation)<br/>*OS-level installation*<br/>`apt/yum install` | [**Virtual Environment**](#-virtual-environment-setup)<br/>*Python isolation*<br/>`venv + pip` | [**GitLab/Jenkins**](#-gitlabjenkins-integration)<br/>*Self-hosted pipelines*<br/>`.gitlab-ci.yml` |
+| [**UV Package Manager**](#option-1-uv-installation-recommended---fastest)<br/>*Modern Python tooling*<br/>`setup-uv script` | [**Docker Container**](#-docker-installation)<br/>*Isolated environment*<br/>`docker run` | [**CircleCI**](#-circleci-integration)<br/>*Enterprise CI/CD*<br/>`.circleci/config.yml` |
+| [**Pip Installation**](#option-2-pip-installation-traditional)<br/>*Traditional Python setup*<br/>`setup-pip script` | [**Virtual Environment**](#option-2-pip-installation-traditional)<br/>*Python isolation*<br/>`venv + pip` | [**GitLab/Jenkins**](#-gitlabjenkins-integration)<br/>*Self-hosted pipelines*<br/>`.gitlab-ci.yml` |
 
 ### 🎯 **Recommended Paths:**
 
@@ -83,6 +83,50 @@ cd ~ && git clone -b develop https://github.com/s4dhulabs/vimana-framework.git &
 - Compatible with all Python environments
 - Familiar workflow for Python developers
 - Same clean setup experience as UV
+
+## 🔧 Manual Installation
+
+For developers who prefer full control over the installation process or want to customize the setup:
+
+```bash
+# Clone the repository
+git clone -b develop https://github.com/s4dhulabs/vimana-framework.git
+cd vimana-framework
+
+# Create a Python virtual environment
+python3 -m venv .venv
+
+# Activate the virtual environment
+source .venv/bin/activate  # On Linux/macOS
+# .venv\Scripts\activate   # On Windows
+
+# Install dependencies
+pip install --upgrade pip
+pip install -r requirements.txt
+
+# Run Vimana
+python vimana.py --help
+```
+
+**Manual setup benefits:**
+- ✅ **Full Control**: Customize every step of the installation
+- ✅ **Development Ready**: Perfect for contributing to Vimana
+- ✅ **Environment Isolation**: Uses standard Python virtual environments
+- ✅ **No Scripts**: Direct control without automation scripts
+- ✅ **Debugging Friendly**: Easy to troubleshoot installation issues
+
+**Usage after manual installation:**
+```bash
+# Activate environment (required each time)
+cd ~/vimana-framework && source .venv/bin/activate
+
+# Run Vimana commands
+python vimana.py list --plugins
+python vimana.py run framewalk --target-url http://example.com
+
+# Deactivate when done
+deactivate
+```
 
 ## 🐳 Docker Installation
 
