@@ -26,8 +26,9 @@ Vimana bridges offensive and defensive security. Whether you're a developer, sec
 
 ---
 
-## Documentation
+## 📋 Documentation
 
 - **[Installation Guide](docs/install.md)** - Setup instructions and deployment options
 - **[CI/CD Integration](docs/pipelines/)** - Pipeline templates for GitHub Actions, GitLab CI/CD, CircleCI, Jenkins
+
 
