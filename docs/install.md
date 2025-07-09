@@ -41,8 +41,20 @@ curl -s https://raw.githubusercontent.com/s4dhulabs/vimana-framework/develop/scr
 # Clone the repository and set Vimana using uv
 git clone -b develop https://github.com/s4dhulabs/vimana-framework.git && cd vimana-framework && source scripts/setup-uv
 ```
+**Stage 1: Dependency Installation**
+The installer downloads and configures UV, then creates a virtual environment and installs all Python dependencies. This stage handles the complete dependency resolution and builds the Vimana framework package from source.
 
-<a href="https://asciinema.org/a/J7S2zdrmPqv6qkMfo2nW0jVAZ" target="_blank"><img src="https://asciinema.org/a/J7S2zdrmPqv6qkMfo2nW0jVAZ.svg" /></a>
+![image](https://github.com/user-attachments/assets/73577745-d051-4fe7-a8fa-5ae0070d69fd)
+
+**Stage 2: Plugin System Initialization**
+After successful dependency installation, Vimana loads and configures its plugin ecosystem. This includes scanning for available plugins, initializing the framework core, and preparing the plugin catalog for first use.
+
+![image](https://github.com/user-attachments/assets/9c42e79e-f2fa-4b84-9dd5-ba2ebd0415a0)
+
+**Stage 3: Installation Complete**
+The final stage shows the Vimana Framework ready for use, displaying the plugin catalog with available security testing tools. The framework is now fully operational with all plugins properly registered and accessible.
+
+![image](https://github.com/user-attachments/assets/35614a24-2ec2-4493-97d4-6ac9c2156189)
 
 
 **Why UV?**
