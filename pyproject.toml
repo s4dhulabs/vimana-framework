@@ -96,6 +96,7 @@ Issues = "https://github.com/s4dhulabs/vimana-framework/issues"
 
 [tool.hatch.version]
 path = "core/_version.py"
+pattern = "__version__ = ['\"](?P<version>[^'\"]+)['\"]"
 
 [tool.hatch.build.targets.wheel]
 packages = ["vimana"]

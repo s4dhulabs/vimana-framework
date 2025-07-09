@@ -96,8 +96,8 @@ def _is_development_version() -> bool:
     """Check if this is a development version"""
     return __prerelease__ is not None or _get_git_version() is not None
 
-# Public API
-__version__ = _get_version_string()
+# Public API - Static version for build tools
+__version__ = "0.8.0"  # Updated by version manager
 __version_info_tuple__ = VersionInfo(
     major=__version_info__[0],
     minor=__version_info__[1], 
