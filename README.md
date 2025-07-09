@@ -10,19 +10,14 @@
 
 ## Overview
 
-**Vimana** is a modular security framework for auditing and analyzing Python web applications. With a flexible plugin system, Vimana enables security professionals, developers, and researchers to assess, fuzz, and explore the security of Python-based projects using both standard and innovative techniques.
+**Vimana** is a modular security framework for auditing Python web applications. The plugin-based architecture enables security professionals to assess, fuzz, and analyze Python projects through automated and manual techniques.
 
-Vimana started as a web fuzzer for Python exceptions and has evolved into a comprehensive platform with plugins for:
-
-- Persistence analysis
-- Crawling and discovery
-- Vulnerability tracking
-- Exploitation & fuzzing
-- Parsing & static analysis
-- Auditing & compliance
-- Post-Exploitation 
-
-Vimana bridges offensive and defensive security. Whether you're a developer, security engineer, or bug hunter, Vimana provides a research-driven toolkit to enhance your workflow.
+**Core Capabilities:**
+- Vulnerability detection and exploitation
+- Static and dynamic analysis
+- Application crawling and discovery
+- Persistence and post-exploitation analysis
+- CI/CD security integration
 
 ---
 
