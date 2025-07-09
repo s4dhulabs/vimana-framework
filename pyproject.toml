@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "vimana-framework"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Vimana Framework - Advanced Security Testing Framework"
 readme = "README.md"
 license = {file = "LICENSE"}
@@ -93,6 +93,9 @@ Homepage = "https://github.com/s4dhulabs/vimana-framework"
 Repository = "https://github.com/s4dhulabs/vimana-framework"
 Documentation = "https://github.com/s4dhulabs/vimana-framework"
 Issues = "https://github.com/s4dhulabs/vimana-framework/issues"
+
+[tool.hatch.version]
+path = "core/_version.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["vimana"]

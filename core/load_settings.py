@@ -14,12 +14,18 @@
 import yaml
 from os.path import dirname
 
+# Import version from centralized version management
+from ._version import _version_, __version__, get_version_info
+
 with open(f"{dirname(__file__)}/vmnf_settings.yaml") as file:
     vf_settings = yaml.load(
         file, Loader=yaml.FullLoader
     )
 
-    _version_ =  vf_settings['project'].get('version')
+    # Use centralized version management instead of YAML
+    # _version_ =  vf_settings['project'].get('version')  # Old way
+    # _version_ is now imported from _version module
+    
     _vfs_     =  vf_settings['settings'] 
     _utils_   =  _vfs_['utils']
     _siddhis_ =  _vfs_.get('siddhis_set')

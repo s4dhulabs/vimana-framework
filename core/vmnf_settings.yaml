@@ -5,7 +5,6 @@ project:
     name: Vimana Framework
     site: https://sadhulabs.substack.com/
     tag: alpha
-    version: v0.9
 settings:
     arg_parser:
         require_args:
