@@ -57,6 +57,9 @@ The final stage shows the Vimana Framework ready for use, displaying the plugin 
 ![image](https://github.com/user-attachments/assets/35614a24-2ec2-4493-97d4-6ac9c2156189)
 
 
+To activate the environment and use Vimana, just run `source vfe`:
+![image](https://github.com/user-attachments/assets/2fa451b4-bc8f-4d1a-abb3-374b6449c140)
+
 **Why UV?**
 - 10-100x faster than pip
 - Automatic dependency resolution
