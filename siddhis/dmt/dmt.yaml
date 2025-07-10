@@ -89,7 +89,7 @@ guide:
     ø-----------+----------------------------------------------------------ø
     │ target    └┐                                                         │
     +------------+---------------------------------------------------------+
-     --target            Run DMT against a single target
+     --target-url        Run DMT against a single target URL
      --target-list       Run DMT against a target list (comma separated)
      --file              Run DMT loading scope from a file
     +-----------+----------------------------------------------------------+

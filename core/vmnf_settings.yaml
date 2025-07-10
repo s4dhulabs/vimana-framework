@@ -71,5 +71,6 @@ settings:
         - viewscan
         - tictrac
         - fff
+        - pyserial
     utils:
         random_headers: res/random_headers.yaml

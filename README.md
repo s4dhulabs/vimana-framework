@@ -23,7 +23,8 @@
 
 ## 📋 Documentation
 
-- **[Installation Guide](docs/install.md)** - Setup instructions and deployment options
+- **[User Guide](docs/USER_GUIDE.md)** - Complete usage guide and command reference
+- **[Installation Guide](docs/INSTALL_GUIDE.md)** - Setup instructions and deployment options
 - **[CI/CD Integration](docs/pipelines/)** - Pipeline templates for GitHub Actions, GitLab CI/CD, CircleCI, Jenkins
 
 
