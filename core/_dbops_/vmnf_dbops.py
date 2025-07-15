@@ -19,6 +19,7 @@ from .models.tools import Tools as VFTools
 from .models.scans import VFScans
 from .models.cases import VFCases
 from .models.envs import VFEnvs
+from .models.channels import VFChannels as VFChannels
 
 from sqlalchemy_utils.functions import database_exists as db_exists
 from .db_utils import filter_ops, handle_OpErr,get_filter_clauses
@@ -45,7 +46,8 @@ class VFDBOps:
             '_CASES_'   : VFCases,
             '_TOOLS_'   : VFTools,
             '_SPECS_'   : VFSpecs,
-            '_ENVS_'    : VFEnvs
+            '_ENVS_'    : VFEnvs,
+            '_CHANNELS_': VFChannels
         }
         self.create_db()
     
@@ -158,4 +160,54 @@ class VFDBOps:
             self.vmnf_handler = self.session
 
         self.commit(vf_model(**self.vmnf_handler))
+
+    def list_db(self):
+        """
+        List all tables and their columns/types in the Vimana database.
+        """
+        inspector = inspect(db.engine)
+        tables = inspector.get_table_names()
+        if not tables:
+            print(cl("No tables found in the database.", "red"))
+            return
+        for table in tables:
+            print(cl(f"\nTable: {table}", "cyan", attrs=["bold"]))
+            columns = inspector.get_columns(table)
+            for col in columns:
+                col_name = col['name']
+                col_type = str(col['type'])
+                nullable = "NULL" if col.get('nullable', True) else "NOT NULL"
+                print(f"    {col_name}  {col_type}  {nullable}")
+
+    def integrity_check(self):
+        """
+        Run a database integrity check (currently supports SQLite).
+        If debug or verbose is enabled, print detailed process info.
+        """
+        engine_name = db.engine.name.lower()
+        verbose = (self.vmnf_handler.get('debug') or 
+                  self.vmnf_handler.get('verbose') or 
+                  '--verbose' in self.vmnf_handler.get('args', []))
+
+        if engine_name == 'sqlite':
+            conn = db.engine.raw_connection()
+            try:
+                cursor = conn.cursor()
+                if verbose:
+                    print(cl(f"[DEBUG] Starting integrity check for backend: {engine_name}", "yellow"))
+                    print(cl("[DEBUG] Executing SQL: PRAGMA integrity_check;", "yellow"))
+                cursor.execute("PRAGMA integrity_check;")
+                results = cursor.fetchall()
+                if verbose:
+                    print(cl(f"[DEBUG] Raw result(s): {results}", "yellow"))
+                if results and results[0][0] == 'ok':
+                    print(cl("[OK] Database integrity check passed.", "green", attrs=["bold"]))
+                else:
+                    print(cl("[FAIL] Database integrity check failed:", "red", attrs=["bold"]))
+                    for row in results:
+                        print(cl(str(row[0]), "red"))
+            finally:
+                conn.close()
+        else:
+            print(cl(f"Integrity check not implemented for backend: {engine_name}", "yellow"))
 

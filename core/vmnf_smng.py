@@ -205,6 +205,13 @@ class VFManager:
         describe().siddhi(siddhi)
 
     def query_siddhis(self):
+        if not VFDBOps().table_exists(self.model):
+            from res.vmnf_banners import default_naviban    
+            print("\033c", end="")
+            default_naviban()
+            print(f"\n  No plugins loaded. Please run 'vimana load --plugins' to load plugins.\n")
+            sys.exit(1)
+        
         return (VFDBOps().list_resource(self.model,self.query_filters))
 
     def get_siddhi(self):
@@ -240,7 +247,7 @@ class VFManager:
             return False
         
         #case_header()
-        print("\033c", end="")
+        #print("\033c", end="")
         vimana_version = cl('Vimana v1.0', 77,attrs=['bold'])
         vimana_desc = cl('(Security & Automation Tools for Python Web Frameworks)', 77,attrs=['bold'])
         plugin_catalog = cl('Plugin Catalog', 15)  # or 97 for bright white
@@ -253,7 +260,7 @@ class VFManager:
                    {vimana_desc}
         """
 
-        cprint(vimana_banner, 77)
+        #cprint(vimana_banner, 77)
 
         
         if self.handler.get('fancy_table'):
@@ -281,7 +288,6 @@ class VFManager:
 
     def run_siddhi(self):
         self.handler['module'] = self.handler['module_run']
-
         siddhi = self.get_siddhi()
 
         # `project_dir` could also be set right here

@@ -209,7 +209,7 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--dump",action="store",dest='dump_mode',default=False)
         vmnf_shared_parser.add_argument("--search-object",action="store",dest='search_object',default=False)
         vmnf_shared_parser.add_argument("--output-file",action="store",dest='output_file',default='scan_results.sarif')
-        vmnf_shared_parser.add_argument("--cmd",action="store",dest='run_cmd',default=False)
+        vmnf_shared_parser.add_argument("--cmd",action="store",nargs='?',dest='run_cmd',default=False)
         vmnf_shared_parser.add_argument("--read-file",action="store",dest='read_file',default=False)
 
         vmnf_shared_parser.add_argument("--package",action="store_true",dest='search_package',default=False)
@@ -270,6 +270,7 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("-nc","--no-colors",action="store_true",dest='colors_disabled',default=False)
         vmnf_shared_parser.add_argument("--pretty",action="store_true",dest='pretty_output',default=False)
         vmnf_shared_parser.add_argument('--output', '-o', help='Output file for results (JSON format)')
+        vmnf_shared_parser.add_argument('--json', action='store_true', dest='json_output', default=False)
         vmnf_shared_parser.add_argument("--app-scope",action="store_true",dest='app_scope',default=False)
         
         vmnf_shared_parser.add_argument('--no-evidence', action='store_true', help='Hide evidence details in console output')
@@ -363,7 +364,7 @@ class VimanaSharedArgs:
 
         vmnf_shared_parser.add_argument("--set-custom-payload", action="store_true", dest='set_custom_payload', default=False)
 
-        vmnf_shared_parser.add_argument("--test-type", nargs='?', choices=["single", "concurrent", "progressive", "sustained", "ieee754", "precision", "mathematical", "confusion", "comprehensive"], 
+        vmnf_shared_parser.add_argument("--test-type", nargs='?', 
                         default=False, help="Type of test to run")
         
         #vmnf_shared_parser.add_argument('plugin_name', nargs='?', default=None, help='Nome do plugin a ser executado')

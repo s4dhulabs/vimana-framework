@@ -16,6 +16,7 @@ import sys
 sys.path.insert(0, '../../../')
 
 from core.vmnf_smng import VFManager as vfmng
+from core.vmnf_channels import list_channels, show_channel, flush_channel, flush_all_channels, run_command_in_channel
 
 from res.vmnf_validators import get_tool_scope as get_scope
 from neotermcolor import cprint, colored as cl
@@ -46,15 +47,16 @@ from core.vmnf_cases import CasManager
 from core.vmnf_scans import VFScan
 from core.vmnf_rrunner import *
 from core.vmnf_navidash import vimanadash 
+from core._dbops_.vmnf_dbops import VFDBOps
 
 # vimana helpers 
 import res.vmnf_validators as validator
 
 # vimana resources
-from core.vmnf_asserts import vmnf_cmds,require_module
+from core.vmnf_asserts import vmnf_cmds, require_module, get_command_help_text
 from helpers.vmnf_helpers import VimanaHelp
 from .vmnf_asserts import vfasserts
-from res.vmnf_banners import vmn05
+from res.vmnf_banners import vmn05, default_naviban, vmnf_dbops
 from res import vmnf_banners 
 from res.colors import *
 import logging
@@ -92,9 +94,10 @@ def abduct():
 
     elif arg_len == 1 and cmd != 'start':
         if cmd in vmnf_cmds.keys():
-            if cmd !='about':
-                vmn05()
-            print(vmnf_cmds[cmd])
+            #if cmd !='about':
+            #    vmn05()
+            print("\033c", end="")
+            print(get_command_help_text(cmd))
             sys.exit(1)
         else:
             pass
@@ -110,7 +113,7 @@ def abduct():
         else:
             if aux and aux in ['-h', '--help']:
                 vmn05()
-                print(vmnf_cmds[cmd])
+                print(get_command_help_text(cmd))
                 sys.exit(1)
             else:
                 # vimana run --help     shows help about the command run itself
@@ -121,7 +124,7 @@ def abduct():
         and len(sys.argv[2:]) == 1 \
         and sys.argv[2] == '--module':
         
-        print(vmnf_cmds[cmd])
+        print(get_command_help_text(cmd))
         sys.exit(1)
     
     vmn_parser = VimanaParser()
@@ -139,13 +142,36 @@ def abduct():
         sys.exit(1)
     
     configure_logging(handler_ns)
+    
+    if handler_ns.db_reset:
+        vmnf_dbops()
+
+        confirm = input("\nAre you sure you want to reset the database? This action cannot be undone [y/N]: ").lower()
+        if confirm != 'y':
+            print("\nDatabase reset cancelled")
+            sys.exit(0)
+
+        VFDBOps().clean_db()
+        sys.exit(1)
+
+    if handler_ns.db_list:        
+        vmnf_dbops()
+        VFDBOps().list_db()
+        print()
+        sys.exit(1)
+
+    if handler_ns.db_integrity_check:
+        vmnf_dbops()
+        VFDBOps(**vars(handler_ns)).integrity_check()
+        print()
+        sys.exit(1)
 
     # run vimana in full navigation mode
     if cmd == 'start':
         handler_ns.start = True
         handler_ns.navigation_mode = True
         
-        x = [
+        start_resources = [
             'start_cases', 
             'start_scans', 
             'start_tools', 
@@ -154,7 +180,7 @@ def abduct():
             'start_collections'
         ]
 
-        for arg in x:
+        for arg in start_resources:
             if getattr(handler_ns, arg):
                 if isinstance(handler_ns.start_resource, bool):
                     handler_ns.start_resource = []
@@ -163,16 +189,41 @@ def abduct():
 
     # ~ new in vimana 1.0 - run plugin by name directly
     if hasattr(handler_ns, 'plugin_name') and handler_ns.plugin_name:
-        from core.vmnf_smng import VFManager
-        plugin_check = VFManager(module=handler_ns.plugin_name).get_siddhi()
-        if plugin_check:
-            handler_ns.module_run = handler_ns.plugin_name
-    
+
+        plugins_loaded = VFDBOps().getall('_SIDDHIS_')
+
+        if not plugins_loaded:
+            if handler_ns.auto:
+                handler_ns.load_plugins = True
+                plugins_loaded = VFDBOps().getall('_SIDDHIS_')
+            else:
+                from res.vmnf_banners import default_naviban    
+                print("\033c", end="")
+                default_naviban()
+                print(f"\n  No plugins loaded. Please run 'vimana load --plugins' to load plugins.\n")
+                sys.exit(1)
+
+        if plugins_loaded and handler_ns.plugin_name not in [plugin.name for plugin in plugins_loaded]:
+            print(f"\n  Plugin {cl(handler_ns.plugin_name, 'red')} doesn't exist. Available plugins:\n")
+            [cprint('   ' + s.name, 'blue') \
+                    for s in plugins_loaded]
+            print()
+            sys.exit(1)
+        else:
+            handler_ns.module_run = handler_ns.plugin_name  
+
+    if hasattr(handler_ns, 'run_cmd') and handler_ns.run_cmd:
+        '''
+        handler_ns.run_cmd: run a command in the channel
+        handler_ns.cmd_channel: channel to run the command in
+        '''
+        run_command_in_channel(handler_ns)
+
     # ~ runner doesn't require validations 
     if handler_ns.runner_mode:
         vfmng(**vars(handler_ns)).run_siddhi()
         return True
-
+    
     if (handler_ns.module_run)\
         and handler_ns.module_run \
         not in _siddhis_.get("list"):
@@ -248,6 +299,48 @@ def abduct():
     elif handler_ns.list_scans:
         VFScan(**vars(handler_ns)).list_scans()
 
+    #~ list all channels
+    elif handler_ns.list_channels:
+        from core.vmnf_channels import list_channels, get_channels_by_type, get_channels_by_plugin, get_channels_by_target
+        from neotermcolor import colored
+        
+        # Check if summary mode is requested
+        summary_mode = getattr(handler_ns, 'channels_summary', False)
+        
+        if handler_ns.channel_type:
+            channels = get_channels_by_type(handler_ns.channel_type)
+            if channels:
+                list_channels(channels, summary=summary_mode)
+            else:
+                print(colored(f'No channels found for type: {handler_ns.channel_type}', 'yellow'))
+        elif handler_ns.channel_plugin:
+            channels = get_channels_by_plugin(handler_ns.channel_plugin)
+            if channels:
+                list_channels(channels, summary=summary_mode)
+            else:
+                print(colored(f'No channels found for plugin: {handler_ns.channel_plugin}', 'yellow'))
+        elif handler_ns.channel_target:
+            channels = get_channels_by_target(handler_ns.channel_target)
+            if channels:
+                list_channels(channels, summary=summary_mode)
+            else:
+                print(colored(f'No channels found for target: {handler_ns.channel_target}', 'yellow'))
+        else:
+            list_channels(summary=summary_mode)
+
+    #~ show channel details
+    elif hasattr(handler_ns, 'show_channel') and handler_ns.show_channel:
+        compact_mode = getattr(handler_ns, 'show_compact', False)
+        show_channel(handler_ns.show_channel, compact=compact_mode)
+
+    #~ flush channel
+    elif hasattr(handler_ns, 'flush_channel') and handler_ns.flush_channel:
+        flush_channel(handler_ns.flush_channel)
+
+    #~ flush all channels
+    elif handler_ns.flush_channels:
+        flush_all_channels()
+
     #~ flush case
     elif handler_ns.flush_case:
         CasManager(handler_ns).flush_case(handler_ns.flush_case)
@@ -267,8 +360,8 @@ def abduct():
 
     elif handler_ns.workflow:
         # Workflow mode: delegate to VimanaWorkflow in core/workflow
-        #from core.workflow.vimana_workflow import VimanaWorkflow
-        #VimanaWorkflow(handler_ns.workflow, handler_ns).run()
+        from core.workflow.vimana_workflow import VimanaWorkflow
+        VimanaWorkflow(handler_ns.workflow, handler_ns).run()
         print("Stay tuned for this feature in future releases. [:")
         sys.exit(1)
 

@@ -77,6 +77,13 @@ class VimanaParser:
         start_cmd.add_argument('--cases', action='store_true',dest='start_cases')
 
         # -----------------------------------------------------------------
+        # `help` command overview 
+        # -----------------------------------------------------------------
+        # vf help --module <module_name>
+        # -----------------------------------------------------------------         
+        #help_cmd = subparsers.add_parser('help', add_help=False, dest='help_cmd')
+
+        # -----------------------------------------------------------------
         # `list` command overview 
         # -----------------------------------------------------------------
         # vf list --modules -t/-c/-f [options] 
@@ -92,6 +99,12 @@ class VimanaParser:
         list_cmd.add_argument('--plugins', action='store_true',dest='module_list')
         list_cmd.add_argument('--siddhis', action='store_true',dest='module_list')
         list_cmd.add_argument('--scans', action='store_true',dest='list_scans')
+        list_cmd.add_argument('--channels', action='store_true',dest='list_channels')
+        list_cmd.add_argument('--summary', action='store_true', dest='channels_summary', help='Show channels in compact summary format')
+        list_cmd.add_argument('--channel-type', action='store', dest='channel_type', help='Filter channels by type (RCE, File Write, etc.)')
+        list_cmd.add_argument('--channel-plugin', action='store', dest='channel_plugin', help='Filter channels by plugin name')
+        list_cmd.add_argument('--channel-target', action='store', dest='channel_target', help='Filter channels by target URL')
+        list_cmd.add_argument('--channel-status', action='store', dest='channel_status', help='Filter channels by status (active, verified, etc.)')
         list_cmd.add_argument('-i', '--interactive', action='store_true', dest='navigation_mode')
         list_cmd.add_argument('--nav', action='store_true', dest='navigation_mode')
         list_cmd.add_argument('-t', '--type', action='store')
@@ -120,6 +133,8 @@ class VimanaParser:
         flush_cmd.add_argument('--show-details',action='store_true', dest='flush_details')
         flush_cmd.add_argument('--xray',action='store_true', dest='xray_enabled')
         flush_cmd.add_argument('--fastflush',action='store_true', dest='fastflush')
+        flush_cmd.add_argument('--channel', action='store', dest='flush_channel')
+        flush_cmd.add_argument('--channels', action='store_true', dest='flush_channels')
         # -----------------------------------------------------------------
         # `load` command overview 
         # -----------------------------------------------------------------
@@ -159,6 +174,9 @@ class VimanaParser:
         run_cmd.add_argument('-i', '--interactive', action='store_true', dest='navigation_mode')
         run_cmd.add_argument('plugin_name', nargs='?', default=None, help='Plugin name to run')
         run_cmd.add_argument('--workflow', action='store', nargs='?', default=False, dest='workflow')
+        run_cmd.add_argument('--channel', action='store', nargs='?', default=False, dest='cmd_channel')
+        #run_cmd.add_argument('--cmd', action='store', nargs='?', default=False, dest='cmd')
+        #run_cmd.add_argument('--pycode', action='store', nargs='?', default=False, dest='pycode')
 
         # -----------------------------------------------------------------
         # 'info' command overview 
@@ -171,6 +189,37 @@ class VimanaParser:
         info_cmd.add_argument('-m', '--module',action='store',dest='module_info')
         info_cmd.add_argument('-s', '--siddhi',action='store',dest='module_info')
         info_cmd.add_argument('-p', '--plugin',action='store',dest='module_info')
+
+        # -----------------------------------------------------------------
+        # 'show' command overview 
+        # -----------------------------------------------------------------
+        # vf show --channel <channel_name>
+        # -----------------------------------------------------------------
+        show_cmd = subparsers.add_parser('show',
+            help='Show information about Vimana resources'
+        )
+        show_cmd.add_argument('-c', '--channel',action='store',dest='show_channel')
+        show_cmd.add_argument('--compact', action='store_true', dest='show_compact', help='Show channel details in compact format')
+
+        
+        # -----------------------------------------------------------------
+        # 'db' command overview 
+        # -----------------------------------------------------------------
+        # vf db --channel <channel_name>
+        # -----------------------------------------------------------------
+        db_cmd = subparsers.add_parser('dbops',
+            help='CLI Database operations'
+        )
+        db_cmd.add_argument('-r', '--reset',action='store_true',dest='db_reset')
+        db_cmd.add_argument('-l', '--list',action='store_true',dest='db_list')
+        db_cmd.add_argument('--integrity-check',action='store_true',dest='db_integrity_check')
+        #db_cmd.add_argument('-c', '--clear',action='store_true',dest='db_clear')
+        #db_cmd.add_argument('-s', '--show',action='store',dest='db_show')
+        #db_cmd.add_argument('-a', '--add',action='store',dest='db_add')
+        #db_cmd.add_argument('-d', '--delete',action='store',dest='db_delete')
+        #db_cmd.add_argument('-u', '--update',action='store',dest='db_update')
+        #db_cmd.add_argument('-r', '--rename',action='store',dest='db_rename')
+        
         # -----------------------------------------------------------------
         # 'guide' command overview 
         # -----------------------------------------------------------------
@@ -299,6 +348,7 @@ class VimanaParser:
             vf_debugger     = False,
             load_session    = False,
             load_plugins    = False,
+            list_channels   = False,
             flush_sessions  = False,
             flush_cases     = False,
             flush_session   = False,
@@ -312,7 +362,29 @@ class VimanaParser:
             view_name       = False,
             proxy           = False,
             proxy_type      = False,
-            project_dir     = False
+            project_dir     = False,
+            flush_channel   = False,
+            flush_channels  = False,
+            show_channel    = False,
+            channel_type    = False,
+            channel_plugin  = False,
+            channel_target  = False,
+            channel_status  = False,
+            workflow        = False,
+            channels_summary = False,
+            show_compact    = False,
+            cmd             = False,
+            pycode          = False,
+            help_cmd        = False,
+            db_reset        = False,
+            db_list         = False,
+            db_clear        = False,
+            db_show         = False,
+            db_add          = False,
+            db_delete       = False,
+            db_update       = False,
+            db_rename       = False,
+            db_integrity_check = False
         )
 
         if len(sys.argv) > 1:

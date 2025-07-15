@@ -1,13 +1,16 @@
 # Vimana Framework User Guide
+![image](https://github.com/user-attachments/assets/5e438547-47be-474c-8393-871fbff3c211)
 
 ## Table of Contents
 - [Overview](#overview)
-- [Basic Command Structure](#basic-command-structure)
+- [Getting Started](#getting-started)
+- [Framework Navigation](#framework-navigation)
+- [Essential Commands](#essential-commands)
 - [Running Plugins](#running-plugins)
-- [Plugin Discovery and Documentation](#plugin-discovery-and-documentation)
-- [Advanced Usage Patterns](#advanced-usage-patterns)
-- [Case Management](#case-management)
+- [Resource Management](#resource-management)
+- [Getting Help](#getting-help)
 - [Examples and Best Practices](#examples-and-best-practices)
+- [Advanced Features & Roadmap](#advanced-features--roadmap)
 
 ---
 
@@ -15,50 +18,192 @@
 
 The Vimana Framework provides a unified command-line interface for security testing and automation of Python web frameworks. The framework follows a plugin-based architecture where each security tool (called a "siddhi" or plugin) can be executed independently or as part of larger testing workflows.
 
+### Execution Modes
+
+Vimana supports three main execution approaches:
+
+1. **CLI Mode**: Direct command-line execution of individual plugins
+2. **Navigation Mode**: Interactive step-by-step configuration via `vimana start`
+3. **Workflow Mode**: Execution of predefined workflows 
+
+This guide focuses on **CLI Mode** - the most common and straightforward approach for security testing.
+
+> **Note:** Advanced features such as **channels** (for post-exploitation, research, and automation) and **workflows** (for orchestrating complex multi-step testing) are part of Vimana's extensible architecture. These will be covered in detail in future advanced documentation.
+
 ### Core Philosophy
 
 Vimana emphasizes:
 - **Simplicity**: Clear, intuitive command syntax
-- **Discoverability**: Built-in documentation and examples for every plugin
+- **Discoverability**: Built-in documentation and interactive menus
 - **Flexibility**: Support for standalone execution, cases, and workflows
 - **Extensibility**: Easy plugin development and integration
 
 ---
 
-## Basic Command Structure
+## Getting Started
 
-The primary command pattern for Vimana follows this structure:
+### Command Discovery
+
+The easiest way to understand Vimana is through its built-in command discovery system:
 
 ```bash
-vimana run <plugin_name> <plugin_options>
+# See all available commands
+vimana
+
+# See what you can run
+vimana run
+
+# See what you can list
+vimana list
+
+# See what you can show
+vimana show
 ```
 
-### Command Variations
+Running these commands without arguments displays interactive menus that guide you through available options.
+
+### Framework Navigation
+
+Vimana provides intuitive navigation through its command structure:
 
 ```bash
-# Basic plugin execution
-vimana run <plugin_name> [options]
+# Main framework menu - shows all available commands
+vimana
 
-# Case execution
-vimana run --case <case_name>
-vimana run --case @<case_id>
+# Plugin execution menu - shows available plugins and execution options
+vimana run
 
-# Workflow execution
-vimana run <workflow_name>
+# Resource listing menu - shows what resources you can explore
+vimana list
 
-# Quick re-execution of last case
-vimana run !
+# Information display menu - shows what details you can view
+vimana show
+```
+
+Each menu provides context-sensitive help and examples for the available options.
+
+---
+
+## Framework Navigation
+
+### Main Framework Menu
+
+Running `vimana` without arguments displays the main framework menu:
+
+```
+               about  ◉◍  Framework information and version
+              create  ◉◍  Create new resources (env, vars, creds)
+               flush  ◎◉  Remove recorded resources
+               dbops  ◉◎  Database operations and maintenance
+               guide  ◉◎  Show plugin usage examples and arguments
+                help  ◎◍  Display comprehensive help for all commands
+                info  ◍◍  Show detailed plugin information
+                list  ◎◍  List available resources
+                load  ◉◍  Load recorded sessions
+                 run  ◎◉  Execute plugins, cases, or workflows
+                show  ◍◎  Display detailed resource information
+               start  ◍◎  Start interactive mode
+```
+
+### Plugin Execution Menu
+
+Running `vimana run` without arguments shows execution options:
+
+```bash
+vimana run
+```
+
+This displays:
+- Available plugins for execution
+- Case execution options
+- Workflow execution options
+- Usage examples and syntax
+
+---
+
+## Essential Commands
+
+### Discovering Resources
+
+```bash
+# List all available plugins
+vimana list --plugins
+
+# List plugins by framework
+vimana list --plugins --framework Django
+
+# List plugins by category
+vimana list --plugins --category Audit
+
+# List plugins by type
+vimana list --plugins --type DAST
+
+# List recorded sessions
+vimana list --sessions
+
+# List saved cases
+vimana list --cases
+
+# List exploitation channels (advanced, see roadmap)
+vimana list --channels
+```
+
+### Getting Information
+
+```bash
+# Get detailed plugin information
+vimana info --plugin <plugin_name>
+
+# Show plugin documentation
+vimana guide --plugin <plugin_name>
+
+# Show plugin arguments
+vimana guide --plugin <plugin_name> --args
+
+# Show usage examples
+vimana guide --plugin <plugin_name> --examples
+
+# Show lab setup instructions
+vimana guide --plugin <plugin_name> --labs
+```
+
+### Viewing Resources
+
+```bash
+# Show detailed session information
+vimana show --session <session_id>
+
+# Show case configuration
+vimana show --case <case_name>
+
+# Show channel details (advanced, see roadmap)
+vimana show --channel <channel_id>
+
+# Show channel details in compact format (advanced)
+vimana show --channel <channel_id> --compact
+```
+
+### Maintenance & Database Operations
+
+```bash
+# Database operations and maintenance
+vimana dbops --reset            # Reset and clean the Vimana Framework database (dangerous!)
+vimana dbops --list             # List all tables and their columns/types in the database
+vimana dbops --integrity-check  # Run a database integrity check (SQLite supported)
 ```
 
 ---
 
 ## Running Plugins
 
-### Plugin Execution Basics
+### Basic Plugin Execution
 
-Every plugin in Vimana can be executed using the `vimana run` command. The framework includes 16 DAST (Dynamic Application Security Testing) tools, 1 SAST (Static Application Security Testing) tool, and 3 payload generators.
+Every plugin in Vimana can be executed using the `vimana run` command:
 
 ```bash
+# Basic plugin execution
+vimana run <plugin_name> [options]
+
 # Example: Running DMT against a Django application
 vimana run dmt --target-url http://127.0.0.1:8000
 
@@ -71,263 +216,224 @@ vimana run pyserial --target-url http://127.0.0.1:8003
 
 ### Common Plugin Options
 
-While each plugin has unique capabilities, there are standard option patterns based on plugin type. Understanding these patterns helps you quickly get started with any plugin, but **always use `vimana guide -p <plugin_name>` for complete and accurate documentation**.
+While each plugin has unique capabilities, there are standard option patterns:
 
-#### Option Categories by Plugin Type
+#### Target Specification
+```bash
+--target-url        Single target URL
+--target-list       Comma-separated list of targets
+--file              File containing list of targets
+--port              Single port number
+--port-list         Comma-separated list of ports
+```
 
-| **DAST Plugins** (Dynamic Testing) | **SAST Plugins** (Static Analysis) | **Universal Options** |
-|-------------------------------------|-------------------------------------|----------------------|
-| `--target-url` - Single target URL | `--project-dir` - Project directory path | `--verbose` - Enable detailed output |
-| `--target-list` - Multiple targets (comma-separated) | `--framework` - Target framework (django, flask, fastapi) | `--debug` - Enable debug messages |
-| `--port` - Target port | `--framework-version` - Specific version to analyze | `--auto` - Auto-confirm prompts |
-| `--port-list` - Multiple ports | `--source-dirs` - Additional source directories | `--save-case <name>` - Save as reusable case |
-| `--file` - Load targets from file | `--exclude-dirs` - Directories to exclude | `--export-format` - Output format (json, xml, html) |
-| `--docker-scope` - Use Docker targets | `--include-tests` - Include test files in analysis | `--output` - Output file path |
-| `--scan-mode` - Testing mode (sample, full, etc.) | `--config-file` - Analysis configuration file | `--timeout` - Operation timeout |
+#### Execution Control
+```bash
+--debug             Enable debug mode with detailed output
+--verbose           Enable verbose mode (incremental levels)
+--auto              Auto-confirm prompts and continue on errors
+--threads           Number of concurrent threads (default: 3)
+--timeout           HTTP request timeout in seconds (default: 5)
+```
 
-#### Specialized Options by Domain
+#### Output and Saving
+```bash
+--save-case <name>  Save current command as reusable case
+--output <file>     Save results to specified file
+--export-format     Output format (json, xml, html)
+```
 
-| **API Testing** (JColt, PySerial) | **Web App Testing** (DMT, D4M8) | **Framework Analysis** |
-|------------------------------------|----------------------------------|------------------------|
-| `--scan-api` - Discover and save API spec | `--sample` - Fast single-occurrence mode | `--fingerprint` - Identify framework/version |
-| `--apispec` - Use saved specification | `--exit-on-trigger` - Stop on first finding | `--enumerate-versions` - List supported versions |
-| `--list-specs` - Show saved specifications | `--extended-scope` - Comprehensive analysis | `--check-dependencies` - Analyze dependencies |
-| `--serialization-test` - Test serialization vulnerabilities | `--save-session` - Save interactive session | `--version-compare` - Compare against known versions |
-| `--pydantic-test` - Test Pydantic models | `--disable-cache` - Skip caching mechanisms | `--security-headers` - Analyze security headers |
-
-#### Important Notes
-
-- **Plugin-Specific Options**: Each plugin has unique capabilities beyond these common patterns
-- **Required vs Optional**: Some options are required, others are optional with sensible defaults
-- **Parameter Formats**: Check the guide for specific format requirements (e.g., comma-separated lists)
-- **Compatibility**: Not all options work together; the guide explains valid combinations
-
-> **💡 Pro Tip**: The option patterns above are guidelines. For definitive information about any plugin's options, requirements, and usage examples, always run:
-> ```bash
-> vimana guide -p <plugin_name>
-> ```
+> **💡 Pro Tip**: Always use `vimana guide -p <plugin_name>` for complete and accurate documentation of any plugin's specific options and requirements.
 
 ---
 
-## Plugin Discovery and Documentation
+## Resource Management
 
-### The Guide System
+### Case Management
 
-Vimana includes a comprehensive built-in documentation system accessible via the `guide` command. This is your primary resource for understanding any plugin's capabilities and usage.
-
-### Getting Complete Plugin Documentation
+Cases allow you to save and reuse complex command configurations:
 
 ```bash
-# View full plugin guide (examples, arguments, lab setup)
-vimana guide -p <plugin_name>
-vimana guide --plugin <plugin_name>
+# Create and execute a case
+vimana run dmt \
+    --target-list 127.0.0.1,192.168.1.161 \
+    --port-list 8000,8001,8002 \
+    --verbose \
+    --auto \
+    --save-case django_audit \
+    --exec-case
 
-# Example: Complete DMT documentation
-vimana guide -p dmt
-```
-
-This displays:
-- **Plugin Overview**: Purpose and capabilities
-- **Usage Examples**: Real-world command examples with explanations
-- **Arguments Reference**: Complete list of available options
-- **Lab Setup**: Instructions for setting up test environments
-
-### Getting Specific Documentation Sections
-
-```bash
-# View only plugin arguments
-vimana guide -p <plugin_name> --args
-vimana guide -p <plugin_name> -a
-
-# View only usage examples
-vimana guide -p <plugin_name> --examples
-vimana guide -p <plugin_name> -e
-
-# View only lab setup instructions
-vimana guide -p <plugin_name> --labs
-vimana guide -p <plugin_name> -l
-```
-
-### Example: DMT Plugin Documentation
-
-```bash
-# Get complete DMT guide
-vimana guide -p dmt
-
-# Get only DMT arguments
-vimana guide -p dmt --args
-
-# Get only DMT examples
-vimana guide -p dmt --examples
-
-# Get only DMT lab setup
-vimana guide -p dmt --labs
-```
-
----
-
-## Advanced Usage Patterns
-
-### Target Specification Methods
-
-Vimana supports multiple ways to specify targets:
-
-```bash
-# Single target
-vimana run dmt --target localhost --port 8000
-
-# Multiple targets
-vimana run dmt --target-list 127.0.0.1,192.168.1.161 --port 9001
-
-# Target file (format: target:port per line)
-vimana run dmt --file scope.txt
-
-# Docker environment targets
-vimana run dmt --docker-scope
-
-# Nmap XML import
-vimana run dmt --nmap-xml scan_results.xml
-```
-
-### Execution Modes
-
-Different plugins support various execution modes:
-
-```bash
-# Sample mode (fast, single occurrence)
-vimana run dmt --target localhost --port 8000 --sample
-
-# Exit on first trigger
-vimana run dmt --target localhost --port 8000 --exit-on-trigger
-
-# Extended scope analysis
-vimana run dmt --target localhost --port 8000 --extended-scope
-
-# Debug mode with verbose output
-vimana run dmt --target localhost --port 8000 --debug --verbose
+# Execute saved cases
+vimana run --case django_audit
+vimana run django_audit
+vimana run !                    # Execute last case
 ```
 
 ### Session Management
 
 ```bash
-# Save analysis results as interactive session
-vimana run dmt --target localhost --port 8000 --save-session
+# List recorded sessions
+vimana list --sessions
 
-# Enable auto-confirmation for unattended execution
-vimana run dmt --target localhost --port 8000 --auto
+# Show session details
+vimana show --session <session_id>
+
+# Load specific session
+vimana load --session <session_id>
+```
+
+### Channel Management
+
+```bash
+# List exploitation channels
+vimana list --channels
+
+# List channels in summary format
+vimana list --channels --summary
+
+# Filter channels by type
+vimana list --channels --channel-type RCE
+
+# Show channel details
+vimana show --channel <channel_id>
+
+# Show channel details in compact format
+vimana show --channel <channel_id> --compact
+```
+
+### Resource Cleanup
+
+```bash
+# Remove specific resources
+vimana flush --session <session_id>
+vimana flush --case <case_name>
+vimana flush --channel <channel_id>
+
+# Remove all resources of a type
+vimana flush --sessions
+vimana flush --cases
+vimana flush --channels
 ```
 
 ---
 
-## Case Management
+## Getting Help
 
-Cases allow you to save and reuse complex command configurations, making it easy to repeat security assessments or share testing procedures.
-
-### Creating Cases
+### Built-in Documentation
 
 ```bash
-# Create and execute a case
-vimana run dmt \
-    --target-list 127.0.0.1,192.168.1.161,djapp1.vmnf.com \
-    --port-list 8888,9001,8000,5001 \
-    --verbose \
-    --auto \
-    --save-case djapps \
-    --exec-case
+# Main framework help
+vimana --help
+vimana help
+
+# Command-specific help
+vimana run --help
+vimana list --help
+vimana show --help
+
+# Plugin-specific documentation
+vimana guide -p <plugin_name>
+
+# Plugin catalog
+vimana list --plugins
 ```
 
-### Executing Saved Cases
+### Interactive Help
 
 ```bash
-# Run case by name
-vimana run --case djapps
+# Start interactive mode for guided configuration
+vimana start
 
-# Run case by ID
-vimana run --case @cf1
-
-# Run the most recently created case
-vimana run !
+# Use command discovery menus
+vimana
+vimana run
+vimana list
+vimana show
 ```
 
-### Case Benefits
+### Documentation Sections
 
-- **Reproducibility**: Exact same testing conditions
-- **Collaboration**: Share testing procedures with team members
-- **Automation**: Integrate into CI/CD pipelines
-- **Documentation**: Cases serve as executable documentation
+```bash
+# Get complete plugin guide
+vimana guide -p <plugin_name>
+
+# Get only plugin arguments
+vimana guide -p <plugin_name> --args
+
+# Get only usage examples
+vimana guide -p <plugin_name> --examples
+
+# Get only lab setup instructions
+vimana guide -p <plugin_name> --labs
+```
 
 ---
 
 ## Examples and Best Practices
 
-### FastAPI Security Testing with JColt
+### Quick Start Examples
 
 ```bash
-# Scan API and save specification
-vimana run jcolt --scan-api http://api.example.com
+# 1. Discover what's available
+vimana list --plugins
 
-# List available specifications
-vimana run jcolt --list-specs
+# 2. Get information about a plugin
+vimana info --plugin dmt
 
-# Run serialization tests against saved spec
-vimana run jcolt --serialization-test
+# 3. Get plugin documentation
+vimana guide -p dmt
 
-# Run with custom payload builder
-vimana run jcolt --serialization-test --set-custom-payload
+# 4. Run the plugin
+vimana run dmt --target-url http://127.0.0.1:8000
+
+# 5. Save as a case for reuse
+vimana run dmt --target-url http://127.0.0.1:8000 --save-case quick_test
 ```
 
-### Python Serialization Testing with PySerial
+### Framework-Specific Testing
 
+#### Django Security Testing
 ```bash
-# Test using saved API specification
-vimana run pyserial --apispec aS0949
+# List Django-specific plugins
+vimana list --plugins --framework Django
 
-# Test with direct URL
+# Run comprehensive Django audit
+vimana run dmt --target-url http://django-app.com:8000 --debug
+
+# Save Django testing case
+vimana run dmt \
+    --target-list app1.com,app2.com \
+    --port-list 8000,8001 \
+    --save-case django_production_audit
+```
+
+#### FastAPI Security Testing
+```bash
+# List FastAPI plugins
+vimana list --plugins --framework FastAPI
+
+# Scan and test API
+vimana run jcolt --scan-api http://api.example.com
+vimana run jcolt --serialization-test
+```
+
+#### Python Serialization Testing
+```bash
+# Test serialization vulnerabilities
 vimana run pyserial --target-url http://127.0.0.1:8003
 
-# Test specific serialization categories
-vimana run pyserial --target-url http://127.0.0.1:8003 --test-categories depth_testing,type_confusion
-```
-
-### Django Security Testing with DMT
-
-```bash
-# Basic analytical mode (comprehensive)
-vimana run dmt --target djapp1.vmnf.com --port 8000 --debug
-
-# Fast sample mode
-vimana run dmt --target-list 127.0.0.1,192.168.1.161 --port 9001 --sample
-
-# Complex multi-target assessment
-vimana run dmt \
-    --target-list 127.0.0.1,192.168.1.161,djapp1.vmnf.com \
-    --port-list 8888,9001,8000,5001 \
-    --verbose \
-    --auto \
-    --save-case production_scan
-```
-
-### Plugin-Specific Options
-
-Each plugin has unique capabilities. Always consult the plugin guide for specific options:
-
-```bash
-# Check what a plugin can do
-vimana guide -p <plugin_name>
-
-# Example: JColt-specific options
-vimana run jcolt --pydantic-test --test-types validation_bypass,injection
-vimana run jcolt --apispec aS0949 --list-pydantic-models
-vimana run jcolt --fingerprint --target-url http://api.example.com
+# Test with saved API specification
+vimana run pyserial --apispec <spec_id>
 ```
 
 ### Best Practices
 
-1. **Start with the Guide**: Always run `vimana guide -p <plugin_name>` before using a new plugin
-2. **Use Cases for Repeatability**: Save complex configurations as cases
-3. **Enable Debug for Learning**: Use `--debug` when learning plugin behavior
-4. **Leverage Auto Mode**: Use `--auto` for unattended execution
-5. **Organize Your Tests**: Use descriptive case names and maintain documentation
+1. **Start with Discovery**: Use `vimana list --plugins` to see what's available
+2. **Read the Guide**: Always run `vimana guide -p <plugin_name>` before using a new plugin
+3. **Use Cases**: Save complex configurations as cases for reproducibility
+4. **Enable Debug**: Use `--debug` when learning plugin behavior
+5. **Leverage Auto Mode**: Use `--auto` for unattended execution
+6. **Organize Resources**: Use descriptive names for cases and maintain documentation
 
 ### Lab Environment Setup
 
@@ -342,28 +448,16 @@ cd django.nV
 
 ---
 
-## Getting Help
+## Advanced Features & Roadmap
 
-### Built-in Documentation
+Vimana is designed for extensibility and advanced use cases. Some features are considered advanced and will be covered in future documentation:
 
-```bash
-# Main framework help
-vimana --help
+- **Channels**: For post-exploitation, research, and automation workflows
+- **Workflows**: For orchestrating complex, multi-step, or multi-plugin testing
+- **Custom Automation**: Scripting, chaining, and advanced reporting
 
-# Plugin-specific documentation
-vimana guide -p <plugin_name>
-
-# Plugin catalog
-vimana list --plugins
-```
-
-### Community Resources
-
-- **Installation Guide**: [docs/install.md](install.md)
-- **CI/CD Integration**: [docs/pipelines/](pipelines/)
-- **Plugin Development**: Coming soon
-- **API Reference**: Coming soon
+Stay tuned for updates and advanced guides!
 
 ---
 
-*Remember: The `guide` command is your best friend. When in doubt, run `vimana guide -p <plugin_name>` to understand any plugin's capabilities, arguments, and usage patterns.* 
+*Remember: The command discovery system is your best friend. When in doubt, run `vimana`, `vimana run`, or `vimana list` without arguments to see what's available.* 
