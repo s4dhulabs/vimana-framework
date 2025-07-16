@@ -360,8 +360,8 @@ def abduct():
 
     elif handler_ns.workflow:
         # Workflow mode: delegate to VimanaWorkflow in core/workflow
-        from core.workflow.vimana_workflow import VimanaWorkflow
-        VimanaWorkflow(handler_ns.workflow, handler_ns).run()
+        #from core.workflow.vimana_workflow import VimanaWorkflow
+        #VimanaWorkflow(handler_ns.workflow, handler_ns).run()
         print("Stay tuned for this feature in future releases. [:")
         sys.exit(1)
 
