@@ -18,6 +18,7 @@ from ._dbops_.vmnf_dbops import VFDBOps
 from ._dbops_.db_utils import handle_OpErr
 from .vmnf_navi_siddhis import navisiddhis 
 #from .setevars import set_vimana_path
+from core.load_settings import _version_
 
 from res.vmnf_banners import case_header
 from .vmnf_asserts import vfasserts
@@ -248,7 +249,7 @@ class VFManager:
         
         #case_header()
         #print("\033c", end="")
-        vimana_version = cl('Vimana v1.0', 77,attrs=['bold'])
+        vimana_version = cl(f'Vimana v{_version_}', 77,attrs=['bold'])
         vimana_desc = cl('(Security & Automation Tools for Python Web Frameworks)', 77,attrs=['bold'])
         plugin_catalog = cl('Plugin Catalog', 15)  # or 97 for bright white
 
@@ -260,7 +261,7 @@ class VFManager:
                    {vimana_desc}
         """
 
-        #cprint(vimana_banner, 77)
+        cprint(vimana_banner, 77)
 
         
         if self.handler.get('fancy_table'):

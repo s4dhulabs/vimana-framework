@@ -107,8 +107,11 @@ Applies advanced pattern recognition across multiple detection vectors:
 
 The Vimana framework provides a comprehensive suite of security testing tools. Let's start by exploring the available plugins:
 
-`vimana`
-![image](https://github.com/user-attachments/assets/7b84db0a-0cc2-4a17-a10b-fac8b93d3927)
+```bash
+vimana
+```
+<img width="1432" height="629" alt="image" src="https://github.com/user-attachments/assets/2fc1ea3a-b6ab-4720-85db-474f679d3907" />
+
 
 #### Listing Available Plugins
 
@@ -117,7 +120,7 @@ To see all available plugins in the Vimana framework:
 ```bash
 vimana list --plugins
 ```
-![image](https://github.com/user-attachments/assets/57fae534-d5d8-4d42-b3e4-e0a06ef91a7b)
+<img width="1858" height="948" alt="image" src="https://github.com/user-attachments/assets/9eb9d0b7-a771-4150-aea9-1b8ef09e15e2" />
 
 As shown in the output, Framewalk is classified as a **fingerprint** plugin, designed specifically for framework detection and analysis.
 

@@ -100,6 +100,8 @@ class VimanaParser:
         list_cmd.add_argument('--siddhis', action='store_true',dest='module_list')
         list_cmd.add_argument('--scans', action='store_true',dest='list_scans')
         list_cmd.add_argument('--channels', action='store_true',dest='list_channels')
+        list_cmd.add_argument('--workflows', action='store_true',dest='list_workflows')
+        list_cmd.add_argument('--specs', action='store_true',dest='list_specs')
         list_cmd.add_argument('--summary', action='store_true', dest='channels_summary', help='Show channels in compact summary format')
         list_cmd.add_argument('--channel-type', action='store', dest='channel_type', help='Filter channels by type (RCE, File Write, etc.)')
         list_cmd.add_argument('--channel-plugin', action='store', dest='channel_plugin', help='Filter channels by plugin name')
