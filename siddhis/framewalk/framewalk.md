@@ -112,8 +112,10 @@ vimana
 ```
 <img width="1432" height="629" alt="image" src="https://github.com/user-attachments/assets/2fc1ea3a-b6ab-4720-85db-474f679d3907" />
 
-Let's first check what options are available with the `list` command:
-
+Let's first check what options are available with the `list` command, just run:
+```bash
+vimana list
+```
 <img width="1145" height="936" alt="image" src="https://github.com/user-attachments/assets/53392f56-4810-40f7-bda2-ed6c12f68301" />
 
 #### Listing Available Plugins
