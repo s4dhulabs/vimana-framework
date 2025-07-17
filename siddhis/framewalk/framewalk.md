@@ -129,7 +129,21 @@ vimana list --plugins
 
 As shown in the output, Framewalk is classified as a **fingerprint** plugin, designed specifically for framework detection and analysis.
 
+We can filter plugins by different criteria like category, type, framework etc:
+
+```bash
+vf list --plugins --category fingerprint 
+```
+<img width="1460" height="307" alt="image" src="https://github.com/user-attachments/assets/f659c920-21b7-4d38-8f37-e69095f3d166" />
+
 #### Plugin Information and Capabilities
+First, let's explore the `info` command itself to understand its capabilities:
+```bash
+vimana info
+```
+<img width="896" height="603" alt="image" src="https://github.com/user-attachments/assets/e729a339-2120-4107-8a55-3541d9805a4c" />
+
+_Note: Some arguments shown in the commands above may be redundant due to backwards compatibility with ancient Vimana versions. These will be streamlined in future releases._
 
 To get detailed information about Framewalk's capabilities:
 
