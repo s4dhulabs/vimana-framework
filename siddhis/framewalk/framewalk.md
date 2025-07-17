@@ -135,6 +135,15 @@ vimana info --plugin framewalk
 
 The plugin information reveals key capabilities including multi-engine detection, confidence scoring, and comprehensive framework analysis.
 
+#### Plugin Arguments and Options
+
+Before running Framewalk against a target, let's check what arguments are available using `guide` command:
+```bash
+vimana guide --plugin framewalk --args
+```
+<img width="1191" height="789" alt="image" src="https://github.com/user-attachments/assets/96f3f516-da68-404f-9381-9c8bb027bb37" />
+
+
 ### Single Target Framework Detection
 
 #### Basic Target Analysis
