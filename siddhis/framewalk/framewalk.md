@@ -143,6 +143,12 @@ vimana guide --plugin framewalk --args
 ```
 <img width="1191" height="789" alt="image" src="https://github.com/user-attachments/assets/96f3f516-da68-404f-9381-9c8bb027bb37" />
 
+To see practical examples of using Framewalk in different scenarios just run:
+```bash
+vimana guide -p framewalk --examples
+```
+<img width="1191" height="825" alt="image" src="https://github.com/user-attachments/assets/dd884514-4799-4f89-9206-74bdd02b34fa" />
+
 
 ### Single Target Framework Detection
 
@@ -151,7 +157,7 @@ vimana guide --plugin framewalk --args
 The most straightforward use of Framewalk is single target detection. Let's analyze a web application to understand its framework stack:
 
 ```bash
-vimana run framewalk --target http://127.0.0.1:5000/
+vimana run framewalk --target-url http://127.0.0.1:5000/
 ```
 
 #### 🔌 Detection Process Visualization
