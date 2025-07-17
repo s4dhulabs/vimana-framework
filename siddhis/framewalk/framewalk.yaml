@@ -115,15 +115,14 @@ guide:
     
         Basic usage - scan a single target:
 
-        $ vimana run -m framewalk http://example.com
+        $ vimana run framewalk --target-url http://example.com
 
     ø----------------------------------------------------------------------ø
     
         Scan a target with verbose output and save results:
     
-        $ vimana run \
-           --module framewalk \
-           --url http://example.com \
+        $ vimana run framewalk \
+           --target-url http://example.com \
            --verbose \
            --output results.json
 
@@ -131,9 +130,8 @@ guide:
     
         Scan multiple targets with stealth mode and a specific timeout:
 
-        $ vimana run \
-           --module framewalk \
-           --url "http://app1.example.com,http://app2.example.com" \
+        $ vimana run framewalk \
+           --target-url "http://app1.example.com \
            --stealth \
            --timeout 15 \
            --summary-only
@@ -142,8 +140,7 @@ guide:
      
         Scan targets from a file with specific framework detection:
 
-        $ vimana run \
-           --module framewalk \ 
+        $ vimana run framewalk \ 
            --file targets.txt \
            --frameworks "django,flask,fastapi" \
            --verbose 
@@ -152,9 +149,8 @@ guide:
 
         Advanced scan with stealth customization and retry settings:
 
-        $ vimana run \
-           --module framewalk \
-           --url http://example.com \
+        $ vimana run framewalk \
+           --target-url http://example.com \
            --stealth \
            --min-delay 1.0 \
            --max-delay 3.0 \
@@ -166,9 +162,8 @@ guide:
     
         Quick passive scan (non-intrusive):
 
-        $ vimana run \
-           --module framewalk \
-           --url http://example.com \
+        $ vimana run framewalk \
+           --target-url http://example.com \
            --passive-only \
            --no-evidence
 
@@ -176,11 +171,11 @@ guide:
 
         Scan multiple targets and generate a summary report:
 
-        $ vimana run \
-           --module framewalk \
+        $ vimana run framewalk \
            --file large-target-list.txt \
            --summary-only \
            --output summary-report.json
+
   lab_setup: |
     +------------+-------------------------------------------------------------------+
     │└┘⠞⠓┌┐│└⠞⠓└┘┌⠞⠓┐┌┘.┌⠞⠓┬┐.└┐┘│ LAB SETUP  ┘└┐│.└┘.┌┐│⠞⠓│┬.│⠞└┘┌└┐│.└┘.┬┐└┐┌.│. │
@@ -234,11 +229,10 @@ guide:
         $ docker run -d -p 5000:5000 --name flask-app tiangolo/flask
         $ docker run -d -p 8080:80 --name fastapi-app tiangolo/uvicorn-gunicorn-fastapi
 
-        After setting up these applications, you can test Framewalk against all of them:
+        After setting up these applications, you can test Framewalk against it:
 
-        $ vimana run \
-           --module framewalk \
-           --url "http://localhost:8000,http://localhost:5000,http://localhost:8080" \
+        $ vimana run framewalk \
+           --target-url "http://localhost:8000 \
            --verbose \
            --output framework-detection.json
 

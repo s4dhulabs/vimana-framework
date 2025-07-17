@@ -68,8 +68,14 @@ class VFManager:
         for s in os.scandir(f'{os.getcwd()}/siddhis/'):
             print(f"\tLoading {s.name}...")
             sleep(0.1)
+
             if (s.is_dir() and not s.name.startswith('_')):
-                with open(f"{s.path}/{s.name}.yaml", 'r') as f:
+                plugin_docs = f"{s.path}/{s.name}.yaml"
+                
+                if not os.path.exists(plugin_docs):
+                    continue
+                
+                with open(plugin_docs, 'r') as f:
                     siddhi = yaml.load(f, Loader=yaml.FullLoader)
                 
                 siddhi.update((f, siddhi[f].lower()) 
