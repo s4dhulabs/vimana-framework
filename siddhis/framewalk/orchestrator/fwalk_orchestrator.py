@@ -242,6 +242,7 @@ class framewalkOrchestrator:
         from ..detectors.fastapi import FastAPIDetector
         from ..detectors.pyramid import PyramidDetector
         from ..detectors.bottle import BottleDetector
+        from ..detectors.web2py import Web2pyDetector
         
         # Clear any existing detectors
         self.detectors = []
@@ -260,7 +261,8 @@ class framewalkOrchestrator:
             'flask': FlaskDetector,
             'fastapi': FastAPIDetector,
             'pyramid': PyramidDetector,
-            'bottle': BottleDetector
+            'bottle': BottleDetector,
+            'web2py': Web2pyDetector
         }
         
         for framework_name, detector_class in detector_classes.items():
