@@ -67,7 +67,7 @@ class VFManager:
 
         for s in os.scandir(f'{os.getcwd()}/siddhis/'):
             print(f"\tLoading {s.name}...")
-            sleep(0.1)
+            #sleep(0.1)
 
             if (s.is_dir() and not s.name.startswith('_')):
                 plugin_docs = f"{s.path}/{s.name}.yaml"

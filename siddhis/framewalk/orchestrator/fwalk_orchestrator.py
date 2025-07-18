@@ -16,7 +16,7 @@ import time
 import os
 from typing import Dict, List, Any, Optional, Union
 from datetime import datetime
-
+import hashlib
 
 from ..utils.http import RequestManager
 from ..utils.result import ResultManager
@@ -57,6 +57,20 @@ class framewalkOrchestrator:
         # test2: Initialize immediately with the provided configuration
         if kwargs:
             self.configure(kwargs)
+
+
+        issue_type = 'dast/output'
+        plugin_scope = f'python/{issue_type}'
+        self.cache_dir = f"vimana/__cache__/{plugin_scope}"
+        self.abs_cache_path = os.path.join(os.path.expanduser("~"), self.cache_dir)
+
+        self.scan_time = datetime.now()
+        scan_pattern = f"{self.scan_time}{self.config}"
+        sha256 = hashlib.sha256()
+        sha256.update(scan_pattern.encode())
+        self.scan_hash = sha256.hexdigest()
+        self.scan_id = self.scan_hash[:10]
+        self.app_name = None
         
     def configure(self, config: Dict[str, Any]) -> None:
         """
@@ -236,6 +250,7 @@ class framewalkOrchestrator:
         
     def _init_detectors(self) -> None:
         """Initialize framework detectors"""
+
         # Import detectors here to avoid circular imports
         from ..detectors.django import DjangoDetector
         from ..detectors.flask import FlaskDetector
@@ -245,17 +260,8 @@ class framewalkOrchestrator:
         from ..detectors.web2py import Web2pyDetector
         from ..detectors.sanic import SanicDetector
         from ..detectors.tornado import TornadoDetector
-        
-        # Clear any existing detectors
-        self.detectors = []
-        
-        # Check if we have a frameworks filter
-        frameworks_filter = None
-        if self.config and 'frameworks' in self.config and self.config['frameworks']:
-            if isinstance(self.config['frameworks'], str):
-                frameworks_filter = [fw.strip().lower() for fw in self.config['frameworks'].split(',')]
-            elif isinstance(self.config['frameworks'], list):
-                frameworks_filter = [fw.strip().lower() for fw in self.config['frameworks']]
+        from ..detectors.starlette import StarletteDetector
+
         
         # Add detectors based on filter or add all
         detector_classes = {
@@ -266,8 +272,15 @@ class framewalkOrchestrator:
             'bottle': BottleDetector,
             'web2py': Web2pyDetector,
             'sanic': SanicDetector,
-            'tornado': TornadoDetector
+            'tornado': TornadoDetector,
+            'starlette': StarletteDetector
         }
+
+        frameworks_filter = self.config.get('frameworks')
+        if frameworks_filter:
+            frameworks_filter = [fw.strip().lower() for fw in frameworks_filter.split(',')]
+        else:
+            frameworks_filter = None
         
         for framework_name, detector_class in detector_classes.items():
             # If we have a filter and this framework is not in it, skip
@@ -427,6 +440,9 @@ class framewalkOrchestrator:
         results = self.result_manager.get_results(min_confidence)
         results['scan_time'] = elapsed
         
+        # Register the scan in the database
+        self._record_scan(results, elapsed)
+        
         if not summary_only:
             self.presenter.print_results(results)
         
@@ -464,3 +480,87 @@ class framewalkOrchestrator:
         # Use the presenter instead of progress_tracker for verbose output
         if self.presenter and self.config.get('verbose', False) and hasattr(self.presenter, 'print_status'):
             self.presenter.print_status(f"Results saved to {output_file}")
+    
+    def _record_scan(self, results: Dict[str, Any], elapsed_time: float) -> None:
+        """
+        Record the scan in the database
+        
+        Args:
+            results: Scan results
+            elapsed_time: Time taken for the scan
+        """
+        try:
+            import jsonpickle
+            import yaml
+            import os
+            from datetime import datetime
+            from core._dbops_.vmnf_dbops import VFDBOps
+            import uuid
+
+            scan_file = f'{self.scan_id}.yaml'
+            scan_output_path = f"{self.abs_cache_path}/{self.scan_id}"
+            scan_output_file = f"{scan_output_path}/{scan_file}"
+            scan_template = VFDBOps(**self.config).get_model_dict("_SCANS_")
+            
+            # Prepare scan scope
+            scope = {
+                'urls': [self.request_manager.target_url],
+                'frameworks_filter': self.config.get('frameworks'),
+                'min_confidence': self.config.get('min_confidence', 0)
+            }
+            
+            # Get detected frameworks info
+            detected_frameworks = results.get('frameworks', [])
+            top_framework = "Unknown"
+            top_framework_version = "Unknown"
+            total_frameworks = len(detected_frameworks)
+            total_components = 0
+            
+            if detected_frameworks:
+                # Get the framework with highest confidence
+                top_framework_data = max(detected_frameworks, key=lambda x: x.get('confidence', 0))
+                top_framework = top_framework_data.get('name', 'Unknown')
+                top_framework_version = top_framework_data.get('version', 'Unknown')
+                
+                # Count total components
+                for fw in detected_frameworks:
+                    total_components += len(fw.get('components', []))
+            
+            # Check if scan has findings (frameworks detected)
+            has_issues = total_frameworks > 0
+            
+            # Get scan template
+            scan_template = VFDBOps(**self.config).get_model_dict("_SCANS_")
+            
+            # Update scan template with framewalk-specific data
+            scan_template.update({
+                'scan_id': self.scan_id,
+                'scan_type': 'DAST',
+                'scan_date': self.scan_time,
+                'scan_hash': self.scan_hash,
+                'scan_target': self.request_manager.target_url,
+                'scan_target_full_path': 'N.A',
+                'scan_cache_dir': scan_output_path,  # Framewalk doesn't use cache files like d4m8
+                'scan_output_file': scan_output_file,
+                'project_framework': top_framework,
+                'project_framework_version': top_framework_version,
+                'project_framework_total_cves': 0,  # Framewalk doesn't check CVEs
+                'project_total_requirements': 'N.A',
+                'project_total_view_modules': 'N.A',
+                'scan_scope': jsonpickle.encode(scope),
+                'scan_plugin': 'framewalk',
+                'vmnf_handler': jsonpickle.encode(self.config),
+                'has_issues': has_issues
+            })
+            
+            # Register the scan
+            VFDBOps(**scan_template).register('_SCANS_')
+            
+            # Log scan registration if verbose
+            if self.config.get('verbose', False) and self.presenter and hasattr(self.presenter, 'print_status'):
+                self.presenter.print_status(f"Scan registered in database with ID: {self.scan_id}")
+                
+        except Exception as e:
+            # Don't fail the scan if database registration fails
+            if self.config.get('verbose', False):
+                print(f"Warning: Failed to register scan in database: {str(e)}", file=sys.stderr)

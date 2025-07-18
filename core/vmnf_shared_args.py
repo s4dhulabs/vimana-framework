@@ -166,6 +166,7 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--target-exceptions", action="store", dest='target_exceptions',default=False)
         vmnf_shared_parser.add_argument("--skip-exception", action="store", dest='skip_exception',default=False)
         vmnf_shared_parser.add_argument("--skip-exceptions", action="store", dest='skip_exceptions',default=False)
+        vmnf_shared_parser.add_argument("--exception-count", action="store", type=int, dest='exception_count',default=False)
         # -------------------------------------------------------------------------------
         # > Connection setting - [ proxy options ] 
         # -------------------------------------------------------------------------------

@@ -583,6 +583,8 @@ class d4m8(scrapy.Spider):
             scan_template['has_issues'] = True
 
             try:
+                self.handler['framework'] = 'Django'
+                self.handler['framework_version'] = self.handler['django_version']
                 cves,cves_table = prana(**self.handler).get_cves_for_version()
             # TypeError: cannot unpack non-iterable bool object
             except TypeError:
@@ -701,4 +703,3 @@ class d4m8(scrapy.Spider):
         self.record()
         reactor.stop()
         os._exit(os.EX_OK)
-
