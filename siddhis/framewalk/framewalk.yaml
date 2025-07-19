@@ -54,6 +54,9 @@ description: |
   - FastAPI
   - Pyramid
   - Bottle
+  - Sanic
+  - Tornado
+  - Starlette 
   - And more...
 references:
   links:
@@ -62,6 +65,9 @@ references:
     - https://fastapi.tiangolo.com/
     - https://trypyramid.com/
     - https://bottlepy.org/
+    - https://sanic.dev/
+    - https://www.tornadoweb.org/
+    - https://www.starlette.io/
   cwe:
     - CWE-200 - Exposure of Sensitive Information to an Unauthorized Actor
     - CWE-209 - Generation of Error Message Containing Sensitive Information

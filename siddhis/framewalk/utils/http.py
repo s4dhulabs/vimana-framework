@@ -160,9 +160,10 @@ class RequestManager:
             return response
             
         except (Timeout, RequestException) as e:
-            # Implement retry logic with exponential backoff
+            # Implement retry logic with shorter backoff
             if retry_count < self.max_retries:
-                backoff_time = 1 * (2 ** retry_count)
+                # Use a shorter backoff: min(0.5 seconds, timeout/2)
+                backoff_time = min(0.5, self.timeout / 2)
                 time.sleep(backoff_time)
                 return self.make_request(
                     path, method, data, headers, allow_redirects, retry_count + 1, cache

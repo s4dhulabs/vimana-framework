@@ -364,11 +364,57 @@ class framewalkOrchestrator:
                 
         start_time = time.time()
         
+        # Calculate global timeout: (timeout + retry_delay) * max_retries * estimated_requests
+        # Estimated requests: 6 engines + 9 detectors = ~15 components, each making ~2-3 requests
+        estimated_requests = 45  # Conservative estimate
+        timeout_per_request = self.config.get('timeout', 10)
+        max_retries = self.config.get('max_retries', 3)
+        retry_delay = min(0.5, timeout_per_request / 2)
+        
+        # Global timeout: (timeout + retry_delay) * (max_retries + 1) * estimated_requests
+        global_timeout = (timeout_per_request + retry_delay) * (max_retries + 1) * estimated_requests
+        
+        # Add a reasonable cap to prevent extremely long scans
+        global_timeout = min(global_timeout, 300)  # Max 5 minutes
+        
         summary_only = self.config.get('summary_only', False)
         verbose_mode = self.config.get('verbose', False)
         
         if not summary_only and hasattr(self.presenter, 'print_status'):
             self.presenter.print_status(f"Starting analysis of {self.request_manager.target_url}")
+            if verbose_mode:
+                self.presenter.print_status(f"Global timeout set to {global_timeout:.1f} seconds")
+        
+        # Early connectivity check
+        if not summary_only and hasattr(self.presenter, 'print_status'):
+            self.presenter.print_status("  Performing connectivity check...")
+        
+        connectivity_response = self.request_manager.make_request()
+        if not connectivity_response:
+            if not summary_only and hasattr(self.presenter, 'print_status'):
+                self.presenter.print_status("  Target is unreachable, stopping scan")
+            
+            # Return early with minimal results
+            elapsed = time.time() - start_time
+            results = {
+                'target_url': self.request_manager.target_url,
+                'scan_time': elapsed,
+                'frameworks': [],
+                'security_headers': [],
+                'server_info': {},
+                'error': 'Target is unreachable'
+            }
+            
+            # Register the scan in the database
+            self._record_scan(results, elapsed)
+            
+            if not summary_only:
+                self.presenter.print_results(results)
+            
+            return results
+        
+        if not summary_only and hasattr(self.presenter, 'print_status'):
+            self.presenter.print_status("  Target is reachable, proceeding with analysis...")
         
         try:
             from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeElapsedColumn
@@ -378,12 +424,26 @@ class framewalkOrchestrator:
                     engine_name = engine.__class__.__name__
                     if not summary_only and hasattr(self.presenter, 'print_status'):
                         self.presenter.print_status(f"  Running {engine_name}")
+                    
+                    # Check global timeout before each engine
+                    if time.time() - start_time > global_timeout:
+                        if not summary_only and hasattr(self.presenter, 'print_status'):
+                            self.presenter.print_status(f"  Global timeout reached, stopping scan")
+                        break
+                        
                     engine.analyze()
                 
                 for detector in self.detectors:
                     detector_name = detector.__class__.__name__
                     if not summary_only and hasattr(self.presenter, 'print_status'):
                         self.presenter.print_status(f"  Running {detector_name}")
+                    
+                    # Check global timeout before each detector
+                    if time.time() - start_time > global_timeout:
+                        if not summary_only and hasattr(self.presenter, 'print_status'):
+                            self.presenter.print_status(f"  Global timeout reached, stopping scan")
+                        break
+                        
                     detector.detect()
             else:
                 progress = Progress(
@@ -399,6 +459,11 @@ class framewalkOrchestrator:
                     engine_task = progress.add_task(f"Running engines", total=len(self.engines))
                     
                     for i, engine in enumerate(self.engines):
+                        # Check global timeout
+                        if time.time() - start_time > global_timeout:
+                            progress.update(engine_task, description="Global timeout reached")
+                            break
+                            
                         engine_name = engine.__class__.__name__
                         progress.update(engine_task, description=f"Running engine: {engine_name}")
                         engine.analyze()
@@ -409,6 +474,11 @@ class framewalkOrchestrator:
                     detector_task = progress.add_task(f"Running detectors", total=len(self.detectors))
                     
                     for i, detector in enumerate(self.detectors):
+                        # Check global timeout
+                        if time.time() - start_time > global_timeout:
+                            progress.update(detector_task, description="Global timeout reached")
+                            break
+                            
                         detector_name = detector.__class__.__name__
                         framework_name = detector.FRAMEWORK if hasattr(detector, 'FRAMEWORK') else "Unknown"
                         progress.update(detector_task, description=f"Running {framework_name}Detector")
@@ -419,12 +489,24 @@ class framewalkOrchestrator:
         
         except ImportError:
             for i, engine in enumerate(self.engines, 1):
+                # Check global timeout
+                if time.time() - start_time > global_timeout:
+                    if not summary_only:
+                        print("Global timeout reached, stopping scan")
+                    break
+                    
                 engine_name = engine.__class__.__name__
                 if not summary_only:
                     print(f"Running engine: {engine_name} ({i}/{len(self.engines)})")
                 engine.analyze()
             
             for i, detector in enumerate(self.detectors, 1):
+                # Check global timeout
+                if time.time() - start_time > global_timeout:
+                    if not summary_only:
+                        print("Global timeout reached, stopping scan")
+                    break
+                    
                 print(detector)
                 detector_name = detector.__class__.__name__
                 framework_name = detector.FRAMEWORK if hasattr(detector, 'FRAMEWORK') else "Unknown"

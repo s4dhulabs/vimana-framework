@@ -88,6 +88,7 @@ class VFManager:
         # No need for global path tracking - just use relative paths
         vimana_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  
         
+        
         self.load_tools()
         self.list_siddhis()
     
@@ -254,7 +255,7 @@ class VFManager:
             return False
         
         #case_header()
-        #print("\033c", end="")
+        print("\033c", end="")
         vimana_version = cl(f'Vimana v{_version_}', 77,attrs=['bold'])
         vimana_desc = cl('(Security & Automation Tools for Python Web Frameworks)', 77,attrs=['bold'])
         plugin_catalog = cl('Plugin Catalog', 15)  # or 97 for bright white
