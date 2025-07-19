@@ -261,6 +261,7 @@ class framewalkOrchestrator:
         from ..detectors.sanic import SanicDetector
         from ..detectors.tornado import TornadoDetector
         from ..detectors.starlette import StarletteDetector
+        from ..detectors.cherrypy import CherryPyDetector
 
         
         # Add detectors based on filter or add all
@@ -273,7 +274,8 @@ class framewalkOrchestrator:
             'web2py': Web2pyDetector,
             'sanic': SanicDetector,
             'tornado': TornadoDetector,
-            'starlette': StarletteDetector
+            'starlette': StarletteDetector,
+            'cherrypy': CherryPyDetector
         }
 
         frameworks_filter = self.config.get('frameworks')
