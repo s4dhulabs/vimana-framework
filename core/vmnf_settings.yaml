@@ -72,5 +72,6 @@ settings:
         - tictrac
         - fff
         - pyserial
+        - w2pyscanner
     utils:
         random_headers: res/random_headers.yaml

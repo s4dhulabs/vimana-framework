@@ -195,13 +195,13 @@ def sample_mode(mod_stat,_attrs_=['bold','blink']):
           ││││       
     """, 'blue', attrs=['blink', 'bold'])
     
-    fversion = colored(_version_, 'red')
+    fversion = colored(_version_, None)
 
     banner = '''
     ┬  ┬┬┌┬┐┌─┐┌┐┌┌─┐
     ┬  ┬┬┌┬┐┌─┐┌┐┌┌─┐
     └┐┌┘││││├─┤│││├─┤{}
-    └┐┌┘││││├─┤│││├─┤
+    └┐┌┘││││├─┤│││├─┤@s4dhulabs 
     └┐┌┘││││├─┤│││├─┤
      └┘ ┴┴ ┴┴ ┴┘└┘┴ ┴
      └┘ ┴┴ ┴┴ ┴┘└┘┴ ┴'''.format(fversion)

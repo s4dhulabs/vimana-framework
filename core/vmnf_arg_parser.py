@@ -177,6 +177,7 @@ class VimanaParser:
         run_cmd.add_argument('plugin_name', nargs='?', default=None, help='Plugin name to run')
         run_cmd.add_argument('--workflow', action='store', nargs='?', default=False, dest='workflow')
         run_cmd.add_argument('--channel', action='store', nargs='?', default=False, dest='cmd_channel')
+        run_cmd.add_argument('--ci-mode', action='store_true', dest='ci_mode')
         #run_cmd.add_argument('--cmd', action='store', nargs='?', default=False, dest='cmd')
         #run_cmd.add_argument('--pycode', action='store', nargs='?', default=False, dest='pycode')
 
@@ -386,7 +387,8 @@ class VimanaParser:
             db_delete       = False,
             db_update       = False,
             db_rename       = False,
-            db_integrity_check = False
+            db_integrity_check = False,
+            ci_mode         = False
         )
 
         if len(sys.argv) > 1:

@@ -82,8 +82,9 @@ def _get_git_version() -> Optional[str]:
         import subprocess
         result = subprocess.run(
             ['git', 'describe', '--tags', '--dirty', '--always'],
-            capture_output=True,
-            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
             cwd=os.path.dirname(os.path.dirname(__file__))
         )
         if result.returncode == 0:

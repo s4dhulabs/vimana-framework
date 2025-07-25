@@ -135,6 +135,7 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument('--scan-api',action='store',dest='api_scan_enabled',nargs='?',const='ENV_FALLBACK',default=False)
         vmnf_shared_parser.add_argument('--api-scan',action='store',dest='api_scan_enabled',nargs='?',const='ENV_FALLBACK',default=False)
         vmnf_shared_parser.add_argument('--check-debug',action='store_true',dest='check_debug',default=False)
+        vmnf_shared_parser.add_argument('--discovery-only',action='store_true',dest='discovery_only',default=False)
         # -------------------------------------------------------------------------------
         # > Scope setting - [ scope parser options ] 
         # -------------------------------------------------------------------------------
