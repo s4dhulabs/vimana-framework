@@ -256,7 +256,7 @@ class VFManager:
         
         #case_header()
         print("\033c", end="")
-        vimana_version = cl(f'Vimana v{_version_}', 77,attrs=['bold'])
+        vimana_version = cl(f'Vimana {_version_}', 77,attrs=['bold'])
         vimana_desc = cl('(Security & Automation Tools for Python Web Frameworks)', 77,attrs=['bold'])
         plugin_catalog = cl('Plugin Catalog', 15)  # or 97 for bright white
 

@@ -81,12 +81,12 @@ def gen_issues_table(issues: list, issue_type:str):
         ]
     elif issue_type == 'plugins':
         headers = [
-            cl('Name', 'white',attrs=['bold']),
-            cl('Category', 'white',attrs=['bold']),
-            cl('Framework','white',attrs=['bold']),
-            cl('Mode','white',attrs=['bold']),
-            cl('Type','white',attrs=['bold']),
-            cl('Description','white',attrs=['bold'])
+            cl('Name', 86,attrs=['bold']),
+            cl('Category', 86,attrs=['bold']),
+            cl('Framework',86,attrs=['bold']),
+            cl('Mode',86,attrs=['bold']),
+            cl('Type',86,attrs=['bold']),
+            cl('Description',86,attrs=['bold'])
         ]
     for issue in issues:
         if issue_type == 'cves':
@@ -114,7 +114,7 @@ def gen_issues_table(issues: list, issue_type:str):
             issues_table.append([
                 cl(issue.name.lower(), 77,attrs=['bold']),
                 issue.category.lower(),
-                issue.framework.title(),
+                'FastAPI' if issue.framework.lower() == 'fastapi' else issue.framework.title(),
                 issue.composition.get('mode', '?'),
                 issue.type.upper(),
                 issue.info

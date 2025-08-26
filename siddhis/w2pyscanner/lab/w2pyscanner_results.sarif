@@ -1,0 +1,377 @@
+{
+  "$schema": "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0-rtm.5.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "W2PyScanner",
+          "informationUri": "https://web2py.com/",
+          "rules": [
+            {
+              "id": "CWE-287",
+              "name": "Web2py Admin Interface - Weak Authentication",
+              "shortDescription": {
+                "text": "Web2py Admin Interface - Weak Authentication"
+              },
+              "fullDescription": {
+                "text": "Admin interface has weak authentication mechanisms"
+              },
+              "help": {
+                "text": "Remove or restrict access to admin interface endpoints; Implement strong authentication mechanisms; Use IP whitelisting for admin access; Enable HTTPS for all admin communications; Implement rate limiting on admin endpoints"
+              }
+            },
+            {
+              "id": "CWE-284",
+              "name": "Web2py Admin Interface Exposed",
+              "shortDescription": {
+                "text": "Web2py Admin Interface Exposed"
+              },
+              "fullDescription": {
+                "text": "Web2py admin interface is accessible at: /admin/"
+              },
+              "help": {
+                "text": "Remove or restrict access to admin interface endpoints; Implement strong authentication mechanisms; Use IP whitelisting for admin access; Enable HTTPS for all admin communications; Implement rate limiting on admin endpoints"
+              }
+            },
+            {
+              "id": "CWE-200",
+              "name": "Web2py Admin Interface Indicators",
+              "shortDescription": {
+                "text": "Web2py Admin Interface Indicators"
+              },
+              "fullDescription": {
+                "text": "Admin interface indicators found in main page content"
+              },
+              "help": {
+                "text": "Remove or restrict access to admin interface endpoints; Implement strong authentication mechanisms; Use IP whitelisting for admin access; Enable HTTPS for all admin communications; Implement rate limiting on admin endpoints"
+              }
+            },
+            {
+              "id": "CWE-614",
+              "name": "Session Cookie Missing Security Flags",
+              "shortDescription": {
+                "text": "Session Cookie Missing Security Flags"
+              },
+              "fullDescription": {
+                "text": "Session cookie is missing flags: Secure, SameSite"
+              },
+              "help": {
+                "text": "Implement secure session management; Use cryptographically strong session IDs; Enable session timeout and expiration; Implement session fixation protection; Use HTTPS for all session communications"
+              }
+            },
+            {
+              "id": "CWE-598",
+              "name": "Session ID Exposed in HTML/JS",
+              "shortDescription": {
+                "text": "Session ID Exposed in HTML/JS"
+              },
+              "fullDescription": {
+                "text": "Session ID found in page content at /exception_test"
+              },
+              "help": {
+                "text": "Implement secure session management; Use cryptographically strong session IDs; Enable session timeout and expiration; Implement session fixation protection; Use HTTPS for all session communications"
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "CWE-287",
+          "level": "warning",
+          "message": {
+            "text": "Admin interface has weak authentication mechanisms"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "http://localhost:8086"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              },
+              "logicalLocations": [
+                {
+                  "name": "/admin/",
+                  "kind": "endpoint"
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "evidence": [
+              "Admin interface accessible without proper authentication"
+            ],
+            "remediation": [
+              "Remove or restrict access to admin interface endpoints",
+              "Implement strong authentication mechanisms",
+              "Use IP whitelisting for admin access",
+              "Enable HTTPS for all admin communications",
+              "Implement rate limiting on admin endpoints"
+            ],
+            "scanner": "admin_scanner"
+          }
+        },
+        {
+          "ruleId": "CWE-284",
+          "level": "error",
+          "message": {
+            "text": "Web2py admin interface is accessible at: /admin/"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "http://localhost:8086"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              },
+              "logicalLocations": [
+                {
+                  "name": "/admin/",
+                  "kind": "endpoint"
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "evidence": [
+              "Admin endpoint accessible: /admin/"
+            ],
+            "remediation": [
+              "Remove or restrict access to admin interface endpoints",
+              "Implement strong authentication mechanisms",
+              "Use IP whitelisting for admin access",
+              "Enable HTTPS for all admin communications",
+              "Implement rate limiting on admin endpoints"
+            ],
+            "scanner": "admin_scanner"
+          }
+        },
+        {
+          "ruleId": "CWE-200",
+          "level": "note",
+          "message": {
+            "text": "Admin interface indicators found in main page content"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "http://localhost:8086"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "properties": {
+            "evidence": [
+              "Found indicator: admin interface",
+              "Admin link found: /admin/",
+              "Admin link found: /admin/"
+            ],
+            "remediation": [
+              "Remove or restrict access to admin interface endpoints",
+              "Implement strong authentication mechanisms",
+              "Use IP whitelisting for admin access",
+              "Enable HTTPS for all admin communications",
+              "Implement rate limiting on admin endpoints"
+            ],
+            "scanner": "admin_scanner"
+          }
+        },
+        {
+          "ruleId": "CWE-284",
+          "level": "error",
+          "message": {
+            "text": "The /profile endpoint is accessible without authentication."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "http://localhost:8086"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              },
+              "logicalLocations": [
+                {
+                  "name": "/profile",
+                  "kind": "endpoint"
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "evidence": [
+              "/profile returned 200 without login"
+            ],
+            "remediation": [
+              "Implement secure session management",
+              "Use cryptographically strong session IDs",
+              "Enable session timeout and expiration",
+              "Implement session fixation protection",
+              "Use HTTPS for all session communications"
+            ],
+            "scanner": "session_scanner"
+          }
+        },
+        {
+          "ruleId": "CWE-614",
+          "level": "error",
+          "message": {
+            "text": "Session cookie is missing flags: Secure, SameSite"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "http://localhost:8086"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "properties": {
+            "evidence": [
+              "Set-Cookie: session_id=0XVkj54ozuhcnA9JmQ4A09U3iYqNmm9w; HttpOnly; Path=/"
+            ],
+            "remediation": [
+              "Implement secure session management",
+              "Use cryptographically strong session IDs",
+              "Enable session timeout and expiration",
+              "Implement session fixation protection",
+              "Use HTTPS for all session communications"
+            ],
+            "scanner": "session_scanner"
+          }
+        },
+        {
+          "ruleId": "CWE-598",
+          "level": "error",
+          "message": {
+            "text": "Session ID found in page content at /exception_test"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "http://localhost:8086"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              },
+              "logicalLocations": [
+                {
+                  "name": "/exception_test",
+                  "kind": "endpoint"
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "evidence": [
+              "Content match: 0XVkj54ozuhcnA9JmQ4A09U3iYqNmm9w"
+            ],
+            "remediation": [
+              "Implement secure session management",
+              "Use cryptographically strong session IDs",
+              "Enable session timeout and expiration",
+              "Implement session fixation protection",
+              "Use HTTPS for all session communications"
+            ],
+            "scanner": "session_scanner"
+          }
+        },
+        {
+          "ruleId": "CWE-598",
+          "level": "error",
+          "message": {
+            "text": "Session ID found in page content at /leak_session"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "http://localhost:8086"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              },
+              "logicalLocations": [
+                {
+                  "name": "/leak_session",
+                  "kind": "endpoint"
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "evidence": [
+              "Content match: 0XVkj54ozuhcnA9JmQ4A09U3iYqNmm9w"
+            ],
+            "remediation": [
+              "Implement secure session management",
+              "Use cryptographically strong session IDs",
+              "Enable session timeout and expiration",
+              "Implement session fixation protection",
+              "Use HTTPS for all session communications"
+            ],
+            "scanner": "session_scanner"
+          }
+        },
+        {
+          "ruleId": "CWE-598",
+          "level": "error",
+          "message": {
+            "text": "Session ID found in page content at /stack_trace"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "http://localhost:8086"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              },
+              "logicalLocations": [
+                {
+                  "name": "/stack_trace",
+                  "kind": "endpoint"
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "evidence": [
+              "Content match: 0XVkj54ozuhcnA9JmQ4A09U3iYqNmm9w"
+            ],
+            "remediation": [
+              "Implement secure session management",
+              "Use cryptographically strong session IDs",
+              "Enable session timeout and expiration",
+              "Implement session fixation protection",
+              "Use HTTPS for all session communications"
+            ],
+            "scanner": "session_scanner"
+          }
+        }
+      ]
+    }
+  ]
+}
