@@ -3,7 +3,11 @@ import os
 
 def configure_logging(plugin_name):
     plugin_name = plugin_name.split('.')[0]
-    log_dir = os.path.expanduser('~/vimana/log')
+    
+    # Use new .vimana directory structure
+    vimana_home = os.getenv('VIMANA_HOME', os.path.expanduser('~/.vimana'))
+    log_dir = os.path.join(vimana_home, 'logs')
+    
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
 
