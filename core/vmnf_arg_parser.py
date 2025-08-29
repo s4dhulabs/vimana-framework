@@ -178,6 +178,10 @@ class VimanaParser:
         run_cmd.add_argument('--workflow', action='store', nargs='?', default=False, dest='workflow')
         run_cmd.add_argument('--channel', action='store', nargs='?', default=False, dest='cmd_channel')
         run_cmd.add_argument('--ci-mode', action='store_true', dest='ci_mode')
+        run_cmd.add_argument('--lab', action='store', dest='run_lab', help='Run a lab for the specified plugin')
+        run_cmd.add_argument('--lab-operation', action='store', dest='lab_operation', 
+                           choices=['start', 'stop', 'status', 'list', 'cleanup'], 
+                           default='start', help='Lab operation to perform (default: start)')
         #run_cmd.add_argument('--cmd', action='store', nargs='?', default=False, dest='cmd')
         #run_cmd.add_argument('--pycode', action='store', nargs='?', default=False, dest='pycode')
 
@@ -333,6 +337,8 @@ class VimanaParser:
             module_run      = False,
             siddhi_run      = False,
             plugin_run      = False,
+            run_lab         = False,
+            lab_operation   = False,
             external_disabled = False,
             module_list     = False,
             list_payloads   = False,

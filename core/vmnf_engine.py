@@ -187,6 +187,11 @@ def abduct():
 
                 handler_ns.start_resource.append(arg)
 
+    if handler_ns.run_lab:
+        from core.labs.vmnf_labs import handle_lab_command
+        handle_lab_command(handler_ns)
+        return True
+
     # ~ new in vimana 1.0 - run plugin by name directly
     if hasattr(handler_ns, 'plugin_name') and handler_ns.plugin_name:
 
@@ -301,7 +306,12 @@ def abduct():
 
     #~ list all channels
     elif handler_ns.list_channels:
-        from core.vmnf_channels import list_channels, get_channels_by_type, get_channels_by_plugin, get_channels_by_target
+        from core.vmnf_channels import (
+            list_channels, 
+            get_channels_by_type, 
+            get_channels_by_plugin, 
+            get_channels_by_target
+        )
         from neotermcolor import colored
         
         # Check if summary mode is requested

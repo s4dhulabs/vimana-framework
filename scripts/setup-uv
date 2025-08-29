@@ -24,6 +24,14 @@ fi
 echo "🔧 Creating virtual environment..."
 uv sync
 
+# Set environment variables
+echo "🔧 Setting environment variables..."
+export VIMANA_HOME="${VIMANA_HOME:-$HOME/.vimana}"
+export VIMANA_PATH="${VIMANA_PATH:-$PWD}"
+
+# Create .vimana directory structure if it doesn't exist
+mkdir -p "$VIMANA_HOME"/{cache,logs,outputs}
+
 # Create symlinks
 echo "🔗 Creating symlinks..."
 sudo ln -sf $PWD/vimana.py /usr/bin/vimana
@@ -54,6 +62,8 @@ echo ""
 echo "🎊 Vimana Framework Setup completed successfully!"
 echo "💡 Run 'vimana' or 'vf' to start the framework"
 echo "🌐 Virtual environment: $PWD/.venv (in project directory)"
+echo "🏠 VIMANA_HOME: $VIMANA_HOME"
+echo "📁 VIMANA_PATH: $VIMANA_PATH"
 echo "💡 Use 'uv run vf' to run with proper environment"
 echo ""
 

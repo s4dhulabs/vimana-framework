@@ -90,7 +90,7 @@ class siddhi:
 
         issue_type = 'sast/output'
         plugin_scope = f'django/{issue_type}'
-        self.cache_dir = f"vimana/__cache__/{plugin_scope}/{self.target_dir.replace('/','')}"
+        self.cache_dir = f".vimana/cache/{plugin_scope}/{self.target_dir.replace('/','')}"
         self.cache_dir = os.path.join(os.path.expanduser("~"), self.cache_dir)
 
         logging.info("VS class initialized successfully!")

@@ -32,7 +32,7 @@ from res.vmnf_banners import *
 from urllib.parse import urlparse, urljoin
 from datetime import datetime
 
-vimana_path = os.getenv("vimana_path")
+vimana_path = os.getenv("VIMANA_PATH") or os.getenv("vimana_path")
 
 
 class naviSessions:

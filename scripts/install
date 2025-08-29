@@ -6,25 +6,29 @@
 # One-liner installer for Vimana Framework
 # Usage: curl -s https://raw.githubusercontent.com/s4dhulabs/vimana-framework/develop/scripts/install | bash
 
-echo "🚀 Installing Vimana Framework to ~/vimana-framework..."
+echo "🚀 Installing Vimana Framework to ~/.vimana/repo..."
 
-# Change to home directory
-cd ~
+# Create .vimana directory structure
+VIMANA_HOME="$HOME/.vimana"
+VIMANA_REPO="$VIMANA_HOME/repo"
+
+echo "📁 Creating Vimana directory structure..."
+mkdir -p "$VIMANA_HOME"/{cache,logs,outputs}
 
 # Remove existing installation if it exists
-if [ -d "vimana-framework" ]; then
+if [ -d "$VIMANA_REPO" ]; then
     echo "🗑️  Removing existing installation..."
-    rm -rf vimana-framework
+    rm -rf "$VIMANA_REPO"
 fi
 
-# Clone the repository to home directory
-if ! git clone -b develop https://github.com/s4dhulabs/vimana-framework.git; then
+# Clone the repository directly to ~/.vimana/repo
+if ! git clone -b develop https://github.com/s4dhulabs/vimana-framework.git "$VIMANA_REPO"; then
     echo "❌ Failed to clone repository"
     exit 1
 fi
 
 # Change to directory and run setup
-cd vimana-framework
+cd "$VIMANA_REPO"
 
 # Make the script executable and source it
 chmod +x scripts/setup-uv
@@ -32,11 +36,17 @@ source scripts/setup-uv
 
 # Create symlink for vfe (Vimana Framework Environment)
 echo "🔗 Creating vfe symlink for easy access..."
-sudo ln -sf "$PWD/scripts/vfe" /usr/bin/vfe
+sudo ln -sf "$VIMANA_REPO/scripts/vfe" /usr/bin/vfe
+
+# Set environment variables
+echo "🔧 Setting environment variables..."
+export VIMANA_HOME="$HOME/.vimana"
+export VIMANA_PATH="$VIMANA_HOME/repo"
 
 echo ""
 echo "🎉 Vimana Framework installation complete!"
-echo "📁 Installed to: ~/vimana-framework"
+echo "📁 Installed to: ~/.vimana/repo"
+echo "📁 Data directory: ~/.vimana"
 echo ""
 echo "🚀 Quick start:"
 echo "   source vfe        # Activate environment from anywhere"

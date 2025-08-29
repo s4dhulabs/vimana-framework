@@ -61,7 +61,7 @@ class framewalkOrchestrator:
 
         issue_type = 'dast/output'
         plugin_scope = f'python/{issue_type}'
-        self.cache_dir = f"vimana/__cache__/{plugin_scope}"
+        self.cache_dir = f".vimana/cache/{plugin_scope}"
         self.abs_cache_path = os.path.join(os.path.expanduser("~"), self.cache_dir)
 
         self.scan_time = datetime.now()

@@ -40,7 +40,7 @@ import sys
 import io
 import os
 
-vimana_path = os.getenv("vimana_path")
+vimana_path = os.getenv("VIMANA_PATH") or os.getenv("vimana_path")
 
 class naviScan:
     def __init__(self, vmnf_handler:dict) -> None:
