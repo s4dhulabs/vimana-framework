@@ -10,8 +10,7 @@
 # 
 # This file is part of Vimana Framework Project.
 
-from siddhis.djunch.engines._dju_settings import table_models
-from siddhis.djunch.engines._dju_utils import DJUtils 
+from siddhis.djunch.engines._dju_settings import table_models 
 from core.vmnf_sessions_utils import abduct_items
 from neotermcolor import cprint, colored as cl
 from ._dbops_.vmnf_dbops import VFDBOps
@@ -85,10 +84,6 @@ class VFManager:
                 abduct_items(**siddhi)
                 VFDBOps(**siddhi).register('_SIDDHIS_')
 
-        # No need for global path tracking - just use relative paths
-        vimana_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  
-        
-        
         self.load_tools()
         self.list_siddhis()
     
@@ -254,11 +249,10 @@ class VFManager:
             self.no_match() 
             return False
         
-        #case_header()
         print("\033c", end="")
         vimana_version = cl(f'Vimana {_version_}', 77,attrs=['bold'])
         vimana_desc = cl('(Security & Automation Tools for Python Web Frameworks)', 77,attrs=['bold'])
-        plugin_catalog = cl('Plugin Catalog', 15)  # or 97 for bright white
+        plugin_catalog = cl('Plugin Catalog', 15)  
 
         vimana_banner = f"""
         
@@ -269,12 +263,13 @@ class VFManager:
         """
 
         cprint(vimana_banner, 77)
-
         
         if self.handler.get('fancy_table'):
             _plugins_table_ = gen_issues_table(matches, 'plugins')
 
         else:
+            from siddhis.djunch.engines._dju_utils import DJUtils
+
             _plugins_table_ = DJUtils().get_pretty_table(
                 **table_models().siddhis_tbl_set
             )
@@ -290,7 +285,6 @@ class VFManager:
                     ]
                 )
                 
-        #cprint(f"\n❖ Vimana Plugin Catalog:", "white",attrs=['bold'])
         print(_plugins_table_)
         print()
 
@@ -305,7 +299,6 @@ class VFManager:
             # new stuff here
             if siddhi.vfset.get('parse_plugin_scope'):
                 self.parse_handler_scope()
-
 
         siddhi = self.get_siddhi()
 
