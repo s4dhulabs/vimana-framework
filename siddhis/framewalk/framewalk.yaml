@@ -187,59 +187,39 @@ guide:
     │└┘⠞⠓┌┐│└⠞⠓└┘┌⠞⠓┐┌┘.┌⠞⠓┬┐.└┐┘│ LAB SETUP  ┘└┐│.└┘.┌┐│⠞⠓│┬.│⠞└┘┌└┐│.└┘.┬┐└┐┌.│. │
     +------------+-------------------------------------------------------------------+
   
-        To properly test Framewalk's capabilities, it's recommended to set up 
-        various Python web framework applications. Here are some suggestions 
-        for creating a diverse test environment:
+        Framewalk includes a built-in multi-framework lab environment for testing.
+        The lab automatically sets up vulnerable applications using different Python
+        web frameworks, eliminating the need for manual setup.
 
-        1. Django Test Application:
-           $ pip install django
-           $ django-admin startproject django_test
-           $ cd django_test
-           $ python manage.py runserver 8000
-
-        2. Flask Test Application:
-           $ pip install flask
-           $ cat > flask_app.py << EOF
-           from flask import Flask
-           app = Flask(__name__)
+        🚀 Quick Lab Setup:
+        
+        1. Start the Framewalk lab:
+           $ vimana run --lab framewalk
            
-           @app.route('/')
-           def hello():
-               return "Hello from Flask!"
-               
-           if __name__ == '__main__':
-               app.run(port=5000)
-           EOF
-           $ python flask_app.py
+        2. The lab will automatically create containers for:
+           - Web2py (http://localhost:8081)
+           - Sanic (http://localhost:8082)
+           - Tornado (http://localhost:8083)
+           - Starlette (http://localhost:8084)
+           - CherryPy (http://localhost:8085)
 
-        3. FastAPI Test Application:
-           $ pip install fastapi uvicorn
-           $ cat > fastapi_app.py << EOF
-           from fastapi import FastAPI
+        3. Test individual frameworks:
+           $ vimana run framewalk --target http://localhost:8081
+           $ vimana run framewalk --target http://localhost:8082
+           $ vimana run framewalk --target http://localhost:8083
+           $ vimana run framewalk --target http://localhost:8084
+           $ vimana run framewalk --target http://localhost:8085
+
+        4. Test all frameworks at once:
+           $ vimana run framewalk --file $VIMANA_LAB_TARGETS
            
-           app = FastAPI()
-           
-           @app.get("/")
-           def read_root():
-               return {"Hello": "World"}
-               
-           @app.get("/items/{item_id}")
-           def read_item(item_id: int):
-               return {"item_id": item_id}
-           EOF
-           $ uvicorn fastapi_app:app --port 8080
+        5. Stop the lab when finished:
+           $ vimana run --lab framewalk --lab-operation stop
 
-        You can also use Docker to easily set up multiple framework instances:
-
-        $ docker run -d -p 8000:8000 --name django-app djangoproject/django
-        $ docker run -d -p 5000:5000 --name flask-app tiangolo/flask
-        $ docker run -d -p 8080:80 --name fastapi-app tiangolo/uvicorn-gunicorn-fastapi
-
-        After setting up these applications, you can test Framewalk against it:
-
-        $ vimana run framewalk \
-           --target-url "http://localhost:8000 \
-           --verbose \
-           --output framework-detection.json
+        💡 Pro Tips:
+        - The lab creates a targets.txt file with all active endpoints
+        - Use VIMANA_LAB_TARGETS environment variable for batch testing
+        - Each framework runs a vulnerable application for security testing
+        - Lab status: vimana run --lab framewalk --lab-operation status
 
         * args: `vimana guide -m framewalk -a`
