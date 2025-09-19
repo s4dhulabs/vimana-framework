@@ -1,0 +1,15 @@
+FROM python:3.9-slim
+
+WORKDIR /app
+
+# Install Starlette and Uvicorn
+RUN pip install starlette uvicorn
+
+# Copy the application file
+COPY starlette_app.py /app/
+
+# Expose port
+EXPOSE 8080
+
+# Run the application
+CMD ["python", "starlette_app.py"] 
