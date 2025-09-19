@@ -331,35 +331,34 @@ guide:
     +------------+-------------------------------------------------------------------+
   
         W2PyScanner includes a built-in lab environment with a vulnerable
-        Web2py application for testing and validation. To set up the lab:
+        Web2py application for testing and validation. The lab is now managed
+        through Vimana's unified lab system.
 
-        1. Navigate to the lab directory:
-           $ cd siddhis/w2pyscanner/lab
+        🚀 Quick Lab Setup:
+        
+        1. Start the W2PyScanner lab:
+           $ vimana run --lab w2pyscanner
+           
+        2. The lab will automatically create a container with:
+           - Vulnerable Web2py application (http://localhost:8086)
+           - Common misconfigurations and security flaws
+           - Admin interface with weak credentials
+           - File upload functionality with vulnerabilities
 
-        2. Start the lab environment:
-           $ docker-compose up -d
+        3. Test W2PyScanner against the lab:
+           $ vimana run w2pyscanner --target-url http://localhost:8086 --verbose
+           
+        4. Test with targets file (if available):
+           $ vimana run w2pyscanner --file $VIMANA_LAB_TARGETS --verbose
+           
+        5. Stop the lab when finished:
+           $ vimana run --lab w2pyscanner --lab-operation stop
 
-        3. Verify the lab is running:
-           $ docker-compose ps
-
-        4. Access the vulnerable Web2py application:
-           $ curl http://localhost:8086
-
-        5. Test W2PyScanner against the lab:
-           $ vimana run w2pyscanner \
-              --target-url http://localhost:8086 \
-              --verbose
-
-        6. Stop the lab environment:
-           $ docker-compose down
-
-        The lab includes:
-        - Vulnerable Web2py application with common misconfigurations
-        - Exposed admin interface with weak credentials
-        - File upload functionality with security flaws
-        - Session management vulnerabilities
-        - CSRF protection bypasses
-        - Information disclosure issues
-        - Session ID exposure endpoints for testing
+        💡 Pro Tips:
+        - The lab creates a targets.txt file with the active endpoint
+        - Use VIMANA_LAB_TARGETS environment variable for easy testing
+        - Lab status: vimana run --lab w2pyscanner --lab-operation status
+        - The vulnerable application includes session management issues, CSRF bypasses,
+          information disclosure, and file upload vulnerabilities
 
         * args: `vimana guide -m w2pyscanner -a` 
