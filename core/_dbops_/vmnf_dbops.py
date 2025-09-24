@@ -105,6 +105,18 @@ class VFDBOps:
         except exc.OperationalError as OE:
             handle_OpErr(str(OE.orig))
 
+    def count_records(self, _MODEL_):
+        """Count records in a table efficiently."""
+        vf_model = self.tbl_model[_MODEL_]
+        
+        try:
+            return vf_model.query.count()
+        except exc.OperationalError as OE:
+            handle_OpErr(str(OE.orig))
+            return 0
+        except Exception as e:
+            return 0
+
     def get_by_id(self, _MODEL_, obj_id_col, obj_id, getall:bool=False):
         vf_model = self.tbl_model[_MODEL_]
 

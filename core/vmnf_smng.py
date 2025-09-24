@@ -46,46 +46,174 @@ class VFManager:
             ''' We're not going to use query filters with vf run -m/-p/-s '''
             self.query_filters = self.get_filters()
 
+    def _get_vimana_root(self):
+        """Get the Vimana root directory using VIMANA_PATH or fallback to __file__."""
+        vimana_path = os.getenv("VIMANA_PATH")
+        if vimana_path and os.path.exists(vimana_path):
+            return vimana_path
+        
+        # Fallback to __file__ based resolution
+        current_file = os.path.abspath(__file__)
+        # Navigate up from core/vmnf_smng.py to vimana root
+        vimana_root = os.path.dirname(os.path.dirname(current_file))
+        return vimana_root
+
+    def _siddhis_already_loaded(self):
+        """Check if siddhis are already loaded efficiently."""
+        if not VFDBOps().table_exists('_SIDDHIS_'):
+            return False
+        
+        # Just check if table has any records, don't load all data
+        try:
+            count = VFDBOps().count_records('_SIDDHIS_')
+            return count > 0
+        except:
+            return False
+
+    def _discover_plugin_dirs(self, siddhis_path):
+        """Discover plugin directories with error handling."""
+        plugin_dirs = []
+        
+        if not os.path.exists(siddhis_path):
+            cprint(f"Warning: Siddhis directory not found: {siddhis_path}", 'yellow')
+            return plugin_dirs
+        
+        try:
+            for s in os.scandir(siddhis_path):
+                if s.is_dir() and not s.name.startswith('_'):
+                    plugin_docs = os.path.join(s.path, f"{s.name}.yaml")
+                    if os.path.exists(plugin_docs):
+                        plugin_dirs.append({
+                            'name': s.name,
+                            'path': s.path,
+                            'yaml_file': plugin_docs
+                        })
+        except Exception as e:
+            cprint(f"Error scanning siddhis directory: {e}", 'red')
+        
+        return plugin_dirs
+
+    def _load_plugin_yaml(self, yaml_file, plugin_name):
+        """Load a single plugin YAML file with error handling."""
+        try:
+            with open(yaml_file, 'r') as f:
+                siddhi_data = yaml.load(f, Loader=yaml.FullLoader)
+            return siddhi_data
+        except yaml.YAMLError as e:
+            cprint(f"Warning: Invalid YAML in {plugin_name}: {e}", 'yellow')
+            return None
+        except Exception as e:
+            cprint(f"Warning: Could not load {plugin_name}: {e}", 'yellow')
+            return None
+
+    def _process_siddhi_data(self, siddhi_data, plugin_name):
+        """Process siddhi data and prepare for registration."""
+        if not siddhi_data:
+            return None
+        
+        fields = ['name', 'category', 'framework', 'package', 'type']
+        
+        # Process fields efficiently
+        processed_data = {}
+        for field in fields:
+            if field in siddhi_data:
+                value = siddhi_data[field]
+                if not isinstance(value, bool):
+                    processed_data[field] = value.lower()
+                else:
+                    processed_data[field] = value
+        
+        # Add other fields as-is
+        for key, value in siddhi_data.items():
+            if key not in fields:
+                processed_data[key] = value
+        
+        return processed_data
+
+    def _register_siddhis_batch(self, siddhis_data):
+        """Register multiple siddhis in batch with error handling."""
+        success_count = 0
+        error_count = 0
+        
+        for plugin_info in siddhis_data:
+            plugin_name = plugin_info['name']
+            yaml_file = plugin_info['yaml_file']
+            
+            print(f"\tLoading {plugin_name}...")
+            
+            siddhi_data = self._load_plugin_yaml(yaml_file, plugin_name)
+            if not siddhi_data:
+                error_count += 1
+                continue
+            
+            processed_data = self._process_siddhi_data(siddhi_data, plugin_name)
+            if not processed_data:
+                error_count += 1
+                continue
+            
+            try:
+                abduct_items(**processed_data)
+                VFDBOps(**processed_data).register('_SIDDHIS_')
+                success_count += 1
+            except Exception as e:
+                cprint(f"Error registering {plugin_name}: {e}", 'red')
+                error_count += 1
+        
+        if error_count > 0:
+            cprint(f"Warning: {error_count} plugins failed to load", 'yellow')
+        
+        return success_count, error_count
+
     def load_tools(self):
         if VFDBOps().table_exists('_TOOLS_') and VFDBOps().getall('_TOOLS_'):
             handle_OpErr('db ready')
 
-        with open(f'{os.getcwd()}/tools/tools.yaml', 'r') as f:
-            tools = yaml.load(f, Loader=yaml.FullLoader)
-            
-            for tool in tools['tools']:
-                VFDBOps(**tool).register('_TOOLS_')
+        vimana_root = self._get_vimana_root()
+        tools_file = os.path.join(vimana_root, 'tools', 'tools.yaml')
+        
+        if not os.path.exists(tools_file):
+            cprint(f"Warning: Tools file not found: {tools_file}", 'yellow')
+            return
+
+        try:
+            with open(tools_file, 'r') as f:
+                tools = yaml.load(f, Loader=yaml.FullLoader)
+                
+                for tool in tools['tools']:
+                    VFDBOps(**tool).register('_TOOLS_')
+        except Exception as e:
+            cprint(f"Error loading tools: {e}", 'red')
             
     def load_siddhis(self):
+        """Load siddhis with optimized path resolution and error handling."""
         
-        if VFDBOps().table_exists('_SIDDHIS_') and VFDBOps().getall(self.model):
+        # Check if already loaded efficiently
+        if self._siddhis_already_loaded():
             handle_OpErr('db ready')
             return True  
         
-        fields = ['name','category','framework','package','type']
-
-        for s in os.scandir(f'{os.getcwd()}/siddhis/'):
-            print(f"\tLoading {s.name}...")
-            #sleep(0.1)
-
-            if (s.is_dir() and not s.name.startswith('_')):
-                plugin_docs = f"{s.path}/{s.name}.yaml"
-                
-                if not os.path.exists(plugin_docs):
-                    continue
-                
-                with open(plugin_docs, 'r') as f:
-                    siddhi = yaml.load(f, Loader=yaml.FullLoader)
-                
-                siddhi.update((f, siddhi[f].lower()) 
-                    if not isinstance(siddhi[f], bool) \
-                        else (f, siddhi[f]) for f in fields)
-                
-                abduct_items(**siddhi)
-                VFDBOps(**siddhi).register('_SIDDHIS_')
-
+        # Get Vimana root path
+        vimana_root = self._get_vimana_root()
+        siddhis_path = os.path.join(vimana_root, 'siddhis')
+        
+        # Discover plugin directories
+        plugin_dirs = self._discover_plugin_dirs(siddhis_path)
+        
+        if not plugin_dirs:
+            cprint("No valid plugin directories found", 'red')
+            return False
+        
+        # Register siddhis in batch with error handling
+        success_count, error_count = self._register_siddhis_batch(plugin_dirs)
+        
+        if success_count > 0:
+            cprint(f"Successfully loaded {success_count} plugins", 'green')
+        
+        # Load tools and list siddhis
         self.load_tools()
         self.list_siddhis()
+        
+        return True
     
     def no_match(self):
         case_header()
