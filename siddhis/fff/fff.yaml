@@ -1,0 +1,235 @@
+# -*- coding: utf-8 -*-
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+#
+# Author: s4dhu
+# Email: <s4dhul4bs[at]prontonmail[dot]ch
+# Git: @s4dhulabs
+# Mastodon: @s4dhu
+# 
+# This file is part of Vimana Framework Project.
+
+name: FFF
+author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
+brief: FastAPI Floating-Point Fuzzer
+category: Audit
+framework: FastAPI
+info: Spots Floating-Point Exceptions in FastAPI applications.
+module: siddhis/fff/fff.py 
+package: FastAPI
+type: DAST
+astt: DAST
+tags:
+  - OpenAPI
+  - Fuzzing
+  - Exception Cascade Testing
+  - Floating-Point 
+  - API
+composition: 
+  mode: Standalone
+description: |
+  FFF is a specialized floating-point fuzzer for FastAPI applications that 
+  combines API discovery, schema validation, and intelligent floating-point testing.
+  It leverages OpenAPI specifications to understand API structure and behavior,
+  enabling precise vulnerability detection and exploitation.
+  
+  Key features include:
+  - Comprehensive floating-point fuzzing for FastAPI endpoints
+  - Spec-driven testing using OpenAPI specifications
+  - Multiple test types targeting different floating-point vulnerabilities:
+      * Single: Basic NaN payload testing
+      * IEEE754: Standard floating-point edge cases
+      * Precision: Precision-based attacks
+      * Mathematical: Mathematical edge cases
+      * Confusion: Type confusion attacks
+      * Concurrent: Resource exhaustion testing
+      * Progressive: Size-based breaking point discovery
+      * Sustained: Long-running attack simulation
+      * Comprehensive: Full test suite execution
+  - Advanced filtering capabilities:
+      * Filter by HTTP methods
+      * Filter by API tags
+      * Filter by operation ID
+      * Filter by endpoint path
+  - Detailed analysis and reporting:
+      * Response time analysis
+      * Error type detection
+      * Payload effectiveness metrics
+      * JSON output for further analysis
+  - Debug mode detection
+  - Resource monitoring during tests
+  - Configurable test parameters:
+      * Request count
+      * Payload size
+      * Worker threads
+      * Test duration
+references:
+  links:
+    - https://fastapi.tiangolo.com/security/
+    - https://owasp.org/API-Security/
+  cwe:
+    - CWE-20 - Improper Input Validation
+    - CWE-704 - Incorrect Type Conversion or Cast
+    - CWE-190 - Integer Overflow or Wraparound
+    - CWE-681 - Incorrect Conversion between Numeric Types
+vfset:
+  parse_plugin_scope: False
+guide:
+  naviargs: 
+    target_url: False
+  args: |
+    ø----------------------------------------------------------------------ø
+    │└┐└│└┘┌┐│└└┘┌┐┘└┘└┐└┘└┐└┘│└┐┘││ FFF ARGS  ┐│││└┐└┘┘└┘││├┤┘│││┤└┘││└┐│
+    ø-----------+----------------------------------------------------------ø
+    │ Scanning  └┐                                                         │
+    +------------+---------------------------------------------------------+
+     --target-url        Target FastAPI base URL (e.g., http://localhost:8000)
+     --fuzzspec          Fuzz all endpoints in an OpenAPI spec (by ID or last scan)
+     --check-debug       Check if target is running in debug mode
+    +-----------+----------------------------------------------------------+
+    │ Test Types└┐                                                         │     
+    +------------+---------------------------------------------------------+
+     --test-type         Specify test type to run:
+                        * single: Basic NaN payload test
+                        * ieee754: IEEE 754 edge cases
+                        * precision: Precision-based attacks
+                        * mathematical: Mathematical edge cases
+                        * confusion: Type confusion attacks
+                        * concurrent: Resource exhaustion
+                        * progressive: Size-based testing
+                        * sustained: Long-running attacks
+                        * comprehensive: Full test suite
+    +-----------+----------------------------------------------------------+
+    │ Filters   └┐                                                         │     
+    +------------+---------------------------------------------------------+
+     --methods           Filter by HTTP methods (comma-separated: GET,POST)
+     --tags              Filter by API tags
+     --operation-id      Filter by operation ID
+     --endpoint          Filter by endpoint path
+    +-----------+----------------------------------------------------------+
+    │ Parameters└┐                                                         │
+    +------------+---------------------------------------------------------+
+     --requests          Number of requests for concurrent test
+     --payload-size      Payload size for concurrent test
+     --max-workers       Max workers for concurrent test
+     --duration          Duration (seconds) for sustained test
+    +-----------+----------------------------------------------------------+
+    │ Output    └┐                                                         │      
+    +------------+---------------------------------------------------------+
+     --output            Save results to file (JSON)
+     --verbose           Enable verbose output
+     --debug-logging     Enable debug logging
+    ø----------------------------------------------------------------------ø
+  examples: |
+    ø----------------------------------------------------------------------ø
+    │ FFF USAGE EXAMPLES                                                   │
+    ø----------------------------------------------------------------------ø
+
+    # Check if debug mode is enabled with the last scan spec (Jcolt env)
+    vimana run fff --check-debug
+
+    # Fuzz only POST,DELETE methods in a specific OAS 
+    vimana run fff --fuzzspec aSd5c1 --methods POST,DELETE
+
+    # Check debug mode on a specific target url and save the output to a json file enable verbose output
+    vimana run fff \
+        --target-url http://localhost:8003 \
+        --check-debug \
+        --output check_Debug.json \
+        --verbose
+
+    # Fuzz all endpoints with all test types with the last scan spec (Jcolt env)
+    vimana run fff --fuzzspec
+
+    # Fuzz a specific endpoint with all test types with the last scan spec (Jcolt env)
+    vimana run fff --fuzzspec --endpoint /users/add 
+
+    # Fuzz a specific operation with progressive test type with the last scan spec (Jcolt env)
+    vimana run fff \
+        --fuzzspec \
+        --test-type progressive \
+        --operation-id create_user_users_post \
+        --verbose
+
+    # Basic single test with NaN payload on a specific target url
+    vimana run fff --target-url http://localhost:8003 --test-type single
+    
+    # Concurrent resource exhaustion test with granularity
+    vimana run fff \
+        --target-url http://localhost:8003 \
+        --test-type concurrent \
+        --requests 10 \
+        --payload-size 5 \
+        --max-workers 3 \
+        --verbose
+
+    # Full comprehensive scan with json output
+    vimana run fff \
+        --target-url http://localhost:8003 \
+        --test-type comprehensive \
+        --output results.json \
+        --verbose
+
+    # Sustained attack simulation
+    vimana run fff \
+        --target-url http://localhost:8003 \
+        --test-type sustained \
+        --duration 30 \
+        --debug
+
+    # Progressive size testing to find breaking point
+    vimana run fff \
+        --target-url http://localhost:8003 \
+        --test-type progressive 
+
+    # Test IEEE 754 edge cases
+    vimana run fff --target-url http://localhost:8003 --test-type ieee754
+
+    # Test precision-based attacks on a specific target url
+    vimana run fff --target-url http://localhost:8003 --test-type precision
+
+    # Run single test with verbose output on a specific target url
+    vimana run fff --target-url http://localhost:8003 --test-type single --verbose
+
+    ø----------------------------------------------------------------------ø
+
+  lab_setup: |
+    ø----------------------------------------------------------------------ø
+    │ FFF LAB SETUP                                                         │
+    ø----------------------------------------------------------------------ø
+
+    To test FFF, you'll need a FastAPI application running locally or in a container:
+
+    1. Basic FastAPI app:
+        $ pip install fastapi uvicorn
+        $ cat > fastapi_app.py << EOF
+        from fastapi import FastAPI
+        
+        app = FastAPI()
+        
+        @app.get("/")
+        def read_root():
+            return {"Hello": "World"}
+            
+        @app.get("/items/{item_id}")
+        def read_item(item_id: int):
+            return {"item_id": item_id}
+        EOF
+        $ uvicorn fastapi_app:app --port 8000
+
+    2. Or use the vulnerable FastAPI testing app:
+        $ git clone https://github.com/s4dhulabs/fastapi-security-test-lab.git
+        $ cd fastapi-security-test-lab
+        $ pip install -r requirements.txt
+        $ python -m uvicorn main:app --reload --port 8000
+
+    3. Start fuzzing:
+        $ vimana run fff --target-url http://localhost:8000 --test-type single
+
+    4. For spec-driven fuzzing:
+        $ vimana run fff --fuzzspec aSd5c1
+
+    ø----------------------------------------------------------------------ø
+        
