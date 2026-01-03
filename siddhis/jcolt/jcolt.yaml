@@ -1,0 +1,644 @@
+# -*- coding: utf-8 -*-
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+#
+# Author: s4dhu
+# Email: <s4dhul4bs[at]prontonmail[dot]ch
+# Git: @s4dhulabs
+# Mastodon: @s4dhu
+# 
+# This file is part of Vimana Framework Project.
+
+name: JColt
+author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
+brief: FastAPI Security Auditing Tool
+category: Audit
+framework: FastAPI
+info: Comprehensive security testing tool for FastAPI applications
+module: siddhis/jcolt/jcolt.py 
+package: FastAPI
+type: DAST
+astt: DAST
+tags:
+  - Fuzzing
+  - OpenAPI
+  - Authentication
+  - Pydantic
+  - FastAPI
+composition: 
+  mode: Orchestrator
+  plugin_chain:
+    fuzz:
+      - pyserial
+
+description: |
+  JColt is a specialized security testing tool for FastAPI applications that 
+  combines API discovery, schema validation, and intelligent security testing.
+  It leverages OpenAPI specifications to understand API structure and behavior,
+  enabling precise vulnerability detection.
+  
+  Key features include:
+  - Comprehensive API endpoint discovery and specification extraction
+  - Intelligent schema-based fuzzing with customizable test variations
+  - Advanced serialization security testing to detect deserialization vulnerabilities
+  - Authentication bypass testing supporting OAuth2, JWT, API keys and more
+  - Pydantic model analysis to identify weak validation patterns
+  - Security-sensitive field detection for PII, credentials, and tokens
+  - Test case generation for boundary conditions and validation bypasses
+  - Interactive navigation system for exploring complex test results
+  - Schema validation with detailed reporting and remediation advice
+  - Input type confusion testing to identify type coercion vulnerabilities
+  - Customizable serialization tests with support for multiple test vectors
+  - Multiple export formats (JSON, HTML, CSV, PDF) with visual dashboards
+  
+  JColt provides both passive reconnaissance features and active testing capabilities,
+  making it valuable for penetration testers, security researchers, and development
+  teams seeking to integrate security testing into CI/CD pipelines.
+references:
+  links:
+    - https://fastapi.tiangolo.com/security/
+    - https://owasp.org/API-Security/
+  cwe:
+    - CWE-20 - Improper Input Validation
+    - CWE-200 - Exposure of Sensitive Information to an Unauthorized Actor
+    - CWE-204 - Observable Response Discrepancy
+    - CWE-284 - Improper Access Control
+    - CWE-285 - Improper Authorization
+    - CWE-345 - Insufficient Verification of Data Authenticity
+    - CWE-522 - Insufficiently Protected Credentials
+    - CWE-1004 - Sensitive Cookie Without 'HttpOnly' Flag
+vfset:
+  parse_plugin_scope: False
+guide:
+  naviargs: 
+    target_url: False
+  args: |
+    ø----------------------------------------------------------------------ø
+    │└┐└│└┘┌┐│└└┘┌┐┘└┘└┐└┘└┐└┘│└┐┘││ JCOLT ARGS  ┐│││└┐└┘┘└┘││├┤┘│││┤└┘││└┐│
+    ø-----------+----------------------------------------------------------ø
+    │ Scanning  └┐                                                         │
+    +------------+---------------------------------------------------------+
+     --scan-api          Scan a FastAPI application to extract specification
+     --target-url        Specify target URL for scanning
+     --fingerprint       Perform API fingerprinting only
+    +-----------+----------------------------------------------------------+
+    │ Specs     └┐                                                         │     
+    +------------+---------------------------------------------------------+
+     --apispec           Use a specific API specification by ID
+     --oas               Alias for --apispec
+     --list-specs        List all available API specifications
+     --flush-spec        Remove a specific API specification
+     --flush-specs       Remove all API specifications
+    +-----------+----------------------------------------------------------+
+    │ API Info  └┐                                                         │     
+    +------------+---------------------------------------------------------+
+     --list-paths          List all API paths
+     --list-descriptions   List API endpoint descriptions
+     --list-opids          List operation IDs
+     --list-tags           List API tags
+     --list-parameters     List API parameters
+     --list-schemas        List API schemas
+     --list-response-codes List API response codes
+     --list-examples       List API examples
+     --describe            Show comprehensive API details
+    +-----------+----------------------------------------------------------+
+    │ Pydantic  └┐                                                         │
+    +------------+---------------------------------------------------------+
+     --list-pydantic-models     List Pydantic models from API specification
+     --list-field-constraints   List fields with validation constraints
+     --list-endpoint-models     Map API endpoints to request/response models
+     --list-security-fields     Identify security-sensitive fields
+     --list-enums               List enum fields (often overlooked in testing)
+     --list-model-relationships Show model dependencies and relationships
+     --list-validation-coverage Analyze models for validation coverage
+     --pydantic-test            Run comprehensive Pydantic model tests
+                                Note: Currently runs all test types regardless of --test-type parameter
+                                Test types include: type confusion, XSS, special chars, injection, etc.
+     --pydantic-models          Target specific models (comma-separated)
+     --export-format            Export format (json, html, csv)
+     
+     # Serialization Testing (via PySerial orchestration)
+     --serialization-test       Run dedicated serialization tests (recommended)
+                                Uses --test-type to specify serialization categories
+                                All output is verbose by default
+                                Note: Currently has routing issues - may run pydantic tests instead
+
+     # Serialization Categories
+     When using --serialization-test, the --test-type parameter specifies
+     which serialization categories to test:
+                                  * depth_testing: Tests for recursive depth limits
+                                  * type_confusion: Tests for serialization type issues
+                                  * binary_data: Tests with binary/encoded data
+                                  * circular_references: Tests with circular references
+                                  * large_nested_structures: Tests with very large nested data
+                                  * special_characters: Tests with problematic characters
+                                  * custom: Application-specific serialization tests
+                                  Note: All categories run by default if not specified
+     
+     # Custom Serialization Tests (PySerial engine)
+     --custom-test              Path to a YAML/JSON file or directory with custom serialization tests
+                                Examples:
+                                  • File mode: --serialization-test --custom-test tests/custom/deep_recursion.yaml
+                                  • Directory mode: --serialization-test --custom-test tests/custom/
+                                When a directory is provided, all .yaml, .yml, and .json files are processed
+    +-----------+----------------------------------------------------------+
+    │ Filtering └┐                                                         │
+    +------------+---------------------------------------------------------+
+     --methods           Filter by HTTP methods (comma-separated: GET,POST)
+     --operation         Filter by operation ID
+     --tags              Filter by tags
+     --set-path          Target a specific API path
+    +-----------+----------------------------------------------------------+
+    │ Fuzzing   └┐                                                         │      
+    +------------+---------------------------------------------------------+
+     --fuzzspec          Perform fuzzing on API specification
+     --custom-variations Set number of fuzzing variations (3-6)
+     --set-parameter     Target specific parameters for fuzzing
+    +-----------+----------------------------------------------------------+
+    │ Auth      └┐                                                         │      
+    +------------+---------------------------------------------------------+
+     --jwt                 JWT token for authentication (legacy mode)
+     --auth-type           Authentication type (jwt, oauth2, basic, api_key, form, custom)
+     --auth-token          JWT token for JWT authentication
+     --auth-refresh-token  Refresh token for JWT authentication
+     --auth-url            Authentication URL for token refresh
+     --auth-username       Username for authentication
+     --auth-password       Password for authentication
+     --auth-api-key        API key for API key authentication
+     --auth-header-name    Header name for API key authentication
+     --auth-as-query-param Send API key as query parameter
+     --auth-param-name     Parameter name for API key in query
+     --auth-client-id      Client ID for OAuth2 authentication
+     --auth-client-secret  Client secret for OAuth2 authentication
+     --auth-token-url      Token URL for OAuth2 authentication
+     --auth-scope          Scope for OAuth2 authentication
+     --auth-login-url      Login URL for form authentication
+     --auth-username-field Username field for form authentication
+     --auth-password-field Password field for form authentication
+     --auth-file           Load authentication from saved config file
+     --auth-interactive    Interactively configure authentication
+    +-----------+----------------------------------------------------------+
+    │ Validation└┐                                                         │      
+    +------------+---------------------------------------------------------+
+     --schemavalidate    Validate API schema
+     --show-response     Show API responses during validation
+     --pretty            Format output in a readable manner
+    +-----------+----------------------------------------------------------+
+    │ Output    └┐                                                         │      
+    +------------+---------------------------------------------------------+
+     --json              Export results in JSON format
+     --output            Specify output filename (e.g., --output results.json)
+     --navigation-mode   Enable interactive navigation of results
+     --output-table      Display results in table format
+     --inspect           Inspect a specific endpoint or specification
+     --export-body       Export request/response bodies for analysis
+     --no-color          Disable colored output
+     --debug-logging     Enable debug logging
+     --verbose-logging   Enable verbose logging
+    
+     * For examples: `vimana guide -m jcolt -e`              
+  examples: |
+    ø----------------------------------------------------------------------ø
+    ⠞⠓⠊⠎:⠞⠓⠎⠞⠎-⠞⠊⠞⠓~⠊⠎⠞⠓⠊⠎└┐  JCOLT GUIDE  ⠞⠊⠓⠊::::::⠞⠓⠊⠎,⠞⠊.⠞⠓⠊⠎⠞⠓⠊⠎
+    ø---------------------└┘-----------------------------------------------ø
+    
+    # API DISCOVERY & EXPLORATION
+    
+        Scan a FastAPI application to extract its OpenAPI specification and
+        list all available endpoints:
+
+        $ vimana run jcolt --scan-api http://127.0.0.1:8000
+
+    ø----------------------------------------------------------------------ø
+    
+        List all saved API specifications in the local database:
+    
+        $ vimana run jcolt --list-specs
+
+    ø----------------------------------------------------------------------ø
+    
+        Load a previously discovered API spec and list all its paths:
+
+        $ vimana run jcolt --apispec aSf94e --list-paths
+        
+        # Or in table format:
+        $ vimana run jcolt --apispec aSf94e --list-paths --table
+        
+        # Filter by HTTP methods:
+        $ vimana run jcolt --apispec aSf94e --list-paths --methods POST
+
+    ø----------------------------------------------------------------------ø
+    
+        Show detailed information about a specific API endpoint:
+
+        $ vimana run jcolt --apispec aSf94e --inspect p1e8d
+        
+        # Or inspect the entire API specification:
+        $ vimana run jcolt --inspect aSf94e
+
+    ø----------------------------------------------------------------------ø
+    
+    # PYDANTIC MODEL ANALYSIS
+    
+        JColt can analyze Pydantic models to understand their structure and identify potential security issues.
+    
+        # List all Pydantic models extracted from the API specification:
+        $ vimana run jcolt --apispec aS0fe1 --list-pydantic-models
+        
+        # Identify fields with weak or missing validation constraints:
+        $ vimana run jcolt --apispec aS0fe1 --list-field-constraints
+        
+        # Map API endpoints to their request and response models:
+        $ vimana run jcolt --apispec aS0fe1 --list-endpoint-models
+        
+        # Find security-sensitive fields (passwords, tokens, PII, etc.):
+        $ vimana run jcolt --apispec aS0fe1 --list-security-fields
+        
+        # List enum fields which are often overlooked during testing:
+        $ vimana run jcolt --apispec aS0fe1 --list-enums
+        
+        # View model relationships and dependencies:
+        $ vimana run jcolt --apispec aS0fe1 --list-model-relationships
+        
+        # Check validation coverage across all models:
+        $ vimana run jcolt --apispec aS0fe1 --list-validation-coverage
+
+    ø----------------------------------------------------------------------ø
+    
+    # PYDANTIC MODEL TESTING
+    
+        JColt can test Pydantic models for security vulnerabilities and validation issues.
+        Tests are run against actual API endpoints to verify real-world behavior.
+        
+        # Run all Pydantic test types (default behavior):
+        $ vimana run jcolt \
+          --apispec aS0fe1 \
+          --pydantic-test \
+          --verbose
+        
+        # Run specific Pydantic test types:
+        $ vimana run jcolt \
+            --apispec aS0fe1 \
+            --pydantic-test \
+          --test-type type_confusion \
+            --verbose
+        
+        # Run multiple Pydantic test types:
+        $ vimana run jcolt \
+            --apispec aS0fe1 \
+            --pydantic-test \
+          --test-type type_confusion,injection \
+          --verbose
+        
+        # Test specific models only:
+        $ vimana run jcolt \
+            --apispec aS0fe1 \
+            --pydantic-test \
+          --test-model UserModel,LoginModel \
+          --test-type special_chars \
+          --verbose
+
+        # Export Pydantic test results to JSON:
+        $ vimana run jcolt \
+          --apispec aS0fe1 \
+          --pydantic-test \
+          --test-type injection \
+          --output jcolt_pydantic_tests.json
+
+        # Run Pydantic tests with authentication:
+        $ vimana run jcolt \
+          --apispec aS0fe1 \
+          --pydantic-test \
+          --test-type validation_bypass \
+          --auth-type jwt \
+          --auth-token $JWT_TOKEN \
+          --verbose
+          
+        # Run Pydantic tests with custom payload builder:
+        $ vimana run jcolt \
+          --apispec aS0fe1 \
+          --pydantic-test \
+          --test-type boundary_testing \
+          --set-custom-payload \
+          --verbose
+
+        # Run Pydantic tests with navigation mode for interactive exploration:
+        $ vimana run jcolt \
+          --apispec aS0fe1 \
+          --pydantic-test \
+          --test-type type_confusion \
+          --navigation-mode
+
+        # Supported Pydantic Test Types:
+        # 
+        # - type_confusion: Tests type system bypass attempts
+        #   Examples: "Type confusion - integer instead of string", "Type confusion - object instead of string"
+        #
+        # - validation_bypass: Tests validation rule bypass attempts (requires schema constraints)
+        #   Examples: "Email validation bypass - null byte", "MinLength bypass - just below minimum"
+        #
+        # - boundary_testing: Tests boundary conditions and edge cases (requires schema constraints)
+        #   Examples: "String boundary - exactly maxLength", "String boundary - maxLength + 1"
+        #
+        # - special_chars: Tests special character handling and Unicode attacks
+        #   Examples: "Special chars - null byte", "Special chars - Unicode RTL override"
+        #
+        # - injection: Tests various injection attack vectors
+        #   Examples: "SQL Injection - basic", "SQL Injection - comment"
+        #
+        # Note: validation_bypass and boundary_testing tests are only generated when
+        # the API schema contains validation constraints (minLength, maxLength, pattern, etc.)
+        
+        # IMPORTANT: --test-type serialization with --pydantic-test
+        # 
+        # When using --pydantic-test --test-type serialization, JColt automatically
+        # delegates to the PySerial plugin and runs actual serialization tests:
+        # 
+        $ vimana run jcolt \
+          --apispec aS0fe1 \
+          --pydantic-test \
+          --test-type serialization \
+          --verbose
+        # 
+        # This command runs the same serialization tests as PySerial, including:
+        # - DEPTH TESTING: Nested structure depth attacks
+        # - TYPE CONFUSION: Serialization type confusion attacks  
+        # - BINARY DATA: Pickle deserialization attacks
+        # - CIRCULAR REFERENCES: Circular reference attacks
+        # - LARGE NESTED STRUCTURES: Memory exhaustion attacks
+        # - SPECIAL CHARACTERS: Unicode and special character attacks
+        # 
+        # The output will look identical to PySerial because it IS PySerial running the tests.
+
+    ø----------------------------------------------------------------------ø
+     
+    # SERIALIZATION TESTING
+    
+        JColt can run serialization tests by delegating to the PySerial plugin.
+        This provides comprehensive testing of serialization/deserialization vulnerabilities.
+        
+        # Run all serialization test categories:
+        $ vimana run jcolt \
+          --apispec aS0fe1 \
+          --serialization-test \
+          --verbose
+          
+        # Run specific serialization test categories:
+        $ vimana run jcolt \
+          --apispec aS0fe1 \
+          --serialization-test \
+          --test-type binary_data \
+          --verbose
+          
+        # Run multiple serialization test categories:
+        $ vimana run jcolt \
+          --apispec aS0fe1 \
+          --serialization-test \
+          --test-type binary_data,circular_references \
+          --verbose
+          
+        # Export serialization test results to JSON:
+        $ vimana run jcolt \
+          --apispec aS0fe1 \
+          --serialization-test \
+          --test-type depth_testing \
+          --output jcolt_serialization_tests.json
+          
+        # Run custom serialization tests from a file:
+        $ vimana run jcolt \
+          --apispec aS0fe1 \
+          --serialization-test \
+          --custom-test tests/custom/pickle_rce_tests.yaml \
+          --verbose
+          
+        # Run serialization tests with interactive payload builder:
+        $ vimana run jcolt \
+          --apispec aS0fe1 \
+          --serialization-test \
+          --test-type special_characters \
+          --set-custom-payload \
+          --verbose
+          
+        # Supported Serialization Test Categories:
+        #
+        # - depth_testing: Tests nested structure depth attacks
+        #   Examples: "serialization_depth_testing" - Creates deeply nested structures
+        #
+        # - type_confusion: Tests serialization type confusion attacks
+        #   Examples: "serialization_type_confusion" - Sends wrong types for fields
+        #
+        # - binary_data: Tests binary data deserialization attacks (including pickle RCE)
+        #   Examples: "serialization_binary_data" - Tests pickle deserialization
+        #
+        # - circular_references: Tests circular reference attacks
+        #   Examples: "serialization_circular_references" - Creates circular object references
+        #
+        # - large_nested_structures: Tests memory exhaustion attacks
+        #   Examples: "serialization_large_nested_structures" - Creates large nested objects
+        #
+        # - special_characters: Tests Unicode and special character attacks
+        #   Examples: "serialization_special_characters" - Tests special character handling
+        #
+        # Note: These tests are identical to PySerial tests because JColt delegates to PySerial.
+        # For direct PySerial usage: vimana run pyserial --apispec aS0fe1 --test-type binary_data
+
+    ø----------------------------------------------------------------------ø
+    
+    # SCHEMA VALIDATION & FUZZING
+    
+        Validate API schema with response display:
+
+        $ vimana run --plugin jcolt --apispec aSf94e \
+            --schemavalidate \
+            --show-response \
+            --pretty
+
+    ø----------------------------------------------------------------------ø
+    
+        Perform fuzzing on all endpoints of an API specification:
+
+        $ vimana run --plugin jcolt --fuzzspec aSf94e
+        
+        # With JSON output:
+        $ vimana run --plugin jcolt --fuzzspec aSf94e --output jcolt_fuzzspec.json
+        
+        # With more fuzzing variations:
+        $ vimana run --plugin jcolt --fuzzspec aSf94e --custom-variations 6
+        
+        # Focusing on specific parameters:
+        $ vimana run --plugin jcolt --fuzzspec aSf94e --set-parameter item_id
+        
+        # Targeting a specific path:
+        $ vimana run --plugin jcolt --fuzzspec aSf94e --set-path /api/endpoint
+
+    ø----------------------------------------------------------------------ø
+    
+    # AUTHENTICATION OPTIONS
+    
+        Using JWT authentication (legacy mode):
+
+        $ vimana run --plugin jcolt --fuzzspec aSf94e --jwt $TOKEN
+        
+        # Using new authentication format:
+        $ vimana run \
+            --plugin jcolt \
+            --fuzzspec aSf94e \
+            --auth-type jwt \
+            --auth-token $TOKEN \
+            --auth-refresh-token $REFRESH_TOKEN \
+            --auth-url "https://api.example.com/auth/refresh"
+
+    ø----------------------------------------------------------------------ø
+    
+        Using OAuth2 authentication:
+
+        $ vimana run \
+            --plugin jcolt \
+            --fuzzspec aSf94e \
+            --auth-type oauth2 \
+            --auth-client-id "client_id" \
+            --auth-client-secret "client_secret" \
+            --auth-token-url "https://api.example.com/oauth/token" \
+            --auth-scope "read write"
+
+    ø----------------------------------------------------------------------ø
+    
+        Using API key authentication:
+
+        $ vimana run --plugin jcolt --fuzzspec aSf94e \
+            --auth-type api_key \
+            --auth-api-key "your-api-key" \
+            --auth-header-name "X-API-Key"
+
+    ø----------------------------------------------------------------------ø
+    # WORKFLOW EXAMPLES
+
+    JColt supports automated workflows (like GitHub Actions) through environment 
+    variables and stateful operations. The last scan automatically sets 
+    JCOLT_SCAN_SPEC_ID for subsequent operations.
+    
+    1. Initial API Scan (sets JCOLT_SCAN_SPEC_ID):
+       $ vimana run --plugin jcolt --scan-api http://myfastapidashv2-prod.com
+    
+    2. Subsequent operations automatically use the last scan specification:
+       
+       # Re-scan last API without specifying URL:
+       $ vimana run -p jcolt --scan-api
+
+       # Run fuzzing tests on entire API
+       $ vimana run -p jcolt --fuzzspec
+       
+       # Target specific endpoint for fuzzing
+       $ vimana run -p jcolt --fuzzspec --set-path /protected-endpoint
+       
+       # List Pydantic Models from last scan
+       $ vimana run -p jcolt --list-pydantic-models
+       
+       # Run Pydantic tests (all test types)
+       $ vimana run -p jcolt --pydantic-test
+       
+       # Run authenticated tests using auth file from environment
+       $ vimana run -p jcolt --pydantic-test --auth-file $AUTH_FILE
+       
+       # Run and Export authenticated test results to JSON
+        $ vimana run -p jcolt --pydantic-test --jwt $TOKEN --output jcolt_results.json
+
+        # Run serialization tests (orchestrated via PySerial)
+        $ vimana run -p jcolt --serialization-test
+
+       # Run serialization tests with specific categories
+        $ vimana run -p jcolt --serialization-test --test-type binary_data,circular_references
+
+    # GITHUB ACTIONS EXAMPLE
+    
+    name: API Security Scan
+    on:
+      push:
+        branches: [ main ]
+      pull_request:
+        branches: [ main ]
+    
+    jobs:
+      security-scan:
+        runs-on: ubuntu-latest
+        steps:
+          - uses: actions/checkout@v2
+          
+          - name: Install Vimana
+            run: pip install vimana-framework
+          
+          - name: Scan API
+            run: |
+              vimana run --plugin jcolt --scan-api ${{ secrets.API_URL }}
+          
+          - name: Run Security Tests
+            run: |
+              vimana run -p jcolt --fuzzspec
+              vimana run --plugin jcolt --pydantic-test --auth-file ${{ secrets.AUTH_FILE }}
+          
+          - name: Export Results
+            run: |
+              vimana run --plugin jcolt --pydantic-test --auth-file ${{ secrets.AUTH_FILE }} --output jcolt_security_results.json
+          
+          - name: Upload Results
+            uses: actions/upload-artifact@v2
+            with:
+              name: security-scan-results
+              path: ./jcolt_security_results.json
+
+  lab_setup: |
+    ø----------------------------------------------------------------------ø
+    │└┘⠞⠓┌┐│└⠞⠓└┘┌⠞⠓┐┌┘.┌⠞⠓┬┐.└┐┘│ LAB SETUP  ┘└┐│.└┘.┌┐│⠞⠓│┬.│⠞└┘┌┬┐└┐┌.│.│
+    ø----------------------------------------------------------------------ø
+  
+    To properly test JColt, you'll need a FastAPI application running locally 
+    or in a container. Here are several options for setting up a test 
+    environment:
+
+    1. Use FastAPI's tutorial application:
+    
+        $ pip install fastapi uvicorn
+        $ python -m uvicorn fastapi_tutorial:app --reload
+    
+    2. Deploy the vulnerable FastAPI testing app:
+    
+        $ git clone https://github.com/s4dhulabs/fastapi-security-test-lab.git
+        $ cd fastapi-security-test-lab
+        $ pip install -r requirements.txt
+        $ python -m uvicorn main:app --reload --port 8000
+    
+    3. Use Docker to run a pre-configured environment:
+    
+        $ docker pull s4dhulabs/fastapi-vuln-lab
+        $ docker run -p 8000:8000 s4dhulabs/fastapi-vuln-lab
+    
+    Once your testing environment is running, you can start testing with JColt:
+    
+        $ vimana run --module jcolt --scan-api http://localhost:8000
+
+    FastAPI Test Application:
+        $ pip install fastapi uvicorn
+        $ cat > fastapi_app.py << EOF
+        from fastapi import FastAPI
+        
+        app = FastAPI()
+        
+        @app.get("/")
+        def read_root():
+            return {"Hello": "World"}
+            
+        @app.get("/items/{item_id}")
+        def read_item(item_id: int):
+            return {"item_id": item_id}
+        EOF
+        $ uvicorn fastapi_app:app --port 8080
+
+    You can also use Docker to easily set up multiple framework instances:
+        $ docker run -d -p 8080:80 --name fastapi-app tiangolo/uvicorn-gunicorn-fastapi
+
+    Once your testing environment is running, you can start testing with JColt:
+        $ vimana run --module jcolt --scan-api http://localhost:8000
+
+        
