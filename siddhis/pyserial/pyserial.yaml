@@ -1,0 +1,480 @@
+# -*- coding: utf-8 -*-
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+#
+# Author: s4dhu
+# Email: <s4dhul4bs[at]prontonmail[dot]ch
+# Git: @s4dhulabs
+# Mastodon: @s4dhu
+# 
+# This file is part of Vimana Framework Project.
+
+name: PySerial
+author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
+brief: Python Serialization Security Testing Plugin
+category: Audit
+framework: Python
+info: Specialized tool for testing serialization vulnerabilities in Python applications
+module: siddhis/pyserial/pyserial.py 
+package: Python
+type: DAST
+astt: DAST
+tags:
+  - Serialization
+  - Deserialization
+  - Security Testing
+  - Pydantic
+  - FastAPI
+  - Python
+composition: 
+  mode: Standalone
+description: |
+  PySerial is a specialized security testing plugin focused exclusively on identifying
+  serialization and deserialization vulnerabilities in Python applications, particularly
+  those using FastAPI and Pydantic models.
+  
+  Key features include:
+  - Comprehensive serialization vulnerability testing with multiple attack vectors
+  - Deep analysis of Pydantic model serialization behavior
+  - Custom payload generation for various serialization attack scenarios
+  - Interactive payload builder for manual testing and exploitation
+  - Support for multiple serialization test categories:
+    * Depth testing - Tests for recursive depth limits and stack overflow
+    * Type confusion - Tests for serialization type coercion vulnerabilities
+    * Binary data - Tests with binary/encoded data including pickle deserialization
+    * Circular references - Tests with circular reference handling
+    * Large nested structures - Tests with memory exhaustion scenarios
+    * Special characters - Tests with problematic Unicode and control characters
+    * Custom tests - Application-specific serialization test vectors
+  
+  - Advanced vulnerability detection for:
+    * Unsafe pickle deserialization (RCE potential)
+    * JSON depth limit bypasses (DoS potential)
+    * Type confusion in serialization (Data corruption)
+    * Memory exhaustion through large payloads (DoS potential)
+    * Unicode normalization attacks
+    * Circular reference infinite loops
+  
+  - Comprehensive reporting with detailed vulnerability analysis
+  - Integration with existing API specifications from jcolt
+  - Automatic fallback to the latest scanned API spec (ENV_FALLBACK_SPEC_ID) if --apispec is not provided, enabling seamless workflows after a jcolt scan
+  - Support for custom test vectors via YAML/JSON configuration
+  - Interactive navigation system for exploring test results
+  - Multiple export formats (JSON, HTML, CSV, PDF)
+  - Structured JSON export for CI/CD integration with complete test reproducibility
+  
+  PySerial can be used standalone or as part of a comprehensive API security testing
+  pipeline, integrating seamlessly with jcolt for complete FastAPI security assessment.
+  
+references:
+  links:
+    - https://owasp.org/www-community/vulnerabilities/Deserialization_of_untrusted_data
+    - https://portswigger.net/web-security/deserialization
+    - https://docs.python.org/3/library/pickle.html#pickle-security
+    - https://pydantic-docs.helpmanual.io/usage/serialization/
+  cwe:
+    - CWE-502 - Deserialization of Untrusted Data
+    - CWE-20 - Improper Input Validation
+    - CWE-400 - Uncontrolled Resource Consumption
+    - CWE-674 - Uncontrolled Recursion
+    - CWE-787 - Out-of-bounds Write
+    - CWE-190 - Integer Overflow or Wraparound
+    - CWE-1288 - Improper Validation of Consistency within Input
+vfset:
+  parse_plugin_scope: False
+guide:
+  naviargs: 
+    target_url: True
+    apispec_enabled: True
+  args: |
+    ø---------------------------------------------------------------------------------ø
+    │└┐└│└┘┌┐│└└┘┌┐┘└┘└┐└┘└┘└┘└┘│└┐┘││ PYSERIAL ARGS ┐│││└┐└┘┘└┘││├┤┘│││┤└└│└┘┘││└└┘└┘┐
+    ø------------+--------------------------------------------------------------------ø
+    │ Target    └┐                                                                    │ 
+    +------------+--------------------------------------------------------------------+
+     --target-url        Target URL for serialization testing
+     --apispec           Use API specification by ID (from jcolt scan)
+     --oas               Alias for --apispec
+    +-----------+---------------------------------------------------------------------+
+    │ Test Types└┐                                                                    │     
+    +------------+--------------------------------------------------------------------+
+     --test-type         Specify serialization test categories (comma-separated):
+                           * depth_testing: Tests for recursive depth limits
+                           * type_confusion: Tests for serialization type issues
+                           * binary_data: Tests with binary/encoded data
+                           * circular_references: Tests with circular references
+                           * large_nested_structures: Tests with large nested data
+                           * special_characters: Tests with problematic characters
+                           * custom: Application-specific serialization tests
+                           Note: All categories run by default if not specified
+    +-----------+---------------------------------------------------------------------+
+    │ Models    └┐                                                                    │
+    +------------+--------------------------------------------------------------------+
+     --pydantic-models   Target specific Pydantic models (comma-separated)
+                         If not specified, all models from spec are tested
+    +-----------+---------------------------------------------------------------------+
+    │ Custom    └┐                                                                    │
+    +------------+--------------------------------------------------------------------+
+     --custom-test       Path to custom serialization test file or directory
+                         Supports YAML/JSON format with test vectors
+                         Examples:
+                           • File: --custom-test tests/deep_recursion.yaml
+                           • Directory: --custom-test tests/custom/
+     --set-custom-payload Enable interactive payload builder after finding
+                         exploitable vectors. Launches interactive mode for
+                         manual payload crafting and exploitation testing
+    +-----------+---------------------------------------------------------------------+
+    │ Output    └┐                                                                    │      
+    +------------+--------------------------------------------------------------------+
+     --json              Enable JSON export for CI/CD integration
+                         Generates structured JSON report with complete test data
+                         Auto-generates filename: pyserial_tests_{timestamp}.json
+     --output            Custom output filename for JSON export
+                         Example: --output my_serialization_report.json
+                         Note: When using --output, --json is implied by .json extension
+     --export-format     Export format (json, html, csv, pdf) [LEGACY]
+                         Note: Use --json or --output for modern CI/CD integration
+     --navigation-mode   Enable interactive navigation of results
+     --verbose           Enable verbose output (default: true)
+     --no-color          Disable colored output
+
+     * For examples: `vimana guide -m pyserial -e`              
+  examples: |
+    ø------------+--------------------------------------------------------------------ø
+    ⠞⠓⠊⠎:⠞⠓⠎⠞⠎-⠞⠊⠞⠓~⠊⠎⠞⠓⠊⠎└┐  PYSERIAL GUIDE  ⠞⠊⠓⠊::::::⠞⠓⠊⠎,⠞⠊.⠞⠓⠊⠎i⠞⠓.⠊⠎⠞⠓⠊⠎
+    ø------------+--------------------------------------------------------------------ø
+    
+    # BASIC SERIALIZATION TESTING
+    
+        Test a FastAPI application for serialization vulnerabilities:
+
+        $ vimana run pyserial --target-url http://127.0.0.1:8000
+
+    ø---------------------------------------------------------------------------------ø
+    
+        Use an existing API specification from jcolt:
+    
+        $ vimana run pyserial --apispec aS8238
+
+    ø---------------------------------------------------------------------------------ø
+    
+        Export results to JSON for CI/CD integration:
+
+        $ vimana run pyserial --apispec aS8238 --json
+        
+        # Custom JSON output filename:
+        $ vimana run pyserial --apispec aS8238 --output security_report.json
+
+    ø---------------------------------------------------------------------------------ø
+    
+    # TARGETED SERIALIZATION TESTING
+    
+        Test specific serialization categories:
+
+        $ vimana run pyserial --apispec aS8238 --test-type depth_testing,binary_data
+        
+        # Focus on pickle deserialization vulnerabilities:
+        $ vimana run pyserial --target-url http://api.example.com --test-type binary_data --json
+
+    ø---------------------------------------------------------------------------------ø
+    
+        Test specific Pydantic models:
+
+        $ vimana run pyserial --apispec aS8238 --pydantic-models UserModel,ProductModel
+        
+        # With JSON export:
+        $ vimana run pyserial --target-url http://api.example.com \
+          --pydantic-models UserModel,AuthModel \
+          --output model_security_tests.json
+
+    ø---------------------------------------------------------------------------------ø
+    
+    # CUSTOM SERIALIZATION TESTS
+    
+        Use custom test vectors from a file:
+
+        $ vimana run pyserial --apispec aS8238 --custom-test tests/custom_vectors.yaml
+        
+        # Use custom tests from a directory:
+        $ vimana run pyserial --target-url http://api.example.com --custom-test tests/custom/
+
+    ø---------------------------------------------------------------------------------ø
+    
+        Enable interactive payload builder for manual exploitation:
+
+        $ vimana run pyserial --apispec aS8238 --set-custom-payload
+        
+        # With specific test categories:
+        $ vimana run pyserial --target-url http://api.example.com \
+          --test-type binary_data,circular_references \
+          --set-custom-payload
+
+    ø---------------------------------------------------------------------------------ø
+    
+    # CI/CD INTEGRATION
+    
+        Basic CI/CD security check with JSON export:
+
+        $ vimana run pyserial --apispec aS8238 --output security-scan.json
+        
+        # Focused vulnerability testing for pipelines:
+        $ vimana run pyserial --target-url $API_URL \
+          --test-type binary_data,type_confusion \
+          --output vuln-check.json
+
+    ø---------------------------------------------------------------------------------ø
+    
+        Comprehensive testing with all features:
+
+        $ vimana run pyserial --target-url http://api.example.com \
+          --test-type depth_testing,type_confusion,binary_data \
+          --custom-test tests/custom/ \
+          --set-custom-payload \
+          --output comprehensive_security_report.json \
+          --navigation-mode
+
+    ø---------------------------------------------------------------------------------ø
+    
+    # INTEGRATION WITH JCOLT
+    
+        Use jcolt to scan and then test with pyserial:
+
+        $ vimana run jcolt --scan-api http://api.example.com
+        $ vimana run pyserial --apispec aS8238 --json
+        
+        # Or let jcolt orchestrate serialization testing (scan the latest API):
+        $ vimana run jcolt --serialization-test --json
+
+    ø---------------------------------------------------------------------------------ø
+    
+    # GITHUB ACTIONS EXAMPLE
+    
+        Basic GitHub Actions workflow for PySerial security testing:
+        
+        name: PySerial Security Scan
+        on:
+          push:
+            branches: [ main ]
+          pull_request:
+            branches: [ main ]
+        
+        jobs:
+          serialization-security:
+            runs-on: ubuntu-latest
+            steps:
+              - uses: actions/checkout@v4
+              
+              - name: Setup Python
+                uses: actions/setup-python@v5
+                with:
+                  python-version: '3.10'
+              
+              - name: Install Vimana
+                run: |
+                  curl -s https://raw.githubusercontent.com/s4dhulabs/vimana-framework/develop/scripts/install | bash
+                  export PATH="$HOME/.local/bin:$PATH"
+                  source $HOME/.local/bin/env || true
+              
+              - name: Start Test API
+                run: |
+                  pip install fastapi uvicorn
+                  uvicorn test_app:app --host 0.0.0.0 --port 8000 &
+                  sleep 5
+              
+              - name: Run PySerial Security Tests
+                run: |
+                  cd ~/vimana-framework && source .venv/bin/activate  
+                  vf run pyserial --target-url http://localhost:8000 --output pyserial_security_report.json
+              
+              - name: Upload Security Report
+                uses: actions/upload-artifact@v4
+                with:
+                  name: pyserial-security-report
+                  path: pyserial_security-report.json
+
+    ø----------------------------------------------------------------------ø
+    
+    # JSON EXPORT STRUCTURE
+    
+        The JSON export includes complete test data for CI/CD integration:
+        
+        {
+          "metadata": {
+            "export_timestamp": "2025-07-11T09:03:39.381065",
+            "framework": "Vimana Framework",
+            "plugin": "PySerial",
+            "plugin_version": "1.0.0",
+            "test_type": "serialization_security_testing"
+          },
+          "spec_info": {
+            "spec_id": "aS7aaa",
+            "host": "http://localhost:8003",
+            "framework_type": "unknown",
+            "description": "Python serialization security testing"
+          },
+          "test_summary": {
+            "total_tests": 5,
+            "passed_tests": 0,
+            "failed_tests": 5,
+            "vulnerabilities_found": 5,
+            "models_tested": 5,
+            "test_categories": ["depth_testing"],
+            "error_rate_percent": 100.0,
+            "vulnerability_rate_percent": 100.0
+          },
+          "models": [
+            {
+              "model_name": "BinaryPayload",
+              "tests": [
+                {
+                  "test_name": "serialization_depth_testing",
+                  "test_type": "serialization",
+                  "category": "depth_testing",
+                  "vulnerability_details": {
+                    "type": "depth_limit_vulnerability",
+                    "category": "depth_testing"
+                  },
+                  "details": {
+                    "request": {
+                      "url": "http://localhost:8003/nested-structure/create?depth=100",
+                      "method": "POST",
+                      "params": {"depth": 100}
+                    },
+                    "response": {
+                      "status": 200,
+                      "body": {...}
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+
+    ø----------------------------------------------------------------------ø 
+  lab_setup: |
+    ø----------------------------------------------------------------------ø
+    │└┘⠞⠓┌┐│└⠞⠓└┘┌⠞⠓┐┌┘.┌⠞⠓┬┐.└┐┘│ LAB SETUP  ┘└┐│.└┘.┌┐│⠞⠓│┬.│⠞└┘┌┬┐└┐┌.│.│
+    ø----------------------------------------------------------------------ø
+  
+    To properly test PySerial, you'll need a FastAPI application with Pydantic 
+    models that handle serialization. Here are several options for setting up 
+    a test environment:
+
+    1. Use a basic FastAPI application with Pydantic models:
+    
+        $ pip install fastapi uvicorn pydantic
+        $ cat > fastapi_serial_test.py << EOF
+        from fastapi import FastAPI
+        from pydantic import BaseModel
+        from typing import Optional
+        
+        app = FastAPI()
+        
+        class UserModel(BaseModel):
+            id: int
+            name: str
+            email: Optional[str] = None
+            data: dict = {}
+        
+        class ProductModel(BaseModel):
+            id: int
+            name: str
+            price: float
+            metadata: dict = {}
+        
+        @app.post("/users/")
+        def create_user(user: UserModel):
+            return {"user": user}
+            
+        @app.post("/products/")
+        def create_product(product: ProductModel):
+            return {"product": product}
+        EOF
+        $ uvicorn fastapi_serial_test:app --reload --port 8000
+
+    2. Create a more complex test application with serialization endpoints:
+    
+        $ cat > advanced_serial_test.py << EOF
+        from fastapi import FastAPI
+        from pydantic import BaseModel
+        from typing import List, Dict, Any
+        import json
+        
+        app = FastAPI()
+        
+        class NestedModel(BaseModel):
+            nested_data: Dict[str, Any] = {}
+            items: List[str] = []
+        
+        class ComplexModel(BaseModel):
+            id: int
+            name: str
+            nested: NestedModel
+            raw_data: str
+        
+        @app.post("/complex/")
+        def create_complex(data: ComplexModel):
+            return {"received": data, "serialized": json.dumps(data.dict())}
+        
+        @app.post("/nested/")
+        def create_nested(data: NestedModel):
+            return {"nested": data}
+        EOF
+        $ uvicorn advanced_serial_test:app --reload --port 8000
+
+    3. Use Docker to run a basic FastAPI test environment:
+    
+        $ docker run -d -p 8000:80 --name fastapi-test tiangolo/uvicorn-gunicorn-fastapi
+
+    4. Quick test setup with common serialization vulnerabilities:
+    
+        $ cat > vuln_serial_app.py << EOF
+        from fastapi import FastAPI
+        from pydantic import BaseModel
+        import pickle
+        import json
+        
+        app = FastAPI()
+        
+        class DataModel(BaseModel):
+            content: str
+            metadata: dict = {}
+            
+        @app.post("/serialize/")
+        def serialize_data(data: DataModel):
+            # Vulnerable pickle serialization
+            pickled = pickle.dumps(data.dict())
+            return {"serialized": pickled.hex()}
+            
+        @app.post("/deserialize/")
+        def deserialize_data(hex_data: str):
+            # Vulnerable pickle deserialization
+            try:
+                data = pickle.loads(bytes.fromhex(hex_data))
+                return {"deserialized": data}
+            except Exception as e:
+                return {"error": str(e)}
+        EOF
+        $ uvicorn vuln_serial_app:app --reload --port 8000
+
+    Once your testing environment is running, you can start testing with PySerial:
+    
+        # First, scan the API with jcolt to get the specification
+        $ vimana run jcolt --scan-api http://localhost:8000
+        
+        # Then run PySerial tests
+        $ vimana run pyserial --apispec aS8238
+        
+        # Or test directly with target URL
+        $ vimana run pyserial --target-url http://localhost:8000
+
+    For comprehensive serialization vulnerability testing, ensure your test 
+    application includes:
+    - Pydantic models with complex nested structures
+    - Endpoints that accept and return serialized data
+    - Different serialization formats (JSON, pickle, etc.)
+    - Models with validation constraints that can be bypassed
+    - Endpoints that handle binary data or encoded payloads 
