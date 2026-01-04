@@ -19,9 +19,16 @@ framework: Generic
 info:  Simple web crawler utility
 module: siddhis/viwec/viwec.py
 package: False
-type: Crawler
+type: DAST
+astt: DAST
 tags:
-  - discovery
+  - Discovery
+  - Crawler
+  - Enumeration
+  - Reconnaissance
+  - Mapping
+composition: 
+  mode: Standalone
 description: |
   Simple web crawler utility to work isolated (directly
   by command line), and also integrated to enrich
@@ -29,6 +36,8 @@ description: |
 references:
   links: False
   cwe: False
+vfset:
+  parse_plugin_scope: False
 guide:
   args: |
     ø----------------------------------------------------------------------ø

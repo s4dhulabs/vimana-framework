@@ -1,0 +1,26 @@
+FROM python:3.9-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    wget \
+    unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Download and extract web2py (using --no-check-certificate to bypass SSL issues)
+RUN wget --no-check-certificate https://www.web2py.com/examples/static/web2py_src.zip && \
+    unzip web2py_src.zip && \
+    rm web2py_src.zip
+
+# Copy the minimal app script
+COPY web2py_app.py /app/
+
+# Expose port
+EXPOSE 8080
+
+# Run the minimal app (which will use the extracted web2py)
+CMD ["python", "web2py_app.py"] 
+
+

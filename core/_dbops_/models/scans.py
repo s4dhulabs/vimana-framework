@@ -42,13 +42,13 @@ class VFScans(db.Model):
         unique = True,
         nullable = False
     )
-    scan_target_project = db.Column(
+    scan_target = db.Column(
         db.String(100),
         nullable = False
     ) 
     scan_target_full_path = db.Column(
         db.String(300),
-        nullable = False
+        nullable = True
     ) 
     scan_cache_dir = db.Column(
         db.String(300),
@@ -76,11 +76,11 @@ class VFScans(db.Model):
     )
     project_total_requirements = db.Column(
         db.Integer,
-        nullable = False
+        nullable = True
     ) 
     project_total_view_modules = db.Column(
         db.Integer,
-        nullable = False
+        nullable = True
     )
     scan_scope = db.Column(
         JSON,
@@ -97,10 +97,10 @@ class VFScans(db.Model):
         unique = False,
         nullable = False
     )
-    plugin_instance = db.Column(
-        JSON,
-        unique = False,
-        nullable = False
+    has_issues = db.Column(
+        db.Boolean,
+        unique=False,
+        nullable=False
     )
 
     def __init__(self, **kwargs):

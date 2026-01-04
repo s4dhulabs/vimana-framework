@@ -19,6 +19,67 @@ from random import choice
 from neotermcolor import cprint,colored
 from core.load_settings import _version_
 
+def vmnf_dbops():
+    vimana_version = colored(f'vimana {_version_}', 79, attrs=['bold'])
+    dbops_version = colored('dbops', 79)
+    print(f"""
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣀⣀⣤⣤⣤⣤⣀⣀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⣠⣴⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣦⣄⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠙⠻⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠟⠋⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⣿⣶⣤⣄⣉⣉⠙⠛⠛⠛⠛⠛⠛⠋⣉⣉⣠⣤⣶⣿⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀{vimana_version}⠀⠀⠀
+⠀⠀⠀⠀⠀⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠀{dbops_version}⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⣄⡉⠛⠻⠿⢿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠿⠟⠛⢉⣠⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⣿⣿⣿⣶⣶⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣶⣶⣿⣿⣿⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠟⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⣶⣤⣈⡉⠛⠛⠻⠿⠿⠿⠿⠿⠿⠟⠛⠛⢉⣁⣤⣶⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⣿⣿⣿⣿⣿⣷⣶⣶⣶⣶⣶⣶⣶⣶⣾⣿⣿⣿⣿⣿⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠙⠻⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠟⠋⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠉⠉⠛⠛⠛⠛⠉⠉⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀ 
+    """)
+
+def rukmavimana(r=''):
+    cprint(f"""
+                                  |         ✶
+                           .     -ø-                ✶
+                .                 | ✧
+                  ☁︎        ✺             ⊹              𓆪
+                        __'__'__    𓆪
+                          ``´´          
+                                        .˳·˖
+                    _ _              
+                    \\/imana {_version_}
+                     [|-ramewørk 
+             
+    """, choice(range(1111)))
+
+def vmnfgalaxy(m=''):
+    rcn = choice(range(912))
+    sdl = colored('@s4dhulabs', rcn)
+    vfv = colored(_version_, rcn)
+    V = colored("\\/", rcn, attrs=['bold'])
+    F = colored("[|-", rcn, attrs=['bold'])
+    T = colored("__ ", rcn, attrs=['bold'])
+    
+
+    print(f"""
+             ⠀⠀⠀⠀⠀⠀⠀⠀⁺⠀⢀⣀⣀⡀⠒⠒⠦⣄⡀⠀⠀⠀⠀⠀⠀⠀
+            ⠀⠀⠀⠀⠀⢀⣤⣶⡾⠿⠿⠿⠿⣿.⣶⣦⣄⠙⠷⣤⡀⠀⠀⠀⠀
+            ⠀⠀⠀⣠⡾⠛⠉⠀⠀⋆°⠀⠀⠀⠈⠙⣿⣷:⣄⠘⢿⡄⠀⠀⠀ {T} 
+            ⠀⢀⡾⠋⠀⠀✵⠀⠀⠀⠀⠀⠐⠂⠠⢄⡀⠈;⣿⣧⠈⢿⡄⠀⠀ {V}imana {vfv}
+            ⢀⠏⠀⠀⠀⢀⠄⣀⣴:⠿⠛⠛⠛⠷⣦⡙⢦⠀⣿.⡆⠘⡇⠀⠀  {F}ramewørk
+            ⠀⠀⠀⠀⡐⢁⣴⡿⠋⢀⠠⣠⠤⠒⠲⡜⣧⢸⠄⣿⡇⠀⡇⠀⠀      
+            ⠀⠀⠀⡼⠀.⡿⠁⣠⢃⡞⢁⢔⣆⠔⣰⠏⡼⠀⣿⠃,⢸⠃⠀⢾⡿⠂    {sdl}⠀
+            ⠀⠀⢰⡇⢸⣿:⠀⡇⢸⡇⣇⣀⣠⠔⠫⠊⠀⣰⣿⠏⡠⠃⠀⠀⢀
+            ⠀⠀⢸⡇⠸.⣷⠀⢳⡈⢿⣦⣀⣀⣀⣠⣴⣾⠟⠁⠀⠀⠀⠀⢀⡎
+            ⠀⠀⠘⣷⠀⢻⣿~⠀⠙⠢⠌⢉⣛⠛⠋⠉⠀⠀⠀⠀⠀⠀⣠⠎⠀
+            ⠀⠀⠀⠹⣧⡀⠻-⣷"⡀⠀⠀⠀⠀⠀⠀🛰⠀⢀⣠⡾⠃⠀⠀
+            ⠀⠀⠀⠀⠈⠻⣤⡈⠻.⣿~⣦⣤⣤ ⣤⣤⣴⡾⠉⠀⠀⠀⠀
+            ⠀⠀⠀✧⠀⠀⠈⠙⠶⢤⣈⣉⠛ø⠛⠛⠋⠉⠀⠀⠀⠀⠀⠀⠀⠀
+            ⠀⠀⠀⠀⠀⠀⠀⠀⁺⠀⠀⠀⠉⠉⠉⠁
+    """)
 
 def circuits_banner(proc_type=False):
     proc_type = colored(proc_type, 'red') if proc_type else ''
@@ -47,9 +108,9 @@ def vmn07():
                                         ⠛
     """
 
-    print(msg)
+    print(cosmo)
 
-def vmn05(): 
+def vmn05(status=''): 
 
     print("\033c", end="")
     msg = f'''{G_c} ˙              ٭                   .    ˖
@@ -59,7 +120,8 @@ def vmn05():
         ¨⣠⠛⠛⠛⠛⠛---=======---⠛⠛⠛⠛⠛⣄      .'
        .::::__\├ ┤/⠛⠛⣄⣇⣷\├ ┤/__::::.
                '-'\_____/'-' {R_c + _version_ + G_c}         ⣄
-               :: '│.│.│' .{D_c}'''
+               :: '│.│.│' .{D_c}
+'''
 
     print(msg)
 
@@ -79,7 +141,7 @@ def create_status(case_name):
         )
         print(msg.ljust(os.get_terminal_size().columns - 1), end="\r")
 
-def case_header():
+def case_header(msg=''):
         print("\033c", end="")
         print()
         cprint("""       *              `'´    *
@@ -93,11 +155,38 @@ def case_header():
 .                 |        *     '  .     -0-
        *  o     .    '       *      .        
        ˖                ˖
-       \n\n""".format(G_c, b_c),'blue')
+       \n""".format(G_c, b_c),'blue')
 
+
+def minimalnavi(s=''):
+    cprint("""
+                __'__'__         
+                  `''´ 
+            Vimana Framework
+                @s4dhulabs
+
+    """, 41,attrs=['bold'])
+
+def default_naviban(status=''):
+    print(f"""
+           *         ⠛                     ⠛
+                      _^_               .
+           (( ( ____.´└┘┐`.____  )) ) )  *         *
+                    `.⠞⠓⠎.´               .
+                     |││||
+                 _ _
+                 \\\/imana<{colored(_version_,32)}>
+                  ||-ramewørk
+
+    """)
 
 def sample_mode(mod_stat,_attrs_=['bold','blink']):
-    c = ['green','cyan','blue']
+    if '@s4dhulabs' in mod_stat:
+        c = ['cyan']
+        s4dhu_attrs = ['bold']
+    else:
+        c = ['green','cyan','blue']
+        s4dhu_attrs = ['bold', 'dark']
 
     vmn=colored("""
          └┐┌┘││
@@ -106,19 +195,20 @@ def sample_mode(mod_stat,_attrs_=['bold','blink']):
           ││││       
     """, 'blue', attrs=['blink', 'bold'])
     
-    fversion = colored(_version_, 'red')
+    fversion = colored(_version_, None)
 
     banner = '''
     ┬  ┬┬┌┬┐┌─┐┌┐┌┌─┐
     ┬  ┬┬┌┬┐┌─┐┌┐┌┌─┐
     └┐┌┘││││├─┤│││├─┤{}
-    └┐┌┘││││├─┤│││├─┤
+    └┐┌┘││││├─┤│││├─┤@s4dhulabs 
     └┐┌┘││││├─┤│││├─┤
      └┘ ┴┴ ┴┴ ┴┘└┘┴ ┴
      └┘ ┴┴ ┴┴ ┴┘└┘┴ ┴'''.format(fversion)
-       
+
+    
     for i in banner.split('\n'):
-        cprint(i,choice(c), attrs=[choice(['bold','dark'])])
+        cprint(i,choice(c), attrs=[choice(s4dhu_attrs)])
     print('     '+ mod_stat)
 
     if 'sample' in mod_stat or 'caught' in mod_stat:
@@ -128,7 +218,12 @@ def audit_report_banner(module='', report_type='',cl=Wn_c):
     vmc = Rn_c
     bmc = Wn_c
     m_color = 'green'
-    report_type = '   Audit Report  '
+
+    if '@s4dhu' in module:
+        report_type = '    Framew0rk   '
+    else:
+        report_type = '   Audit Report  '
+
     r_attrs = ['bold', 'blink']
 
     if not module:
@@ -291,9 +386,12 @@ def default_vmn_banner(mode_uvb = False):
 
     vfmng(**{}).get_siddhis_stats()
 
-def load(target='',maxl=20):
+def load(target='',maxl=10):
     import os 
     from random import choice
+
+    if not target or '@s4dhu' in target:
+        maxl=1
 
     colors = [
         ("\033[0m"   ), ("\033[0;30m"), ("\033[0;31m"),

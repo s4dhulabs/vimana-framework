@@ -1,0 +1,33 @@
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+#
+# Author: s4dhu
+# Email: <s4dhul4bs[at]prontonmail[dot]ch
+# Git: @s4dhulabs
+# Mastodon: @s4dhu
+# 
+# This file is part of Vimana Framework Project.
+
+DAST_SETTINGS:
+  target_url: True
+  single_target: False
+  nmap_xml: False
+  list_target: False
+  cidr_range: False
+  ip_range: False
+  file_scope: False
+  filename: False
+  docker_scope: False
+
+SAST_SETTINGS:
+  project_dir: False
+  output_file: False
+
+SCAN_OPTIONS:
+  debug: False
+  verbose: False
+  pause_steps: False
+  disable_external: False
+

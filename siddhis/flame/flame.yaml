@@ -14,16 +14,21 @@
 name: Flame
 author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
 brief: Flask misconfiguration parser
-category: Framework
+category: Parser
 framework: Flask
 info: Traceback parser for Flask applications
 module: siddhis/flame/flame.py
 package: Flask
-type: Parser
+type: DAST
+astt: DAST
 tags:
-  - Flask
   - Jinja2
   - Werkzeug
+  - Exception
+  - Parser
+  - Misconfiguration
+composition: 
+  mode: Standalone
 description: |
   Flask traceback parser utility. Usually, this module
   will be called for other modules in Vimana, acting as a
@@ -39,7 +44,11 @@ references:
     - CWE-209 - Generation of Error Message Containing Sensitive Information
     - CWE-756 - Missing Custom Error Page
     - CWE-1295 - Debug Messages Revealing Unnecessary Information
+vfset:
+  parse_plugin_scope: True
 guide:
+  naviargs: 
+    target_url: False
   args: |
     ø----------------------------------------------------------------------ø
     ⣿⠓⣓⠒⣓⣿⣛⣆⠞⣇⠞⠓⣓⠒⣛⣆⠞⣿⣆⣇⣛⣇⠒⣿⣓⠒⠂ FLAME ARGS  ⠒⠒⣆⣇⠒⣿⣛⣓⠒⠒⣠⣾⠒⣿⣠⣾⣿⠒⣾⣿⠓⣿⣿⠒⠒⣓⣿⠒⣓⣿⠒⣓

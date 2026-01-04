@@ -1,0 +1,10 @@
+type: django
+params:
+  login_url: /admin/login/
+  username_field: username
+  password_field: password
+  username: admin
+  password: a123123123
+  success_indicator: "Welcome, admin"
+  extra_fields:
+    next: /admin/

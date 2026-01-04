@@ -1,0 +1,192 @@
+{
+  "targets": [
+    {
+      "url": "http://localhost:8086",
+      "scope": [
+        "/",
+        "/about",
+        "/admin/",
+        "/admin/default/backup",
+        "/admin/default/design",
+        "/admin/default/edit",
+        "/admin/default/manage",
+        "/admin/default/restore",
+        "/admin/default/upload",
+        "/api",
+        "/config_leak",
+        "/csrf_test",
+        "/database",
+        "/debug_info",
+        "/error",
+        "/exception_test",
+        "/file_access",
+        "/leak_session",
+        "/session_test",
+        "/sql_injection",
+        "/stack_trace",
+        "/upload"
+      ],
+      "scanners": {
+        "admin": {
+          "admin_endpoints_found": [
+            "/admin/"
+          ],
+          "admin_accessible": true,
+          "default_credentials": [],
+          "weak_authentication": true
+        },
+        "session": {},
+        "upload": {
+          "upload_endpoints": [],
+          "upload_tests": []
+        },
+        "database": {
+          "database_files": [],
+          "backup_files": []
+        },
+        "csrf": {
+          "csrf_tokens": [],
+          "csrf_tests": []
+        }
+      },
+      "vulnerabilities": [
+        {
+          "title": "Web2py Admin Interface - Weak Authentication",
+          "risk": "medium",
+          "description": "Admin interface has weak authentication mechanisms",
+          "evidence": [
+            "Admin interface accessible without proper authentication"
+          ],
+          "metadata": {
+            "endpoints": [
+              "/admin/"
+            ],
+            "cwe": "CWE-287"
+          },
+          "scanner": "admin_scanner"
+        },
+        {
+          "title": "Web2py Admin Interface Exposed",
+          "risk": "high",
+          "description": "Web2py admin interface is accessible at: /admin/",
+          "evidence": [
+            "Admin endpoint accessible: /admin/"
+          ],
+          "metadata": {
+            "endpoints": [
+              "/admin/"
+            ],
+            "cwe": "CWE-284"
+          },
+          "scanner": "admin_scanner"
+        },
+        {
+          "title": "Web2py Admin Interface Indicators",
+          "risk": "low",
+          "description": "Admin interface indicators found in main page content",
+          "evidence": [
+            "Found indicator: admin interface",
+            "Admin link found: /admin/",
+            "Admin link found: /admin/"
+          ],
+          "metadata": {
+            "indicators": [
+              "Found indicator: admin interface",
+              "Admin link found: /admin/",
+              "Admin link found: /admin/"
+            ],
+            "cwe": "CWE-200"
+          },
+          "scanner": "admin_scanner"
+        },
+        {
+          "title": "Profile Accessible Without Authentication",
+          "risk": "high",
+          "description": "The /profile endpoint is accessible without authentication.",
+          "evidence": [
+            "/profile returned 200 without login"
+          ],
+          "metadata": {
+            "endpoint": "/profile",
+            "cwe": "CWE-284"
+          },
+          "scanner": "session_scanner"
+        },
+        {
+          "title": "Session Cookie Missing Security Flags",
+          "risk": "high",
+          "description": "Session cookie is missing flags: Secure, SameSite",
+          "evidence": [
+            "Set-Cookie: session_id=0XVkj54ozuhcnA9JmQ4A09U3iYqNmm9w; HttpOnly; Path=/"
+          ],
+          "metadata": {
+            "flags": {
+              "HttpOnly": true,
+              "Secure": false,
+              "SameSite": false
+            },
+            "cwe": "CWE-614"
+          },
+          "scanner": "session_scanner"
+        },
+        {
+          "title": "Session ID Exposed in HTML/JS",
+          "risk": "high",
+          "description": "Session ID found in page content at /exception_test",
+          "evidence": [
+            "Content match: 0XVkj54ozuhcnA9JmQ4A09U3iYqNmm9w"
+          ],
+          "metadata": {
+            "endpoint": "/exception_test",
+            "cwe": "CWE-598"
+          },
+          "scanner": "session_scanner"
+        },
+        {
+          "title": "Session ID Exposed in HTML/JS",
+          "risk": "high",
+          "description": "Session ID found in page content at /leak_session",
+          "evidence": [
+            "Content match: 0XVkj54ozuhcnA9JmQ4A09U3iYqNmm9w"
+          ],
+          "metadata": {
+            "endpoint": "/leak_session",
+            "cwe": "CWE-598"
+          },
+          "scanner": "session_scanner"
+        },
+        {
+          "title": "Session ID Exposed in HTML/JS",
+          "risk": "high",
+          "description": "Session ID found in page content at /stack_trace",
+          "evidence": [
+            "Content match: 0XVkj54ozuhcnA9JmQ4A09U3iYqNmm9w"
+          ],
+          "metadata": {
+            "endpoint": "/stack_trace",
+            "cwe": "CWE-598"
+          },
+          "scanner": "session_scanner"
+        }
+      ],
+      "summary": {
+        "total_vulnerabilities": 8,
+        "high_risk": 6,
+        "medium_risk": 1,
+        "low_risk": 1
+      }
+    }
+  ],
+  "summary": {
+    "total_targets": 1,
+    "vulnerable_targets": 1,
+    "total_vulnerabilities": 8,
+    "scanners_run": [
+      "admin",
+      "session",
+      "upload",
+      "database",
+      "csrf"
+    ]
+  }
+}

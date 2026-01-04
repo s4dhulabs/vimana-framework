@@ -1,0 +1,364 @@
+# -*- coding: utf-8 -*-
+#  __ _
+#   \/imana 2016
+#   [|-2py scanner
+#
+# Author: s4dhu
+# Email: <s4dhul4bs[at]prontonmail[dot]ch
+# Git: @s4dhulabs
+# Mastodon: @s4dhu
+# 
+# This file is part of Vimana Framework Project.
+
+name: W2PyScanner
+author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch>
+brief: Web2py Security Scanner and Vulnerability Assessment Tool
+category: Security
+framework: Web2Py 
+info: Comprehensive security testing tool for Web2py applications
+module: siddhis/w2pyscanner/w2pyscanner.py 
+package: Multi
+type: DAST
+astt: DAST
+tags:
+  - Web2py
+  - Security Testing
+  - Vulnerability Assessment
+  - Admin Interface
+  - Session Management
+  - File Upload
+  - CSRF
+  - Information Disclosure
+  - SARIF
+  - CI/CD
+composition: 
+  mode: Standalone
+description: |
+  W2PyScanner is a specialized security testing plugin designed to identify
+  and exploit common vulnerabilities in Web2py applications. It provides
+  comprehensive coverage of Web2py-specific security issues including:
+  
+  - Admin Interface Detection: Scans for exposed /admin/ endpoints and tests
+    default credentials and common misconfigurations
+  
+  - Session Management Analysis: 
+    - Supports authenticated scans with --session-user and --session-pass (default: admin@example.com / admin123)
+    - Analyzes session cookies for missing flags, weak entropy, and length
+    - Detects session fixation vulnerabilities
+    - Checks authenticated and unauthenticated access to protected endpoints
+    - Tests session timeout/expiration with --session-timeout (in seconds)
+    - Detects session ID exposure in URLs, HTML, and JavaScript (e.g., /leak_session)
+    - Provides robust debug/verbose output for all authentication and session steps
+    - All findings are reported in a single CI-friendly vulnerabilities array
+  
+  - File Upload Vulnerability Scanner: Discovers file upload endpoints and
+    tests for unrestricted file upload vulnerabilities, path traversal,
+    and malicious file upload capabilities
+  
+  - Database Exposure Scanner: Checks for exposed SQLite databases in
+    /applications/ directories and database backup files
+  
+  - CSRF Protection Testing: Validates CSRF token implementation and
+    tests for CSRF bypass vulnerabilities
+  
+  - Information Disclosure Scanner: Identifies sensitive data exposure
+    in error pages, configuration files, and debug information
+  
+  - Endpoint Discovery: Automatically crawls and discovers application endpoints
+    for comprehensive coverage during scanning
+  
+  - SARIF Output Support:
+    - Use --sarif or --output-sarif <file> to export scan results in SARIF format (for CI/CD, GitHub Security, etc.).
+    - SARIF output includes all vulnerabilities, mapped to rules, with endpoint, severity, CWE, and remediation.
+    - Compatible with GitHub Security, Azure DevOps, and other SARIF-consuming tools.
+  
+  - CI/CD Integration Features:
+    - --no-results mode for clean CI output
+    - --discovery-only for endpoint enumeration
+    - Structured JSON output with scope information
+    - Comprehensive debug logging with timestamps
+  
+  The plugin uses async HTTP requests for fast scanning of multiple targets
+  and provides both detailed console output and structured JSON/SARIF results
+  for integration with CI/CD pipelines.
+  
+  W2PyScanner is designed to work with the built-in lab environment that
+  provides a vulnerable Web2py application for testing and validation.
+references:
+  links:
+    - https://web2py.com/
+    - https://web2py.com/books/default/chapter/29/01/security
+    - https://owasp.org/www-project-top-ten/
+    - https://cwe.mitre.org/
+    - https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html
+  cwe:
+    - CWE-200 - Exposure of Sensitive Information to an Unauthorized Actor
+    - CWE-209 - Generation of Error Message Containing Sensitive Information
+    - CWE-352 - Cross-Site Request Forgery (CSRF)
+    - CWE-284 - Improper Access Control
+    - CWE-434 - Unrestricted Upload of File with Dangerous Type
+    - CWE-22 - Path Traversal
+    - CWE-287 - Improper Authentication
+    - CWE-384 - Session Fixation
+    - CWE-614 - Sensitive Cookie in HTTPS Session Without 'Secure' Attribute
+    - CWE-16 - Configuration
+vfset:
+  parse_plugin_scope: False
+guide:
+  naviargs: 
+    target_url: False
+  args: |
+    +------------+-------------------------------------------------------------------+
+    │└┐└│└┘┌┐│└└┘┌┐┘└┘┐┘││└┘│-  W2PYSCANNER ARGS  ┐│││││├┤┘│││┤└┘││└┐└┘│┌┌┐└│┐│        │
+    +------------+-------------------------------------------------------------------+
+    │ target    └┐                                                                   │
+    +------------+-------------------------------------------------------------------+
+     --target-url      Run W2PyScanner against a single target
+     --file            Run W2PyScanner loading targets from a file (one per line)
+    +------------+-------------------------------------------------------------------+
+    │ output    └┐                                                                   │
+    +------------+-------------------------------------------------------------------+
+     --output, -o       Save results to specified file (JSON format)
+     --no-evidence      Hide evidence details in console output
+     --no-metadata      Hide vulnerability metadata in console output
+     --summary-only     Show only summary for multiple targets
+     --no-results       Suppress all regular scan output (show only debug/verbose output)
+     --sarif            Also export results in SARIF format (output file will be <output>.sarif)
+     --output-sarif     Export SARIF results to specified file
+     --ci-mode          Enable CI/CD mode (equivalent to --verbose --no-results --output w2pyscanner_results.json --sarif)
+    +------------+-------------------------------------------------------------------+
+    │ core      └┐                                                                  ⠞│  
+    +------------+-------------------------------------------------------------------+
+     --timeout          Request timeout in seconds (default: 10)
+     --stealth          Enable stealth mode (slower but less detectable)
+     --verbose, -v      Enable verbose output
+     --concurrent       Number of concurrent requests (default: 5)
+    +------------+-------------------------------------------------------------------+
+    │ advanced  └┐                                                                  ⠓│
+    +------------+-------------------------------------------------------------------+
+     --min-delay        Minimum delay between requests in stealth mode (default: 0.5)
+     --max-delay        Maximum delay between requests in stealth mode (default: 2.0)
+     --max-retries      Maximum number of request retries (default: 3)
+     --user-agent       Custom User-Agent string
+     --session-user     Username/email for authenticated session scans (default: admin@example.com)
+     --session-pass     Password for authenticated session scans (default: admin123)
+     --session-timeout  Timeout in seconds to test session expiration (default: 0, disabled)
+     --discovery-only   Perform only endpoint discovery, no vulnerability scanning
+    +------------+-------------------------------------------------------------------+
+    │ scanners  └┐                                                                  ⠞│  
+    +------------+-------------------------------------------------------------------+
+     --admin-only       Run only admin interface scanner
+     --session-only     Run only session management scanner
+     --upload-only      Run only file upload scanner
+     --db-only          Run only database exposure scanner
+     --csrf-only        Run only CSRF protection scanner
+     --info-only        Run only information disclosure scanner
+     --skip-admin       Skip admin interface scanning
+     --skip-session     Skip session management scanning
+     --skip-upload      Skip file upload scanning
+     --skip-db          Skip database exposure scanning
+     --skip-csrf        Skip CSRF protection scanning
+     --skip-info        Skip information disclosure scanning
+    
+     * You can also see some examples with `vimana guide -m W2PyScanner -e`              
+  examples: |
+    +------------+-------------------------------------------------------------------+
+    ⠞⠓⠊⠎:⠞⠓⠎⠞⠎-⠞⠊⠞⠓⠎⠊⠎⠞⠓⠊⠎└┐  W2PYSCANNER GUIDE  ⠞⠓⠊⠎.~⠞⠎⠞⠓⠊⠓⠊::⠊⠎⠞⠞⠞⠞⠞⠞   ⠓⠊ │
+    +------------+-------------------------------------------------------------------+
+    
+        Basic usage - scan a single target:
+
+        $ vimana run w2pyscanner --target-url http://example.com
+
+    ø----------------------------------------------------------------------ø
+    
+        Authenticated scan (custom credentials):
+
+        $ vimana run w2pyscanner \
+           --target-url http://example.com \
+           --session-user myuser@example.com \
+           --session-pass mypassword \
+           --session-only \
+           --verbose
+
+    ø----------------------------------------------------------------------ø
+    
+        Session timeout/expiration test:
+
+        $ vimana run w2pyscanner \
+           --target-url http://example.com \
+           --session-only \
+           --session-timeout 10 \
+           --verbose
+
+    ø----------------------------------------------------------------------ø
+    
+        Session ID exposure detection (lab must have /leak_session):
+
+        $ vimana run w2pyscanner \
+           --target-url http://example.com \
+           --session-only \
+           --verbose
+
+        # The scanner will report if session ID is found in URLs, HTML, or JS.
+
+    ø----------------------------------------------------------------------ø
+    
+        Scan multiple targets with stealth mode and concurrent requests:
+
+        $ vimana run w2pyscanner \
+           --file targets.txt \
+           --stealth \
+           --concurrent 10 \
+           --timeout 15 \
+           --summary-only
+
+    ø----------------------------------------------------------------------ø
+     
+        Run specific scanner modules only:
+
+        $ vimana run w2pyscanner \ 
+           --target-url http://example.com \
+           --admin-only \
+           --verbose 
+
+    ø----------------------------------------------------------------------ø
+
+        Skip specific scanner modules:
+
+        $ vimana run w2pyscanner \
+           --target-url http://example.com \
+           --skip-upload \
+           --skip-db \
+           --verbose
+
+    ø----------------------------------------------------------------------ø
+    
+        Advanced scan with custom settings:
+
+        $ vimana run w2pyscanner \
+           --target-url http://example.com \
+           --stealth \
+           --min-delay 1.0 \
+           --max-delay 3.0 \
+           --max-retries 5 \
+           --concurrent 3 \
+           --user-agent "Custom Security Scanner/1.0" \
+           --output detailed-scan.json
+
+    ø----------------------------------------------------------------------ø
+
+        Quick admin interface scan:
+
+        $ vimana run w2pyscanner \
+           --target-url http://example.com \
+           --admin-only \
+           --no-evidence
+
+    ø----------------------------------------------------------------------ø
+
+        Scan multiple targets and generate a summary report:
+
+        $ vimana run w2pyscanner \
+           --file large-target-list.txt \
+           --summary-only \
+           --output summary-report.json
+
+    ø----------------------------------------------------------------------ø
+
+        Debug-only scan (no regular output, just debug info):
+
+        $ vimana run w2pyscanner \
+           --target-url http://example.com \
+           --verbose \
+           --no-results \
+           --output debug-scan.json
+
+        # This will show only detailed debug output and the results saved line, no vulnerability cards or summary.
+
+    ø----------------------------------------------------------------------ø
+
+        Endpoint discovery only:
+
+        $ vimana run w2pyscanner \
+           --target-url http://example.com \
+           --discovery-only \
+           --verbose
+
+        # This will only discover endpoints without running vulnerability scans.
+
+    ø----------------------------------------------------------------------ø
+
+        Export SARIF results for CI/CD:
+
+        $ vimana run w2pyscanner \
+           --target-url http://example.com \
+           --sarif \
+           --output scan.json
+
+        # This will save scan.json and scan.sarif with all findings in SARIF format.
+
+        $ vimana run w2pyscanner \
+           --target-url http://example.com \
+           --output-sarif results.sarif
+
+        # This will save only SARIF results to results.sarif
+
+    ø----------------------------------------------------------------------ø
+
+        CI/CD integration example:
+
+        $ vimana run w2pyscanner \
+           --target-url http://example.com \
+           --verbose \
+           --no-results \
+           --sarif \
+           --output ci-scan.json
+
+        # Perfect for CI/CD pipelines - clean output with SARIF for security tools
+
+        CI/CD mode (all debug, no regular output, SARIF+JSON results):
+
+        $ vimana run w2pyscanner \
+           --target-url http://example.com \
+           --ci-mode
+
+        # Equivalent to: --verbose --no-results --output w2pyscanner_results.json --sarif
+
+  lab_setup: |
+    +------------+-------------------------------------------------------------------+
+    │└┘⠞⠓┌┐│└⠞⠓└┘┌⠞⠓┐┌┘.┌⠞⠓┬┐.└┐┘│ LAB SETUP  ┘└┐│.└┘.┌┐│⠞⠓│┬.│⠞└┘┌└┐│.└┘.┬┐└┐┌.│. │
+    +------------+-------------------------------------------------------------------+
+  
+        W2PyScanner includes a built-in lab environment with a vulnerable
+        Web2py application for testing and validation. The lab is now managed
+        through Vimana's unified lab system.
+
+        🚀 Quick Lab Setup:
+        
+        1. Start the W2PyScanner lab:
+           $ vimana run --lab w2pyscanner
+           
+        2. The lab will automatically create a container with:
+           - Vulnerable Web2py application (http://localhost:8086)
+           - Common misconfigurations and security flaws
+           - Admin interface with weak credentials
+           - File upload functionality with vulnerabilities
+
+        3. Test W2PyScanner against the lab:
+           $ vimana run w2pyscanner --target-url http://localhost:8086 --verbose
+           
+        4. Test with targets file (if available):
+           $ vimana run w2pyscanner --file $VIMANA_LAB_TARGETS --verbose
+           
+        5. Stop the lab when finished:
+           $ vimana run --lab w2pyscanner --lab-operation stop
+
+        💡 Pro Tips:
+        - The lab creates a targets.txt file with the active endpoint
+        - Use VIMANA_LAB_TARGETS environment variable for easy testing
+        - Lab status: vimana run --lab w2pyscanner --lab-operation status
+        - The vulnerable application includes session management issues, CSRF bypasses,
+          information disclosure, and file upload vulnerabilities
+
+        * args: `vimana guide -m w2pyscanner -a` 

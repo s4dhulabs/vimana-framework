@@ -67,51 +67,67 @@ def gen_issues_table(issues: list, issue_type:str):
     tabulate.PRESERVE_WHITESPACE = False
     issue_type = issue_type.lower()
     issues_table = []
-    
     if issue_type == 'cves':
         headers = [
-            cl('CVE', 'white'),
+            cl('ID', 'white'),
+            cl('Severity', 'white'),
+            cl('CVSS', 'white'),
             cl('Description', 'white'),
-            cl('CWE','white'),
-            cl('Score','white'),
         ]
     elif issue_type == 'tickets':
         headers = [
             cl('iid', 'white'),
             cl('Title', 'white'),
         ]
-
+    elif issue_type == 'plugins':
+        headers = [
+            cl('Name', 86,attrs=['bold']),
+            cl('Category', 86,attrs=['bold']),
+            cl('Framework',86,attrs=['bold']),
+            cl('Mode',86,attrs=['bold']),
+            cl('Type',86,attrs=['bold']),
+            cl('Description',86,attrs=['bold'])
+        ]
     for issue in issues:
         if issue_type == 'cves':
-            dec_ref = f"""\n\n\n{issue['ref_url']}\nCVSS Vector: {issue['cvss_vector']}\n"""
-            
-            issues_table.append(
-                [
-                    issue['id'],
-                    issue['description'] + dec_ref,
-                    ','.join(issue['cwes']),
-                    issue['base_score']
-                ]
-            )
+            # New prana/OSV format: id, severity, cvss_score, description, ref_url
+            cve_id = issue.get('id', '?')
+            severity = issue.get('severity', '?')
+            cvss = issue.get('cvss_score') or issue.get('base_score') or 'N/A'
+            desc = issue.get('description', '')
+            ref_url = issue.get('ref_url', '')
+            short_desc = desc[:60] + ('...' if len(desc) > 60 else '')
+            desc_with_ref = short_desc + (f"\n{ref_url}" if ref_url else '')
+            issues_table.append([
+                cl(cve_id, 'green'),
+                severity,
+                cvss,
+                desc_with_ref
+            ])
         elif issue_type == 'tickets':
             title = '\n'.join(textwrap.wrap(issue['title'], width=70))
-            issues_table.append(
-                [
-                    f"ST{issue['id']}",
-                    title
-                ]
-            )
-
+            issues_table.append([
+                f"{cl('ST' + issue['id'],'green')}",
+                title
+            ])
+        elif issue_type == 'plugins':
+            issues_table.append([
+                cl(issue.name.lower(), 77,attrs=['bold']),
+                issue.category.lower(),
+                'FastAPI' if issue.framework.lower() == 'fastapi' else issue.framework.title(),
+                issue.composition.get('mode', '?'),
+                issue.type.upper(),
+                issue.info
+            ])
     indexed_data = [[i] + r for i, r in enumerate(issues_table, 1)]
     table_data = [headers] + indexed_data
-
     return (
         tabulate(
             table_data,
             headers='firstrow',
             numalign="center",
             tablefmt='fancy_grid',
-            stralign='center',
+            stralign='left',
             missingval='?'
         )
     )
@@ -119,8 +135,10 @@ def gen_issues_table(issues: list, issue_type:str):
 def load_plugin_cache(specs:dict):
     show_status_enabled = specs.get('verbose', False) and specs.get('debug', False)
     issues_path = specs.get('issues_path')
+
     django_version = specs.get('django_version')
     issue_type = specs.get('issue_type')
+
     caller_plugin = cl('⥂ ' + specs.get('module_run') + ' ⥂', 'magenta')
     
     if os.path.exists(issues_path):
@@ -132,7 +150,10 @@ def load_plugin_cache(specs:dict):
             print(f"[{caller_plugin}]   + {cl(len(issues), 'cyan')} {issue_type}s loaded")
             sleep(1)
 
+        #input(f">>> load_plugin_cache.issue_type:{issue_type}")
+
         issues_table = gen_issues_table(issues, issue_type)
+        #input(f">>> load_plugin_cache.issues_table:{issues_table}")
         return issues, issues_table
     
     if show_status_enabled:
@@ -356,3 +377,60 @@ class pshell_set:
             print('\t+ {}'.format(env_match))
         print()
         '''
+
+def find_requirements_file(path):
+    for dirpath, dirnames, filenames in os.walk(path):
+        if 'requirements.txt' in filenames:
+            return os.path.join(dirpath, 'requirements.txt')
+    return None
+
+def get_django_version(project_dir:str):
+    requirements_file = find_requirements_file(project_dir)
+    django_version = False
+    reqs=[]
+
+    if requirements_file:
+        with open(requirements_file, 'r') as f:
+            reqs = f.readlines()
+
+            for req in reqs:
+                if 'Django' in req:
+                    django_version = req.strip().split('==')[1]
+                    break
+
+    return django_version,len(reqs)
+
+
+def generate_exception_id(response_text, additional_entropy=None):
+    """
+    Generate a unique exception ID with 'x-' prefix and 5 hex digits.
+    
+    Args:
+        response_text: The response text to hash
+        additional_entropy: Any additional data to ensure uniqueness (timestamp, request path, etc.)
+    
+    Returns:
+        A unique exception ID in the format 'x-xxxxx'
+    """
+    from datetime import datetime
+    import hashlib
+
+    # Create a base from response text
+    text_to_hash = response_text
+    
+    # Add timestamp for uniqueness
+    timestamp = datetime.now().isoformat()
+    text_to_hash += timestamp
+    
+    # Add any additional entropy if provided
+    if additional_entropy:
+        if isinstance(additional_entropy, dict):
+            text_to_hash += json.dumps(additional_entropy, sort_keys=True)
+        else:
+            text_to_hash += str(additional_entropy)
+    
+    # Generate the hash
+    hash_digest = hashlib.sha256(text_to_hash.encode('utf-8')).hexdigest()
+    
+    # Return the exception ID in your preferred format
+    return f"x-{hash_digest[:5]}"

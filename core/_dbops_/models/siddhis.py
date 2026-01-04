@@ -71,7 +71,17 @@ class Siddhis(db.Model):
         unique = False,
         nullable = False
     )
+    astt = db.Column(
+        db.String(10),
+        unique = False,
+        nullable = False
+    )
     tags = db.Column(
+        JSON,
+        unique = False,
+        nullable = False
+    )
+    composition = db.Column(
         JSON,
         unique = False,
         nullable = False
@@ -82,6 +92,11 @@ class Siddhis(db.Model):
         nullable = False
     )
     references = db.Column(
+        JSON,
+        unique = False,
+        nullable = False
+    )
+    vfset = db.Column(
         JSON,
         unique = False,
         nullable = False
@@ -99,5 +114,7 @@ class Siddhis(db.Model):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
     def __repr__(self):
-        return f"successfully created!"
+        #return f"successfully created!"
+        return f"<VFSiddhis: plugin={self.name}>"
+
 

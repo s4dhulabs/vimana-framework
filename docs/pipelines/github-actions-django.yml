@@ -1,0 +1,76 @@
+name: Vimana Framewalk Scan
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build_app:
+    runs-on: ubuntu-22.04   
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install venv and distutils for Python
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3.10-venv python3.10-distutils
+
+      - name: Set up venv and install dependencies
+        run: |
+          python3.10 -m venv env
+          source env/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          python manage.py check
+
+  run_app_and_scan:
+    runs-on: ubuntu-22.04   
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install venv and distutils for Python
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3.10-venv python3.10-distutils
+
+      - name: Set up venv and run the App
+        run: |
+          python3.10 -m venv env
+          source env/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          nohup python manage.py runserver 0.0.0.0:8000 & sleep 10
+
+      - name: Install Vimana
+        run: |
+          curl -s https://raw.githubusercontent.com/s4dhulabs/vimana-framework/develop/scripts/install | bash
+          export PATH="$HOME/.local/bin:$PATH"
+          source $HOME/.local/bin/env || true
+
+      - name: Run Vimana Framewalk
+        env:
+          PYTHONWARNINGS: ignore
+        run: |
+          cd ~/vimana-framework && source .venv/bin/activate
+          export REPORT=framewalk_report_$(date +%Y%m%d_%H%M%S).json
+          vimana run framewalk --target-url http://127.0.0.1:8000/ --output $REPORT
+          echo "REPORT=$REPORT" >> $GITHUB_ENV
+          echo "* Final plugin report: $REPORT"
+
+      - name: Upload Framewalk Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: framewalk-report
+          path: ~/vimana-framework/${{ env.REPORT }} 

@@ -1,0 +1,119 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "vimana-framework"
+dynamic = ["version"]
+description = "Vimana Framework - Advanced Security Testing Framework"
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [
+    {name = "s4dhu", email = "s4dhul4bs@protonmail.ch"}
+]
+maintainers = [
+    {name = "s4dhu", email = "s4dhul4bs@protonmail.ch"}
+]
+keywords = ["security", "testing", "framework", "penetration-testing"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Security",
+    "Topic :: Software Development :: Testing",
+]
+requires-python = ">=3.9"
+dependencies = [
+    "tqdm",
+    "fastapi>=0.95.0",
+    "uvicorn>=0.22.0",
+    "pydantic>=1.10.7",
+    "email-validator>=2.0.0",
+    "python-jose>=3.3.0",
+    "passlib>=1.7.4",
+    "python-multipart>=0.0.6",
+    "bcrypt>=4.0.1",
+    "simple-term-menu",
+    "parse-nmap",
+    "python-libnmap",
+    "PySocks",
+    "wheel",
+    "beautifulsoup4",
+    "bs4",
+    "django",
+    "future",
+    "httplib2",
+    "httpretty",
+    "lxml",
+    "netaddr",
+    "netifaces",
+    "pillow",
+    "prettytable",
+    "prompt-toolkit",
+    "psutil",
+    "PTable",
+    "Pygments",
+    "PyJWT",
+    "python-dateutil",
+    "pythonping",
+    "pytimeparse",
+    "reportlab",
+    "requests",
+    "requests-unixsocket",
+    "scapy-python3",
+    "sqlparse",
+    "neotermcolor",
+    "tldextract",
+    "urllib3",
+    "mimesis",
+    "Scrapy",
+    "Twisted",
+    "tabulate",
+    "PyYAML",
+    "packaging",
+    "docker",
+    "Flask-SQLAlchemy",
+    "SQLAlchemy",
+    "SQLAlchemy-Utils",
+    "Flask",
+    "rich",
+    "aiohttp",
+    "asyncio",
+    "jsonpickle",
+    "simple-term-menu",
+]
+
+[project.urls]
+Homepage = "https://github.com/s4dhulabs/vimana-framework"
+Repository = "https://github.com/s4dhulabs/vimana-framework"
+Documentation = "https://github.com/s4dhulabs/vimana-framework"
+Issues = "https://github.com/s4dhulabs/vimana-framework/issues"
+
+[tool.hatch.version]
+path = "core/_version.py"
+pattern = "__version__ = ['\"](?P<version>[^'\"]+)['\"]"
+
+[tool.hatch.build.targets.wheel]
+packages = ["vimana"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/vimana",
+    "/core",
+    "/res",
+    "/siddhis",
+    "/tools",
+    "/helpers",
+    "/settings",
+    "/scripts",
+    "README.md",
+    "LICENSE",
+    "requirements.txt",
+    "Dockerfile",
+    "docker-compose.yml",
+] 

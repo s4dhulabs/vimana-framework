@@ -1,0 +1,228 @@
+# -*- coding: utf-8 -*-
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+#
+# Author: s4dhu
+# Email: <s4dhul4bs[at]prontonmail[dot]ch
+# Git: @s4dhulabs
+# Mastodon: @s4dhu
+# 
+# This file is part of Vimana Framework Project.
+
+name: D4M8
+author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
+brief: Django Web Form Fuzzer for Mapping Exceptions
+category: Fuzzer
+framework: Django 
+info: Fuzz tests Django web forms to map and exploit unhandled exceptions
+module: siddhis/d4m8/d4m8.py 
+package: Django
+type: DAST
+astt: DAST
+tags:
+  - Django
+  - Fuzzing
+  - Exceptions
+  - WebForm
+  - InputValidation
+composition: 
+  mode: Orchestrator
+  plugin_chain:
+    recon:
+      - dmt
+      - viwec
+description: |
+  D4M8 (Django Web Form Fuzzer for Mapping Exceptions) is an advanced
+  fuzzing tool specifically designed to probe Django web form implementations
+  for unhandled exceptions and security vulnerabilities. It systematically tests
+  form inputs, validation mechanisms, and submission handlers, capturing
+  and analyzing exceptions that occur during the process.
+  
+  The tool operates either through direct command-line parameters or via 
+  rule-based fuzzing configurations. When an exception is triggered, D4M8
+  captures comprehensive data about it, including stack traces, variable values,
+  and contextual information.
+  
+  Key features include:
+  - Web form-focused fuzzing with customizable targets and payloads
+  - Rule-based fuzzing with fine-grained control over test vectors
+  - Extraction of sensitive information from exception traces
+  - Code reassembly from exception traces for deeper analysis
+  - Mapping of data flows through web form processing components
+  - Identification of security vulnerabilities through exception patterns
+  
+  D4M8 works seamlessly with other Vimana framework tools, using both 
+  blackbox and informed testing approaches. The collected exceptions allow
+  security researchers and developers to:
+  - Identify potentially exploitable security vulnerabilities in form processing
+  - Understand application structure and component relationships
+  - Trace data flows through form validation and processing
+  - Discover information disclosure vectors in error handling
+  - Analyze code patterns for security weaknesses
+  
+  At the core of D4M8 is the ability to extract valuable information from
+  unhandled exceptions in web forms, transforming these development errors
+  into a comprehensive map of application behavior and potential security
+  issues. By focusing specifically on web forms, D4M8 targets one of the most
+  common attack surfaces in web applications.
+
+references:
+  links:
+    - https://www.djangoproject.com/
+    - https://docs.djangoproject.com/en/dev/ref/exceptions/
+  cwe:
+    - CWE-248 - Uncaught Exception
+    - CWE-703 - Improper Check or Handling of Exceptional Conditions
+    - CWE-215 - Insertion of Sensitive Information Into Debugging Code
+    - CWE-209 - Generation of Error Message Containing Sensitive Information
+    - CWE-756 - Missing Custom Error Page
+    - CWE-1295 - Debug Messages Revealing Unnecessary Information
+    - CWE-203 - Observable Discrepancy
+    - CWE-200 - Exposure of Sensitive Information to an Unauthorized Actor
+    - CWE-20 - Improper Input Validation
+    - CWE-79 - Improper Neutralization of Input During Web Page Generation
+    - CWE-352 - Cross-Site Request Forgery
+vfset:
+  parse_plugin_scope: True
+guide:
+  naviargs: 
+    target_url: True
+  args: |
+    ø----------------------------------------------------------------------ø
+    │└┐└│└┘┌┐│└└┘┌┐┘└┘└┐└┘│└┐┘││└┘│-  D4M8 ARGS  ┐│││││├┤┘│││┤└┘││└└┘│┌┌┐└│┐
+    ø-----------+----------------------------------------------------------ø
+    │ target    └┐                                                         │
+    +------------+---------------------------------------------------------+
+     --target-url         Run D4M8 against a specific target URL
+     --use-request        Load request parameters from a text file
+     --scan-rules         Run D4M8 in rule-based scanning mode
+     --set-path           Set a specific path to fuzz
+     --target-exceptions  Set a specific exception to target
+     --skip-exceptions    Set a specific exception to skip
+    +-----------+----------------------------------------------------------+
+    │ data      └┐                                                         │     
+    +------------+---------------------------------------------------------+
+     --data              Provide specific data fields for fuzzing
+     --xscope            Enable extended scope for fuzzing patterns
+     --agressive         Enable aggressive fuzzing mode
+    +-----------+----------------------------------------------------------+
+    │ options   └┐                                                         │      
+    +------------+---------------------------------------------------------+
+     --pause-steps       Pause between fuzzing steps for analysis
+     --silent            Run in silent mode with minimal output
+     --verbose           Enable verbose output
+     --debug             Enable debug messages
+     --ignore-csrf       Ignore CSRF token requirements
+    
+     * You can also see some examples with `vimana guide -m D4M8 -e`              
+  examples: |
+    ø----------------------------------------------------------------------ø
+    ⠞⠓⠊⠎:⠞⠓⠎⠞⠎-⠞⠊⠞⠓~⠊⠎⠞⠓⠊⠎└┐  D4M8 GUIDE  ⠞⠓⠊⠎.~⠞⠎⠞⠓⠊⠓⠊::::::⠞⠓⠊⠎,⠞⠊
+    ø---------------------└┘-----------------------------------------------ø
+    
+        Run D4M8 in blackbox mode against a target, letting it discover
+        and fuzz available endpoints:
+
+        $ vimana run \
+          --plugin d4m8 \
+          --target-url http://127.0.0.1:8887
+
+    ø----------------------------------------------------------------------ø
+    
+        Run D4M8 with specific data fields using aggressive mode
+        and extended scope for more comprehensive fuzzing:
+    
+        $ vimana run \
+          --plugin d4m8 \
+          --target-url http://127.0.0.1:8887 \
+          --agressive \
+          --xscope \
+          --data '{"email":"dandan@gmail.com","username": "joserams"}'
+
+    ø----------------------------------------------------------------------ø
+    
+        Run D4M8 with a previously known email:
+
+        $ vimana run \
+          --plugin d4m8 \
+          --target-url http://127.0.0.1:8887 \
+          --data '{"email":"ags1@mtx.com"}'
+
+    ø----------------------------------------------------------------------ø
+     
+        Run D4M8 in rule-based scanning mode, which will use predefined
+        fuzzing rules to test the application:
+
+        $ vimana run \
+          --plugin d4m8 \
+          --scan-rules
+
+    ø----------------------------------------------------------------------ø
+
+        Run D4M8 from a request file with extended scope and
+        pause between steps for manual analysis of each result:
+
+        $ vimana run \
+          --plugin d4m8 \
+          --use-request d4m8_req1.txt \
+          --agressive \
+          --xscope \
+          --pause-steps
+
+    ø----------------------------------------------------------------------ø
+
+        Run D4M8 with multiple form fields for targeted fuzzing:
+
+        $ python vimana.py run \
+          --plugin d4m8 \
+          --target-url http://127.0.0.1:8887 \
+          --data "{
+            'email':'ags1@mtx.com', 
+            'password':'ab4d4Pass', 
+            'username':'neois0ver', 
+            'reset_token':'134555'
+          }" \
+          --agressive 
+
+  lab_setup: |
+    ø----------------------------------------------------------------------ø
+    │└┘⠞⠓┌┐│└⠞⠓└┘┌⠞⠓┐┌┘.┌⠞⠓┬┐.└┐┘│ LAB SETUP  ┘└┐│.└┘.┌┐│⠞⠓│┬.│⠞└┘┌┬┐└┐┌.│.│
+    ø----------------------------------------------------------------------ø
+  
+        For testing D4M8, you'll need a Django application with Debug=True
+        enabled. The easiest way to set up a test environment is to use an
+        intentionally vulnerable Django application.
+
+        Here's how to set up a test environment using django.nV:
+
+        1. Clone the vulnerable Django application:
+           $ git clone https://github.com/nVisium/django.nV.git
+
+        2. Set up a virtual environment:
+           $ virtualenv -p python3 ~/django.nV_venv
+           $ source ~/django.nV_venv/bin/activate
+
+        3. Install requirements and prepare the application:
+           $ cd django.nV
+           $ pip install -r requirements.txt
+           $ ./reset_db.sh
+           $ ./runapp.sh
+
+        4. Now run D4M8 against the application:
+           $ vimana run \
+              --plugin d4m8 \
+              --target-url http://localhost:8000 \
+              --agressive \
+              --xscope
+
+        7. To test rule-based scanning, create a rule file:
+           Create a file named "password_reset.json" with rule content
+           similar to the example in documentation, then run:
+           
+           $ vimana run \
+              --plugin d4m8 \
+              --rule password_reset.json
+
+        * For more detailed setup instructions: `vimana guide -m d4m8 -s`

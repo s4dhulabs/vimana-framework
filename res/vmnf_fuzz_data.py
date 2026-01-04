@@ -13,11 +13,12 @@
 
 import os
 import random
+import base64
+import mimesis
 import secrets
+from os.path import dirname
 from datetime import datetime
 from random import randint, choice
-import mimesis
-import base64
 import settings.vmnf_settings as settings
 
 
@@ -38,17 +39,22 @@ class VMNFPayloads:
             + len(self.patterns) \
             * choice(bytes(range(256)))))
         )
+
     def get_random_unicode(self):
         return choice(''.join(tuple(chr(i)\
             for i in range(32, 0x110000) \
                 if chr(i).isprintable()))
         )
+
     def get_os_urandom(self):
         return os.urandom(choice(range(18)))
+
     def get_secure_random_string(self):
         return secrets.token_urlsafe(choice(range(33)))
+
     def get_random_float(self):
         return random.random()
+
     def get_random_credential(self):
         gen = mimesis.Generic(
             choice([loc for loc in settings.LOCALES])
@@ -60,25 +66,34 @@ class VMNFPayloads:
     def get_ssti_payloads(self):
         with open(settings.ssti_p) as f:
             return [p.strip('\n') for p in f.readlines()[1:]]
+
     def get_xss_payloads(self):
         with open(settings.xss_p) as f:
             return [p.strip('\n') for p in f.readlines()[1:]]
+
     def get_sqli_payloads(self):
         with open(settings.sqli_p) as f:
             return [p.strip('\n') for p in f.readlines()[1:]]
+
     def get_pyvars(self):
         with open(settings.common_pyvars) as f:
             return [p.strip('\n') for p in f.readlines()[1:]]
+
     def get_sqlkw(self):
         with open(settings.common_sqlkw) as f:
             return [p.strip('\n') for p in f.readlines()]
+
     def get_credskw(self):
         with open(settings.common_credskw) as f:
             return [p.strip('\n') for p in f.readlines()]
+
     def get_secret_regex(self):
         with open(settings.common_secrets_re) as f:
             return [p.strip('\n') for p in f.readlines()[1:]]
+
     def get_common_url_patterns(self):
+        #with open(f"{dirname(__file__)}/{settings.common_url_patterns}") as f:
         with open(settings.common_url_patterns) as f:
+            #input([p.strip('\n') for p in f.readlines() if p])
             return [p.strip('\n') for p in f.readlines() if p]
 

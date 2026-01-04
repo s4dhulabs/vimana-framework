@@ -1,0 +1,20 @@
+services:
+  vimana:
+    build: .
+    image: vimana_framework:v0.1
+    container_name: vimana_framework
+    volumes:
+      - ./:/vf0.1
+      - vimana_data:/vf0.1/core/_dbops_/
+    environment:
+      - PYTHONWARNINGS=ignore::SyntaxWarning,ignore::DeprecationWarning,ignore::PendingDeprecationWarning
+    ports:
+      - "8000:8000"  # If Vimana exposes any web interface
+    stdin_open: true
+    tty: true
+    command: ["vimana", "load", "--plugins"]
+    restart: unless-stopped
+
+volumes:
+  vimana_data:
+    driver: local 

@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  web2py-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.web2py
+    container_name: web2py-test-app
+    ports:
+      - "8081:8080"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  sanic-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.sanic
+    container_name: sanic-test-app
+    ports:
+      - "8082:8080"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  tornado-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.tornado
+    container_name: tornado-test-app
+    ports:
+      - "8083:8080"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1 
+
+  starlette-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.starlette
+    container_name: starlette-test-app
+    ports:
+      - "8084:8080"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  cherrypy-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.cherrypy
+    container_name: cherrypy-test-app
+    ports:
+      - "8085:8080"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1 

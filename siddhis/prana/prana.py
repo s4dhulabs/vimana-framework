@@ -21,7 +21,9 @@ from time import sleep
 import textwrap
 import requests
 import json
+import sys
 import os
+from pathlib import Path
 
 from .config import *
 from core.vmnf_utils import (
@@ -29,35 +31,75 @@ from core.vmnf_utils import (
     gen_issues_table
 )
 
+# vflogging
+import logging
+from core.vmnf_log_utils import configure_logging
+configure_logging(os.path.basename(__file__))
+
+# --- OSV API and Framework Mapping ---
+FRAMEWORK_PACKAGES = {
+    'django': 'django',
+    'flask': 'flask',
+    'fastapi': 'fastapi',
+    'pyramid': 'pyramid',
+    'bottle': 'bottle',
+    'tornado': 'tornado',
+    'sanic': 'sanic',
+    'falcon': 'falcon',
+    'quart': 'quart',
+    'web2py': 'web2py'
+}
+OSV_API = "https://api.osv.dev/v1/query"
+CACHE_DURATION_HOURS = 24
+
 class siddhi:
     def __init__(self, **vmnf_handler) -> None:
-        if not vmnf_handler.get('django_version'):
-            print("\033[0m")
-            print(f'[prana: {datetime.now()}] Django version is required: --django-version.')
-            sys.exit()
+        logging.info("Breathing in...")
 
-        self.caller = vmnf_handler['module_run']
+        self.caller = vmnf_handler.get('module_run',False)
         self.vmnf_handler = vmnf_handler
         self.register = []
         self.django_version = vmnf_handler.get('django_version')
-        issue_type = 'cves'
-        plugin_scope = f'django/{issue_type}'
-        self.cache_dir = f'siddhis/__cache__/{plugin_scope}'
-        self.issues_path = f"{self.cache_dir}/{self.django_version}.json"
-        self.engineitself = True if (self.caller == 'prana') else False
         
-        self.cache_load_enabled = True \
-            if (not self.vmnf_handler['ignore_cache']) else False
-        self.cache_enabled = True \
-            if (not self.vmnf_handler['disable_cache']) else False
+        # Framework/version logic
+        self.framework = (vmnf_handler.get('framework') or None)
+        self.framework_version = (
+            vmnf_handler.get('framework_version') or
+            vmnf_handler.get('django_version') or
+            None
+        )
+
+        if not self.framework:
+            print("[prana]→ Please specify a framework with --framework (e.g., --framework django)")
+            sys.exit()
+        elif not self.framework_version:
+            print(f"[prana]→ Please specify a version for {self.framework} with --framework-version")
+            sys.exit()
+        self.framework = self.framework.lower()
+        
+        # Cache paths (now framework-aware)
+        issue_type = 'cves'
+        plugin_scope = f'{self.framework}/{issue_type}'
+        self.cache_dir = f'.vimana/cache/{plugin_scope}'
+        self.abs_cache_path = os.path.join(os.path.expanduser("~"), self.cache_dir)
+        self.issues_path = f"{self.abs_cache_path}/{self.framework_version}.json"
+        
+        self.engineitself = True if (self.caller and self.caller == 'prana') else False
+        self.cache_load_enabled = not vmnf_handler.get('ignore_cache',False)
+        self.cache_enabled = not vmnf_handler.get('disable_cache',False)
+        self.force_update = vmnf_handler.get('force_update', False)
         
         self.vmnf_handler.update(
             {
                 'issues_path': self.issues_path,
                 'django_version': self.django_version,
+                'framework': self.framework,
+                'framework_version': self.framework_version,
                 'issue_type': issue_type
             }
         )
+
+        logging.info("Breathing out...")
         
     def get_session(self):
         session_id = ''.join(choices(ascii_uppercase + digits, k=10))
@@ -132,15 +174,20 @@ class siddhi:
         if django_version:
             self.django_version = django_version
 
+        hl_django_version = cl(self.django_version,'green')
+        
         if self.cache_load_enabled:
             try:
                 cves, issues_table = load_plugin_cache(self.vmnf_handler)
                 if self.engineitself:
-                    print(f"[{cl(self.caller,'red')}]→ {cl(len(cves),'green')} CVEs for Django {cl(self.django_version,'green')}")
+                    print(f"[{cl(self.caller,'red')}]→ {cl(len(cves),'green')} CVEs for Django {hl_django_version}")
                     input() if self.vmnf_handler.get('pause_steps') else sleep(1)
+                    
                     print(issues_table)
                     return True
+
                 return cves, issues_table
+
             except TypeError:
                 # acquire 
                 pass
@@ -157,10 +204,18 @@ class siddhi:
             self.keyword
         )
         response = session.get(endpoint)
-        cve_data = response.json()
+
+
+        if response.status_code != 200:
+            print(f"[{cl(self.caller,'red')}]→ Error acquiring CVEs for Django {hl_django_version}")
+
+        try:
+            cve_data = response.json()
+        except requests.exceptions.JSONDecodeError:
+            return False
 
         if "result" not in cve_data:
-            print(f"No CVEs found for Django {django_version}")
+            print(f"N[{cl(self.caller,'red')}]→ o CVEs found for Django {hl_django_version}")
             return
 
         self.cves = cve_data["result"]["CVE_Items"]
@@ -172,8 +227,10 @@ class siddhi:
         self.parse_cves()
 
         if self.cache_enabled:
-            if not os.path.exists(self.cache_dir):
-                os.makedirs(self.cache_dir)
+
+            #if not os.path.exists(self.cache_dir):
+            if not os.path.exists(self.abs_cache_path):
+                os.makedirs(self.abs_cache_path)
        
             if not os.path.exists(self.issues_path):
                 with open(self.issues_path, 'w') as f:
@@ -182,14 +239,207 @@ class siddhi:
         issues_table = gen_issues_table(self.register, 'CVEs')
         
         if self.engineitself:
-            (f"[{cl(self.caller,'red')}]→ {cl(len(cves),'green')} CVEs for Django {cl(self.django_version,'green')}")
+            print(f"[{cl(self.caller,'red')}]→ {cl(len(self.cves),'green')} CVEs for Django {hl_django_version}")
             input() if self.vmnf_handler.get('pause_steps') else sleep(1)
-            print(issue_table) 
+            print(issues_table) 
             return True
 
         return self.register,issues_table
 
+    def get_cves(self, framework=None, version=None, use_cache=True, force_update=False):
+        framework = (framework or self.framework).lower()
+        version = version or self.framework_version
+        cache_path = f"{self.abs_cache_path}/{version}.json"
+        # Use cache if available and not forced to update
+        if use_cache and os.path.exists(cache_path) and not force_update:
+            try:
+                with open(cache_path, 'r', encoding='utf-8') as f:
+                    cves = json.load(f)
+                # Patch: ensure all CVEs have 'ref_url'
+                def get_ref_url(cve_id):
+                    if cve_id.startswith('CVE-'):
+                        return f"https://nvd.nist.gov/vuln/detail/{cve_id}"
+                    else:
+                        return f"https://osv.dev/vulnerability/{cve_id}"
+                for cve in cves:
+                    if 'ref_url' not in cve and 'id' in cve:
+                        cve['ref_url'] = get_ref_url(cve['id'])
+                return cves
+            except Exception as e:
+                print(f"[prana]→ Error loading cache: {e}")
+        # Fetch from OSV API
+        package = FRAMEWORK_PACKAGES.get(framework)
+        if not package:
+            print(f"[prana]→ Unsupported framework: {framework}")
+            return []
+        query = {"package": {"ecosystem": "PyPI", "name": package}}
+        try:
+            resp = requests.post(OSV_API, json=query, timeout=30)
+            resp.raise_for_status()
+            data = resp.json()
+            if not isinstance(data, dict):
+                print(f"[prana]→ Unexpected response from OSV API: {data}")
+                return []
+            vulns = data.get('vulns', [])
+            if not isinstance(vulns, list):
+                print(f"[prana]→ Unexpected 'vulns' format from OSV API: {vulns}")
+                return []
+            # Filter by version if possible
+            filtered = self._filter_by_version(vulns, version)
+            # Save to cache
+            if self.cache_enabled:
+                os.makedirs(self.abs_cache_path, exist_ok=True)
+                with open(cache_path, 'w', encoding='utf-8') as f:
+                    json.dump(filtered, f, indent=2, ensure_ascii=False)
+            return filtered
+        except Exception as e:
+            print(f"[prana]→ Error acquiring CVEs for {framework} {version}: {e}")
+            try:
+                print(f"[prana]→ Raw response: {resp.text}")
+            except Exception:
+                pass
+            return []
+
+    def _filter_by_version(self, vulns, version):
+        import traceback
+        from packaging import version as pkg_version
+        filtered = []
+        v = pkg_version.parse(version)
+        for vuln in vulns:
+            if not isinstance(vuln, dict):
+                print(f"[prana]→ Skipping non-dict CVE entry: {vuln}")
+                continue
+            try:
+                affected = False
+                for aff in vuln.get('affected', []):
+                    for rng in aff.get('ranges', []):
+                        if rng.get('type') == 'ECOSYSTEM':
+                            introduced = None
+                            fixed = None
+                            excluded = set()
+                            for event in rng.get('events', []):
+                                if 'introduced' in event:
+                                    introduced = pkg_version.parse(event['introduced'])
+                                if 'fixed' in event:
+                                    fixed = pkg_version.parse(event['fixed'])
+                                if 'excluded' in event:
+                                    try:
+                                        excluded.add(pkg_version.parse(event['excluded']))
+                                    except Exception:
+                                        pass
+                            # Check if version is in range
+                            if introduced and v < introduced:
+                                continue
+                            if fixed and v >= fixed:
+                                continue
+                            if v in excluded:
+                                continue
+                            # If all checks pass, version is affected
+                            affected = True
+                if affected:
+                    try:
+                        filtered.append(self._process_osv_vuln(vuln))
+                    except Exception as e:
+                        print(f"[prana]→ Exception in _process_osv_vuln for entry: {vuln}")
+                        traceback.print_exc()
+                        continue
+            except Exception as e:
+                print(f"[prana]→ Exception while processing CVE entry: {vuln}")
+                traceback.print_exc()
+                continue
+        return filtered
+
+    def _process_osv_vuln(self, vuln):
+        # Normalize OSV vuln to prana format
+        vuln_id = vuln.get('id', '')
+        summary = vuln.get('summary', '')
+        details = vuln.get('details', '')
+        description = summary or details or 'No description available'
+        severity = 'UNKNOWN'
+        cvss_score = 'N/A'
+        # Parse CVSS from OSV
+        if 'cvss' in vuln and isinstance(vuln['cvss'], list):
+            v3 = [c for c in vuln['cvss'] if c.get('version', '').startswith('3')]
+            v2 = [c for c in vuln['cvss'] if c.get('version', '').startswith('2')]
+            if v3:
+                cvss_score = str(v3[0].get('score', 'N/A'))
+            elif v2:
+                cvss_score = str(v2[0].get('score', 'N/A'))
+            else:
+                scores = [c.get('score') for c in vuln['cvss'] if 'score' in c]
+                if scores:
+                    cvss_score = str(max(scores))
+        severity_info = vuln.get('database_specific', {}).get('severity')
+        if isinstance(severity_info, dict):
+            severity = severity_info.get('type', 'UNKNOWN').upper()
+            if 'score' in severity_info and cvss_score == 'N/A':
+                cvss_score = severity_info['score']
+        elif isinstance(severity_info, str):
+            severity = severity_info.upper()
+        # else: leave as UNKNOWN
+        affected_versions = []
+        fixed_versions = []
+        for aff in vuln.get('affected', []):
+            for rng in aff.get('ranges', []):
+                if rng.get('type') == 'ECOSYSTEM':
+                    for event in rng.get('events', []):
+                        if 'introduced' in event:
+                            affected_versions.append(f">={event['introduced']}")
+                        if 'fixed' in event:
+                            fixed_versions.append(event['fixed'])
+                            affected_versions.append(f"<{event['fixed']}")
+        year = datetime.now().year
+        if vuln_id.startswith('CVE-'):
+            try:
+                year = int(vuln_id.split('-')[1])
+            except (IndexError, ValueError):
+                pass
+        elif 'published' in vuln:
+            try:
+                year = datetime.fromisoformat(vuln['published'].replace('Z', '+00:00')).year
+            except:
+                pass
+        references = []
+        for ref in vuln.get('references', []):
+            url = ref.get('url')
+            if url:
+                references.append(url)
+        # Always add ref_url
+        def get_ref_url(cve_id):
+            if cve_id.startswith('CVE-'):
+                return f"https://nvd.nist.gov/vuln/detail/{cve_id}"
+            else:
+                return f"https://osv.dev/vulnerability/{cve_id}"
+        return {
+            'id': vuln_id,
+            'description': description,
+            'severity': severity,
+            'cvss_score': cvss_score,
+            'affected_versions': affected_versions,
+            'fixed_versions': fixed_versions,
+            'year': year,
+            'source': 'OSV',
+            'published': vuln.get('published', ''),
+            'modified': vuln.get('modified', ''),
+            'references': references,
+            'ref_url': get_ref_url(vuln_id)
+        }
+
     def start(self):
-        self.get_cves_for_version()
+        cves = self.get_cves()
+        hl_framework = cl(self.framework, 'green')
+        hl_version = cl(self.framework_version, 'green')
+        if self.engineitself:
+            print(f"[prana]→ {cl(len(cves),'green')} CVEs for {hl_framework} {hl_version}")
+            sleep(1)
+            if cves:
+                print(gen_issues_table(cves, 'CVEs'))
+            else:
+                print(f"[prana]→ No CVEs found for {hl_framework} {hl_version}")
+
+        return cves
+
+# For import by other plugins
+get_cves = lambda framework, version, use_cache=True, force_update=False: siddhi(framework=framework, framework_version=version).get_cves(framework, version, use_cache, force_update)
 
 

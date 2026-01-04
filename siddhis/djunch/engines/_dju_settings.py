@@ -11,6 +11,7 @@
 # 
 # This file is part of Vimana Framework Project.
 
+from neotermcolor import cprint, colored as cl
 
 class table_models:
     def __init__(self):
@@ -75,9 +76,9 @@ class table_models:
             'align' : 'c' 
         }
         self.siddhis_tbl_set = {
-            'fields': ['Name', 'Type', 'Category', 'Info'],
-            'title' : 'Plugins (Vimana v0.8)',
-            'color' : 'red',
+            'fields': [cl('Name',94), cl('Type',94), cl('Category',94), cl('Scope',94), cl('Info',94)],
+            'title' : 'Plugins',
+            'color' : 'white',
             'attrs' : ['bold'],
             'align' : 'l' 
         }

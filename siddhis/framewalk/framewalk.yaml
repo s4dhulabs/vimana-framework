@@ -1,0 +1,225 @@
+# -*- coding: utf-8 -*-
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+# Author: s4dhu
+# Email: <s4dhul4bs[at]prontonmail[dot]ch
+# Git: @s4dhulabs
+# Mastodon: @s4dhu
+# 
+# This file is part of Vimana Framework Project.
+
+name: Framewalk
+author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch>
+brief: Python Web Framework Detection Tool
+category: Fingerprint
+framework: Python 
+info: Identifies Python web frameworks using advanced fingerprinting techniques
+module: siddhis/framewalk/framewalk.py 
+package: Multi
+type: DAST
+astt: DAST
+tags:
+  - Reconnaissance
+  - Framework Detection
+  - Fingerprinting
+  - Enumeration
+  - WebApp
+composition: 
+  mode: Standalone
+description: |
+  Framewalk is a sophisticated Python web framework detection plugin 
+  designed to identify frameworks, versions, and components 
+  through advanced fingerprinting techniques.
+  
+  It uses multiple detection methods to identify Python web frameworks with 
+  high accuracy, including:
+  
+  - Header Analysis: Examines HTTP headers for framework signatures
+  - Content Analysis: Searches for framework patterns in response content
+  - Error Page Analysis: Identifies framework-specific error page formats
+  - Static Resource Detection: Examines URLs and paths for framework indicators
+  - Version Fingerprinting: Determines framework versions
+  - Component Detection: Identifies additional framework components and extensions
+  
+  Framewalk supports scanning multiple targets through URL lists or files,
+  and can produce both detailed and summary reports. It supports a stealth
+  mode for low-footprint scanning and can output results in JSON format
+  for integration with other tools.
+  
+  Supported frameworks include:
+  - Django
+  - Flask
+  - FastAPI
+  - Pyramid
+  - Bottle
+  - Sanic
+  - Tornado
+  - Starlette 
+  - And more...
+references:
+  links:
+    - https://www.djangoproject.com/
+    - https://flask.palletsprojects.com/
+    - https://fastapi.tiangolo.com/
+    - https://trypyramid.com/
+    - https://bottlepy.org/
+    - https://sanic.dev/
+    - https://www.tornadoweb.org/
+    - https://www.starlette.io/
+  cwe:
+    - CWE-200 - Exposure of Sensitive Information to an Unauthorized Actor
+    - CWE-209 - Generation of Error Message Containing Sensitive Information
+    - CWE-352 - Cross-Site Request Forgery (CSRF)
+    - CWE-284 - Improper Access Control
+    - CWE-16 - Configuration
+vfset:
+  parse_plugin_scope: False
+guide:
+  naviargs: 
+    target_url: False
+  args: |
+    +------------+-------------------------------------------------------------------+
+    │└┐└│└┘┌┐│└└┘┌┐┘└┘┐┘││└┘│-  FRAMEWALK ARGS  ┐│││││├┤┘│││┤└┘││└┐└┘│┌┌┐└│┐│        │
+    +------------+-------------------------------------------------------------------+
+    │ target    └┐                                                                   │
+    +------------+-------------------------------------------------------------------+
+     --target-url      Run Framewalk against a single target
+     --file            Run Framewalk loading targets from a file (one per line)
+    +------------+-------------------------------------------------------------------+
+    │ output    └┐                                                                   │
+    +------------+-------------------------------------------------------------------+
+     --output, -o       Save results to specified file (JSON format)
+     --no-evidence      Hide evidence details in console output
+     --no-metadata      Hide framework metadata in console output
+     --summary-only     Show only summary for multiple targets
+    +------------+-------------------------------------------------------------------+
+    │ core      └┐                                                                  ⠞│  
+    +------------+-------------------------------------------------------------------+
+     --timeout          Request timeout in seconds (default: 10)
+     --stealth          Enable stealth mode (slower but less detectable)
+     --verbose, -v      Enable verbose output
+    +------------+-------------------------------------------------------------------+
+    │ advanced  └┐                                                                  ⠓│
+    +------------+-------------------------------------------------------------------+
+     --min-delay        Minimum delay between requests in stealth mode (default: 0.5)
+     --max-delay        Maximum delay between requests in stealth mode (default: 2.0)
+     --max-retries      Maximum number of request retries (default: 3)
+     --user-agent       Custom User-Agent string
+    +------------+-------------------------------------------------------------------+
+    │ detection └┐                                                                  ⠞│  
+    +------------+-------------------------------------------------------------------+
+     --passive-only     Use only passive detection techniques
+     --frameworks       Comma-separated list of frameworks to check
+    
+     * You can also see some examples with `vimana guide -m Framewalk -e`              
+  examples: |
+    +------------+-------------------------------------------------------------------+
+    ⠞⠓⠊⠎:⠞⠓⠎⠞⠎-⠞⠊⠞⠓⠎⠊⠎⠞⠓⠊⠎└┐  FRAMEWALK GUIDE  ⠞⠓⠊⠎.~⠞⠎⠞⠓⠊⠓⠊::⠊⠎⠞⠞⠞⠞⠞⠞   ⠓⠊ │
+    +------------+-------------------------------------------------------------------+
+    
+        Basic usage - scan a single target:
+
+        $ vimana run framewalk --target-url http://example.com
+
+    ø----------------------------------------------------------------------ø
+    
+        Scan a target with verbose output and save results:
+    
+        $ vimana run framewalk \
+           --target-url http://example.com \
+           --verbose \
+           --output results.json
+
+    ø----------------------------------------------------------------------ø
+    
+        Scan multiple targets with stealth mode and a specific timeout:
+
+        $ vimana run framewalk \
+           --target-url "http://app1.example.com \
+           --stealth \
+           --timeout 15 \
+           --summary-only
+
+    ø----------------------------------------------------------------------ø
+     
+        Scan targets from a file with specific framework detection:
+
+        $ vimana run framewalk \ 
+           --file targets.txt \
+           --frameworks "django,flask,fastapi" \
+           --verbose 
+
+    ø----------------------------------------------------------------------ø
+
+        Advanced scan with stealth customization and retry settings:
+
+        $ vimana run framewalk \
+           --target-url http://example.com \
+           --stealth \
+           --min-delay 1.0 \
+           --max-delay 3.0 \
+           --max-retries 5 \
+           --user-agent "Custom User Agent String" \
+           --output detailed-scan.json
+
+    ø----------------------------------------------------------------------ø
+    
+        Quick passive scan (non-intrusive):
+
+        $ vimana run framewalk \
+           --target-url http://example.com \
+           --passive-only \
+           --no-evidence
+
+    ø----------------------------------------------------------------------ø
+
+        Scan multiple targets and generate a summary report:
+
+        $ vimana run framewalk \
+           --file large-target-list.txt \
+           --summary-only \
+           --output summary-report.json
+
+  lab_setup: |
+    +------------+-------------------------------------------------------------------+
+    │└┘⠞⠓┌┐│└⠞⠓└┘┌⠞⠓┐┌┘.┌⠞⠓┬┐.└┐┘│ LAB SETUP  ┘└┐│.└┘.┌┐│⠞⠓│┬.│⠞└┘┌└┐│.└┘.┬┐└┐┌.│. │
+    +------------+-------------------------------------------------------------------+
+  
+        Framewalk includes a built-in multi-framework lab environment for testing.
+        The lab automatically sets up vulnerable applications using different Python
+        web frameworks, eliminating the need for manual setup.
+
+        🚀 Quick Lab Setup:
+        
+        1. Start the Framewalk lab:
+           $ vimana run --lab framewalk
+           
+        2. The lab will automatically create containers for:
+           - Web2py (http://localhost:8081)
+           - Sanic (http://localhost:8082)
+           - Tornado (http://localhost:8083)
+           - Starlette (http://localhost:8084)
+           - CherryPy (http://localhost:8085)
+
+        3. Test individual frameworks:
+           $ vimana run framewalk --target http://localhost:8081
+           $ vimana run framewalk --target http://localhost:8082
+           $ vimana run framewalk --target http://localhost:8083
+           $ vimana run framewalk --target http://localhost:8084
+           $ vimana run framewalk --target http://localhost:8085
+
+        4. Test all frameworks at once:
+           $ vimana run framewalk --file $VIMANA_LAB_TARGETS
+           
+        5. Stop the lab when finished:
+           $ vimana run --lab framewalk --lab-operation stop
+
+        💡 Pro Tips:
+        - The lab creates a targets.txt file with all active endpoints
+        - Use VIMANA_LAB_TARGETS environment variable for batch testing
+        - Each framework runs a vulnerable application for security testing
+        - Lab status: vimana run --lab framewalk --lab-operation status
+
+        * args: `vimana guide -m framewalk -a`

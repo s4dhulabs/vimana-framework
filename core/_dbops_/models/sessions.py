@@ -12,7 +12,7 @@
 # This file is part of Vimana Framework Project.
 
 from ..database import db
-
+from sqlalchemy.types import JSON
 
 class VFSessions(db.Model):
     __tablename__ = '_SESSIONS_'

@@ -11,11 +11,14 @@
 # 
 # This file is part of Vimana Framework Project.
 
+from pygments import formatters, highlight, lexers
+
 from core.vmnf_navicontrols import *
 from siddhis.viewscan.tools.vs_tools import (
     get_object_issues, 
     handle_sast_output
 )
+from core._dbops_.models.scans import VFScans
 from core.vmnf_utils import antiCrashSystem as ACS
 from core._dbops_.db_utils import get_elapsed_time
 from core.vmnf_sessions_utils import abduct_items
@@ -27,23 +30,25 @@ from core.load_settings import _vfs_
 from urllib.parse import urlparse
 from typing import Tuple, Union
 from res.vmnf_banners import *
+from os.path import dirname
 from shutil import rmtree
 from time import sleep
 import jsonpickle
+import yaml
 import json
 import sys
 import io
 import os
 
-
+vimana_path = os.getenv("VIMANA_PATH") or os.getenv("vimana_path")
 
 class naviScan:
     def __init__(self, vmnf_handler:dict) -> None:
         self.vmnf_handler = vmnf_handler
         self.health_check = []
-        self.prompt = '➤ '
+        self.prompt = '🛡 '
         self.accepted_keys = (
-            "enter", "ctrl-o", "ctrl-d", "ctrl-t","ctrl-r","alt-s",
+            "enter", "o", "f", "t", "r", "s", "i", "d", "ctrl-y", "p"
         )
         self.model = '_SCANS_'
         self.obj_id_col = 'scan_id'
@@ -56,349 +61,227 @@ class naviScan:
             sys.exit(1)
         return False
 
-    def app_objects(
-        self, 
-        scan_id:str, 
-        project:str, 
-        selected_app:str, 
-        cache_dir:str
-        )-> Union[str, bool]:
+    def get_app_objects(self, _app_dir_):
+        _app_files_ = list_files(_app_dir_)
+        _raw_objects_ = [o for o in _app_files_ if '_vs_' in o]
 
-        selected_object = False
-        app_view_objects= False
+        # check if len of raw is 0 no objects to show
+        _objects_ = [o.replace('.sarif','').split('_vs_') for o in _raw_objects_]
 
-        while True:
-
-            app_dir_header = f"[{scan_id}]→ {project:>7}.{selected_app}"
-            jazzit(app_dir_header, f"[{scan_id}]→ {project:>7}")
-            _app_dir_ = f"{cache_dir}/{selected_app}"
-            _app_files_ = list_files(_app_dir_)
-            _raw_objects_ = [o for o in _app_files_ if '_vs_' in o]
-            # check if len of raw is 0 no objects to show
-            _objects_ = [o.replace('.sarif','').split('_vs_') for o in _raw_objects_]
-            
-            max_key_width = max(len(_[0]) for _ in _objects_) + 10
-
-            _objects_ = [f' {op[0]:{max_key_width}} ⚡ {op[1]}' for op in _objects_]
-            total_objects = len(_raw_objects_)
-
-            objects_menu = TerminalMenu(
-                _objects_,
-                menu_cursor=self.prompt,
-                accept_keys=self.accepted_keys
-            )
-            obj_index = objects_menu.show()
-            chosen_key = objects_menu._chosen_accept_key
-            
-            if obj_index is None:
-                break
-
-            raw_selected_object = _objects_[obj_index]
-            selected_object = raw_selected_object.split()[0].strip()
-            rule_id = raw_selected_object.split()[-1].strip()
-            obj_file = _raw_objects_[obj_index]
-            obj_file_path = f'{cache_dir}/{selected_app}/{obj_file}'
-            full_scan_file = f'{cache_dir}/{scan_id}.sarif'
-            
-            if chosen_key == 'ctrl-o':
-                navioptions_menu()
-                selected_object = False
-                continue
-
-            elif chosen_key == 'alt-s':
-                pager(obj_file_path).run()
-                selected_object = False
-            
-            elif chosen_key == 'ctrl-d':
-                object_ref = f"{scan_id}.{project}.{selected_app}.{selected_object}.{rule_id}"
-                action_confirmed = naviobject_delete(object_ref,app_view_objects)
-                
-                if not action_confirmed:
-                    continue
-
-                with open(full_scan_file, 'r') as f:
-                    data = json.load(f)
-                
-                updated_results = []
-
-                for results in data['runs'][0]['results']:
-                    for f in results:
-                        sarif_object = f['locations'][0]['physicalLocation']['contextRegion']['object']
-                        
-                        if sarif_object == selected_object:
-                            continue
-                        
-                        updated_results.append(f)
-                        
-                updated_sarif = handle_sast_output().get_schema()
-                updated_sarif["runs"][0]["results"].append(updated_results)
-
-                with open(full_scan_file, "w") as f:
-                    json.dump(updated_sarif, f, indent=4)
-                
-                selected_object = False
-
-                os.remove(obj_file_path)
-                if total_objects == 1:
-                    try:
-                        os.rmdir(_app_dir_)
-                    except OSError as e:
-                        pass
-                    
-                    if not self.checklast_app(scan_id):
-                        break
-                continue
-                
-            if selected_object:
-                break 
-
-        return selected_object
-
-    def project_apps(
-        self,
-        scan_id:str,
-        project:str,
-        cache_dir:str
-        ) -> Union[Tuple[str, str, str], bool]:
-
-        selected_object, selected_app, app_dir = (False,)*3
-
-        while True:
-            jazzit(f"[{scan_id}]→ {project:>7} ", f"[{scan_id}]")
-            _apps_ = list_files(cache_dir)
-            _apps_ = [' ' + app for app in _apps_ if not app.endswith('.sarif')]
-            self._total_apps_ = len(_apps_)
-            apps_menu = TerminalMenu(
-                _apps_,
-                menu_cursor=self.prompt,
-                accept_keys=self.accepted_keys
-            )
-            app_index = apps_menu.show()
-            chosen_key = apps_menu._chosen_accept_key
-
-            if app_index is None:
-                break
-            
-            _apps_ = [a.strip() for a in _apps_] 
-            selected_app = _apps_[app_index]
-            selected_app_path = f"{cache_dir}/{selected_app}"
-       
-            if chosen_key == 'ctrl-o':
-                navioptions_menu()
-                continue
-
-            #elif chosen_key == 'alt-s':
-            #    pager(obj_file_path).run()
-            #    selected_object = False
-
-            elif chosen_key == 'ctrl-d':
-                view_objects_to_delete = [o.split('_vs_')[0] 
-                    for o in list_files(selected_app_path)
-                ]
-                object_ref = f"{scan_id}.{project}.{selected_app}.NA.NA"
-                action_confirmed = naviobject_delete(object_ref,view_objects_to_delete) 
-
-                if not action_confirmed:
-                    continue
-                
-                rmtree(selected_app_path)
-                if not self.checklast_app(scan_id):
-                    continue
-
-            app_dir = f"[{scan_id}]→ {project:>7}.{selected_app}"
-            selected_object = self.app_objects(
-                scan_id, project, selected_app, cache_dir
-            )
-            if selected_object:
-                break
-
-        return selected_object,selected_app,app_dir
-
-    def scan_details(
-        self,
-        scan_id:str,
-        project:str,
-        selected_app:str,
-        selected_object:str,
-        scan_scope:str, 
-        scan_output_file:str,
-        app_dir:str
-        ) -> bool:
-
-        status = False
-        scan_data = jsonpickle.decode(scan_scope)
-        if not scan_data:
-            return False
-
-        while True:
-            try:
-                _object_data_ = [d[selected_object] for d in scan_data if selected_object in d][0]
-            except IndexError:
-                break
-
-            location = [_object_data_['start'],_object_data_['end']]
-            node = _object_data_['node']
-            node_type = (type(node).__name__)
-            address = (hex(id(node)))
-
-            load_status_msg = (
-                f"[{scan_id}]→ "
-                f"{project}."
-                f"{selected_app}."
-                f"views.{selected_object} "
-                f"{location} - "
-                f"{node_type} "
-                f"({address}) "
-            )
-            jazzit(load_status_msg + " ✓ ",app_dir)
-            sleep(0.11)
-
-            status = get_object_issues(
-                selected_object,
-                scan_output_file,
-                _object_data_['hl_code'],
-                load_status_msg
-            )
-            self.health_check.append(status)
-            print()
-            input(cl('      [ENTER] return to scan list / [Ctrl-C] exit navigation ' + ' '*30, 'red', 'on_white',attrs=[]))
-            break
-
-        return status
-
+        return _app_files_,_raw_objects_,_objects_
+        
     def flush_scan(self,scan_id):
         VFDBOps(**self.vmnf_handler).flush_resource(
             self.model,
             self.obj_id_col,
             scan_id
         )
+        return True
+
+    def run_on_instance(self, scan, reqs:dict=False):
+        scan_handler = jsonpickle.decode(scan.vmnf_handler)
+        scan_handler['navigation_mode'] = True
+        
+        if reqs:
+            scan_handler.update(reqs)
+
+        plugin = scan.scan_plugin
+
+        module_path = f"siddhis.{plugin}.{plugin}"
+        siddhi = __import__(module_path, globals(), 'siddhi', 1).siddhi
+        result = siddhi(**scan_handler).start()
+
+    def highlight_item(self, plugin):
+        scan_id = plugin.split()[0]
+        scan = [s for s in self._scans_ if s.scan_id == scan_id][0]
+
+        scan_scope = jsonpickle.decode(scan.__dict__['scan_scope'])
+        info = "\n".join([f"{k:>25}:    {v}" for k, v in scan.__dict__.items()])
+        
+        lexer = lexers.get_lexer_by_name(
+            self.lexer_style,
+            stripnl=False,
+            stripall=False
+        )
+        formatter = formatters.TerminalFormatter(bg="dark")
+        return '\n' + highlight(info, lexer, formatter)
+
+    def load_menu_settings(self):
+        try:
+            with open(f'{dirname(__file__)}/navisettings.yaml', 'r') as f:
+                settings = yaml.load(f,Loader=yaml.FullLoader)
+        except FileNotFoundError:
+            os.system('clear')
+            default_naviban()
+            cprint(f'[{datetime.now()}] Error loading navisettings!','red')
+            sys.exit(1)
+
+        ss = settings['scans']
+        detailed = ss.get('detailed')
+        default  = ss.get('default')
+
+        self.detailed_headers = detailed.get('headers')
+        self.detailed_filters = detailed.get('filters')
+
+        self.default_headers = default.get('headers')
+        self.default_filters = default.get('filters')
 
         return True
 
-    def build_options_list(self, _scans_:list) -> list:
-        _OPTIONS_ = []
-
-        version_width = max(len(s.project_framework_version) for s in _scans_) 
-        plugin_width = max(len(s.scan_plugin) for s in _scans_) 
-        v_space = ' ' * version_width
-
-        for _sc_ in _scans_:
-            project_framework = f"{_sc_.project_framework} ({_sc_.project_framework_version})"
-            p_space = ' ' * (20 - len(project_framework))
-            project_framework = f"{v_space}{project_framework}{p_space}"
-            
-            project_name = _sc_.scan_target_project
-            elapsed = get_elapsed_time(_sc_)
-
-            if len(project_name) > 10:
-                project_name = project_name[:7] + '...'
-
-            _OPTIONS_.append(
-                f" {_sc_.scan_id} "
-                f"{_sc_.scan_type:>10} "
-                f"{project_name:>16} "
-                f"{project_framework:>20} "
-                f"{_sc_.scan_plugin:>9} "
-                f"{elapsed:>19}"
-            )
-        return _OPTIONS_
-
     def manage(self) -> bool:
-        while True:
-            _scans_ = (VFDBOps().list_resource(self.model, []))
-            total_scans = len(_scans_)
-            _options_ = self.build_options_list(_scans_)
+        self.lexer_style = 'Asc'
+        hcolor = 'green'
+        random_banner = 'default_naviban'
+        msg = '🛡 scans'
+        show_banner = True
+        keep_banner = 'default_naviban'
+        preview_command = None
+        filters = False
 
-            normalize(
-                f" {'id':>7} " 
-                f"{'type':>15} " 
-                f"{'project':>15} " 
-                f"{'framework':>19} " 
-                f"{'plugin':>16} "
-                f"{'date':>15} ",'green',
-            )
+        if self.vmnf_handler.get('keep_banner', False):
+            keep_banner = self.vmnf_handler['keep_banner']
+
+        if not self.load_menu_settings():
+            return False
+
+        current_headers = self.default_headers
+        current_filters = self.default_filters
+
+        while True:
             
+            if self.vmnf_handler.get('start_resource'):
+                # vimana start --scans @fbfc83eeb8 @e391297800
+                filters = [i.replace('@','') for i in sys.argv if i.startswith('@')]
+
+            self._scans_ = (VFDBOps().list_resource(self.model, []))
+            
+            if not self._scans_:
+                input(cl("        It seems like you haven't performed any security scans lately.  \n", 'blue'))
+                break
+
+            if filters:
+                self._scans_ = [s for s in self._scans_ if s.scan_id in filters]
+
+            _options_, header = build_options(
+                self._scans_,
+                current_headers,
+                current_filters
+            )
+            header_size = len(header)
+            total_scans = len(self._scans_)
+
+            kbann = normalize(
+                header, hcolor, msg, show_banner,
+                random_banner, keep_banner, header_size
+            )
+            keep_banner = kbann
             scans_menu = TerminalMenu(
                 _options_,
+                preview_command=preview_command,
+                preview_size=0.85,
+                preview_title='details',
+                preview_border=40,
                 menu_cursor=self.prompt,
                 accept_keys=self.accepted_keys,
-                cursor_index=len(_scans_) - 1,
+                show_search_hint=True,
+                show_search_hint_text=" ",
+                cursor_index=len(self._scans_) - 1,
             )
             scan_index = scans_menu.show()
             chosen_key = scans_menu._chosen_accept_key
-
+            
             if scan_index is None:
                 print('\033[2J\033[1;1H')
                 break
 
-            selected_scan = _scans_[scan_index]
+            selected_scan = self._scans_[scan_index]
 
-            if chosen_key == 'ctrl-t':
+            if chosen_key == 't':
+                input('here in ctrl-t')
                 print_scan_tree(selected_scan.scan_cache_dir)
                 input()
                 continue
 
-            if chosen_key == 'ctrl-d':
+            elif chosen_key == 'p':
+                preview_command = self.highlight_item
+                continue
+
+            elif chosen_key == 'i':
+                current_headers = self.detailed_headers
+                current_filters = self.detailed_filters
+                #preview_command = self.highlight_item
+                continue
+
+            elif chosen_key == 'd':
+                current_headers = self.default_headers
+                current_filters = self.default_filters
+                preview_command = None
+                continue
+
+            elif chosen_key == 'f':
                 apply_action = naviscan_delete(selected_scan)
                 if apply_action:
                     total_scans -=1
                     self.flush_scan(selected_scan.scan_id)
                     
                     if total_scans == 0:
-                        print('\033[2J\033[1;1H')
-                        case_header()
-                        sys.exit(1)
+                        break
 
                     _options_ = [o for o in _options_ \
                             if o.split()[0].strip() != selected_scan.scan_id
                     ]
-                
                 continue
 
-            elif chosen_key == 'ctrl-o':
-                navioptions_menu()
+            elif chosen_key == 'o':
+                navioptions_menu('scans_main_menu')
                 continue
             
-            elif chosen_key == 'alt-s':
+            elif chosen_key == 's':
                 pager(selected_scan.scan_output_file).run()
+                input()
                 continue
 
-            elif chosen_key == 'ctrl-r':
-                scan_handler = jsonpickle.decode(selected_scan.vmnf_handler)
-                scan_handler['navigation_mode'] = True
-                _instance_ = jsonpickle.decode(selected_scan.plugin_instance)
-                _instance_exec_ = getattr(_instance_, '__class__')
-                _instance_exec_(**scan_handler).start()
-
+            elif chosen_key == 'r':
+                self.run_on_instance(selected_scan)
                 continue
 
-            project = selected_scan.scan_target_project.replace('/','')
-            scan_id = selected_scan.scan_id
-            jazzit(f"[{scan_id}]→ ", "[")
-            sleep(0.03)
-
-            selected_object, selected_app, app_dir = self.project_apps(
-                scan_id,project,selected_scan.scan_cache_dir
-            )
-
-            if not all((selected_app, selected_object)):
-                self.health_check.append(selected_object)
+            elif chosen_key == 'p':
+                preview_command = self.highlight_item
                 continue
 
-            status = self.scan_details(
-                scan_id,
-                project,
-                selected_app,
-                selected_object,
-                selected_scan.scan_scope,
-                selected_scan.scan_output_file,
-                app_dir
-            )
-        
-            if self.vmnf_handler['vf_debugger']:
-                self.health_check.append(status)
-                dump = {name: value for name, value in locals().items()}
-                ACS(self.vmnf_handler).check_feature_status(self.health_check,dump)
+            elif chosen_key == 'ctrl-y':
+                keep_banner = False
+                random_banner=True
+                self.cursor = choice(cursor_options)
+                self.lexer_style = choice(srandlexers)
+                hcolor=choice(range(321))
+                continue
+
+            elif chosen_key == 'enter':
+                if not selected_scan.has_issues:
+                    print('\033[2J\033[1;1H')
+                    input(f'nothing to see here, not findings on scan {selected_scan.scan_id}')
+                    continue
+
+                scan_plugin = selected_scan.scan_plugin
+                navihandler = f'siddhis/{scan_plugin}/navi/handler.py'
+
+                if not os.path.exists(f"{vimana_path}/{navihandler}"):
+                    os.system('clear')
+                    default_naviban()
+                    cprint(f"   → Plugin {scan_plugin} doesn't support navigation handler yet", 'red')
+                    input()
+                    continue
+                
+                project = selected_scan.scan_target.replace('/','')
+                scan_id = selected_scan.scan_id
+
+                handler_path = navihandler.replace('.py','').replace('/','.')
+                handler_instance = __import__(handler_path, globals(), 'navi_handler', 1).navi_handler
+                
+                result = handler_instance(self.vmnf_handler).manage_scan(
+                    selected_scan,keep_banner
+                )
 
         return True    
 

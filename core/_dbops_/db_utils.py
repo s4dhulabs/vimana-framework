@@ -21,7 +21,8 @@ def get_elapsed_time(entry, str_date=False):
     if str_date:
         scan_date = datetime.strptime(str_date, '%Y-%m-%dT%H:%M:%S')
     else:
-        scan_date = entry.scan_date
+        #scan_date = entry.scan_date
+        scan_date = entry
 
     time_diff = datetime.now() - scan_date
     hour_ = 'hour'
@@ -80,7 +81,8 @@ def handle_OpErr(exception):
     elif exception.startswith('db ready'):
         cprint("        Plugins already loaded. Try vimana list --plugins \n", 'yellow')
 
-    os._exit(os.EX_OK)
+    #os._exit(os.EX_OK)
+    return
 
 filter_ops = {
     '==': '__eq__',

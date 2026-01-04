@@ -1,0 +1,44 @@
+pipeline {
+    agent any
+    
+    environment {
+        TARGET_URL = 'http://localhost:8000'
+    }
+    
+    stages {
+        stage('Setup Vimana') {
+            steps {
+                sh '''
+                    curl -s https://raw.githubusercontent.com/s4dhulabs/vimana-framework/develop/scripts/install | bash
+                '''
+            }
+        }
+        
+        stage('Load Plugins') {
+            steps {
+                sh '''
+                    source vfe
+                    vimana list --plugins
+                '''
+            }
+        }
+        
+        stage('Security Scan') {
+            steps {
+                sh '''
+                    # Run D4M8 form fuzzing (Django Web Forms)
+                    vimana run d4m8 --target-url $TARGET_URL
+                    
+                    # Run ViewScan for code analysis (Django Views)
+                    vimana run viewscan --project-dir "${WORKSPACE}"
+                '''
+            }
+        }
+    }
+    
+    post {
+        always {
+            archiveArtifacts artifacts: '*.json,*.xml', fingerprint: true
+        }
+    }
+} 

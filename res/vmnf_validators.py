@@ -50,6 +50,12 @@ def get_tool_scope(**args):
     targets = []
     ports = []
 
+    '''
+    if not siddhi_args.get('scope'):
+        print(f'[{datetime.now()}] Missing scope argument')
+        return False
+        '''
+    
     # ignore-state enabled: all targets and ports are going to be tested
     if 'targets' in siddhi_args['scope']:
         

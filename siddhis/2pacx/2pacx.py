@@ -25,10 +25,17 @@ from time import sleep
 from res import colors
 import collections 
 import argparse
+import logging
     
+# vflogging
+from core.vmnf_log_utils import configure_logging
+configure_logging(os.path.basename(__file__))
 
 class siddhi:  
     def __init__(self, **vmnf_handler):
+
+        logging.info("Initializing 2pacx siddhi class...")
+
         self.vmnf_handler = vmnf_handler
         self.commom_py_app_dirs = [
             'config', 'scripts', 'controllers', 'modules', 
@@ -37,6 +44,8 @@ class siddhi:
             'admin', 'login'
         ]
         
+        logging.info("2pacx class initialized successfully!")
+
     def parse_args(self):
         ''' ~ siddhi needs only shared arguments from VimanaSharedArgs() ~'''
         parser = argparse.ArgumentParser(

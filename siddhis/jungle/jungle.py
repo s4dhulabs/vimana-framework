@@ -29,9 +29,16 @@ from .engines._crawler_settings import settings
 from res.vmnf_banners import load_viwec
 from res import vmnf_banners
 
+# vflogging
+import logging
+from core.vmnf_log_utils import configure_logging
+configure_logging(os.path.basename(__file__))
+
 
 class siddhi:   
     def __init__(self,**vmnf_handler):
+        logging.info("Initializing siddhi class...")
+
         self.vmnf_handler = vmnf_handler
     
     def parse_args(self):

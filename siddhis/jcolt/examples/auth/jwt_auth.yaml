@@ -1,0 +1,14 @@
+type: jwt
+params:
+  token: $TOKEN
+  refresh_token: $TOKEN
+  auth_url: https://api.example.com/token
+  token_header: Authorization
+  token_prefix: Bearer
+  audience: api.example.com
+  issuer: auth.example.com
+  verify_signature: true
+  allowed_algorithms:
+    - HS256
+    - RS256
+  leeway: 30  # Seconds of leeway for validation of exp, nbf, iat

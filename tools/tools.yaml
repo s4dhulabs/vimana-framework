@@ -1,0 +1,37 @@
+# -*- coding: utf-8 -*-
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+#
+# Author: s4dhu
+# Email: <s4dhul4bs[at]prontonmail[dot]ch
+# Git: @s4dhulabs
+# Mastodon: @s4dhu
+# 
+# This file is part of Vimana Framework Project.
+
+tools:
+  - name: "ss"
+    full_name: "SecretScan"
+    brief: "Scans exception metadata for exposed secrets."
+    description: "
+    Django applications running with DEBUG=True can expose sensitive information in stack traces. SecretScan is a tool to scan Django applications for such leaks. It can be used to scan the source code, the stack traces, and the HTTP responses for secrets. 
+    As it works integrated with Vimana's collections, it automatically sets its scope to exceptions, code and response."
+    type: "scanner"
+    scope: 
+      - exceptions
+      - code 
+      - response
+  - name: "cb"
+    full_name: "codeblocks"
+    brief: "Extract code blocks from exceptions."
+    description: "
+    CodeBlocks is a tool to extract code blocks from exceptions. It can be used to extract the source code, the stack traces, and the HTTP responses for secrets.
+    As it works integrated with Vimana's collections, it automatically sets its scope to exceptions, code and response."
+    type: "scanner"
+    scope: 
+      - exceptions
+      - response
+
+

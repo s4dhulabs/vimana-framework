@@ -16,8 +16,10 @@ from pygments.lexers import PythonLexer
 from pygments import highlight
 from tabulate import tabulate
 
+from core._dbops_.models.sessions import VFSessions
 from core.vmnf_sessions_utils import abduct_items
 from core._dbops_.vmnf_dbops import VFDBOps
+#from core.vmnf_navi_sessions import naviSessions
 
 from scrapy.utils.serialize import ScrapyJSONEncoder
 from neotermcolor import cprint, colored as cl
@@ -27,7 +29,9 @@ from urllib.parse import urlparse
 from datetime import datetime
 from random import choice
 from time import sleep
+import jsonpickle
 import hashlib
+import inspect
 import json
 import yaml
 import glob
@@ -40,9 +44,9 @@ import os
 
 class VFSession:
     def __init__(self, **vmnf_handler):
-        self.session = vmnf_handler
+        self.vmnf_handler = vmnf_handler
+
         self.encoder = ScrapyJSONEncoder()
-        self.sessions = self.get_sessions()
         self.sessions_tbl = []
         self.flush_mode = False
         self.model = '_SESSIONS_'
@@ -51,20 +55,8 @@ class VFSession:
     def hashsession(self):
         self.record_time = datetime.now()
         _session_hash_ = hashlib.sha224()
-        _session_hash_.update(yaml.dump(self.session, default_flow_style=False).encode())
+        _session_hash_.update(yaml.dump(self.vmnf_handler, default_flow_style=False).encode())
         return _session_hash_.hexdigest()
-        
-    def get_sessions(self):
-        try:    
-            with os.scandir(f"{_vfs_['sessions']}") as sessions:
-                return [entry.name \
-                    for entry in sessions \
-                        if entry.is_file()
-                ]
-        except FileNotFoundError:
-            vmn05()
-            print(f"\n   Something went wrong invoking: {cl(' '.join(sys.argv), 'red')} \n\n")
-            sys.exit(1)
 
     def save_session(self):
         # {vmnf_log:flag}
@@ -72,45 +64,51 @@ class VFSession:
         session_hash  = self.hashsession()
         session_id = session_hash[:10]
         session_file = f'{session_id}.yaml' 
-        session_path  = f"{_vfs_['sessions']}{session_file}"
+        sessions_dir = f'vimana/sessions'
+        abs_sessions_path = os.path.join(os.path.expanduser("~"), sessions_dir)
+        full_session_path  = f"{abs_sessions_path}/{session_file}"
+
+        if not os.path.exists(abs_sessions_path):
+            os.makedirs(abs_sessions_path)
+
+        if not os.path.exists(full_session_path):
+            with open(full_session_path, 'w') as _file_:
+                yaml.dump(
+                    self.vmnf_handler, _file_, 
+                    default_flow_style=False
+                )
+
+        _target_ = urlparse(self.vmnf_handler['target_url']).netloc
+        _issues_ = self.vmnf_handler.get('issues_overview')
         
-        _target_ = urlparse(self.session['target_url']).netloc
-        _issues_ = self.session.get('issues_overview')
-        
-        self.session.update({
+        session = {}
+        session = {
             '_session_':{
                 'session_id': session_id,
                 'session_hash': session_hash,
                 'session_file': session_file,
-                'session_path': session_path,
+                'session_path': full_session_path,
                 'session_date': self.record_time,
-                'session_plugin': self.session['module_run'],
+                'session_plugin': self.vmnf_handler['module_run'],
                 'session_target': _target_.split(':')[0],
                 'target_port': _target_.split(':')[1],
-                'target_url': self.session['target_url'],
-                'framework': self.session['framework'],
-                'framework_version': self.session['framework_version'],
+                'target_url': self.vmnf_handler['target_url'],
+                'framework': self.vmnf_handler['framework'],
+                'framework_version': self.vmnf_handler['framework_version'],
                 'total_exceptions': _issues_['exceptions'],
                 'total_cves': _issues_['cve_ids'],
-                'total_tickets': _issues_['security_tickets']
+                'total_tickets': _issues_['security_tickets'],
                 }
-            }
-        )
+        }
+        
 
-        with open(session_path, 'w') as _file_:
-            try:
-                yaml.dump(self.session, _file_, default_flow_style=False)
-            except TypeError: 
-                print(f"[VFSession()] → Error saving session {session_id}")
-                return False
+        VFDBOps(**session).register('_SESSIONS_')
         
-        VFDBOps(**self.session).register('_SESSIONS_')
-        
-        plugin  = cl(self.session['module_run'], 'red')
-        target  = cl(self.session['target_url'], 'red')
+        plugin  = cl(self.vmnf_handler['module_run'], 'red')
+        target  = cl(self.vmnf_handler['target_url'], 'red')
         session = cl(session_id, 'red')
 
-        if self.session['sample']:
+        if self.vmnf_handler['sample']:
             print("\033c", end="")
             sample_mode(
                 cl('  sample mode   ','red', 'on_white', attrs=['bold'])
@@ -121,7 +119,7 @@ class VFSession:
         print(f"\n\t→ {plugin} session {session} sucessfully recorded for target {target}!")
         sleep(2)
         
-        if self.session['sample']:
+        if self.vmnf_handler['sample']:
             print("\033c", end="")
             sample_mode(
                 cl('  sample mode   ','red', 'on_white', attrs=['bold'])
@@ -143,10 +141,10 @@ class VFSession:
         return True
 
     def check_sessions(self):
-        recorded_sessions = VFDBOps(**self.session).list_resource(self.model,[])
+        recorded_sessions = VFDBOps(**self.vmnf_handler).list_resource(self.model,[])
         
         if not recorded_sessions or len(recorded_sessions) == 0:
-            if self.session['runner_mode']:
+            if self.vmnf_handler['runner_mode']:
                 return []
 
             self.handle_no_sessions()
@@ -168,10 +166,10 @@ class VFSession:
             vmn05()
             print(f"\n\t Flushing session {session} ({sc}/{total}) / {plugin} → {target} ...\n")
             
-            if not self.session['fastflush']:
+            if not self.vmnf_handler['fastflush']:
                 sleep(1)
 
-            if self.session['xray_enabled']:
+            if self.vmnf_handler['xray_enabled']:
                 try:
                     abduct_items(
                         **self.load_session(
@@ -181,14 +179,15 @@ class VFSession:
                     )
                 except:
                     pass
-
-            session = VFDBOps(**self.session).flush_resource(
+            
+            session_dict = _s_.__dict__
+            session = VFDBOps(**session_dict).flush_resource(
                 self.model, self.obj_id_col, _s_.session_id
             )
 
             self.flush_session_file(_s_.session_path)
             
-            if not self.session['fastflush']:
+            if not self.vmnf_handler['fastflush']:
                 sleep(1)
         
         cprint(f"\n\t   → {hl_total} sessions flushed!\n\n\n", 'blue')
@@ -196,7 +195,7 @@ class VFSession:
     def flush_session(self):
 
         self.flush_mode = True
-        sid = self.session['flush_session']
+        sid = self.vmnf_handler['flush_session']
         _s_ = VFDBOps(**self.session).get_session(sid)
         
         if not _s_:
@@ -211,7 +210,7 @@ class VFSession:
         print(f"\n\t Flushing session {session} / {plugin} → {target}...\n")
         sleep(2)
 
-        if self.session['xray_enabled']:
+        if self.vmnf_handler['xray_enabled']:
                 abduct_items(**self.load_session(_s_.session_id, self.flush_mode))
                 sleep(1)
         
@@ -223,18 +222,6 @@ class VFSession:
         print()
         os.remove(_s_.session_path)
         
-    def get_last_session(self):
-        try:
-            lass = max(
-                glob.iglob("core/sessions/*.yaml"),
-                    key=os.path.getctime
-            )
-        except ValueError:
-            self.handle_invalid_session()
-            return False
-
-        return lass.split('/')[-1]
-
     def format_date(self):
         return self._s_session_date.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -242,13 +229,17 @@ class VFSession:
         return len(self.check_sessions())
 
     def list_sessions(self, headless=False):
+        from core.vmnf_navi_sessions import naviSessions
+
+        if self.vmnf_handler['navigation_mode']:
+            naviSessions(self.vmnf_handler).manage()
+            return True
+
         _sessions_ = self.check_sessions()
         
         attrs = []
         clc  = 'white'
         
-        last_session = self.get_last_session()
-
         if not headless:
             print("\033c", end="")
             case_header()
@@ -270,10 +261,6 @@ class VFSession:
 
         for _vs_ in _sessions_:
             clc = 'white'
-
-            if _vs_.session_file == last_session:
-                start_task = True
-
             _vs_.session_date = _vs_.session_date.strftime("%Y-%m-%d %H:%M:%S")
             self.sessions_tbl.append([
                 cl(_vs_.session_id, 'green', attrs=attrs),
@@ -340,13 +327,22 @@ class VFSession:
                                     
         In the future we'll play with custom constructors
             to fix it in a elegant way though """
+        
+        if not isinstance(session_id, VFSessions):
+            _session_ = VFDBOps(**self.vmnf_handler).get_by_id(
+                self.model,self.obj_id_col,session_id
+            )
 
-        _session_ = VFDBOps(**self.session).get_by_id(
-            self.model,self.obj_id_col,session_id
-        )
+            if not _session_ or _session_ is None:
+                self.handle_invalid_session(session_id)
+                return False
+        else:
+            _session_ = session_id
 
-        if not _session_ or _session_ is None:
-            self.handle_invalid_session(session_id)
+        session_path = _session_.session_path
+
+        if not os.path.exists(session_path):
+            self.handle_invalid_session(session_path)
             return False
 
         with open(_session_.session_path, 'r') as _sf_:
@@ -355,5 +351,12 @@ class VFSession:
             _session_ = yaml.unsafe_load(_sf_)
             _prompt_ = _session_['prompt']
 
+            frame = inspect.currentframe()
+            frame = frame.f_back
+            code = frame.f_code
+            method = code.co_name
+            engine = frame.f_locals.get('self', None).__class__.__name__
+            _session_['origin'] = f"{engine}.{method}"
+            
         return (_session_ if flush_mode else _prompt_(**_session_))
 

@@ -1,4 +1,18 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+#
+# Author: s4dhu
+# Email: <s4dhul4bs[at]prontonmail[dot]ch
+# Git: @s4dhulabs
+# Mastodon: @s4dhu
+# 
+# This file is part of Vimana Framework Project.
+
+from twisted.internet import defer
+from twisted.internet import reactor
 
 from scrapy.exceptions import CloseSpider
 from scrapy.http import HtmlResponse
@@ -10,17 +24,16 @@ from ._items import CrawlerPool
 from datetime import datetime
 from tabulate import tabulate
 from .. res import config
+from pathlib import Path
 from res.colors import *
 from time import sleep 
+import hashlib
 import requests
 import pathlib
 import scrapy
 import sys,os
+import json
 import re
-
-
-from pathlib import Path
-
 
 
 class vwce(scrapy.Spider):
@@ -31,7 +44,17 @@ class vwce(scrapy.Spider):
         self.handler = handler
         self.caller_plugin = handler.get('module_run')
         self.caller_path = f'{Path().absolute()}/siddhis/{self.caller_plugin}'
-        self.start_urls = list(set(handler.get('scope',False)))
+
+        issue_type = 'dast/output'
+        plugin_scope = f'django/{issue_type}'
+        self.cache_dir = f".vimana/cache/{plugin_scope}"
+        self.abs_cache_path = os.path.join(os.path.expanduser("~"), self.cache_dir)
+
+        if self.handler.get('endpoint_set', False):
+            self.start_urls = [self.handler.get('endpoint_set')]
+        else:
+            self.start_urls = list(set(handler.get('scope',False)))
+
         self.domain_filter = urlparse(self.start_urls[0]).netloc
         self.saved_items = []
         self.url_pool =[]
@@ -57,14 +80,19 @@ class vwce(scrapy.Spider):
         sleep(1)        
     
     def parse(self,response):
+        if self.handler.get('set_path_scope'):
+            self.started = True
+            return
+
         self.started = True
+        depth = response.meta.get('depth', 0)
+
+        #if depth >= 51:
+        #    return
+
+        if response.url not in self.discovered_urls:
+            self.discovered_urls.append(response.url)
         
-        print()        
-        if response.url in self.url_pool:
-            return 
-
-        self.url_pool.append(response.url)
-
         if response.status in [200,301,302]:
             hl_c = 'green'
         elif response.status in [403,404]:
@@ -104,13 +132,14 @@ class vwce(scrapy.Spider):
                 sleep(0.01)
 
                 yield scrapy.Request(
-                    _url_item_['url'], 
-                    callback=self.parse
+                    _url_item_['url'],
+                    callback=self.parse,
+                    meta={'depth': depth + 1}
                 )
+
             cprint(f"    + {_url_item_['url'].strip()}", 'blue', attrs=attrs)
             yield _url_item_
 
-        #print()
 
     def closed(self,reason):
         from scrapy.crawler import CrawlerProcess
@@ -119,29 +148,16 @@ class vwce(scrapy.Spider):
         from siddhis.d4m8.engines._d4m8_engine import d4m8
         from siddhis.d4m8.engines._crawler_settings import settings
     
-        if self.caller_plugin != 'viewc':
-
-            with open(f'{self.caller_path}/output.txt', 'w+') as f:
-                [f.write(u + '\n') for u in self.discovered_urls]
-                f.close()
-            
-            self.handler['scope'] = self.discovered_urls
-            self.handler['scope'].extend(
-                [urljoin(self.handler['target_url'], p) \
-                    for p in self.handler['patterns'] \
-                        if p and p is not None 
-                ]
-            )
-           
-            runner = CrawlerRunner(dict(settings))
-            daemon = runner.crawl(d4m8, **self.handler)
-            reactor.run(0)
-
+        
         if self.single_target and not self.started:
             cprint("[{}] Connection failure: check the HTTP scheme and try again.\n".format(
                 datetime.now()), 'red')
             
-        print() 
+            os._exit(os.EX_OK)
+
+        if self.discovered_urls:
+            input() if self.handler.get('pause_steps') else None
+
         if self.started and self.handler.get('callback_session',False):
             vmnf_callback_session = self.handler.get('prompt',False)
 
@@ -151,6 +167,7 @@ class vwce(scrapy.Spider):
             if not self.handler.get('siddhi_callbacks',False):
                 self.handler['siddhi_callbacks'] = []
 
+            origin = self.handler.get('origin',False)
             self.handler['siddhi_callbacks'].append(
                 {
                     'cid': (len(self.handler['siddhi_callbacks']) + 1),
@@ -166,11 +183,56 @@ class vwce(scrapy.Spider):
 
             # return to caller session
             vmnf_callback_session(**self.handler)
-        
+
+        # if not invoked by visual sessions manager
+        if self.caller_plugin in ['d4m8']: #and origin not in ['naviSessions.manage']:
+            from twisted.internet import reactor
+            import ipdb
+
+            with open(f'{self.caller_path}/output.txt', 'w+') as f:
+                [f.write(u + '\n') for u in self.discovered_urls]
+                f.close()
             
-        #if self.caller_plugin != 'viewc':
-        #    return True
-        
+            if not self.handler.get('set_path_scope'):
+                self.handler['scope'].extend(self.discovered_urls)
+                self.handler['scope'].append(self.handler['target_url'])
+
+                self.handler['scope'].extend(
+                    [urljoin(self.handler['target_url'], p) \
+                        for p in self.handler['patterns'] \
+                            if p and p is not None 
+                    ]
+                )
+            else:
+                self.handler['scope'] = [urljoin(self.handler['target_url'], self.handler['set_path_scope'])]
+
+            #from siddhis.jcolt.utils import get_hash
+            scan_id = str(self.handler['scope']).encode('utf-8')
+            scan_id = (hashlib.sha256(scan_id).hexdigest())
+
+            #scan_id = get_hash(str(self.handler['scope']))[:10]
+            full_output_path = f"{self.abs_cache_path}/{scan_id}.txt"
+            os.makedirs(os.path.dirname(full_output_path), exist_ok=True)
+            
+            
+            with open(full_output_path, 'w') as f:
+                for url in list(set(self.handler['scope'])):
+                    f.write(f"{url}\n" )
+                f.close()
+
+            settings = self.handler.get('_settings_')
+            runner = CrawlerRunner(dict(settings))
+            daemon = runner.crawl(d4m8, **self.handler)
+            d = defer.Deferred()
+            daemon.addBoth(lambda _: d.callback(None))
+     
+            try:
+                reactor.run()
+            except KeyboardInterrupt:
+                if reactor.running:
+                    d.addBoth(lambda _: reactor.stop())
+                    d.addBoth(lambda _: sys.exit(1))
+
         os._exit(os.EX_OK)
         
         

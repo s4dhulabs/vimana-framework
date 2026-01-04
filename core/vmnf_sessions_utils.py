@@ -44,7 +44,7 @@ def abduct_items(**vfres):
         }
 
         print(f"\t ⠞⠓⠊⠎ Abducting {cl(siddhi.lower(), 'red', attrs=['bold'])}: {cl(brief,'white')} ...")
-        sleep(0.15)
+        sleep(0.1)
 
     for k,v in vfres.items():
         print("\033c", end="")

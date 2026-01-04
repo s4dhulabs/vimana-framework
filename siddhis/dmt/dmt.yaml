@@ -9,22 +9,36 @@
 # Git: @s4dhulabs
 # Mastodon: @s4dhu
 # 
-# This file is part of Vimana Framework Project.
+# This file is part of Vimana Framework Project. 
 
 name: DMT
 author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
 brief: Django Misconfiguration Tracker
-category: Framework
+category: Tracker
 framework: Django 
 info: Tracks and exploits misconfigurations in Django applications
 module: siddhis/dmt/dmt.py 
 package: Django
-type: Tracker
+type: DAST
+astt: DAST
 tags:
-  - Error
-  - Debug
+  - Django
   - Exceptions
-  - Misconfiguration 
+  - Misconfiguration
+  - Scanner
+  - Tracker
+composition: 
+  mode: Orchestrator
+  plugin_chain:
+    recon:
+      - framewalk
+      - sttinger
+      - prana
+      - tictrac
+      - viwec
+    fuzz:
+      - djunch
+      - d4m8
 description: |
   This tool was designed to audit applications running
   with the Django framework. Acts as an input module for
@@ -54,7 +68,6 @@ description: |
   arguments, syntax, examples, and labs with:
 
   $ vimana guide -m dmt --args/--examples/--labs 
-
 references:
   links:
     - https://www.djangoproject.com/
@@ -65,14 +78,18 @@ references:
     - CWE-209 - Generation of Error Message Containing Sensitive Information
     - CWE-756 - Missing Custom Error Page
     - CWE-1295 - Debug Messages Revealing Unnecessary Information
+vfset:
+  parse_plugin_scope: True
 guide:
+  naviargs: 
+    target_url: False
   args: |
     ø----------------------------------------------------------------------ø
     │└┐└│└┘┌┐│└└┘┌┐┘└┘└┐└┘│└┐┘││└┘│-  DMT ARGS  ┐│││││├┤┘│││┤└┘││└┐└┘│┌┌┐└│┐
     ø-----------+----------------------------------------------------------ø
     │ target    └┐                                                         │
     +------------+---------------------------------------------------------+
-     --target            Run DMT against a single target
+     --target-url        Run DMT against a single target URL
      --target-list       Run DMT against a target list (comma separated)
      --file              Run DMT loading scope from a file
     +-----------+----------------------------------------------------------+

@@ -1,0 +1,197 @@
+plugins:
+  detailed:
+    headers:
+      - plugin
+      - type
+      - info
+      - category
+      - framework
+      - astt
+      - author
+    filters:
+      - name
+      - type
+      - info
+      - category
+      - framework
+      - astt
+      - author
+  default:
+    headers:
+      - plugin
+      - type
+      - info
+    filters:
+      - name
+      - type
+      - info
+scans:
+  detailed:
+    headers:
+      - id            
+      - type          
+      - plugin            
+      - target
+      - framework           
+      - version
+      - cves
+      - reqs
+      - views
+      - date
+    filters:
+      - scan_id            
+      - scan_type        
+      - scan_plugin
+      - scan_target
+      - project_framework  
+      - project_framework_version 
+      - project_framework_total_cves
+      - project_total_requirements
+      - project_total_view_modules
+      - scan_date
+  default:
+    headers:
+      - id            
+      - type          
+      - target           
+      - framework           
+      - plugin            
+      - date
+    filters:
+      - scan_id
+      - scan_type
+      - scan_target
+      - project_framework
+      - scan_plugin
+      - scan_date
+cases:
+  detailed:
+    filters:
+      - case_id
+      - case_plugin
+      - case_name
+      - case_target
+      - case_plugin_type
+      - case_plugin_astt
+      - case_plugin_info
+      - case_date
+    headers:
+      - id           
+      - plugin            
+      - case         
+      - target
+      - type  
+      - astt
+      - info
+      - date 
+  default:
+    filters:
+      - case_id
+      - case_plugin
+      - case_name
+      - case_target
+      - case_date
+    headers:
+      - id           
+      - plugin            
+      - case         
+      - target
+      - date 
+sessions:
+  detailed:
+    headers: 
+      - id
+      - plugin
+      - target
+      - framework
+      - version
+      - exceptions
+      - cves
+      - tickets
+      - date
+    filters:
+      - session_id
+      - session_plugin
+      - target_url
+      - framework
+      - framework_version
+      - total_exceptions
+      - total_cves
+      - total_tickets
+      - session_date
+  default:
+    headers:
+      - id
+      - plugin
+      - target
+      - framework
+      - date
+    filters: 
+      - session_id
+      - session_plugin
+      - target_url
+      - framework
+      - session_date
+exceptions:
+  detailed:
+    headers: 
+      - id
+      - type
+      - class
+      - module
+      - object
+      - line
+      - method
+      - framework
+      - fmwk version
+      - scan
+      - plugin
+    filters:
+      - exception_id
+      - exception_type
+      - exception_class
+      - module
+      - module_object
+      - line_number
+      - method
+      - framework
+      - framework_version
+      - scan_id
+      - scan_plugin
+  default:
+    headers:
+      - id
+      - type
+      - class
+      - module
+      - object
+      - line
+    filters: 
+      - exception_id
+      - exception_type
+      - exception_class
+      - module
+      - module_object
+      - line_number
+ 
+tools:
+  detailed:
+    headers: 
+      - name
+      - description
+      - type
+      - scope
+    filters:
+      - name
+      - brief
+      - type
+      - scope
+  default:
+    headers:
+      - name
+      - description
+    filters: 
+      - name
+      - brief
+      
+ 

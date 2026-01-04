@@ -34,12 +34,16 @@ from .engines._crawler_settings import headers
 from .engines._dmt_parser import DMTEngine as _dmt_
 from siddhis.djunch.engines._dju_utils import DJUtils
 
-
+# vflogging
+import logging
+from core.vmnf_log_utils import configure_logging
+configure_logging(os.path.basename(__file__))
 
 
 class siddhi:   
     def __init__(self,**vmnf_handler):
-   
+        logging.info("Initializing DMT siddhi class...")
+
         self.vmnf_handler = vmnf_handler
         self.target_url = vmnf_handler['target_url'] 
         self.threads = self.vmnf_handler['threads']
@@ -48,6 +52,8 @@ class siddhi:
         self.verbose = self.vmnf_handler['verbose']
         self.quiet_mode = True if not self.verbose else False
         self.catched_exceptions = []
+
+        logging.info("DMT class initialized successfully!")
 
     def parse_args(self):
         ''' ~ siddhi needs only shared arguments from VimanaSharedArgs() ~'''

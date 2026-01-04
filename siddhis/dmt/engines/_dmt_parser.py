@@ -87,7 +87,7 @@ class DMTEngine(scrapy.Spider):
         self.app_patterns =[]
         self.exit_step = False
         self.exception_found = False
-        self.sample_trigger = urljoin(self.target_url,str(random()))
+        self.sample_trigger = urljoin(self.target_url,self.get_randpay())
         self.caller = self.vmnf_handler.get('module_run')
 
     def get_raw_patterns(self,response):
@@ -112,6 +112,7 @@ class DMTEngine(scrapy.Spider):
 
             os._exit(os.EX_OK) 
 
+        self.vmnf_handler['URLconf'] = self.URLconf
         self.vmnf_handler['fuzz_regex_flags'] = self.fuzz_flags_context
         self.vmnf_handler['view_context'] = self.p_context
         self.vmnf_handler['raw_patterns'] = self.raw_patterns
@@ -133,24 +134,24 @@ class DMTEngine(scrapy.Spider):
             and not self.vmnf_handler['runner_mode']:
 
             print(VimanaSharedArgs().shared_help.__doc__)
-
-            try: 
-                sys.exit(1) 
-            except builtins.SystemExit:
-                pass
+            os._exit(os.EX_OK)
 
         self.tps = targets_ports_set
         self.target_url = self.vmnf_handler.get('target_url')
+    
+        if not self.target_url.strip():
+            raise ValueError("Target URL cannot be an empty string")
+        
         self.base_url = self.vmnf_handler.get('target_url')
         self.tps = self.target_url
 
         if not self.base_url.startswith('http'):
             self.target_url = 'http://' + self.base_url
-
+        
         try:
-            requests.get(self.target_url)
+            r = requests.get(self.target_url)
         except requests.exceptions.ConnectionError:
-            self.target_url = 'https://' + self.base_url
+            r = self.target_url = 'https://' + self.base_url
 
         dmt_start = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         c_target = colored(self.target_url,'white')
@@ -159,7 +160,7 @@ class DMTEngine(scrapy.Spider):
             cprint(f"\n[{datetime.now()}] Starting DMT against {c_target}...", 'cyan')
             sleep(1)
             
-        self.target_trigger = urljoin(self.target_url,str(random()))
+        self.target_trigger = urljoin(self.target_url,self.get_randpay())
 
         yield scrapy.Request(
             self.target_trigger, 
@@ -169,7 +170,6 @@ class DMTEngine(scrapy.Spider):
             errback=self.failure_handler,
             dont_filter = True
         )
-
         self.set_closed = True
 
     def failure_handler(self,failure):
@@ -189,6 +189,12 @@ class DMTEngine(scrapy.Spider):
             }
         )
 
+        if not self.vmnf_handler.get('sample'):
+            self.vmnf_handler['frameworks'] = 'django'  
+            from siddhis.framewalk.framewalk import siddhi as framewalk_siddhi
+            framewalk_result = framewalk_siddhi(**self.vmnf_handler).start()
+
+        # Now call sttinger as usual
         self.found_version = sttinger(**self.vmnf_handler).start()
     
     def status_handler(self,response):
@@ -201,10 +207,18 @@ class DMTEngine(scrapy.Spider):
             for k,v in response.headers.items():
                 print(f"   ◉   {k.decode()}: {colored(v[0].decode(),'green')}")
         
+        if response.status == 500:
+            self.exception_found = True
+            DJEngineParser([],**{}).djx_parser(response)
+        
         # passive framework version fingerprint - sttinger
         if not self.vmnf_handler.get('sample') \
                 and not self.vmnf_handler.get('external_disabled'):
             self.run_passive_fingerprint()
+        
+        # run viwec against the target url
+        from siddhis.viwec.viwec import siddhi as viwec_siddhi
+        viwec_result = viwec_siddhi(**self.vmnf_handler).start()
         
         if not self.vmnf_handler.get('sample'):
             cprint(f"\n{self.f_start} Checking DEBUG status...",'cyan')
@@ -299,7 +313,7 @@ class DMTEngine(scrapy.Spider):
         
         if not self.vmnf_handler.get('sample'):
             print(f'\n{self.f_start} Setting up contextual fuzzing flags for {tv_hl} views')
-            sleep(0.20)
+            sleep(0.10)
         
         v_count=0
         for view,patterns in self.p_context.items(): 
@@ -311,7 +325,7 @@ class DMTEngine(scrapy.Spider):
                 dmt_step=(f'{self.f_map} Parsing ({t_hl}) patterns in view {v_hl} ({v_count}/{total_views})...')
 
                 print(dmt_step.ljust(os.get_terminal_size().columns - 1), end="\r")
-                sleep(0.10)
+                sleep(0.03)
             
             for pattern in patterns:
                 found_regex=False
@@ -364,6 +378,19 @@ class DMTEngine(scrapy.Spider):
 
     def get_clean_pattern(self,pattern):
         return re.sub('[^0-9a-zA-Z\__]+', '', pattern)
+    
+    def get_randpay(self):
+        import string
+
+        rand_1 = choice(string.ascii_letters)
+        rand_2 = choice(string.digits)
+
+        if int(datetime.now().__str__()[-1]) % 2:
+            rand_1 = ''.join(choice(string.ascii_letters + string.digits) for _ in list(range(3,7)))
+        else:
+            rand_2 = random().__str__()[ choice([0,3]):choice(list(range(7,10))) ] 
+
+        return str(rand_1 + rand_2)
 
     def patterns_mapper(self, external_mode=False):
 
@@ -378,9 +405,10 @@ class DMTEngine(scrapy.Spider):
         
         if not self.vmnf_handler.get('sample'):
             print(f"{self.f_start} Starting PatternMapper via {trick}")
-            sleep(0.30)
+            sleep(0.10)
        
         for pattern in self.app_patterns:
+            
             p_count +=1
             hl_p_count = colored(p_count, 'white')
             if p_count == total_p:
@@ -398,9 +426,9 @@ class DMTEngine(scrapy.Spider):
             
             if not self.vmnf_handler.get('sample'):
                 print(f'\n{self.f_map} Mapping app {p} ({hl_p_count}/{hl_total})...\n')
-                sleep(0.10)
+                sleep(0.03)
 
-            payload = self.get_clean_pattern(pattern) + '/' + str(random())
+            payload = self.get_clean_pattern(pattern) + '/' + self.get_randpay()
             
             self.new_target_url = urljoin(self.target_url, payload)
             self.headers['Origin']  = self.target_url
@@ -459,7 +487,6 @@ class DMTEngine(scrapy.Spider):
            self.app_patterns.append(pattern)
 
         if external:
-            
             # mapping for external caller
             self.patterns_mapper(False)
 
@@ -474,7 +501,7 @@ class DMTEngine(scrapy.Spider):
         hl_ap = colored(len(self.app_patterns), 'white')
         if not self.vmnf_handler.get('sample'):
             print(f"{self.f_map} {hl_ap} app patterns\n")
-            sleep(0.20)
+            sleep(0.10)
 
             for pattern in self.app_patterns:
                 print(f"   + {colored(pattern,'green')}")

@@ -7,16 +7,17 @@
 # Author: s4dhu
 # Email: <s4dhul4bs[at]prontonmail[dot]ch
 # Git: @s4dhulabs
-# Mastodon: @s4dhu
 # 
 # This file is part of Vimana Framework Project.
 
-from siddhis.djunch.engines._dju_settings import table_models
-from siddhis.djunch.engines._dju_utils import DJUtils 
+from siddhis.djunch.engines._dju_settings import table_models 
 from core.vmnf_sessions_utils import abduct_items
 from neotermcolor import cprint, colored as cl
 from ._dbops_.vmnf_dbops import VFDBOps
 from ._dbops_.db_utils import handle_OpErr
+from .vmnf_navi_siddhis import navisiddhis 
+#from .setevars import set_vimana_path
+from core.load_settings import _version_
 
 from res.vmnf_banners import case_header
 from .vmnf_asserts import vfasserts
@@ -30,7 +31,7 @@ import os
 from pygments.formatters import TerminalFormatter
 from pygments.lexers import PythonLexer
 from pygments import highlight
-
+from core.vmnf_utils import gen_issues_table
 
 class VFManager:
     def __init__(self,**handler:False):
@@ -38,30 +39,181 @@ class VFManager:
         self.query_filters = []
         self.model = '_SIDDHIS_'
         self.obj_id_col = 'name'
-
-        if not handler.get('module_run') and not handler.get('load_plugins'):
+        self.interactive_mode = handler.get('navigation_mode',False)
+        self.handler['fancy_table'] = True 
+        
+        if not handler.get('module_run',False) and not handler.get('load_plugins',False) and not self.interactive_mode:
             ''' We're not going to use query filters with vf run -m/-p/-s '''
             self.query_filters = self.get_filters()
 
-    def load_siddhis(self):
-        if VFDBOps().table_exists('_SIDDHIS_') and VFDBOps().getall(self.model):
-            handle_OpErr('db ready')
+    def _get_vimana_root(self):
+        """Get the Vimana root directory using VIMANA_PATH or fallback to __file__."""
+        vimana_path = os.getenv("VIMANA_PATH")
+        if vimana_path and os.path.exists(vimana_path):
+            return vimana_path
         
-        fields = ['name','category','framework','package','type']
+        # Fallback to __file__ based resolution
+        current_file = os.path.abspath(__file__)
+        # Navigate up from core/vmnf_smng.py to vimana root
+        vimana_root = os.path.dirname(os.path.dirname(current_file))
+        return vimana_root
 
-        for s in os.scandir(f'{os.getcwd()}/siddhis/'):
-            if (s.is_dir() and not s.name.startswith('_')):
-                with open(f"{s.path}/{s.name}.yaml", 'r') as f:
-                    siddhi = yaml.load(f, Loader=yaml.FullLoader)
-                
-                siddhi.update((f, siddhi[f].lower()) 
-                    if not isinstance(siddhi[f], bool) \
-                        else (f, siddhi[f]) for f in fields)
-                
-                abduct_items(**siddhi)
-                VFDBOps(**siddhi).register('_SIDDHIS_')
+    def _siddhis_already_loaded(self):
+        """Check if siddhis are already loaded efficiently."""
+        if not VFDBOps().table_exists('_SIDDHIS_'):
+            return False
+        
+        # Just check if table has any records, don't load all data
+        try:
+            count = VFDBOps().count_records('_SIDDHIS_')
+            return count > 0
+        except:
+            return False
 
+    def _discover_plugin_dirs(self, siddhis_path):
+        """Discover plugin directories with error handling."""
+        plugin_dirs = []
+        
+        if not os.path.exists(siddhis_path):
+            cprint(f"Warning: Siddhis directory not found: {siddhis_path}", 'yellow')
+            return plugin_dirs
+        
+        try:
+            for s in os.scandir(siddhis_path):
+                if s.is_dir() and not s.name.startswith('_'):
+                    plugin_docs = os.path.join(s.path, f"{s.name}.yaml")
+                    if os.path.exists(plugin_docs):
+                        plugin_dirs.append({
+                            'name': s.name,
+                            'path': s.path,
+                            'yaml_file': plugin_docs
+                        })
+        except Exception as e:
+            cprint(f"Error scanning siddhis directory: {e}", 'red')
+        
+        return plugin_dirs
+
+    def _load_plugin_yaml(self, yaml_file, plugin_name):
+        """Load a single plugin YAML file with error handling."""
+        try:
+            with open(yaml_file, 'r') as f:
+                siddhi_data = yaml.load(f, Loader=yaml.FullLoader)
+            return siddhi_data
+        except yaml.YAMLError as e:
+            cprint(f"Warning: Invalid YAML in {plugin_name}: {e}", 'yellow')
+            return None
+        except Exception as e:
+            cprint(f"Warning: Could not load {plugin_name}: {e}", 'yellow')
+            return None
+
+    def _process_siddhi_data(self, siddhi_data, plugin_name):
+        """Process siddhi data and prepare for registration."""
+        if not siddhi_data:
+            return None
+        
+        fields = ['name', 'category', 'framework', 'package', 'type']
+        
+        # Process fields efficiently
+        processed_data = {}
+        for field in fields:
+            if field in siddhi_data:
+                value = siddhi_data[field]
+                if not isinstance(value, bool):
+                    processed_data[field] = value.lower()
+                else:
+                    processed_data[field] = value
+        
+        # Add other fields as-is
+        for key, value in siddhi_data.items():
+            if key not in fields:
+                processed_data[key] = value
+        
+        return processed_data
+
+    def _register_siddhis_batch(self, siddhis_data):
+        """Register multiple siddhis in batch with error handling."""
+        success_count = 0
+        error_count = 0
+        
+        for plugin_info in siddhis_data:
+            plugin_name = plugin_info['name']
+            yaml_file = plugin_info['yaml_file']
+            
+            print(f"\tLoading {plugin_name}...")
+            
+            siddhi_data = self._load_plugin_yaml(yaml_file, plugin_name)
+            if not siddhi_data:
+                error_count += 1
+                continue
+            
+            processed_data = self._process_siddhi_data(siddhi_data, plugin_name)
+            if not processed_data:
+                error_count += 1
+                continue
+            
+            try:
+                abduct_items(**processed_data)
+                VFDBOps(**processed_data).register('_SIDDHIS_')
+                success_count += 1
+            except Exception as e:
+                cprint(f"Error registering {plugin_name}: {e}", 'red')
+                error_count += 1
+        
+        if error_count > 0:
+            cprint(f"Warning: {error_count} plugins failed to load", 'yellow')
+        
+        return success_count, error_count
+
+    def load_tools(self):
+        if VFDBOps().table_exists('_TOOLS_') and VFDBOps().getall('_TOOLS_'):
+            handle_OpErr('db ready')
+
+        vimana_root = self._get_vimana_root()
+        tools_file = os.path.join(vimana_root, 'tools', 'tools.yaml')
+        
+        if not os.path.exists(tools_file):
+            cprint(f"Warning: Tools file not found: {tools_file}", 'yellow')
+            return
+
+        try:
+            with open(tools_file, 'r') as f:
+                tools = yaml.load(f, Loader=yaml.FullLoader)
+                
+                for tool in tools['tools']:
+                    VFDBOps(**tool).register('_TOOLS_')
+        except Exception as e:
+            cprint(f"Error loading tools: {e}", 'red')
+            
+    def load_siddhis(self):
+        """Load siddhis with optimized path resolution and error handling."""
+        
+        # Check if already loaded efficiently
+        if self._siddhis_already_loaded():
+            handle_OpErr('db ready')
+            return True  
+        
+        # Get Vimana root path
+        vimana_root = self._get_vimana_root()
+        siddhis_path = os.path.join(vimana_root, 'siddhis')
+        
+        # Discover plugin directories
+        plugin_dirs = self._discover_plugin_dirs(siddhis_path)
+        
+        if not plugin_dirs:
+            cprint("No valid plugin directories found", 'red')
+            return False
+        
+        # Register siddhis in batch with error handling
+        success_count, error_count = self._register_siddhis_batch(plugin_dirs)
+        
+        if success_count > 0:
+            cprint(f"Successfully loaded {success_count} plugins", 'green')
+        
+        # Load tools and list siddhis
+        self.load_tools()
         self.list_siddhis()
+        
+        return True
     
     def no_match(self):
         case_header()
@@ -80,6 +232,9 @@ class VFManager:
                 continue
             
             if field in [
+                'fancy_table',
+                'color_enabled',
+                'colors_enabled',
                 'highlight_enabled',
                 'guide_examples', 
                 'module_list', 
@@ -107,17 +262,23 @@ class VFManager:
                 self.handler['module_run'] = False
                 field = 'module'
             
+            # recorded as is: uppercase stuff
+            if field in ['astt']:
+                value = value.upper()
+            else:
+                value = value.lower()
+
             filters.append({
                 'field': field,
                 'op': '==',
-                'value': value.lower()
+                'value': value
                 }
             )
 
         return filters
 
     def print_guide_line(self, line):
-        if self.handler['highlight_enabled']:
+        if self.handler['color_enabled']:
             print(f"\t\t{highlight(line,PythonLexer(),TerminalFormatter()).strip()}")
         else:
             print(f"\t\t{cl(line,'white')}")
@@ -175,6 +336,13 @@ class VFManager:
         describe().siddhi(siddhi)
 
     def query_siddhis(self):
+        if not VFDBOps().table_exists(self.model):
+            from res.vmnf_banners import default_naviban    
+            print("\033c", end="")
+            default_naviban()
+            print(f"\n  No plugins loaded. Please run 'vimana load --plugins' to load plugins.\n")
+            sys.exit(1)
+        
         return (VFDBOps().list_resource(self.model,self.query_filters))
 
     def get_siddhi(self):
@@ -197,39 +365,68 @@ class VFManager:
         print()
 
     def list_siddhis(self):
+
+        if self.interactive_mode:
+            navisiddhis(self.handler).manage()
+            return True
+
+        _plugins_table_ = False
         matches = self.query_siddhis()
 
         if not matches:
             self.no_match() 
             return False
+        
+        print("\033c", end="")
+        vimana_version = cl(f'Vimana {_version_}', 77,attrs=['bold'])
+        vimana_desc = cl('(Security & Automation Tools for Python Web Frameworks)', 77,attrs=['bold'])
+        plugin_catalog = cl('Plugin Catalog', 15)  
 
-        case_header()
-        matches_table = DJUtils().get_pretty_table(
-            **table_models().siddhis_tbl_set
-        )
+        vimana_banner = f"""
+        
+                      __'__'__         
+                        `''´          
+                   {vimana_version} - {plugin_catalog}
+                   {vimana_desc}
+        """
 
-        for siddhi in matches:
-            matches_table.add_row(
-                [
-                    siddhi.name.lower(),
-                    siddhi.type.lower(),
-                    siddhi.category.lower(),
-                    siddhi.info
-                ]
+        cprint(vimana_banner, 77)
+        
+        if self.handler.get('fancy_table'):
+            _plugins_table_ = gen_issues_table(matches, 'plugins')
+
+        else:
+            from siddhis.djunch.engines._dju_utils import DJUtils
+
+            _plugins_table_ = DJUtils().get_pretty_table(
+                **table_models().siddhis_tbl_set
             )
 
-        print(matches_table)
+            for siddhi in matches:
+                _plugins_table_.add_row(
+                    [
+                        cl(siddhi.name.lower(),64),
+                        siddhi.type.lower(),
+                        siddhi.category.lower(),
+                        siddhi.astt.upper(),
+                        siddhi.info
+                    ]
+                )
+                
+        print(_plugins_table_)
         print()
 
     def run_siddhi(self):
         self.handler['module'] = self.handler['module_run']
-        
+        siddhi = self.get_siddhi()
+
         # `project_dir` could also be set right here
-        if not self.handler['runner_mode']:
+        if not self.handler['runner_mode'] and not self.handler['request_data_set']:
             ''' In Runner mode we already have the scope 
             and everything else in place '''
-            self.parse_handler_scope()
-
+            # new stuff here
+            if siddhi.vfset.get('parse_plugin_scope'):
+                self.parse_handler_scope()
 
         siddhi = self.get_siddhi()
 
@@ -239,7 +436,6 @@ class VFManager:
             if "no attribute 'module'" in aex.args[0]:
                 cprint("It seems like you haven't populated the database yet.", 'cyan')
                 cprint(f"   Just run load to fix this: {cl('$ vimana load --plugins.','green')}\n", 'cyan')
-
                 return False
 
         try:
@@ -248,7 +444,7 @@ class VFManager:
             if self.handler['debug']:
                 _ex_().template_atribute_error(AEX,module_name)
             sys.exit(1)
-
+        
         try:
             run_status = _siddhi_(**self.handler).start()
         except KeyboardInterrupt:
@@ -290,7 +486,7 @@ class VFManager:
         if sys.argv[-1] != self.handler['module']:
             if self.handler['save_case']:
                 self.handler['args'] = sys.argv
-                CasManager(False,self.handler).save_case()
+                CasManager(self.handler).save_case()
 
             if self.handler['sample']:
                 print("\033c", end="")
@@ -301,7 +497,7 @@ class VFManager:
             if not self.handler['session_mode']\
                     and not self.handler['sample']:
 
-                vmnf_banners.load(self.handler['module'],20)
+                vmnf_banners.load(self.handler['module'],3)
                 vmnf_banners.default_vmn_banner()
             
             # plugins that require 'project_dir' argument doesn't use target scope,e.g: IP's, URLs,etc
@@ -313,8 +509,12 @@ class VFManager:
             self.handler['scope'] = ScopeParser(**self.handler).parse_scope()
             targets_ports_set = get_scope(**self.handler)
 
-        len_tps = len(targets_ports_set)
-        self.handler['multi_target'] = True if len_tps > 1 else False
+        if targets_ports_set:
+            len_tps = len(targets_ports_set)
+        else:
+            len_tps = False
+
+        self.handler['multi_target'] = True if len_tps and len_tps> 1 else False
 
         if self.handler['multi_target']:
             cs_b = len(self.set_sessions_control())
@@ -352,4 +552,3 @@ class VFManager:
                         self.handler.get('target_url')
                     ]
                 }
-

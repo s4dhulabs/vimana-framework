@@ -14,14 +14,21 @@
 name: DJunch
 author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
 brief: Django application fuzzer
-category: Framework
+category: Fuzzer
 framework: Django
 info: Application fuzzer for Django framework  
 module: siddhis/djunch/djunch.py
 package: Django
-type: Fuzzer
+type: DAST
+astt: DAST
 tags:
+  - Fuzzer
   - Exceptions
+  - Crash
+  - InputValidation
+  - WebForms
+composition: 
+  mode: Standalone
 description: |
   Djunch is a Django application fuzzer whose purpose is
   to spot unhandled exceptions and feed the caller modules
@@ -47,6 +54,8 @@ references:
     - CWE-209 - Generation of Error Message Containing Sensitive Information
     - CWE-756 - Missing Custom Error Page
     - CWE-1295 - Debug Messages Revealing Unnecessary Information
+vfset:
+  parse_plugin_scope: True
 guide:
   args: |
     ø----------------------------------------------------------------------o

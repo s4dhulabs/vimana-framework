@@ -1,0 +1,42 @@
+{
+  "summary": {
+    "target_count": 3,
+    "scan_time": 8.982258319854736,
+    "timestamp": "2025-03-07 15:16:08",
+    "framework_distribution": {
+      "FastAPI": 3
+    },
+    "average_scan_time": 2.9940861066182456,
+    "total_frameworks_detected": 3,
+    "total_components_detected": 4
+  },
+  "targets": [
+    {
+      "url": "http://127.0.0.1:8887",
+      "top_framework": "FastAPI",
+      "confidence": 3,
+      "scan_time": 8.86971664428711,
+      "detected_frameworks": 1,
+      "components": 0,
+      "version": "Unknown"
+    },
+    {
+      "url": "http://127.0.0.1:5000",
+      "top_framework": "FastAPI",
+      "confidence": 3,
+      "scan_time": 0.06784725189208984,
+      "detected_frameworks": 1,
+      "components": 0,
+      "version": "Unknown"
+    },
+    {
+      "url": "http://127.0.0.1:8000",
+      "top_framework": "FastAPI",
+      "confidence": 73,
+      "scan_time": 0.04469442367553711,
+      "detected_frameworks": 1,
+      "components": 4,
+      "version": "0.89+"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+stages:
+  - security-test
+
+vimana-framework-setup:
+  stage: security-test
+  image: python:3.10
+  variables:
+    PYTHONWARNINGS: ignore
+  before_script:
+    - apt-get update && apt-get install -y curl sudo git
+    - curl -s https://raw.githubusercontent.com/s4dhulabs/vimana-framework/develop/scripts/install | bash
+  script:
+    - source vfe 
+    - vimana list --plugins 
