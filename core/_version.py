@@ -37,7 +37,7 @@ import sys
 from typing import NamedTuple, Optional
 
 # Core version information - UPDATE THIS FOR NEW RELEASES
-__version_info__ = (0, 8, 0)  # (major, minor, patch)
+__version_info__ = (1, 0, 0)  # (major, minor, patch)
 __prerelease__ = None
 __prerelease_num__ = None
 __build__ = None  # Build metadata (optional)
@@ -98,7 +98,7 @@ def _is_development_version() -> bool:
     return __prerelease__ is not None or _get_git_version() is not None
 
 # Public API - Static version for build tools
-__version__ = "0.8.0"  # Updated by version manager
+__version__ = "1.0.0"  # Updated by version manager
 __version_info_tuple__ = VersionInfo(
     major=__version_info__[0],
     minor=__version_info__[1], 
