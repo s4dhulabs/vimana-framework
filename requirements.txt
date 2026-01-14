@@ -8,6 +8,7 @@ python-jose>=3.3.0
 passlib>=1.7.4
 python-multipart>=0.0.6
 bcrypt>=4.0.1 
+colorama
 simple-term-menu
 parse-nmap
 python-libnmap
@@ -57,4 +58,5 @@ rich
 aiohttp
 asyncio
 jsonpickle
+jsonschema
 simple-term-menu
