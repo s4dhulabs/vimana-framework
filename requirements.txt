@@ -12,6 +12,7 @@ parse-nmap
 python-libnmap
 PySocks
 wheel
+setuptools
 beautifulsoup4
 bs4
 django

@@ -24,7 +24,6 @@ from time import sleep
 from pygments import highlight
 from neotermcolor import cprint,colored as cl
 from pygments.lexers import Python3Lexer
-from pkg_resources import resource_filename
 from pygments.formatters import TerminalFormatter
 from core.vmnf_navicontrols import normalize, jazzit
 
