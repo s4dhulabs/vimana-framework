@@ -15,7 +15,7 @@ from core._dbops_.database import db
 from core._dbops_.models.channels import VFChannels
 from neotermcolor import colored, cprint
 from tabulate import tabulate
-from datetime import datetime
+from datetime import datetime, timezone
 from res.vmnf_banners import default_naviban,sample_mode
 import json
 import ast
@@ -217,7 +217,7 @@ def update_channel_status(channel_id, status='verified', metadata_update=None):
         return False
     
     channel.status = status
-    channel.last_verified = datetime.utcnow()
+    channel.last_verified = datetime.now(timezone.utc)
     
     if metadata_update and channel.channel_metadata:
         channel.channel_metadata.update(metadata_update)
@@ -276,4 +276,4 @@ def run_command_in_channel(handler_ns):
     except Exception as e:
         print(cl(f"[ERROR] Command execution failed: {e}", "red"))
         sys.exit(1)
-    sys.exit(0) 
+    sys.exit(0)

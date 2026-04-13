@@ -47,7 +47,7 @@ class CheckTargetScope:
             sock.settimeout(int(self.vmnf_handler['timeout']))
             sock.connect((self.target, port))
             return True
-        except:
+        except Exception:
             return False
 
     def worker(self):
