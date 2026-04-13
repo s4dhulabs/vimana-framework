@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, DateTime, Text, JSON
 from core._dbops_.database import db
-import datetime
+from datetime import datetime, timezone
 
 class VFChannels(db.Model):
     __tablename__ = '_CHANNELS_'
@@ -12,7 +12,7 @@ class VFChannels(db.Model):
     method = Column(String(16), nullable=False)
     payload_template = Column(Text, nullable=False)
     description = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    last_verified = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    last_verified = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     status = Column(String(32), default='active')
-    channel_metadata = Column(JSON, nullable=True) 
+    channel_metadata = Column(JSON, nullable=True)

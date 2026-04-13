@@ -91,7 +91,7 @@ class VFDBOps:
         try:
             num_rows_deleted = db.session.query(vf_model).delete()
             db.session.commit()
-        except:
+        except Exception:
             db.session.rollback()
             return False
 
