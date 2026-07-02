@@ -45,6 +45,7 @@ from core.vmnf_dscan import DockerDiscovery
 from core.vmnf_sessions import VFSession
 from core.vmnf_cases import CasManager
 from core.vmnf_scans import VFScan
+from core.vmnf_specs import VFSpecsManager
 from core.vmnf_rrunner import *
 from core.vmnf_navidash import vimanadash 
 from core._dbops_.vmnf_dbops import VFDBOps
@@ -303,6 +304,9 @@ def abduct():
     #~ list all scans
     elif handler_ns.list_scans:
         VFScan(**vars(handler_ns)).list_scans()
+
+    elif handler_ns.list_specs:
+        VFSpecsManager(**vars(handler_ns)).list_specs()
 
     #~ list all channels
     elif handler_ns.list_channels:
