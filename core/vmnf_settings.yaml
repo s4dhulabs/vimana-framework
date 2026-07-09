@@ -73,5 +73,6 @@ settings:
         - fff
         - pyserial
         - w2pyscanner
+        - socketline
     utils:
         random_headers: res/random_headers.yaml

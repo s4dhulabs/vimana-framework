@@ -389,10 +389,9 @@ class siddhi:
         # Pass the set_custom_payload flag
         if self.set_custom_payload:
             print(f" → Interactive payload builder will be enabled in PySerial")
-            # TODO: Enable this in the future 
-            pyserial_handler['set_custom_payload'] = False 
+            pyserial_handler['set_custom_payload'] = True
             # Always enable verbose mode when using interactive payload builder
-            pyserial_handler['verbose'] = False
+            pyserial_handler['verbose'] = True
         
         # Import and call PySerial plugin
         try:
@@ -883,24 +882,8 @@ class siddhi:
         return True
 
     def generate_spec_id(self, api_specs: dict) -> str:
-        """
-        Generate a unique spec ID combining content hash and time-based salt.
-        Format: aS<4_chars>
-        """
-        # Get base content hash
-        content_hash = get_hash(str(api_specs))
-        
-        # Add current timestamp as salt to ensure uniqueness
-        timestamp_salt = str(int(datetime.now().timestamp()))
-        combined_hash = get_hash(content_hash + timestamp_salt)
-        
-        # Take first 4 chars for the ID
-        spec_id = f"aS{combined_hash[:4]}"
-        
-        if self.verbose_enabled:
-            print(f" → Generated Spec ID: {spec_id}")
-        
-        return spec_id
+        from core.vmnf_specs import generate_spec_id
+        return generate_spec_id(api_specs)
 
     async def check_api(self):
         jcbanner_fmt({})

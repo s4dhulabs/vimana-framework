@@ -234,6 +234,9 @@ class vfasserts:
             and not self._vfh_['create_env'] \
             and not self._vfh_['load_from_env'] \
             and not self._vfh_['api_scan_enabled'] \
+            and not self._vfh_['ws_audit_enabled'] \
+            and not self._vfh_['openapi_spec_file'] \
+            and not self._vfh_['openapi_spec_url'] \
         ) else True
 
     def default_guide_mode(self):

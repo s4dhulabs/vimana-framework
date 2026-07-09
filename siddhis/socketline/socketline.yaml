@@ -1,0 +1,163 @@
+# -*- coding: utf-8 -*-
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+# This file is part of Vimana Framework Project.
+
+name: Socketline
+author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
+brief: WebSocket Security Auditor
+category: Audit
+framework: FastAPI
+info: Audits WebSocket endpoints for handshake, origin, and auth weaknesses in FastAPI/Starlette apps.
+module: siddhis/socketline/socketline.py
+package: FastAPI
+type: DAST
+astt: DAST
+tags:
+  - WebSocket
+  - FastAPI
+  - Starlette
+  - Handshake
+  - Origin
+  - API
+composition:
+  mode: Standalone
+  orchestrator_ready: true
+  future_orchestrator: wso
+  plugin_chain:
+    websocket:
+      - socketline
+description: |
+  Socketline is an independent FastAPI-focused WebSocket security auditor for the
+  Vimana Framework. It discovers WebSocket endpoints, performs handshake security
+  checks, and registers findings as framework channels for cross-plugin reuse.
+
+  Unlike jcolt-dependent workflows, socketline implements its own OpenAPI discovery,
+  specification caching, and registration into Vimana's global _SPECS_ table. This
+  allows running WebSocket-only assessments without invoking the full jcolt pipeline.
+
+  Key capabilities:
+  - Independent OpenAPI fetch from common FastAPI locations
+  - Local spec cache at ~/.vimana/cache/socketline/specs/
+  - Environment tracking via ~/.socketline_env
+  - WebSocket path discovery (OpenAPI hints + wordlist)
+  - Handshake tests: unauthenticated access, Origin spoofing, dual-session behavior
+  - Optional reuse of specs previously registered by any plugin (via --apispec)
+  - Channel registration for high/medium severity findings
+references:
+  links:
+    - https://fastapi.tiangolo.com/advanced/websockets/
+    - https://owasp.org/API-Security/editions/2023/en/0xa2-broken-authentication/
+    - https://owasp.org/API-Security/editions/2023/en/0xa5-broken-function-level-authorization/
+  cwe:
+    - CWE-306 - Missing Authentication for Critical Function
+    - CWE-639 - Authorization Bypass Through User-Controlled Key
+    - CWE-346 - Origin Validation Error
+    - CWE-20 - Improper Input Validation
+vfset:
+  parse_plugin_scope: False
+guide:
+  naviargs:
+    target_url: True
+  args: |
+    ø----------------------------------------------------------------------ø
+    ⣿ SOCKETLINE — WebSocket Security Auditor
+    ø-----------+----------------------------------------------------------ø
+    │ API spec (independent from jcolt)                                    │
+    +------------+---------------------------------------------------------+
+     --scan-api URL        Discover OpenAPI, cache spec, register in _SPECS_
+     --spec-url URL        Direct OpenAPI document URL (optional with scan)
+     --spec-file PATH      Load OpenAPI JSON/YAML from local file
+     --apispec ID          Use a spec already stored in Vimana (any plugin)
+     --use-env             Use last socketline scan from ~/.socketline_env
+    ø-----------+----------------------------------------------------------ø
+    │ WebSocket audit                                                      │
+    +------------+---------------------------------------------------------+
+     --ws-audit            Run WebSocket security audit (default with target)
+     --ws-path PATH        Explicit WebSocket path (e.g. /ws/chat)
+     --ws-auth-header HDR  Auth header for handshake (e.g. "Authorization: Bearer …")
+     --ws-origin ORIGIN    Custom Origin header to test validation
+     --ws-dual-session     Test multiple concurrent authenticated sessions
+     --target-url URL      API base URL (http/https)
+    ø-----------+----------------------------------------------------------ø
+    │ CI/CD & JSON                                                         │
+    +------------+---------------------------------------------------------+
+     --json              Print machine-readable JSON report on stdout
+     --ci-mode           CI gate: exit 1 when high-severity findings exist
+     --no-channels       Skip _CHANNELS_ registration (cleaner CI runs)
+     --no-metadata       Suppress banner and human-readable tables
+     -o / --output FILE  Also write JSON report to file (pipe-friendly with jq)
+    ø-----------+----------------------------------------------------------ø
+    │ Shared                                                               │
+    +------------+---------------------------------------------------------+
+     --list-specs          List specs registered in Vimana
+     --verbose             Verbose output
+  examples: |
+    # Full independent workflow: scan API + audit WebSockets
+    vimana run socketline --scan-api http://localhost:8000 --ws-audit
+
+    # CI pipeline gate (exit 1 on high findings)
+    vimana run socketline --target-url http://localhost:8000 \
+      --ws-path /ws/chat --ws-audit --ci-mode --json --no-channels
+
+    # Pipe JSON into jq for shell automation
+    vimana run socketline --scan-api http://localhost:8000 --ws-audit --json --no-channels \
+      | jq '.summary'
+
+    # Extract only high-severity checks
+    vimana run socketline --target-url http://localhost:8000 --ws-audit --json \
+      | jq '[.findings[] | select(.severity=="high")]'
+
+    # Scan only — emit spec_id for downstream jobs (future WSO chaining)
+    vimana run socketline --scan-api http://localhost:8000 --json --ci-mode \
+      | jq -r '.spec_id'
+
+    # Audit using only target URL (auto-fetch OpenAPI + wordlist discovery)
+    vimana run socketline --target-url http://localhost:8000 --ws-audit
+
+    # Explicit WebSocket path without OpenAPI dependency
+    vimana run socketline --target-url http://localhost:8000 \
+      --ws-path /ws/chat --ws-audit
+
+    # Reuse an existing Vimana spec ID (from socketline or jcolt)
+    vimana run socketline --apispec aScce5 --ws-audit
+
+    # Load local OpenAPI and register against target
+    vimana run socketline --spec-file ./openapi.json \
+      --target-url http://localhost:8000 --ws-audit
+
+    # Authenticated handshake + Origin spoof test
+    vimana run socketline --target-url http://localhost:8000 \
+      --ws-path /ws/room/1 --ws-audit \
+      --ws-auth-header "Authorization: Bearer TOKEN" --ws-dual-session
+
+    # Example CI scripts (see examples/ci/)
+    bash siddhis/socketline/examples/ci/gate_high_findings.sh http://localhost:18099 /ws/chat
+    bash siddhis/socketline/examples/ci/audit_and_jq.sh http://localhost:18099
+  lab_setup: |
+    Minimal FastAPI lab with WebSocket (uvicorn):
+
+    ```python
+    from fastapi import FastAPI, WebSocket
+
+    app = FastAPI()
+
+    @app.websocket("/ws/chat")
+    async def chat(ws: WebSocket):
+        await ws.accept()  # intentionally permissive for testing
+        while True:
+            data = await ws.receive_text()
+            await ws.send_text(data)
+
+    @app.get("/openapi.json")
+    async def openapi():
+        return app.openapi()
+    ```
+
+    Run:
+      uvicorn main:app --host 0.0.0.0 --port 18010
+
+    Test:
+      vimana run socketline --scan-api http://localhost:18010 --ws-audit

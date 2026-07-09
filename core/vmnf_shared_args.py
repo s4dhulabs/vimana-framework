@@ -134,6 +134,16 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument('--describe',action='store_true',dest='describe_mode_enabled',default=False)
         vmnf_shared_parser.add_argument('--scan-api',action='store',dest='api_scan_enabled',nargs='?',const='ENV_FALLBACK',default=False)
         vmnf_shared_parser.add_argument('--api-scan',action='store',dest='api_scan_enabled',nargs='?',const='ENV_FALLBACK',default=False)
+
+        # socketline — WebSocket security auditor
+        vmnf_shared_parser.add_argument('--ws-audit', action='store_true', dest='ws_audit_enabled', default=False)
+        vmnf_shared_parser.add_argument('--ws-path', action='store', dest='ws_path', default=False)
+        vmnf_shared_parser.add_argument('--ws-dual-session', action='store_true', dest='ws_dual_session', default=False)
+        vmnf_shared_parser.add_argument('--ws-auth-header', action='store', dest='ws_auth_header', default=False)
+        vmnf_shared_parser.add_argument('--ws-origin', action='store', dest='ws_origin', default=False)
+        vmnf_shared_parser.add_argument('--spec-file', action='store', dest='openapi_spec_file', default=False)
+        vmnf_shared_parser.add_argument('--spec-url', action='store', dest='openapi_spec_url', default=False)
+        vmnf_shared_parser.add_argument('--no-channels', action='store_true', dest='no_channels', default=False)
         vmnf_shared_parser.add_argument('--check-debug',action='store_true',dest='check_debug',default=False)
         vmnf_shared_parser.add_argument('--discovery-only',action='store_true',dest='discovery_only',default=False)
         # -------------------------------------------------------------------------------
