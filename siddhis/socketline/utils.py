@@ -9,19 +9,27 @@ import hashlib
 from neotermcolor import colored
 
 
+def should_show_banner(handler: dict) -> bool:
+    """Banner is opt-in only (--banner). Off by default for pipes/CI."""
+    if handler.get('ci_mode') or handler.get('json_output') or handler.get('no_metadata'):
+        return False
+    return bool(handler.get('show_banner'))
+
+
 def sl_banner():
+    """WebSocket / network themed banner (not jcolt saxophone)."""
+    title = colored('SOCKETLINE', 39)
+    subtitle = colored('WebSocket Security Auditor', 45)
+    framework = colored('VimanaFramework v1.0', 8)
     print(
         f"""
-            _
-         -='-ø'`
-              \\ \\
-               ø {colored('S0cketline', 39)}
-              .ø |.---,
-              :ø ||  |
-               \\ ~   |
-                '._.'
-                {colored('VimanaFramework v1.0', 8)}
-                        @s4dhulabs
+    ◉───────────╮         ╭───────────◉
+     \\   ws://  \\───────/  wss://   /
+      \\         \\  {title}  /         /
+       ◉─────────◉─────────◉─────────◉
+              {subtitle}
+              {framework}
+                    @s4dhulabs
         """
     )
 

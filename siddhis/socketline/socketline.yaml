@@ -87,7 +87,8 @@ guide:
      --json              Print machine-readable JSON report on stdout
      --ci-mode           CI gate: exit 1 when high-severity findings exist
      --no-channels       Skip _CHANNELS_ registration (cleaner CI runs)
-     --no-metadata       Suppress banner and human-readable tables
+     --no-metadata       Suppress human-readable tables
+     --banner            Show ASCII banner (off by default; use for interactive runs)
      -o / --output FILE  Also write JSON report to file (pipe-friendly with jq)
     ø-----------+----------------------------------------------------------ø
     │ Shared                                                               │
@@ -133,31 +134,27 @@ guide:
       --ws-path /ws/room/1 --ws-audit \
       --ws-auth-header "Authorization: Bearer TOKEN" --ws-dual-session
 
-    # Example CI scripts (see examples/ci/)
-    bash siddhis/socketline/examples/ci/gate_high_findings.sh http://localhost:18099 /ws/chat
-    bash siddhis/socketline/examples/ci/audit_and_jq.sh http://localhost:18099
+    # Example CI scripts (see examples/ci/) — use lab on port 18100
+    bash siddhis/socketline/examples/ci/gate_high_findings.sh http://localhost:18100 /ws/chat
+    bash siddhis/socketline/examples/ci/audit_and_jq.sh http://localhost:18100
   lab_setup: |
-    Minimal FastAPI lab with WebSocket (uvicorn):
+    Docker lab (FastAPI + vulnerable WebSocket endpoints):
 
-    ```python
-    from fastapi import FastAPI, WebSocket
+      vimana run --lab socketline
 
-    app = FastAPI()
+    Manual setup:
 
-    @app.websocket("/ws/chat")
-    async def chat(ws: WebSocket):
-        await ws.accept()  # intentionally permissive for testing
-        while True:
-            data = await ws.receive_text()
-            await ws.send_text(data)
+      cd siddhis/socketline/lab && ./setup.sh
 
-    @app.get("/openapi.json")
-    async def openapi():
-        return app.openapi()
-    ```
-
-    Run:
-      uvicorn main:app --host 0.0.0.0 --port 18010
+    Lab URL: http://localhost:18100
+    OpenAPI: http://localhost:18100/openapi.json
+    WebSocket paths: /ws/chat, /ws/room/{id}, /ws/admin, /ws/events
 
     Test:
-      vimana run socketline --scan-api http://localhost:18010 --ws-audit
+
+      vimana run socketline --scan-api http://localhost:18100 --ws-audit --json --no-channels
+      vimana run socketline --target-url http://localhost:18100 --ws-path /ws/chat --ws-audit --json
+
+    Interactive run with banner:
+
+      vimana run socketline --scan-api http://localhost:18100 --ws-audit --banner

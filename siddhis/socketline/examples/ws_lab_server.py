@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Lightweight aiohttp WS stub (port 18099). Prefer `vimana run --lab socketline` (port 18100)."""
 import asyncio
 from aiohttp import web
 

@@ -54,7 +54,8 @@ class VimanaLabManager:
             "django_scanner": 8000,
             "flask_scanner": 5000,
             "fastapi_scanner": 8000,
-            "framewalk": 8081  # Primary service (web2py)
+            "framewalk": 8081,  # Primary service (web2py)
+            "socketline": 18100,
         }
         
         # Multi-service lab configurations
@@ -81,6 +82,11 @@ class VimanaLabManager:
             },
             "w2pyscanner": {
                 "single": "--target-url",
+                "multiple": None,
+                "supports_file": False
+            },
+            "socketline": {
+                "single": "--scan-api",
                 "multiple": None,
                 "supports_file": False
             }
@@ -629,7 +635,14 @@ class VimanaLabManager:
         # Get correct command syntax for this plugin
         plugin_cmd = self.plugin_commands.get(plugin_name, {"single": "--target", "multiple": "--file", "supports_file": False})
         single_param = plugin_cmd["single"]
-        print(f"   🎯 Test Command: vimana run {plugin_name} {single_param} {url}")
+
+        if plugin_name == "socketline":
+            print(f"   🎯 Scan + audit: vimana run {plugin_name} {single_param} {url} --ws-audit --json --no-channels")
+            print(f"   🎯 Single path:   vimana run {plugin_name} --target-url {url} --ws-path /ws/chat --ws-audit --json")
+            print(f"   📡 OpenAPI:       {url}/openapi.json")
+            print(f"   🔌 WebSocket:     ws://localhost:{port}/ws/chat")
+        else:
+            print(f"   🎯 Test Command: vimana run {plugin_name} {single_param} {url}")
         
         # Show targets file info if it exists
         if plugin_name in self.active_labs and "targets_file" in self.active_labs[plugin_name]:

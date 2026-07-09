@@ -11,7 +11,7 @@ from neotermcolor import colored
 from core.vmnf_shared_args import VimanaSharedArgs
 from core.vmnf_specs import list_specs
 
-from siddhis.socketline.utils import sl_banner
+from siddhis.socketline.utils import should_show_banner, sl_banner
 from siddhis.socketline.engines.spec_manager import SpecResolutionError
 from siddhis.socketline.orchestrator import run_spec_scan, run_ws_audit
 
@@ -50,7 +50,7 @@ class siddhi:
                 list_specs()
             return True
 
-        if not self._quiet():
+        if should_show_banner(handler):
             sl_banner()
 
         scan_only = handler.get('api_scan_enabled') and not handler.get('ws_audit_enabled')

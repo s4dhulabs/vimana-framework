@@ -144,6 +144,7 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument('--spec-file', action='store', dest='openapi_spec_file', default=False)
         vmnf_shared_parser.add_argument('--spec-url', action='store', dest='openapi_spec_url', default=False)
         vmnf_shared_parser.add_argument('--no-channels', action='store_true', dest='no_channels', default=False)
+        vmnf_shared_parser.add_argument('--banner', action='store_true', dest='show_banner', default=False)
         vmnf_shared_parser.add_argument('--check-debug',action='store_true',dest='check_debug',default=False)
         vmnf_shared_parser.add_argument('--discovery-only',action='store_true',dest='discovery_only',default=False)
         # -------------------------------------------------------------------------------

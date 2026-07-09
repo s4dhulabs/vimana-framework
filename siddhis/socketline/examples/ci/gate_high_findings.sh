@@ -2,7 +2,7 @@
 # CI gate: fail pipeline when socketline reports high-severity WebSocket findings.
 set -euo pipefail
 
-TARGET_URL="${1:-http://127.0.0.1:18099}"
+TARGET_URL="${1:-http://127.0.0.1:18100}"
 WS_PATH="${2:-/ws/chat}"
 
 REPORT="$(mktemp)"
