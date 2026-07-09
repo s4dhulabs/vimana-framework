@@ -74,5 +74,6 @@ settings:
         - pyserial
         - w2pyscanner
         - socketline
+        - streamguard
     utils:
         random_headers: res/random_headers.yaml

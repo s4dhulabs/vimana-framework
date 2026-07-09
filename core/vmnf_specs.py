@@ -64,7 +64,8 @@ def generate_spec_id(api_specs: dict) -> str:
 
 
 def get_specs():
-    return VFDBOps().list_resource('_SPECS_', [])
+    result = VFDBOps().list_resource('_SPECS_', [])
+    return result if isinstance(result, list) else []
 
 
 def find_spec_by_host_and_fingerprint(base_url: str, fingerprint: str) -> Optional[Any]:
@@ -248,7 +249,8 @@ class VFSpecsManager:
         self.model = '_SPECS_'
 
     def get_specs(self):
-        return VFDBOps().list_resource(self.model, [])
+        result = VFDBOps().list_resource(self.model, [])
+        return result if isinstance(result, list) else []
 
     def list_specs(self):
         return list_specs(self.get_specs())

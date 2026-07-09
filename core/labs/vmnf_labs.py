@@ -56,6 +56,7 @@ class VimanaLabManager:
             "fastapi_scanner": 8000,
             "framewalk": 8081,  # Primary service (web2py)
             "socketline": 18100,
+            "streamguard": 18101,
         }
         
         # Multi-service lab configurations
@@ -86,6 +87,11 @@ class VimanaLabManager:
                 "supports_file": False
             },
             "socketline": {
+                "single": "--scan-api",
+                "multiple": None,
+                "supports_file": False
+            },
+            "streamguard": {
                 "single": "--scan-api",
                 "multiple": None,
                 "supports_file": False
@@ -641,6 +647,11 @@ class VimanaLabManager:
             print(f"   🎯 Single path:   vimana run {plugin_name} --target-url {url} --ws-path /ws/chat --ws-audit --json")
             print(f"   📡 OpenAPI:       {url}/openapi.json")
             print(f"   🔌 WebSocket:     ws://localhost:{port}/ws/chat")
+        elif plugin_name == "streamguard":
+            print(f"   🎯 Scan + audit: vimana run {plugin_name} {single_param} {url} --stream-audit --json --no-channels")
+            print(f"   🎯 SSE path:      vimana run {plugin_name} --target-url {url} --stream-path /events --stream-audit --json")
+            print(f"   🎯 NDJSON path:   vimana run {plugin_name} --target-url {url} --stream-path /logs/stream --stream-type ndjson --stream-audit")
+            print(f"   📡 OpenAPI:       {url}/openapi.json")
         else:
             print(f"   🎯 Test Command: vimana run {plugin_name} {single_param} {url}")
         

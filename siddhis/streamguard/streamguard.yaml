@@ -1,0 +1,150 @@
+# -*- coding: utf-8 -*-
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+# This file is part of Vimana Framework Project.
+
+name: Streamguard
+author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
+brief: SSE & Streaming Endpoint Security Auditor
+category: Audit
+framework: FastAPI
+info: Audits Server-Sent Events and HTTP streaming endpoints for auth drift, cursor tampering, and misconfiguration.
+module: siddhis/streamguard/streamguard.py
+package: FastAPI
+type: DAST
+astt: DAST
+tags:
+  - SSE
+  - Streaming
+  - FastAPI
+  - EventSource
+  - NDJSON
+  - API
+composition:
+  mode: Standalone
+  orchestrator_ready: true
+  plugin_chain:
+    streaming:
+      - streamguard
+description: |
+  Streamguard is an independent FastAPI-focused auditor for Server-Sent Events (SSE),
+  NDJSON streams, and chunked HTTP responses. It specializes exclusively in long-lived
+  HTTP streaming surfaces — complementary to socketline (WebSocket) and boundr (multipart).
+
+  Key capabilities:
+  - Independent OpenAPI fetch and registration into Vimana _SPECS_
+  - Local spec cache at ~/.vimana/cache/streamguard/specs/
+  - Environment tracking via ~/.streamguard_env
+  - Stream discovery (OpenAPI content-types + wordlist probing)
+  - Auth drift: unauthenticated vs authenticated stream access
+  - Tenant isolation: Last-Event-ID / cursor tampering
+  - CRLF injection probes in query parameters reflected in SSE frames
+  - Light parallel connection checks (resource consumption signal)
+  - CI-friendly JSON output and channel registration for high/medium findings
+references:
+  links:
+    - https://fastapi.tiangolo.com/advanced/custom-response/#streamingresponse
+    - https://html.spec.whatwg.org/multipage/server-sent-events.html
+    - https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/
+    - https://owasp.org/API-Security/editions/2023/en/0xa4-unrestricted-resource-consumption/
+  cwe:
+    - CWE-200 - Exposure of Sensitive Information
+    - CWE-613 - Insufficient Session Expiration
+    - CWE-400 - Uncontrolled Resource Consumption
+    - CWE-20 - Improper Input Validation
+vfset:
+  parse_plugin_scope: False
+guide:
+  naviargs:
+    target_url: True
+  args: |
+    ø----------------------------------------------------------------------ø
+    ⣿ STREAMGUARD — SSE & Streaming Security Auditor
+    ø-----------+----------------------------------------------------------ø
+    │ API spec (independent from jcolt)                                    │
+    +------------+---------------------------------------------------------+
+     --scan-api URL        Discover OpenAPI, cache spec, register in _SPECS_
+     --spec-url URL        Direct OpenAPI document URL (optional with scan)
+     --spec-file PATH      Load OpenAPI JSON/YAML from local file
+     --apispec ID          Use a spec already stored in Vimana (any plugin)
+     --use-env             Use last streamguard scan from ~/.streamguard_env
+    ø-----------+----------------------------------------------------------ø
+    │ Streaming audit                                                      │
+    +------------+---------------------------------------------------------+
+     --stream-audit        Run SSE/streaming security audit
+     --stream-path PATH    Explicit stream path (e.g. /events)
+     --stream-type TYPE    sse | ndjson | chunked | auto (default: auto)
+     --stream-duration N   Seconds to keep connection open (default: 10)
+     --stream-cursor VAL   Last-Event-ID / cursor value for tampering tests
+     --stream-auth-header  Auth header for drift comparison
+     --target-url URL      API base URL (http/https)
+    ø-----------+----------------------------------------------------------ø
+    │ CI/CD & JSON                                                         │
+    +------------+---------------------------------------------------------+
+     --json              Print machine-readable JSON report on stdout
+     --ci-mode           CI gate: exit 1 when high-severity findings exist
+     --no-channels       Skip _CHANNELS_ registration (cleaner CI runs)
+     --no-metadata       Suppress human-readable tables
+     --banner            Show ASCII banner (off by default; use for interactive runs)
+     -o / --output FILE  Also write JSON report to file (pipe-friendly with jq)
+    ø-----------+----------------------------------------------------------ø
+    │ Shared                                                               │
+    +------------+---------------------------------------------------------+
+     --list-specs          List specs registered in Vimana
+     --verbose             Verbose output
+  examples: |
+    # Full workflow: scan API + audit streaming endpoints
+    vimana run streamguard --scan-api http://localhost:8000 --stream-audit
+
+    # CI pipeline gate (exit 1 on high findings)
+    vimana run streamguard --target-url http://localhost:8000 \
+      --stream-path /events --stream-audit --ci-mode --json --no-channels
+
+    # Pipe JSON into jq
+    vimana run streamguard --scan-api http://localhost:8000 --stream-audit --json \
+      | jq '.summary'
+
+    # SSE-only audit with longer read window
+    vimana run streamguard --target-url http://localhost:8000 \
+      --stream-path /events --stream-type sse --stream-duration 15 --stream-audit
+
+    # NDJSON log stream
+    vimana run streamguard --target-url http://localhost:8000 \
+      --stream-path /logs/stream --stream-type ndjson --stream-audit
+
+    # Cursor tampering test
+    vimana run streamguard --target-url http://localhost:8000 \
+      --stream-path /events --stream-cursor user-b-leak --stream-audit
+
+    # Reuse existing Vimana spec ID
+    vimana run streamguard --apispec aScce5 --stream-audit
+
+    # Scan only — emit spec_id for downstream jobs
+    vimana run streamguard --scan-api http://localhost:8000 --json --ci-mode \
+      | jq -r '.spec_id'
+
+    bash siddhis/streamguard/examples/ci/gate_high_findings.sh http://localhost:18101 /events
+    bash siddhis/streamguard/examples/ci/audit_and_jq.sh http://localhost:18101
+  lab_setup: |
+    Docker lab (FastAPI SSE + NDJSON streaming endpoints):
+
+      vimana run --lab streamguard
+
+    Manual setup:
+
+      cd siddhis/streamguard/lab && ./setup.sh
+
+    Lab URL: http://localhost:18101
+    OpenAPI: http://localhost:18101/openapi.json
+    Streams: /events (SSE), /logs/stream (NDJSON), /events/private (auth required)
+
+    Test:
+
+      vimana run streamguard --scan-api http://localhost:18101 --stream-audit --json --no-channels
+      vimana run streamguard --target-url http://localhost:18101 --stream-path /events --stream-audit --json
+
+    Interactive run with banner:
+
+      vimana run streamguard --scan-api http://localhost:18101 --stream-audit --banner

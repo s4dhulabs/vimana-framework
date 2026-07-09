@@ -145,6 +145,14 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument('--spec-url', action='store', dest='openapi_spec_url', default=False)
         vmnf_shared_parser.add_argument('--no-channels', action='store_true', dest='no_channels', default=False)
         vmnf_shared_parser.add_argument('--banner', action='store_true', dest='show_banner', default=False)
+
+        # streamguard — SSE & streaming endpoint security
+        vmnf_shared_parser.add_argument('--stream-audit', action='store_true', dest='stream_audit_enabled', default=False)
+        vmnf_shared_parser.add_argument('--stream-path', action='store', dest='stream_path', default=False)
+        vmnf_shared_parser.add_argument('--stream-type', action='store', dest='stream_type', default='auto')
+        vmnf_shared_parser.add_argument('--stream-duration', action='store', dest='stream_duration', type=int, default=10)
+        vmnf_shared_parser.add_argument('--stream-cursor', action='store', dest='stream_cursor', default=False)
+        vmnf_shared_parser.add_argument('--stream-auth-header', action='store', dest='stream_auth_header', default=False)
         vmnf_shared_parser.add_argument('--check-debug',action='store_true',dest='check_debug',default=False)
         vmnf_shared_parser.add_argument('--discovery-only',action='store_true',dest='discovery_only',default=False)
         # -------------------------------------------------------------------------------
