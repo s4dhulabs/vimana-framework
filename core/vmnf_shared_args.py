@@ -153,6 +153,14 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument('--stream-duration', action='store', dest='stream_duration', type=int, default=10)
         vmnf_shared_parser.add_argument('--stream-cursor', action='store', dest='stream_cursor', default=False)
         vmnf_shared_parser.add_argument('--stream-auth-header', action='store', dest='stream_auth_header', default=False)
+
+        # boundr — Multipart & UploadFile boundary tester
+        vmnf_shared_parser.add_argument('--upload-audit', action='store_true', dest='upload_audit_enabled', default=False)
+        vmnf_shared_parser.add_argument('--upload-endpoint', action='store', dest='upload_endpoint', default=False)
+        vmnf_shared_parser.add_argument('--upload-field', action='store', dest='upload_field', default='file')
+        vmnf_shared_parser.add_argument('--upload-vectors', action='store', dest='upload_vectors', default='all')
+        vmnf_shared_parser.add_argument('--upload-auth-header', action='store', dest='upload_auth_header', default=False)
+
         vmnf_shared_parser.add_argument('--check-debug',action='store_true',dest='check_debug',default=False)
         vmnf_shared_parser.add_argument('--discovery-only',action='store_true',dest='discovery_only',default=False)
         # -------------------------------------------------------------------------------

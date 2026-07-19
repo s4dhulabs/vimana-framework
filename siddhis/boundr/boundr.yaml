@@ -1,0 +1,145 @@
+# -*- coding: utf-8 -*-
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+# This file is part of Vimana Framework Project.
+
+name: Boundr
+author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
+brief: Multipart & UploadFile Boundary Tester
+category: Audit
+framework: FastAPI
+info: Audits FastAPI UploadFile / multipart endpoints for traversal, MIME spoof, and size-policy weaknesses.
+module: siddhis/boundr/boundr.py
+package: FastAPI
+type: DAST
+astt: DAST
+tags:
+  - Upload
+  - Multipart
+  - UploadFile
+  - FastAPI
+  - PathTraversal
+  - MIME
+composition:
+  mode: Standalone
+  orchestrator_ready: true
+  plugin_chain:
+    upload:
+      - boundr
+description: |
+  Boundr is an independent FastAPI-focused auditor for multipart/form-data and
+  UploadFile surfaces. It specializes exclusively in upload boundary testing —
+  complementary to socketline (WebSocket) and streamguard (SSE/streaming).
+
+  Unlike w2pyscanner (Web2py-only), boundr targets the python-multipart /
+  UploadFile stack used by FastAPI and Starlette.
+
+  Key capabilities:
+  - Independent OpenAPI fetch and registration into Vimana _SPECS_
+  - Local spec cache at ~/.vimana/cache/boundr/specs/
+  - Environment tracking via ~/.boundr_env
+  - Multipart endpoint discovery (OpenAPI content-types + wordlist)
+  - Filename attacks: path traversal, null byte, reserved names
+  - MIME spoofing and polyglot uploads
+  - Size / empty-file policy probes
+  - CI-friendly JSON output and channel registration for high/medium findings
+references:
+  links:
+    - https://fastapi.tiangolo.com/tutorial/request-files/
+    - https://owasp.org/API-Security/editions/2023/en/0xa8-security-misconfiguration/
+    - https://owasp.org/API-Security/editions/2023/en/0xa10-unsafe-consumption-of-apis/
+  cwe:
+    - CWE-22 - Improper Limitation of a Pathname to a Restricted Directory
+    - CWE-434 - Unrestricted Upload of File with Dangerous Type
+    - CWE-20 - Improper Input Validation
+vfset:
+  parse_plugin_scope: False
+guide:
+  naviargs:
+    target_url: True
+  args: |
+    ø----------------------------------------------------------------------ø
+    ⣿ BOUNDR — Multipart & UploadFile Boundary Tester
+    ø-----------+----------------------------------------------------------ø
+    │ API spec (independent from jcolt)                                    │
+    +------------+---------------------------------------------------------+
+     --scan-api URL        Discover OpenAPI, cache spec, register in _SPECS_
+     --spec-url URL        Direct OpenAPI document URL (optional with scan)
+     --spec-file PATH      Load OpenAPI JSON/YAML from local file
+     --apispec ID          Use a spec already stored in Vimana (any plugin)
+     --use-env             Use last boundr scan from ~/.boundr_env
+    ø-----------+----------------------------------------------------------ø
+    │ Upload audit                                                         │
+    +------------+---------------------------------------------------------+
+     --upload-audit        Run multipart/upload security audit
+     --upload-endpoint P   Explicit upload path (e.g. /upload)
+     --upload-field NAME   Multipart field name (default: file)
+     --upload-vectors MODE traversal | mime | size | reserved | all
+     --upload-auth-header  Auth header for authenticated upload tests
+     --target-url URL      API base URL (http/https)
+    ø-----------+----------------------------------------------------------ø
+    │ CI/CD & JSON                                                         │
+    +------------+---------------------------------------------------------+
+     --json              Print machine-readable JSON report on stdout
+     --ci-mode           CI gate: exit 1 when high-severity findings exist
+     --no-channels       Skip _CHANNELS_ registration (cleaner CI runs)
+     --no-metadata       Suppress human-readable tables
+     --banner            Show ASCII banner (off by default)
+     -o / --output FILE  Also write JSON report to file (pipe-friendly with jq)
+    ø-----------+----------------------------------------------------------ø
+    │ Shared                                                               │
+    +------------+---------------------------------------------------------+
+     --list-specs          List specs registered in Vimana
+     --verbose             Verbose output
+  examples: |
+    # Full workflow: scan API + audit uploads
+    vimana run boundr --scan-api http://localhost:8000 --upload-audit
+
+    # CI pipeline gate
+    vimana run boundr --target-url http://localhost:8000 \
+      --upload-endpoint /upload --upload-audit --ci-mode --json --no-channels
+
+    # Pipe JSON into jq
+    vimana run boundr --scan-api http://localhost:8000 --upload-audit --json \
+      | jq '.summary'
+
+    # Traversal vectors only
+    vimana run boundr --target-url http://localhost:8000 \
+      --upload-endpoint /upload --upload-vectors traversal --upload-audit
+
+    # Custom multipart field name
+    vimana run boundr --target-url http://localhost:8000 \
+      --upload-endpoint /api/files --upload-field document --upload-audit
+
+    # Reuse existing Vimana spec ID
+    vimana run boundr --apispec aScce5 --upload-audit
+
+    # Scan only — emit spec_id
+    vimana run boundr --scan-api http://localhost:8000 --json --ci-mode \
+      | jq -r '.spec_id'
+
+    bash siddhis/boundr/examples/ci/gate_high_findings.sh http://localhost:18102 /upload
+    bash siddhis/boundr/examples/ci/audit_and_jq.sh http://localhost:18102
+  lab_setup: |
+    Docker lab (FastAPI UploadFile endpoints):
+
+      vimana run --lab boundr
+
+    Manual setup:
+
+      cd siddhis/boundr/lab && ./setup.sh
+
+    Lab URL: http://localhost:18102
+    OpenAPI: http://localhost:18102/openapi.json
+    Uploads: POST /upload, POST /api/files (field: document)
+
+    Test:
+
+      vimana run boundr --scan-api http://localhost:18102 --upload-audit --json --no-channels
+      vimana run boundr --target-url http://localhost:18102 --upload-endpoint /upload --upload-audit --json
+
+    Interactive run with banner:
+
+      vimana run boundr --scan-api http://localhost:18102 --upload-audit --banner

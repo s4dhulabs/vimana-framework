@@ -57,6 +57,7 @@ class VimanaLabManager:
             "framewalk": 8081,  # Primary service (web2py)
             "socketline": 18100,
             "streamguard": 18101,
+            "boundr": 18102,
         }
         
         # Multi-service lab configurations
@@ -92,6 +93,11 @@ class VimanaLabManager:
                 "supports_file": False
             },
             "streamguard": {
+                "single": "--scan-api",
+                "multiple": None,
+                "supports_file": False
+            },
+            "boundr": {
                 "single": "--scan-api",
                 "multiple": None,
                 "supports_file": False
@@ -651,6 +657,11 @@ class VimanaLabManager:
             print(f"   🎯 Scan + audit: vimana run {plugin_name} {single_param} {url} --stream-audit --json --no-channels")
             print(f"   🎯 SSE path:      vimana run {plugin_name} --target-url {url} --stream-path /events --stream-audit --json")
             print(f"   🎯 NDJSON path:   vimana run {plugin_name} --target-url {url} --stream-path /logs/stream --stream-type ndjson --stream-audit")
+            print(f"   📡 OpenAPI:       {url}/openapi.json")
+        elif plugin_name == "boundr":
+            print(f"   🎯 Scan + audit: vimana run {plugin_name} {single_param} {url} --upload-audit --json --no-channels")
+            print(f"   🎯 Upload path:   vimana run {plugin_name} --target-url {url} --upload-endpoint /upload --upload-audit --json")
+            print(f"   🎯 Alt field:     vimana run {plugin_name} --target-url {url} --upload-endpoint /api/files --upload-field document --upload-audit")
             print(f"   📡 OpenAPI:       {url}/openapi.json")
         else:
             print(f"   🎯 Test Command: vimana run {plugin_name} {single_param} {url}")
