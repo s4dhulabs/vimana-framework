@@ -1,15 +1,13 @@
 <!-- ![Alt text](https://github.com/s4dhulabs/s4dhulabs.github.io/blob/master/resources/imgs/vimana1.png?raw=true "VIMANAFRAMEWORK") -->
 <!-- ![Vimana Logo](https://user-images.githubusercontent.com/89562876/229259507-fff26785-b2f7-4f0e-ad72-6c62c6b45d1d.png) -->
-
-
-
+<!-- <img width="1920" height="1080" alt="vimana-demo" src="https://github.com/user-attachments/assets/3e97c280-04a7-40a3-a27c-169d469b80f7" /> -->
 
 
 
 
 ![]()
 </br>
-<img width="1920" height="1080" alt="vimana-demo" src="https://github.com/user-attachments/assets/3e97c280-04a7-40a3-a27c-169d469b80f7" />
+<img width="3840" height="2160" alt="Vimana Cover-selection" src="https://github.com/user-attachments/assets/b3d51fbe-8425-4068-8618-6ba0c6189e34" />
 </br>
 [![Python Version](https://img.shields.io/badge/python-3.9%2B-yellow.svg)](https://www.python.org/downloads/)
 [![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://www.docker.com/)
