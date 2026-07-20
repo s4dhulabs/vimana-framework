@@ -7,7 +7,7 @@
 
 ![]()
 </br>
-<img width="3840" height="2160" alt="Vimana Cover-selection" src="https://github.com/user-attachments/assets/b3d51fbe-8425-4068-8618-6ba0c6189e34" />
+<img width="3840" height="2160" alt="Vimana Cover-selection2" src="https://github.com/user-attachments/assets/c576ac76-389a-429c-bb1a-9b4211655f84" />
 </br>
 [![Python Version](https://img.shields.io/badge/python-3.9%2B-yellow.svg)](https://www.python.org/downloads/)
 [![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://www.docker.com/)
