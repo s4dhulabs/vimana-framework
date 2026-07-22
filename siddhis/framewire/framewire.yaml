@@ -1,0 +1,134 @@
+# -*- coding: utf-8 -*-
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+# This file is part of Vimana Framework Project.
+
+name: Framewire
+author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
+brief: WebSocket Frame & Message Fuzzer
+category: Audit
+framework: FastAPI
+info: Fuzzes WebSocket message frames after handshake — malformed JSON, oversized payloads, type confusion, cross-session leaks.
+module: siddhis/framewire/framewire.py
+package: FastAPI
+type: DAST
+astt: DAST
+tags:
+  - WebSocket
+  - Frame
+  - Fuzz
+  - FastAPI
+  - CrossSession
+  - JSON
+composition:
+  mode: Standalone
+  orchestrator_ready: true
+  future_orchestrator: wso
+  plugin_chain:
+    websocket:
+      - socketline
+      - framewire
+description: |
+  Framewire is an independent FastAPI-focused WebSocket message/frame fuzzer.
+  It specializes in post-handshake attacks — complementary to socketline
+  (handshake / Origin / auth on upgrade).
+
+  Key capabilities:
+  - Independent OpenAPI fetch and registration into Vimana _SPECS_
+  - Local spec cache at ~/.vimana/cache/framewire/specs/
+  - Environment tracking via ~/.framewire_env
+  - WebSocket path discovery (OpenAPI + wordlist)
+  - Malformed / truncated JSON acceptance
+  - Type confusion and atypical JSON shapes
+  - Oversized frame probes
+  - Cross-session message leak (broadcast rooms without isolation)
+  - CI-friendly JSON output and channel registration for high/medium findings
+references:
+  links:
+    - https://fastapi.tiangolo.com/advanced/websockets/
+    - https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/
+    - https://owasp.org/API-Security/editions/2023/en/0xa4-unrestricted-resource-consumption/
+  cwe:
+    - CWE-20 - Improper Input Validation
+    - CWE-400 - Uncontrolled Resource Consumption
+    - CWE-200 - Exposure of Sensitive Information
+    - CWE-639 - Authorization Bypass Through User-Controlled Key
+vfset:
+  parse_plugin_scope: False
+guide:
+  naviargs:
+    target_url: True
+  args: |
+    ø----------------------------------------------------------------------ø
+    ⣿ FRAMEWIRE — WebSocket Frame & Message Fuzzer
+    ø-----------+----------------------------------------------------------ø
+    │ API spec (independent from jcolt)                                    │
+    +------------+---------------------------------------------------------+
+     --scan-api URL        Discover OpenAPI, cache spec, register in _SPECS_
+     --spec-url URL        Direct OpenAPI document URL
+     --spec-file PATH      Load OpenAPI JSON/YAML from local file
+     --apispec ID          Use a spec already stored in Vimana
+     --use-env             Use last framewire scan from ~/.framewire_env
+    ø-----------+----------------------------------------------------------ø
+    │ Frame / message fuzz                                                 │
+    +------------+---------------------------------------------------------+
+     --frame-audit         Run post-handshake frame/message fuzz
+     --frame-path PATH     Explicit WebSocket path (e.g. /ws/chat)
+     --frame-vectors MODE  malformed | type | oversized | cross_session | all
+     --frame-max-bytes N   Oversized probe size (default: 65536)
+     --frame-auth-header   Auth header for authenticated WS sessions
+     --target-url URL      API base URL (http/https)
+    ø-----------+----------------------------------------------------------ø
+    │ CI/CD & JSON                                                         │
+    +------------+---------------------------------------------------------+
+     --json              Print machine-readable JSON report on stdout
+     --ci-mode           CI gate: exit 1 when high-severity findings exist
+     --no-channels       Skip _CHANNELS_ registration
+     --banner            Show ASCII banner (off by default)
+     -o / --output FILE  Also write JSON report to file
+    ø-----------+----------------------------------------------------------ø
+    │ Shared                                                               │
+    +------------+---------------------------------------------------------+
+     --list-specs          List specs registered in Vimana
+     --verbose             Verbose output
+  examples: |
+    # Scan + frame fuzz
+    vimana run framewire --scan-api http://localhost:8000 --frame-audit
+
+    # CI gate
+    vimana run framewire --target-url http://localhost:8000 \
+      --frame-path /ws/chat --frame-audit --ci-mode --json --no-channels
+
+    # Cross-session leak only (broadcast rooms)
+    vimana run framewire --target-url http://localhost:8000 \
+      --frame-path /ws/room/1 --frame-vectors cross_session --frame-audit --json
+
+    # Oversized frames
+    vimana run framewire --target-url http://localhost:8000 \
+      --frame-path /ws/chat --frame-vectors oversized --frame-max-bytes 131072 --frame-audit
+
+    # Pipe JSON into jq
+    vimana run framewire --scan-api http://localhost:8000 --frame-audit --json \
+      | jq '.summary'
+
+    bash siddhis/framewire/examples/ci/gate_high_findings.sh http://localhost:18103 /ws/chat
+    bash siddhis/framewire/examples/ci/audit_and_jq.sh http://localhost:18103
+  lab_setup: |
+    Docker lab (FastAPI WebSocket echo + broadcast room):
+
+      vimana run --lab framewire
+
+    Manual:
+
+      cd siddhis/framewire/lab && ./setup.sh
+
+    Lab URL: http://localhost:18103
+    Paths: /ws/echo, /ws/room/{id}, /ws/chat
+
+    Test:
+
+      vimana run framewire --scan-api http://localhost:18103 --frame-audit --json --no-channels
+      vimana run framewire --target-url http://localhost:18103 --frame-path /ws/room/1 \
+        --frame-vectors cross_session --frame-audit --json

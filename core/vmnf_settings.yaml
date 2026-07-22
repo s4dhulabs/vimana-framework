@@ -76,5 +76,6 @@ settings:
         - socketline
         - streamguard
         - boundr
+        - framewire
     utils:
         random_headers: res/random_headers.yaml

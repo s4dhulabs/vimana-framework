@@ -58,6 +58,7 @@ class VimanaLabManager:
             "socketline": 18100,
             "streamguard": 18101,
             "boundr": 18102,
+            "framewire": 18103,
         }
         
         # Multi-service lab configurations
@@ -98,6 +99,11 @@ class VimanaLabManager:
                 "supports_file": False
             },
             "boundr": {
+                "single": "--scan-api",
+                "multiple": None,
+                "supports_file": False
+            },
+            "framewire": {
                 "single": "--scan-api",
                 "multiple": None,
                 "supports_file": False
@@ -662,6 +668,11 @@ class VimanaLabManager:
             print(f"   🎯 Scan + audit: vimana run {plugin_name} {single_param} {url} --upload-audit --json --no-channels")
             print(f"   🎯 Upload path:   vimana run {plugin_name} --target-url {url} --upload-endpoint /upload --upload-audit --json")
             print(f"   🎯 Alt field:     vimana run {plugin_name} --target-url {url} --upload-endpoint /api/files --upload-field document --upload-audit")
+            print(f"   📡 OpenAPI:       {url}/openapi.json")
+        elif plugin_name == "framewire":
+            print(f"   🎯 Scan + fuzz:   vimana run {plugin_name} {single_param} {url} --frame-audit --json --no-channels")
+            print(f"   🎯 Echo path:     vimana run {plugin_name} --target-url {url} --frame-path /ws/echo --frame-audit --json")
+            print(f"   🎯 Cross-session: vimana run {plugin_name} --target-url {url} --frame-path /ws/room/1 --frame-vectors cross_session --frame-audit --json")
             print(f"   📡 OpenAPI:       {url}/openapi.json")
         else:
             print(f"   🎯 Test Command: vimana run {plugin_name} {single_param} {url}")

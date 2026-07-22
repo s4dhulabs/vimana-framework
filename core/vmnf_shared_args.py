@@ -161,6 +161,13 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument('--upload-vectors', action='store', dest='upload_vectors', default='all')
         vmnf_shared_parser.add_argument('--upload-auth-header', action='store', dest='upload_auth_header', default=False)
 
+        # framewire — WebSocket post-handshake frame/message fuzzer
+        vmnf_shared_parser.add_argument('--frame-audit', action='store_true', dest='frame_audit_enabled', default=False)
+        vmnf_shared_parser.add_argument('--frame-path', action='store', dest='frame_path', default=False)
+        vmnf_shared_parser.add_argument('--frame-vectors', action='store', dest='frame_vectors', default='all')
+        vmnf_shared_parser.add_argument('--frame-max-bytes', action='store', dest='frame_max_bytes', type=int, default=65536)
+        vmnf_shared_parser.add_argument('--frame-auth-header', action='store', dest='frame_auth_header', default=False)
+
         vmnf_shared_parser.add_argument('--check-debug',action='store_true',dest='check_debug',default=False)
         vmnf_shared_parser.add_argument('--discovery-only',action='store_true',dest='discovery_only',default=False)
         # -------------------------------------------------------------------------------
