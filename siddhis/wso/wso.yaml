@@ -1,0 +1,100 @@
+# -*- coding: utf-8 -*-
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+# This file is part of Vimana Framework Project.
+
+name: WSO
+author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
+brief: WebSockets Orchestrator
+category: Orchestrator
+framework: FastAPI
+info: Orchestrates WebSocket specialty plugins — socketline (handshake) then framewire (frames).
+module: siddhis/wso/wso.py
+package: FastAPI
+type: DAST
+astt: DAST
+tags:
+  - WebSocket
+  - Orchestrator
+  - FastAPI
+  - socketline
+  - framewire
+composition:
+  mode: Orchestrator
+  plugin_chain:
+    websocket:
+      - socketline
+      - framewire
+description: |
+  WSO (WebSockets Orchestrator) is the first Vimana orchestrator built on the
+  new core.orchestration runner. It chains WebSocket specialty plugins without
+  inheriting jcolt-style hardcoded imports or shared-handler mutation.
+
+  Pipeline:
+  1. OpenAPI scan/register once (via socketline spec path)
+  2. socketline — handshake / Origin / auth checks
+  3. framewire — post-handshake message/frame fuzz + cross-session leak
+
+  Leaf plugins remain independently runnable. WSO only composes their public
+  orchestrator entrypoints (run_ws_audit / run_frame_audit).
+references:
+  links:
+    - https://fastapi.tiangolo.com/advanced/websockets/
+  cwe:
+    - CWE-306 - Missing Authentication for Critical Function
+    - CWE-20 - Improper Input Validation
+    - CWE-400 - Uncontrolled Resource Consumption
+vfset:
+  parse_plugin_scope: False
+guide:
+  naviargs:
+    target_url: True
+  args: |
+    ø----------------------------------------------------------------------ø
+    ⣿ WSO — WebSockets Orchestrator
+    ø-----------+----------------------------------------------------------ø
+    │ Target                                                                   │
+    +------------+---------------------------------------------------------+
+     --scan-api URL        Discover OpenAPI once, then run WS chain
+     --target-url URL      API base URL (http/https)
+     --apispec ID          Reuse an existing Vimana spec
+     --ws-path / --frame-path  Shared explicit WebSocket path
+    ø-----------+----------------------------------------------------------ø
+    │ Chain control                                                            │
+    +------------+---------------------------------------------------------+
+     --wso-skip-scan       Skip OpenAPI scan (use --apispec / cached)
+     --wso-skip-handshake  Skip socketline step
+     --wso-skip-frames     Skip framewire step
+    ø-----------+----------------------------------------------------------ø
+    │ CI/CD & JSON                                                             │
+    +------------+---------------------------------------------------------+
+     --json / --ci-mode / --no-channels / --banner / -o FILE
+     (applied to the aggregate report; leaf stdout is suppressed)
+  examples: |
+    # Full chain against socketline lab
+    vimana run wso --scan-api http://localhost:18100 --json --no-channels
+
+    # Explicit path (handshake + frames)
+    vimana run wso --target-url http://localhost:18100 \
+      --ws-path /ws/chat --json --ci-mode --no-channels
+
+    # Only frame fuzz (skip handshake)
+    vimana run wso --target-url http://localhost:18103 \
+      --frame-path /ws/room/1 --wso-skip-handshake --json --no-channels
+
+    # Only handshake
+    vimana run wso --target-url http://localhost:18100 \
+      --ws-path /ws/chat --wso-skip-frames --json --no-channels
+
+    bash siddhis/wso/examples/ci/gate_high_findings.sh http://localhost:18100
+  lab_setup: |
+    WSO reuses the WebSocket specialty labs (no separate compose):
+
+      vimana run --lab socketline   # :18100 — handshake + rooms
+      vimana run --lab framewire    # :18103 — echo + broadcast
+
+    Full chain:
+
+      vimana run wso --scan-api http://localhost:18100 --json --no-channels

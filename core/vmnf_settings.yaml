@@ -77,5 +77,6 @@ settings:
         - streamguard
         - boundr
         - framewire
+        - wso
     utils:
         random_headers: res/random_headers.yaml

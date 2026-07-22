@@ -241,6 +241,8 @@ class vfasserts:
             and not self._vfh_['upload_endpoint'] \
             and not self._vfh_['frame_audit_enabled'] \
             and not self._vfh_['frame_path'] \
+            and not self._vfh_['wso_skip_handshake'] \
+            and not self._vfh_['wso_skip_frames'] \
             and not self._vfh_['openapi_spec_file'] \
             and not self._vfh_['openapi_spec_url'] \
         ) else True

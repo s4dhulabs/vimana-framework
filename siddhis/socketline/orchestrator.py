@@ -54,7 +54,7 @@ def run_ws_audit(handler: dict, orchestrator: str = None) -> Dict[str, Any]:
 
     emit_report(report, audit_handler)
 
-    if audit_handler.get('ci_mode'):
+    if audit_handler.get('ci_mode') and not audit_handler.get('_orchestrator'):
         sys.exit(ci_exit_code(report))
 
     return report

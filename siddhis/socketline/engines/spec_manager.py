@@ -22,7 +22,13 @@ class SocketlineSpecManager:
 
     def __init__(self, handler: dict):
         self.handler = handler
-        self.quiet = bool(handler.get('ci_mode') or handler.get('json_output'))
+        self.quiet = bool(
+            handler.get('ci_mode')
+            or handler.get('json_output')
+            or handler.get('no_metadata')
+            or handler.get('quiet_output')
+            or handler.get('_orchestrator')
+        )
         self._env = self._load_env()
 
     def _load_env(self) -> Dict[str, str]:

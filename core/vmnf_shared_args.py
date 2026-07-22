@@ -168,6 +168,11 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument('--frame-max-bytes', action='store', dest='frame_max_bytes', type=int, default=65536)
         vmnf_shared_parser.add_argument('--frame-auth-header', action='store', dest='frame_auth_header', default=False)
 
+        # wso — WebSockets Orchestrator (socketline → framewire)
+        vmnf_shared_parser.add_argument('--wso-skip-scan', action='store_true', dest='wso_skip_scan', default=False)
+        vmnf_shared_parser.add_argument('--wso-skip-handshake', action='store_true', dest='wso_skip_handshake', default=False)
+        vmnf_shared_parser.add_argument('--wso-skip-frames', action='store_true', dest='wso_skip_frames', default=False)
+
         vmnf_shared_parser.add_argument('--check-debug',action='store_true',dest='check_debug',default=False)
         vmnf_shared_parser.add_argument('--discovery-only',action='store_true',dest='discovery_only',default=False)
         # -------------------------------------------------------------------------------
