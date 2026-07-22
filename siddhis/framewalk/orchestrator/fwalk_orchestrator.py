@@ -392,7 +392,12 @@ class framewalkOrchestrator:
             self.presenter.print_status("  Performing connectivity check...")
         
         connectivity_response = self.request_manager.make_request()
-        if not connectivity_response:
+        # NOTE: `requests.Response.__bool__` returns `response.ok` (False for any
+        # status >= 400), so `if not connectivity_response` treats a reachable
+        # target that answers 4xx/5xx on `/` (e.g. an API whose routes are all
+        # prefixed and returns 404 at the root) as unreachable and aborts the
+        # scan. Only a real request failure yields None; test for that explicitly.
+        if connectivity_response is None:
             if not summary_only and hasattr(self.presenter, 'print_status'):
                 self.presenter.print_status("  Target is unreachable, stopping scan")
             
