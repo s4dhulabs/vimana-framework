@@ -85,19 +85,22 @@ def aggregate_reports(
     for step in step_results:
         report = step.report or {}
         step_findings = report.get('findings') or []
-        findings.extend(step_findings)
-        targets.extend(report.get('targets') or [])
-        candidates.extend(report.get('candidates') or [])
-
+        plugin_name = report.get('plugin', step.name)
         for item in step_findings:
-            sev = item.get('severity', 'info')
+            stamped = dict(item)
+            stamped.setdefault('plugin', plugin_name)
+            findings.append(stamped)
+            sev = stamped.get('severity', 'info')
             if sev in counts:
                 counts[sev] += 1
+
+        targets.extend(report.get('targets') or [])
+        candidates.extend(report.get('candidates') or [])
 
         summary = report.get('summary') or {}
         steps_payload.append({
             'name': step.name,
-            'plugin': report.get('plugin', step.name),
+            'plugin': plugin_name,
             'error': step.error,
             'spec_id': report.get('spec_id'),
             'summary': {
@@ -153,7 +156,12 @@ class OrchestratorRunner:
         self.name = name
         self.steps = list(steps)
 
-    def run(self, handler: dict) -> Dict[str, Any]:
+    def run(
+        self,
+        handler: dict,
+        on_step_start=None,
+        on_step_done=None,
+    ) -> Dict[str, Any]:
         child = prepare_child_handler(handler, self.name)
         base_url = (
             child.get('api_scan_enabled')
@@ -168,7 +176,10 @@ class OrchestratorRunner:
         if spec_id in (False, 'ENV_FALLBACK'):
             spec_id = None
 
-        for step in self.steps:
+        total = len(self.steps)
+        for index, step in enumerate(self.steps, start=1):
+            if on_step_start:
+                on_step_start(step.name, index, total)
             try:
                 report = step.entrypoint(child, orchestrator=self.name)
                 if not isinstance(report, dict):
@@ -178,19 +189,23 @@ class OrchestratorRunner:
                     child['apispec_enabled'] = spec_id
                 if report.get('base_url') and not base_url:
                     base_url = report['base_url']
-                step_results.append(StepResult(name=step.name, report=report))
+                result = StepResult(name=step.name, report=report)
             except SystemExit as exc:
-                step_results.append(StepResult(
+                result = StepResult(
                     name=step.name,
                     report={},
                     error=f'{step.name} called sys.exit({exc.code})',
-                ))
+                )
             except Exception as exc:
-                step_results.append(StepResult(
+                result = StepResult(
                     name=step.name,
                     report={},
                     error=str(exc),
-                ))
+                )
+
+            step_results.append(result)
+            if on_step_done:
+                on_step_done(result, index, total)
 
         return aggregate_reports(
             orchestrator=self.name,

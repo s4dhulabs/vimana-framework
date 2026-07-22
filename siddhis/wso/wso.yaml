@@ -71,9 +71,13 @@ guide:
     │ CI/CD & JSON                                                             │
     +------------+---------------------------------------------------------+
      --json / --ci-mode / --no-channels / --banner / -o FILE
-     (applied to the aggregate report; leaf stdout is suppressed)
+     Default (no --json): colored terminal summary of steps + findings
+     --json / --ci-mode: machine-readable aggregate only (leaf stdout suppressed)
   examples: |
-    # Full chain against socketline lab
+    # Interactive terminal summary (human-friendly)
+    vimana run wso --scan-api http://localhost:18100 --ws-path /ws/chat --no-channels
+
+    # Full chain JSON for jq / CI
     vimana run wso --scan-api http://localhost:18100 --json --no-channels
 
     # Explicit path (handshake + frames)
@@ -95,6 +99,10 @@ guide:
       vimana run --lab socketline   # :18100 — handshake + rooms
       vimana run --lab framewire    # :18103 — echo + broadcast
 
-    Full chain:
+    Interactive:
+
+      vimana run wso --scan-api http://localhost:18100 --ws-path /ws/chat --no-channels
+
+    CI / pipes:
 
       vimana run wso --scan-api http://localhost:18100 --json --no-channels
