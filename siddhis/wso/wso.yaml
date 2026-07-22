@@ -10,7 +10,7 @@ author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
 brief: WebSockets Orchestrator
 category: Orchestrator
 framework: FastAPI
-info: Orchestrates WebSocket specialty plugins — socketline (handshake) then framewire (frames).
+info: Orchestrates WebSocket specialty plugins — socketline → framewire → roomgate.
 module: siddhis/wso/wso.py
 package: FastAPI
 type: DAST
@@ -21,12 +21,14 @@ tags:
   - FastAPI
   - socketline
   - framewire
+  - roomgate
 composition:
   mode: Orchestrator
   plugin_chain:
     websocket:
       - socketline
       - framewire
+      - roomgate
 description: |
   WSO (WebSockets Orchestrator) is the first Vimana orchestrator built on the
   new core.orchestration runner. It chains WebSocket specialty plugins without
@@ -36,16 +38,19 @@ description: |
   1. OpenAPI scan/register once (via socketline spec path)
   2. socketline — handshake / Origin / auth checks
   3. framewire — post-handshake message/frame fuzz + cross-session leak
+  4. roomgate — room/channel IDOR and membership bypass
 
   Leaf plugins remain independently runnable. WSO only composes their public
-  orchestrator entrypoints (run_ws_audit / run_frame_audit).
+  orchestrator entrypoints (run_ws_audit / run_frame_audit / run_room_audit).
 references:
   links:
     - https://fastapi.tiangolo.com/advanced/websockets/
+    - https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/
   cwe:
     - CWE-306 - Missing Authentication for Critical Function
     - CWE-20 - Improper Input Validation
     - CWE-400 - Uncontrolled Resource Consumption
+    - CWE-639 - Authorization Bypass Through User-Controlled Key
 vfset:
   parse_plugin_scope: False
 guide:
@@ -60,13 +65,14 @@ guide:
      --scan-api URL        Discover OpenAPI once, then run WS chain
      --target-url URL      API base URL (http/https)
      --apispec ID          Reuse an existing Vimana spec
-     --ws-path / --frame-path  Shared explicit WebSocket path
+     --ws-path / --frame-path / --room-path  Shared or specialty WS paths
     ø-----------+----------------------------------------------------------ø
     │ Chain control                                                            │
     +------------+---------------------------------------------------------+
      --wso-skip-scan       Skip OpenAPI scan (use --apispec / cached)
      --wso-skip-handshake  Skip socketline step
      --wso-skip-frames     Skip framewire step
+     --wso-skip-rooms      Skip roomgate step
     ø-----------+----------------------------------------------------------ø
     │ CI/CD & JSON                                                             │
     +------------+---------------------------------------------------------+
@@ -76,6 +82,11 @@ guide:
   examples: |
     # Interactive terminal summary (human-friendly)
     vimana run wso --scan-api http://localhost:18100 --ws-path /ws/chat --no-channels
+
+    # Full chain with room IDOR step (lab :18104)
+    vimana run wso --scan-api http://localhost:18104 \
+      --room-path '/ws/secure/{id}' --room-id-a room-a --room-id-b room-b \
+      --room-auth-a 'Bearer user-a' --wso-skip-frames --no-channels
 
     # Full chain JSON for jq / CI
     vimana run wso --scan-api http://localhost:18100 --json --no-channels
@@ -98,10 +109,18 @@ guide:
 
       vimana run --lab socketline   # :18100 — handshake + rooms
       vimana run --lab framewire    # :18103 — echo + broadcast
+      vimana run --lab roomgate     # :18104 — open rooms + BOLA /ws/secure
 
     Interactive:
 
       vimana run wso --scan-api http://localhost:18100 --ws-path /ws/chat --no-channels
+
+    Room IDOR chain:
+
+      vimana run wso --scan-api http://localhost:18104 \
+        --ws-path /ws/secure/room-a --room-path '/ws/secure/{id}' \
+        --room-id-a room-a --room-id-b room-b \
+        --room-auth-a 'Bearer user-a' --no-channels
 
     CI / pipes:
 

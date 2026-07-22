@@ -59,6 +59,7 @@ class VimanaLabManager:
             "streamguard": 18101,
             "boundr": 18102,
             "framewire": 18103,
+            "roomgate": 18104,
         }
         
         # Multi-service lab configurations
@@ -107,7 +108,12 @@ class VimanaLabManager:
                 "single": "--scan-api",
                 "multiple": None,
                 "supports_file": False
-            }
+            },
+            "roomgate": {
+                "single": "--scan-api",
+                "multiple": None,
+                "supports_file": False
+            },
             # Add other plugins as needed
         }
 
@@ -673,6 +679,11 @@ class VimanaLabManager:
             print(f"   🎯 Scan + fuzz:   vimana run {plugin_name} {single_param} {url} --frame-audit --json --no-channels")
             print(f"   🎯 Echo path:     vimana run {plugin_name} --target-url {url} --frame-path /ws/echo --frame-audit --json")
             print(f"   🎯 Cross-session: vimana run {plugin_name} --target-url {url} --frame-path /ws/room/1 --frame-vectors cross_session --frame-audit --json")
+            print(f"   📡 OpenAPI:       {url}/openapi.json")
+        elif plugin_name == "roomgate":
+            print(f"   🎯 Scan + audit:  vimana run {plugin_name} {single_param} {url} --room-audit --json --no-channels")
+            print(f"   🎯 Open rooms:    vimana run {plugin_name} --target-url {url} --room-path '/ws/room/{{id}}' --room-audit --json")
+            print(f"   🎯 Secure IDOR:   vimana run {plugin_name} --target-url {url} --room-path '/ws/secure/{{id}}' --room-id-a room-a --room-id-b room-b --room-auth-a 'Bearer user-a' --room-audit --json")
             print(f"   📡 OpenAPI:       {url}/openapi.json")
         else:
             print(f"   🎯 Test Command: vimana run {plugin_name} {single_param} {url}")

@@ -30,10 +30,11 @@ composition:
     websocket:
       - socketline
       - framewire
+      - roomgate
 description: |
   Framewire is an independent FastAPI-focused WebSocket message/frame fuzzer.
   It specializes in post-handshake attacks — complementary to socketline
-  (handshake / Origin / auth on upgrade).
+  (handshake / Origin / auth on upgrade) and roomgate (room/channel IDOR).
 
   Key capabilities:
   - Independent OpenAPI fetch and registration into Vimana _SPECS_

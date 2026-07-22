@@ -30,13 +30,14 @@ composition:
     websocket:
       - socketline
       - framewire
+      - roomgate
 description: |
   Socketline is an independent FastAPI-focused WebSocket security auditor for the
   Vimana Framework. It discovers WebSocket endpoints, performs handshake security
   checks, and registers findings as framework channels for cross-plugin reuse.
 
-  Complementary WebSocket specialty: framewire (post-handshake message/frame fuzz).
-  Future WSO orchestrator will chain socketline → framewire.
+  Complementary WebSocket specialties: framewire (frames), roomgate (room IDOR).
+  WSO chains socketline → framewire → roomgate.
 
   Unlike jcolt-dependent workflows, socketline implements its own OpenAPI discovery,
   specification caching, and registration into Vimana's global _SPECS_ table. This

@@ -23,6 +23,10 @@ DEFAULT_STEPS = (
         name='framewire',
         entrypoint=load_entrypoint('siddhis.framewire.orchestrator:run_frame_audit'),
     ),
+    OrchestratorStep(
+        name='roomgate',
+        entrypoint=load_entrypoint('siddhis.roomgate.orchestrator:run_room_audit'),
+    ),
 )
 
 
@@ -69,37 +73,61 @@ def _resolve_base_url(handler: dict) -> str:
 def _selected_steps(handler: dict) -> List[OrchestratorStep]:
     skip_handshake = bool(handler.get('wso_skip_handshake'))
     skip_frames = bool(handler.get('wso_skip_frames'))
+    skip_rooms = bool(handler.get('wso_skip_rooms'))
     steps = []
     for step in DEFAULT_STEPS:
         if step.name == 'socketline' and skip_handshake:
             continue
         if step.name == 'framewire' and skip_frames:
             continue
+        if step.name == 'roomgate' and skip_rooms:
+            continue
         steps.append(step)
     if not steps:
         raise ValueError(
-            'No WSO steps selected (both --wso-skip-handshake and --wso-skip-frames?)'
+            'No WSO steps selected (check --wso-skip-handshake / --wso-skip-frames / --wso-skip-rooms)'
         )
     return steps
 
 
 def _align_ws_paths(handler: dict) -> dict:
-    """Share explicit WS path across handshake + frame steps when only one is set."""
+    """Share concrete WS paths across steps; keep room templates for roomgate."""
     h = dict(handler)
-    ws_path = h.get('ws_path') or h.get('frame_path')
-    if ws_path:
+
+    concrete = None
+    for key in ('ws_path', 'frame_path'):
+        val = h.get(key)
+        if val and '{' not in str(val):
+            concrete = val
+            break
+
+    room_path = h.get('room_path')
+    if room_path and '{' not in str(room_path) and concrete is None:
+        concrete = room_path
+
+    if concrete:
         if not h.get('ws_path'):
-            h['ws_path'] = ws_path
+            h['ws_path'] = concrete
         if not h.get('frame_path'):
-            h['frame_path'] = ws_path
+            h['frame_path'] = concrete
+        if not h.get('room_path'):
+            # Derive a room template when path looks like /ws/room/<id>
+            path = str(concrete)
+            if any(seg in path for seg in ('/room/', '/channel/', '/secure/')):
+                parts = path.rstrip('/').split('/')
+                parts[-1] = '{id}'
+                h['room_path'] = '/'.join(parts)
+
     h['ws_audit_enabled'] = True
     h['frame_audit_enabled'] = True
+    h['room_audit_enabled'] = True
     return h
 
 
 def run_wso(handler: dict) -> Dict[str, Any]:
     """
-    Orchestrate WebSocket specialty plugins: socketline (handshake) → framewire (frames).
+    Orchestrate WebSocket specialty plugins:
+    socketline (handshake) → framewire (frames) → roomgate (room authz/IDOR).
     """
     interactive = ui.is_interactive(handler)
     work = _align_ws_paths(handler)

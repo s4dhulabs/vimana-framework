@@ -168,10 +168,21 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument('--frame-max-bytes', action='store', dest='frame_max_bytes', type=int, default=65536)
         vmnf_shared_parser.add_argument('--frame-auth-header', action='store', dest='frame_auth_header', default=False)
 
-        # wso — WebSockets Orchestrator (socketline → framewire)
+        # roomgate — WebSocket room/channel authz & IDOR auditor
+        vmnf_shared_parser.add_argument('--room-audit', action='store_true', dest='room_audit_enabled', default=False)
+        vmnf_shared_parser.add_argument('--room-path', action='store', dest='room_path', default=False)
+        vmnf_shared_parser.add_argument('--room-id-a', action='store', dest='room_id_a', default=False)
+        vmnf_shared_parser.add_argument('--room-id-b', action='store', dest='room_id_b', default=False)
+        vmnf_shared_parser.add_argument('--room-auth-a', action='store', dest='room_auth_a', default=False)
+        vmnf_shared_parser.add_argument('--room-auth-b', action='store', dest='room_auth_b', default=False)
+        vmnf_shared_parser.add_argument('--room-auth-header', action='store', dest='room_auth_header', default=False)
+        vmnf_shared_parser.add_argument('--room-checks', action='store', dest='room_checks', default='all')
+
+        # wso — WebSockets Orchestrator (socketline → framewire → roomgate)
         vmnf_shared_parser.add_argument('--wso-skip-scan', action='store_true', dest='wso_skip_scan', default=False)
         vmnf_shared_parser.add_argument('--wso-skip-handshake', action='store_true', dest='wso_skip_handshake', default=False)
         vmnf_shared_parser.add_argument('--wso-skip-frames', action='store_true', dest='wso_skip_frames', default=False)
+        vmnf_shared_parser.add_argument('--wso-skip-rooms', action='store_true', dest='wso_skip_rooms', default=False)
 
         vmnf_shared_parser.add_argument('--check-debug',action='store_true',dest='check_debug',default=False)
         vmnf_shared_parser.add_argument('--discovery-only',action='store_true',dest='discovery_only',default=False)

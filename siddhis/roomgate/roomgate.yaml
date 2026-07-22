@@ -1,0 +1,103 @@
+# -*- coding: utf-8 -*-
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+# This file is part of Vimana Framework Project.
+
+name: Roomgate
+author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
+brief: WebSocket Room Authz & IDOR Auditor
+category: Audit
+framework: FastAPI
+info: Audits WebSocket room/channel paths for IDOR, unauthenticated join, and dual-identity membership bypass.
+module: siddhis/roomgate/roomgate.py
+package: FastAPI
+type: DAST
+astt: DAST
+tags:
+  - WebSocket
+  - IDOR
+  - BOLA
+  - Authorization
+  - FastAPI
+  - Rooms
+composition:
+  mode: Standalone
+  orchestrator_ready: true
+  future_orchestrator: wso
+  plugin_chain:
+    websocket:
+      - socketline
+      - framewire
+      - roomgate
+description: |
+  Roomgate is an independent FastAPI-focused WebSocket room/channel
+  authorization auditor. It specializes in object-level access control
+  after the handshake — complementary to socketline (upgrade/auth) and
+  framewire (message/frame fuzz).
+
+  Key capabilities:
+  - Independent OpenAPI fetch and registration into Vimana _SPECS_
+  - Local spec cache at ~/.vimana/cache/roomgate/specs/
+  - Environment tracking via ~/.roomgate_env
+  - Room path discovery (OpenAPI templates + wordlist)
+  - Unauthenticated room join
+  - Cross-tenant / horizontal IDOR (identity A joins room B)
+  - Vertical privilege room probes (e.g. /admin)
+  - Dual-identity membership baseline
+  - CI-friendly JSON output and channel registration for high/medium findings
+references:
+  links:
+    - https://fastapi.tiangolo.com/advanced/websockets/
+    - https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/
+  cwe:
+    - CWE-639 - Authorization Bypass Through User-Controlled Key
+    - CWE-284 - Improper Access Control
+    - CWE-306 - Missing Authentication for Critical Function
+vfset:
+  parse_plugin_scope: False
+guide:
+  naviargs:
+    target_url: True
+  args: |
+    ø----------------------------------------------------------------------ø
+    ⣿ ROOMGATE — WebSocket Room Authz & IDOR Auditor
+    ø-----------+----------------------------------------------------------ø
+    │ API spec (independent)                                               │
+    +------------+---------------------------------------------------------+
+     --scan-api URL        Discover OpenAPI, cache spec, register in _SPECS_
+     --spec-url URL        Direct OpenAPI document URL
+     --spec-file PATH      Load OpenAPI JSON/YAML from local file
+     --apispec ID          Use a spec already stored in Vimana
+     --use-env             Use last roomgate scan from ~/.roomgate_env
+    ø-----------+----------------------------------------------------------ø
+    │ Room / channel authz                                                 │
+    +------------+---------------------------------------------------------+
+     --room-audit          Run room authorization / IDOR audit
+     --room-path PATH      Template e.g. /ws/room/{id} or /ws/secure/{id}
+     --room-id-a ID        Room owned by identity A (default: room-a)
+     --room-id-b ID        Room owned by identity B (default: room-b)
+     --room-auth-a HDR     Auth for identity A (default: Bearer user-a)
+     --room-auth-b HDR     Auth for identity B (default: Bearer user-b)
+     --room-checks MODE    unauth | idor | membership | vertical | all
+    ø-----------+----------------------------------------------------------ø
+    │ CI/CD & JSON                                                         │
+    +------------+---------------------------------------------------------+
+     --json / --ci-mode / --no-channels / --banner / -o FILE
+  examples: |
+    # Lab on :18104 — open rooms + broken secure rooms
+    vimana run roomgate --target-url http://localhost:18104 \
+      --room-path /ws/room/{id} --room-audit --json --no-channels
+
+    vimana run roomgate --target-url http://localhost:18104 \
+      --room-path /ws/secure/{id} --room-id-a room-a --room-id-b room-b \
+      --room-auth-a "Bearer user-a" --room-auth-b "Bearer user-b" \
+      --room-audit --json --ci-mode --no-channels
+
+    # Scan + audit via OpenAPI
+    vimana run roomgate --scan-api http://localhost:18104 --room-audit --json --no-channels
+  labs: |
+    # Start vulnerable room lab
+    vimana lab roomgate --start
+    # or: bash siddhis/roomgate/lab/setup.sh
