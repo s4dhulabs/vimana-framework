@@ -1,0 +1,14 @@
+--- manual probes ---
+### GET open order 1 (no auth) — expect 200
+status=200
+{"id":1,"owner":"user-a","amount":"42.00","note":"order for user-a","secret":"tenant-a-secret"}
+### GET secure order 2 as user-a — expect 200 (BOLA)
+status=200
+{"id":2,"owner":"user-b","amount":"99.50","note":"order for user-b","secret":"tenant-b-secret"}
+### GET secure order 2 no auth — expect 403
+status=403
+{"detail":"Authentication credentials were not provided."}
+### GET admin order 1 as user-a — expect 200 (BFLA)
+status=200
+{"id":1,"owner":"user-a","amount":"42.00","note":"order for user-a","secret":"tenant-a-secret"}
+guarapriel

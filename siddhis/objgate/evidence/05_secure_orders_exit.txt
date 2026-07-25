@@ -1,0 +1,1 @@
+secure_exit=1

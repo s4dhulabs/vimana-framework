@@ -1,0 +1,108 @@
+{
+  "report_version": "1.0",
+  "plugin": "objgate",
+  "orchestrator": null,
+  "generated_at": "2026-07-22T23:37:31.774751+00:00",
+  "spec_id": "aSde15",
+  "base_url": "http://localhost:18105",
+  "summary": {
+    "live_targets": 1,
+    "candidates": 1,
+    "findings_total": 4,
+    "findings_high": 2,
+    "findings_medium": 1,
+    "findings_low": 0,
+    "findings_info": 1,
+    "actionable": 3,
+    "passed": false
+  },
+  "targets": [
+    {
+      "template": "/api/secure/orders/{id}/",
+      "obj_a": "1",
+      "obj_b": "2",
+      "url_a": "http://localhost:18105/api/secure/orders/1/",
+      "url_b": "http://localhost:18105/api/secure/orders/2/",
+      "source": "cli"
+    }
+  ],
+  "candidates": [
+    {
+      "template": "/api/secure/orders/{id}/"
+    }
+  ],
+  "findings": [
+    {
+      "target": "http://localhost:18105/api/secure/orders/2/",
+      "check": "cross_tenant_object_idor",
+      "severity": "high",
+      "detail": "Identity A ('Bearer user-a-token') GET object '2' via /api/secure/orders/2/ (expected isolation to '1'). Possible BOLA/IDOR on object id.",
+      "evidence": {
+        "method": "GET",
+        "status": 200,
+        "auth": "Bearer user-a-token",
+        "expected_obj": "1",
+        "accessed_obj": "2",
+        "body": {
+          "id": 2,
+          "owner": "user-b",
+          "amount": "99.50",
+          "note": "objgate-probe",
+          "secret": "tenant-b-secret"
+        }
+      }
+    },
+    {
+      "target": "http://localhost:18105/api/secure/orders/2/",
+      "check": "cross_tenant_object_idor",
+      "severity": "high",
+      "detail": "Identity A ('Bearer user-a-token') PATCH object '2' via /api/secure/orders/2/ (expected isolation to '1'). Possible BOLA/IDOR on object id.",
+      "evidence": {
+        "method": "PATCH",
+        "status": 200,
+        "auth": "Bearer user-a-token",
+        "expected_obj": "1",
+        "accessed_obj": "2",
+        "body": {
+          "id": 2,
+          "owner": "user-b",
+          "amount": "99.50",
+          "note": "objgate-probe",
+          "secret": "tenant-b-secret"
+        }
+      }
+    },
+    {
+      "target": "http://localhost:18105/api/secure/orders/1/",
+      "check": "membership_baseline",
+      "severity": "info",
+      "detail": "Both identities accessed their respective objects (1 / 2). Use with IDOR results for context.",
+      "evidence": {
+        "obj_a_status": 200,
+        "obj_b_status": 200
+      }
+    },
+    {
+      "target": "http://localhost:18105/api/admin/orders/1/",
+      "check": "vertical_privilege_object",
+      "severity": "medium",
+      "detail": "Non-admin identity accessed privileged-looking path /api/admin/orders/1/ (HTTP 200). Check BFLA / vertical authorization.",
+      "evidence": {
+        "method": "GET",
+        "status": 200,
+        "auth": "Bearer user-a-token",
+        "body": {
+          "id": 1,
+          "owner": "user-a",
+          "amount": "42.00",
+          "note": "order for user-a",
+          "secret": "tenant-a-secret"
+        }
+      }
+    }
+  ],
+  "objects": {
+    "a": "1",
+    "b": "2"
+  }
+}

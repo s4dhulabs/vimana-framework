@@ -1,0 +1,1 @@
+{"orders":[{"id":1,"owner":"user-a","amount":42.0,"note":"order for user-a","secret":"tenant-a-secret"},{"id":2,"owner":"user-b","amount":99.5,"note":"order for user-b","secret":"tenant-b-secret"},{"id":3,"owner":"ops","amount":1000.0,"note":"admin-owned order","secret":"ops-secret"}],"tokens":{"user-a":"Bearer user-a-token","user-b":"Bearer user-b-token"}}

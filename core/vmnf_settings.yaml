@@ -78,6 +78,7 @@ settings:
         - boundr
         - framewire
         - roomgate
+        - objgate
         - wso
     utils:
         random_headers: res/random_headers.yaml

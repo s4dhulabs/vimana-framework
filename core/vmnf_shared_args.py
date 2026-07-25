@@ -178,6 +178,18 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument('--room-auth-header', action='store', dest='room_auth_header', default=False)
         vmnf_shared_parser.add_argument('--room-checks', action='store', dest='room_checks', default='all')
 
+        # objgate — HTTP REST object authz & BOLA auditor
+        vmnf_shared_parser.add_argument('--obj-audit', action='store_true', dest='obj_audit_enabled', default=False)
+        vmnf_shared_parser.add_argument('--obj-path', action='store', dest='obj_path', default=False)
+        vmnf_shared_parser.add_argument('--obj-id-a', action='store', dest='obj_id_a', default=False)
+        vmnf_shared_parser.add_argument('--obj-id-b', action='store', dest='obj_id_b', default=False)
+        vmnf_shared_parser.add_argument('--obj-auth-a', action='store', dest='obj_auth_a', default=False)
+        vmnf_shared_parser.add_argument('--obj-auth-b', action='store', dest='obj_auth_b', default=False)
+        vmnf_shared_parser.add_argument('--obj-auth-header', action='store', dest='obj_auth_header', default=False)
+        vmnf_shared_parser.add_argument('--obj-methods', action='store', dest='obj_methods', default='GET,PATCH')
+        vmnf_shared_parser.add_argument('--obj-checks', action='store', dest='obj_checks', default='all')
+        vmnf_shared_parser.add_argument('--obj-admin-path', action='store', dest='obj_admin_path', default=False)
+
         # wso — WebSockets Orchestrator (socketline → framewire → roomgate)
         vmnf_shared_parser.add_argument('--wso-skip-scan', action='store_true', dest='wso_skip_scan', default=False)
         vmnf_shared_parser.add_argument('--wso-skip-handshake', action='store_true', dest='wso_skip_handshake', default=False)

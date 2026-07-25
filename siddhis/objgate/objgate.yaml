@@ -1,0 +1,98 @@
+# -*- coding: utf-8 -*-
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+# This file is part of Vimana Framework Project.
+
+name: Objgate
+author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
+brief: HTTP REST Object Authz & BOLA Auditor
+category: Audit
+framework: Django
+info: Audits REST object endpoints for BOLA/IDOR, unauthenticated access, and dual-identity membership bypass (HTTP — not WebSocket).
+module: siddhis/objgate/objgate.py
+package: Django REST Framework
+type: DAST
+astt: DAST
+tags:
+  - BOLA
+  - IDOR
+  - Authorization
+  - REST
+  - Django
+  - DRF
+  - HTTP
+composition:
+  mode: Standalone
+  orchestrator_ready: true
+description: |
+  Objgate is an independent HTTP REST object-level authorization auditor.
+  It specializes in BOLA/IDOR on path/query object IDs — complementary to
+  roomgate (which covers WebSocket room membership only).
+
+  Key capabilities:
+  - Independent OpenAPI fetch and registration into Vimana _SPECS_
+  - Local spec cache at ~/.vimana/cache/objgate/specs/
+  - Environment tracking via ~/.objgate_env
+  - Object path discovery (OpenAPI templates + wordlist)
+  - Unauthenticated object access
+  - Cross-tenant / horizontal IDOR (identity A accesses object B)
+  - Vertical privilege / BFLA probes on admin-looking paths
+  - Dual-identity membership baseline
+  - CI-friendly JSON output and channel registration for high/medium findings
+references:
+  links:
+    - https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/
+    - https://www.django-rest-framework.org/
+  cwe:
+    - CWE-639 - Authorization Bypass Through User-Controlled Key
+    - CWE-284 - Improper Access Control
+    - CWE-306 - Missing Authentication for Critical Function
+vfset:
+  parse_plugin_scope: False
+guide:
+  naviargs:
+    target_url: True
+  args: |
+    ø----------------------------------------------------------------------ø
+    ⣿ OBJGATE — HTTP REST Object Authz & BOLA Auditor
+    ø-----------+----------------------------------------------------------ø
+    │ API spec (independent)                                               │
+    +------------+---------------------------------------------------------+
+     --scan-api URL        Discover OpenAPI, cache spec, register in _SPECS_
+     --spec-url URL        Direct OpenAPI document URL
+     --spec-file PATH      Load OpenAPI JSON/YAML from local file
+     --apispec ID          Use a spec already stored in Vimana
+     --use-env             Use last objgate scan from ~/.objgate_env
+    ø-----------+----------------------------------------------------------ø
+    │ Object / resource authz                                              │
+    +------------+---------------------------------------------------------+
+     --obj-audit           Run object authorization / BOLA audit
+     --obj-path PATH       Template e.g. /api/orders/{id}
+     --obj-id-a ID         Object owned by identity A (default: 1)
+     --obj-id-b ID         Object owned by identity B (default: 2)
+     --obj-auth-a HDR      Auth for identity A (default: Bearer user-a-token)
+     --obj-auth-b HDR      Auth for identity B (default: Bearer user-b-token)
+     --obj-methods LIST    Methods to probe (default: GET,PATCH)
+     --obj-checks MODE     unauth | idor | membership | vertical | all
+    ø-----------+----------------------------------------------------------ø
+    │ CI/CD & JSON                                                         │
+    +------------+---------------------------------------------------------+
+     --json / --ci-mode / --no-channels / --banner / -o FILE
+  examples: |
+    # Lab on :18105 — open + broken secure orders (DRF)
+    vimana run objgate --target-url http://localhost:18105 \
+      --obj-path /api/orders/{id} --obj-audit --json --no-channels
+
+    vimana run objgate --target-url http://localhost:18105 \
+      --obj-path /api/secure/orders/{id} --obj-id-a 1 --obj-id-b 2 \
+      --obj-auth-a "Bearer user-a-token" --obj-auth-b "Bearer user-b-token" \
+      --obj-methods GET,PATCH --obj-audit --json --ci-mode --no-channels
+
+    # Scan + audit via OpenAPI
+    vimana run objgate --scan-api http://localhost:18105 --obj-audit --json --no-channels
+  labs: |
+    # Start vulnerable DRF lab
+    vimana lab objgate --start
+    # or: bash siddhis/objgate/lab/setup.sh

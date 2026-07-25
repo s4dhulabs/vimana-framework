@@ -60,6 +60,7 @@ class VimanaLabManager:
             "boundr": 18102,
             "framewire": 18103,
             "roomgate": 18104,
+            "objgate": 18105,
         }
         
         # Multi-service lab configurations
@@ -110,6 +111,11 @@ class VimanaLabManager:
                 "supports_file": False
             },
             "roomgate": {
+                "single": "--scan-api",
+                "multiple": None,
+                "supports_file": False
+            },
+            "objgate": {
                 "single": "--scan-api",
                 "multiple": None,
                 "supports_file": False
@@ -684,6 +690,11 @@ class VimanaLabManager:
             print(f"   🎯 Scan + audit:  vimana run {plugin_name} {single_param} {url} --room-audit --json --no-channels")
             print(f"   🎯 Open rooms:    vimana run {plugin_name} --target-url {url} --room-path '/ws/room/{{id}}' --room-audit --json")
             print(f"   🎯 Secure IDOR:   vimana run {plugin_name} --target-url {url} --room-path '/ws/secure/{{id}}' --room-id-a room-a --room-id-b room-b --room-auth-a 'Bearer user-a' --room-audit --json")
+            print(f"   📡 OpenAPI:       {url}/openapi.json")
+        elif plugin_name == "objgate":
+            print(f"   🎯 Scan + audit:  vimana run {plugin_name} {single_param} {url} --obj-audit --json --no-channels")
+            print(f"   🎯 Open orders:   vimana run {plugin_name} --target-url {url} --obj-path '/api/orders/{{id}}/' --obj-audit --json")
+            print(f"   🎯 Secure BOLA:   vimana run {plugin_name} --target-url {url} --obj-path '/api/secure/orders/{{id}}/' --obj-id-a 1 --obj-id-b 2 --obj-auth-a 'Bearer user-a-token' --obj-audit --json")
             print(f"   📡 OpenAPI:       {url}/openapi.json")
         else:
             print(f"   🎯 Test Command: vimana run {plugin_name} {single_param} {url}")
