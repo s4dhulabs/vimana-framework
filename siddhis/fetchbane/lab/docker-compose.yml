@@ -1,0 +1,19 @@
+services:
+  fetchbane-lab:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fetchbane-test-app
+    ports:
+      - "18106:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./app.py:/app/app.py
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 15s

@@ -190,6 +190,23 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument('--obj-checks', action='store', dest='obj_checks', default='all')
         vmnf_shared_parser.add_argument('--obj-admin-path', action='store', dest='obj_admin_path', default=False)
 
+        # fetchbane — SSRF auditor
+        vmnf_shared_parser.add_argument('--ssrf-audit', action='store_true', dest='ssrf_audit_enabled', default=False)
+        vmnf_shared_parser.add_argument('--ssrf-endpoint', action='store', dest='ssrf_endpoint', default=False)
+        vmnf_shared_parser.add_argument('--ssrf-param', action='store', dest='ssrf_param', default='url')
+        vmnf_shared_parser.add_argument('--ssrf-canary', action='store', dest='ssrf_canary', default=False)
+        vmnf_shared_parser.add_argument('--ssrf-vectors', action='store', dest='ssrf_vectors', default='all')
+
+        # schemage — GraphQL security auditor
+        vmnf_shared_parser.add_argument('--gql-audit', action='store_true', dest='gql_audit_enabled', default=False)
+        vmnf_shared_parser.add_argument('--gql-path', action='store', dest='gql_path', default=False)
+        vmnf_shared_parser.add_argument('--gql-auth-a', action='store', dest='gql_auth_a', default=False)
+        vmnf_shared_parser.add_argument('--gql-auth-b', action='store', dest='gql_auth_b', default=False)
+        vmnf_shared_parser.add_argument('--gql-order-a', action='store', dest='gql_order_a', default=False)
+        vmnf_shared_parser.add_argument('--gql-order-b', action='store', dest='gql_order_b', default=False)
+        vmnf_shared_parser.add_argument('--gql-max-depth', action='store', dest='gql_max_depth', type=int, default=8)
+        vmnf_shared_parser.add_argument('--gql-checks', action='store', dest='gql_checks', default='all')
+
         # wso — WebSockets Orchestrator (socketline → framewire → roomgate)
         vmnf_shared_parser.add_argument('--wso-skip-scan', action='store_true', dest='wso_skip_scan', default=False)
         vmnf_shared_parser.add_argument('--wso-skip-handshake', action='store_true', dest='wso_skip_handshake', default=False)

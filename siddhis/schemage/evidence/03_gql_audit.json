@@ -1,0 +1,131 @@
+{
+  "report_version": "1.0",
+  "plugin": "schemage",
+  "orchestrator": null,
+  "generated_at": "2026-07-25T16:03:47.965000+00:00",
+  "spec_id": null,
+  "base_url": "http://localhost:18107",
+  "summary": {
+    "live_targets": 1,
+    "candidates": 1,
+    "findings_total": 6,
+    "findings_high": 3,
+    "findings_medium": 2,
+    "findings_low": 1,
+    "findings_info": 0,
+    "actionable": 5,
+    "passed": false
+  },
+  "targets": [
+    {
+      "path": "/graphql",
+      "source": "cli"
+    }
+  ],
+  "candidates": [
+    {
+      "path": "/graphql"
+    }
+  ],
+  "findings": [
+    {
+      "target": "http://localhost:18107/graphql/",
+      "check": "introspection_enabled",
+      "severity": "medium",
+      "detail": "GraphQL introspection is enabled at /graphql/ (HTTP 200). Schema types leaked: 16.",
+      "evidence": {
+        "status": 200,
+        "type_count": 16,
+        "sample_types": [
+          "Query",
+          "Order",
+          "ID",
+          "Float",
+          "String",
+          "User",
+          "Mutation",
+          "Boolean",
+          "__Schema",
+          "__Type",
+          "__TypeKind",
+          "__Field",
+          "__InputValue",
+          "__EnumValue",
+          "__Directive"
+        ]
+      }
+    },
+    {
+      "target": "http://localhost:18107/graphql/",
+      "check": "unbounded_query_depth",
+      "severity": "medium",
+      "detail": "Deeply nested query (depth\u22488) was accepted without depth/complexity rejection.",
+      "evidence": {
+        "status": 200,
+        "depth": 8,
+        "errors": []
+      }
+    },
+    {
+      "target": "http://localhost:18107/graphql/",
+      "check": "alias_batch_overload",
+      "severity": "low",
+      "detail": "Alias batching accepted (25 aliases). Consider query cost limits.",
+      "evidence": {
+        "alias_count": 25,
+        "status": 200
+      }
+    },
+    {
+      "target": "http://localhost:18107/graphql/",
+      "check": "cross_tenant_order_idor",
+      "severity": "high",
+      "detail": "Identity A ('Bearer user-a-token') read order '2' (owner='user-b', secret present). Possible field/object IDOR.",
+      "evidence": {
+        "status": 200,
+        "order": {
+          "id": "2",
+          "owner": {
+            "username": "user-b"
+          },
+          "secret": "tenant-b-secret",
+          "note": "schemage-probe",
+          "amount": 99.5
+        },
+        "auth": "Bearer user-a-token",
+        "expected_order": "1"
+      }
+    },
+    {
+      "target": "http://localhost:18107/graphql/",
+      "check": "cross_tenant_mutation_idor",
+      "severity": "high",
+      "detail": "Identity A mutated order '2' via updateOrderNote. Missing object-level authz on mutation.",
+      "evidence": {
+        "status": 200,
+        "result": {
+          "id": "2",
+          "note": "schemage-probe",
+          "secret": "tenant-b-secret",
+          "owner": {
+            "username": "user-b"
+          }
+        },
+        "auth": "Bearer user-a-token"
+      }
+    },
+    {
+      "target": "http://localhost:18107/graphql/",
+      "check": "unauthenticated_sensitive_query",
+      "severity": "high",
+      "detail": "Unauthenticated query returned order secret for id=1.",
+      "evidence": {
+        "status": 200,
+        "order": {
+          "id": "1",
+          "secret": "tenant-a-secret"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+# -*- coding: utf-8 -*-
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+# This file is part of Vimana Framework Project.
+
+name: Schemage
+author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
+brief: GraphQL Security Auditor
+category: Audit
+framework: Strawberry
+info: Audits GraphQL endpoints for introspection leaks, unbounded depth/aliases, and object-level IDOR on queries/mutations.
+module: siddhis/schemage/schemage.py
+package: Strawberry GraphQL
+type: DAST
+astt: DAST
+tags:
+  - GraphQL
+  - Strawberry
+  - Introspection
+  - IDOR
+  - BOLA
+composition:
+  mode: Standalone
+  orchestrator_ready: true
+description: |
+  Schemage is an independent GraphQL security auditor for Python stacks
+  (Strawberry/Graphene-style HTTP GraphQL). It does not cover WebSockets.
+
+  Checks: introspection enabled, unbounded query depth / alias batching,
+  unauthenticated sensitive queries, cross-tenant order query/mutation IDOR.
+references:
+  links:
+    - https://strawberry.rocks/
+    - https://owasp.org/www-project-graphql-security/
+  cwe:
+    - CWE-200 - Exposure of Sensitive Information
+    - CWE-639 - Authorization Bypass Through User-Controlled Key
+    - CWE-400 - Uncontrolled Resource Consumption
+vfset:
+  parse_plugin_scope: False
+guide:
+  naviargs:
+    target_url: True
+  args: |
+    ø----------------------------------------------------------------------ø
+    ⣿ SCHEMAGE — GraphQL Security Auditor
+    ø-----------+----------------------------------------------------------ø
+     --gql-audit             Run GraphQL audit
+     --gql-path PATH         Default: /graphql
+     --gql-auth-a / --gql-auth-b   Dual identity Bearer tokens
+     --gql-order-a / --gql-order-b Object ids (default 1 / 2)
+     --gql-max-depth N       Nesting depth probe (default 8)
+     --gql-checks MODE       introspection | depth | idor | unauth | all
+     --json / --ci-mode / --no-channels
+  examples: |
+    vimana run schemage --target-url http://localhost:18107 \
+      --gql-path /graphql --gql-audit --json --ci-mode --no-channels
+
+    vimana run schemage --target-url http://localhost:18107 \
+      --gql-auth-a 'Bearer user-a-token' --gql-auth-b 'Bearer user-b-token' \
+      --gql-order-a 1 --gql-order-b 2 --gql-audit --json --no-channels
+  lab_setup: |
+    Docker lab (Strawberry GraphQL — introspection / depth / IDOR):
+
+      vimana run --lab schemage
+
+    Manual:
+
+      cd siddhis/schemage/lab && ./setup.sh
+
+    Lab URL: http://localhost:18107
+    Path: /graphql (trailing slash also accepted)
+
+    Test:
+
+      vimana run schemage --target-url http://localhost:18107 \
+        --gql-path /graphql --gql-audit --json --ci-mode --no-channels

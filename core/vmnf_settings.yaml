@@ -79,6 +79,8 @@ settings:
         - framewire
         - roomgate
         - objgate
+        - fetchbane
+        - schemage
         - wso
     utils:
         random_headers: res/random_headers.yaml

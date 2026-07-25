@@ -245,6 +245,10 @@ class vfasserts:
             and not self._vfh_['room_path'] \
             and not self._vfh_['obj_audit_enabled'] \
             and not self._vfh_['obj_path'] \
+            and not self._vfh_['ssrf_audit_enabled'] \
+            and not self._vfh_['ssrf_endpoint'] \
+            and not self._vfh_['gql_audit_enabled'] \
+            and not self._vfh_['gql_path'] \
             and not self._vfh_['wso_skip_handshake'] \
             and not self._vfh_['wso_skip_frames'] \
             and not self._vfh_['wso_skip_rooms'] \

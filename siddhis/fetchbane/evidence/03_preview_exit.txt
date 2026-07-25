@@ -1,0 +1,1 @@
+fetchbane_exit=1

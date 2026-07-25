@@ -61,6 +61,8 @@ class VimanaLabManager:
             "framewire": 18103,
             "roomgate": 18104,
             "objgate": 18105,
+            "fetchbane": 18106,
+            "schemage": 18107,
         }
         
         # Multi-service lab configurations
@@ -116,6 +118,16 @@ class VimanaLabManager:
                 "supports_file": False
             },
             "objgate": {
+                "single": "--scan-api",
+                "multiple": None,
+                "supports_file": False
+            },
+            "fetchbane": {
+                "single": "--scan-api",
+                "multiple": None,
+                "supports_file": False
+            },
+            "schemage": {
                 "single": "--scan-api",
                 "multiple": None,
                 "supports_file": False
@@ -696,6 +708,15 @@ class VimanaLabManager:
             print(f"   🎯 Open orders:   vimana run {plugin_name} --target-url {url} --obj-path '/api/orders/{{id}}/' --obj-audit --json")
             print(f"   🎯 Secure BOLA:   vimana run {plugin_name} --target-url {url} --obj-path '/api/secure/orders/{{id}}/' --obj-id-a 1 --obj-id-b 2 --obj-auth-a 'Bearer user-a-token' --obj-audit --json")
             print(f"   📡 OpenAPI:       {url}/openapi.json")
+        elif plugin_name == "fetchbane":
+            print(f"   🎯 Scan + audit:  vimana run {plugin_name} {single_param} {url} --ssrf-audit --json --no-channels")
+            print(f"   🎯 Preview SSRF:  vimana run {plugin_name} --target-url {url} --ssrf-endpoint /preview --ssrf-audit --json")
+            print(f"   🎯 Webhook SSRF:  vimana run {plugin_name} --target-url {url} --ssrf-endpoint /webhook --ssrf-audit --json")
+            print(f"   📡 OpenAPI:       {url}/openapi.json")
+        elif plugin_name == "schemage":
+            print(f"   🎯 Scan + audit:  vimana run {plugin_name} {single_param} {url} --gql-audit --json --no-channels")
+            print(f"   🎯 GraphQL IDOR:  vimana run {plugin_name} --target-url {url} --gql-path /graphql --gql-auth-a 'Bearer user-a-token' --gql-audit --json")
+            print(f"   📡 GraphQL:       {url}/graphql")
         else:
             print(f"   🎯 Test Command: vimana run {plugin_name} {single_param} {url}")
         

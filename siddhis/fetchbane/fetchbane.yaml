@@ -1,0 +1,79 @@
+# -*- coding: utf-8 -*-
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+# This file is part of Vimana Framework Project.
+
+name: Fetchbane
+author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
+brief: Server-Side Request Forgery Auditor
+category: Audit
+framework: Flask
+info: Audits URL-fetch / webhook / preview endpoints for SSRF (loopback, metadata, scheme and allowlist bypass).
+module: siddhis/fetchbane/fetchbane.py
+package: Flask
+type: DAST
+astt: DAST
+tags:
+  - SSRF
+  - Flask
+  - Webhook
+  - Preview
+  - CWE-918
+composition:
+  mode: Standalone
+  orchestrator_ready: true
+description: |
+  Fetchbane is an independent SSRF auditor for Python web/API apps.
+  It probes endpoints that accept attacker-controlled URLs (preview, webhook,
+  fetch/proxy) and looks for canary reflection, cloud metadata reachability,
+  and common bypass patterns.
+
+  Not related to WebSocket specialties. Complementary to boundr (upload) and
+  objgate (HTTP BOLA).
+references:
+  links:
+    - https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
+    - https://cwe.mitre.org/data/definitions/918.html
+  cwe:
+    - CWE-918 - Server-Side Request Forgery (SSRF)
+vfset:
+  parse_plugin_scope: False
+guide:
+  naviargs:
+    target_url: True
+  args: |
+    ø----------------------------------------------------------------------ø
+    ⣿ FETCHBANE — SSRF Auditor
+    ø-----------+----------------------------------------------------------ø
+     --ssrf-audit            Run SSRF audit
+     --ssrf-endpoint PATH    e.g. /preview or /webhook
+     --ssrf-param NAME       Query/JSON param (default: url)
+     --ssrf-canary URL       Internal canary URL (default: http://127.0.0.1:9999/secret)
+     --ssrf-vectors MODE     loopback | metadata | bypass | scheme | all
+     --scan-api / --json / --ci-mode / --no-channels
+  examples: |
+    vimana run fetchbane --target-url http://localhost:18106 \
+      --ssrf-endpoint /preview --ssrf-audit --json --ci-mode --no-channels
+
+    vimana run fetchbane --target-url http://localhost:18106 \
+      --ssrf-endpoint /webhook --ssrf-param url --ssrf-vectors all \
+      --ssrf-audit --json --no-channels
+  lab_setup: |
+    Docker lab (Flask preview / webhook / fetch + local canary):
+
+      vimana run --lab fetchbane
+
+    Manual:
+
+      cd siddhis/fetchbane/lab && ./setup.sh
+
+    Lab URL: http://localhost:18106
+    Endpoints: /preview, /webhook, /fetch
+    Canary: http://127.0.0.1:9999/secret (inside container)
+
+    Test:
+
+      vimana run fetchbane --target-url http://localhost:18106 \
+        --ssrf-endpoint /preview --ssrf-audit --json --ci-mode --no-channels

