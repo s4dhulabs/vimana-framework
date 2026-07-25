@@ -1624,10 +1624,8 @@ def run_pydantic_tests(vmnf_handler: Dict[str, Any]) -> Dict[str, Any]:
     tester = PydanticTester(**vmnf_handler)
     
     # Setup and run tests
-    loop = asyncio.get_event_loop()
-    
-    # Run tests - this will run setup first
-    results = loop.run_until_complete(tester.run_tests())
+    from ._async_compat import run_async
+    results = run_async(tester.run_tests())
     
     if not results:
         if verbose:

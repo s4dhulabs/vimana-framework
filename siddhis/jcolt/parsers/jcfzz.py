@@ -413,7 +413,7 @@ class Jcfzz:
             'username': [self.genData.person.username(), ' ', random.uniform(-1000.0, 1000.0), True],
             'password': [self.genData.person.password(), random.uniform(-1000.0, 1000.0), None],
             'scope': ['read', 'write', 'admin', 'user', 'all', 'root',random.uniform(-1000.0, 1000.0), 'True'],
-            'client_id': [self.genData.person.random.generate_string('s3cr3t'), 'cliend_id', random.uniform(-1000.0, 1000.0), ' '],
+            'client_id': [self.genData.random.generate_string_by_mask('@#' * 12), 'cliend_id', random.uniform(-1000.0, 1000.0), ' '],
             'client_secret': [self.genData.person.password(), self.genData.person.password(),random.uniform(-1000.0, 1000.0), ' ']
         }
 

@@ -84,7 +84,7 @@ def jcbanner_fmt(spec_info_dict):
         print(f"{banner_line:<30} {spec_info_line}")
     print()
 
-from neotermcolor import colored, cprint
+from neotermcolor import colored, cprint 
 
 def sort_list(items:list) -> list:
         return sorted(items, key=lambda i: len(i), reverse=True)

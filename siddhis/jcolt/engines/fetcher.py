@@ -557,12 +557,6 @@ class jcfetcher:
         Synchronous entry point for fetching all URLs.
         Returns the results after all requests have completed.
         """
-        try:
-            loop = asyncio.get_event_loop()
-        except RuntimeError:
-            # Create new event loop if none exists
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            
-        loop.run_until_complete(self.fetch_all_urls())
+        from ._async_compat import run_async
+        run_async(self.fetch_all_urls())
         return self.fuzz_results
