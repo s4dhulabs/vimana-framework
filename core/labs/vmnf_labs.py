@@ -48,24 +48,7 @@ class VimanaLabManager:
             "Dockerfile"
         ]
         
-        # Default lab ports (can be overridden in docker-compose.yml)
-        self.default_ports = {
-            "w2pyscanner": 8086,
-            "django_scanner": 8000,
-            "flask_scanner": 5000,
-            "fastapi_scanner": 8000,
-            "framewalk": 8081,  # Primary service (web2py)
-            "socketline": 18100,
-            "streamguard": 18101,
-            "boundr": 18102,
-            "framewire": 18103,
-            "roomgate": 18104,
-            "objgate": 18105,
-            "fetchbane": 18106,
-            "schemage": 18107,
-        }
-        
-        # Multi-service lab configurations
+        # Multi-service lab configurations (structural — ports still overridable via compose)
         self.multi_service_labs = {
             "framewalk": {
                 "web2py-app": {"framework": "Web2py", "port": 8081},
@@ -79,61 +62,6 @@ class VimanaLabManager:
         # Lab status tracking
         self.lab_status_file = os.path.join(self.vimana_root, ".vimana_labs_status.json")
         self._load_lab_status()
-        
-        # Plugin command syntax mapping (correct parameter names)
-        self.plugin_commands = {
-            "framewalk": {
-                "single": "--target",
-                "multiple": "--file",
-                "supports_file": True
-            },
-            "w2pyscanner": {
-                "single": "--target-url",
-                "multiple": None,
-                "supports_file": False
-            },
-            "socketline": {
-                "single": "--scan-api",
-                "multiple": None,
-                "supports_file": False
-            },
-            "streamguard": {
-                "single": "--scan-api",
-                "multiple": None,
-                "supports_file": False
-            },
-            "boundr": {
-                "single": "--scan-api",
-                "multiple": None,
-                "supports_file": False
-            },
-            "framewire": {
-                "single": "--scan-api",
-                "multiple": None,
-                "supports_file": False
-            },
-            "roomgate": {
-                "single": "--scan-api",
-                "multiple": None,
-                "supports_file": False
-            },
-            "objgate": {
-                "single": "--scan-api",
-                "multiple": None,
-                "supports_file": False
-            },
-            "fetchbane": {
-                "single": "--scan-api",
-                "multiple": None,
-                "supports_file": False
-            },
-            "schemage": {
-                "single": "--scan-api",
-                "multiple": None,
-                "supports_file": False
-            },
-            # Add other plugins as needed
-        }
 
     def _get_vimana_root(self) -> str:
         """Get the Vimana framework root directory."""
@@ -314,16 +242,32 @@ class VimanaLabManager:
         else:
             return [self._get_lab_port(plugin_name)]
     
+    def _get_plugin_lab_meta(self, plugin_name: str) -> Dict[str, Any]:
+        """Lab metadata from composition.lab / vfset.lab (via capabilities registry)."""
+        try:
+            from core.capabilities import get_lab_meta
+            return get_lab_meta(plugin_name) or {}
+        except Exception:
+            return {}
+
+    def _format_run_hint(self, plugin_name: str, url: str) -> str:
+        """Example run command from composition.lab.run_hint (or a generic fallback)."""
+        lab = self._get_plugin_lab_meta(plugin_name)
+        hint = lab.get('run_hint') if isinstance(lab, dict) else None
+        if not hint:
+            hint = "vimana run {plugin} --target-url {url}"
+        return str(hint).format(plugin=plugin_name, url=url, port=urlparse(url).port or '')
+
     def _get_lab_port(self, plugin_name: str) -> int:
-        """Get the primary port for a lab from its docker-compose configuration."""
-        config = self._get_lab_config(plugin_name)
-        
+        """Primary lab port: docker-compose ports → composition.lab.port → error."""
         # For multi-service labs, return the first service port
         if plugin_name in self.multi_service_labs:
             first_service = list(self.multi_service_labs[plugin_name].values())[0]
             return first_service["port"]
-        
-        # Try to extract port from docker-compose.yml
+
+        config = self._get_lab_config(plugin_name)
+
+        # Prefer host port from docker-compose.yml
         try:
             services = config.get('services', {})
             for service_name, service_config in services.items():
@@ -332,11 +276,23 @@ class VimanaLabManager:
                     if isinstance(port_mapping, str) and ':' in port_mapping:
                         host_port = port_mapping.split(':')[0]
                         return int(host_port)
+                    if isinstance(port_mapping, dict) and 'published' in port_mapping:
+                        return int(port_mapping['published'])
         except Exception:
             pass
-        
-        # Fallback to default ports
-        return self.default_ports.get(plugin_name, 8080)
+
+        lab = self._get_plugin_lab_meta(plugin_name)
+        if lab.get('port') not in (None, False, ''):
+            try:
+                return int(lab['port'])
+            except (TypeError, ValueError):
+                pass
+
+        raise ValueError(
+            f"No lab port configured for '{plugin_name}'. "
+            f"Set ports: in siddhis/{plugin_name}/lab/docker-compose.yml "
+            f"or composition.lab.port in siddhis/{plugin_name}/{plugin_name}.yaml"
+        )
 
     def _run_docker_compose(self, plugin_name: str, command: str, 
                            capture_output: bool = False) -> subprocess.CompletedProcess:
@@ -624,23 +580,23 @@ class VimanaLabManager:
                                 print(f"    📍 {framework}: http://localhost:{port}")
                             
                             if is_running:
-                                plugin_cmd = self.plugin_commands.get(plugin_name, {"single": "--target", "multiple": "--file", "supports_file": False})
-                                if plugin_cmd["supports_file"]:
-                                    print(f"    🎯 Test All: vimana run {plugin_name} --file $VIMANA_LAB_TARGETS")
-                                else:
-                                    all_urls = [f"http://localhost:{service['port']}" for service in services.values()]
-                                    urls_string = ",".join(all_urls)
-                                    print(f"    🎯 Test All: vimana run {plugin_name} {plugin_cmd['single']} \"{urls_string}\"")
+                                print(f"    🎯 Test All: vimana run {plugin_name} --file $VIMANA_LAB_TARGETS")
+                                all_urls = [f"http://localhost:{service['port']}" for service in services.values()]
+                                for u in all_urls[:2]:
+                                    print(f"    🎯 Example: {self._format_run_hint(plugin_name, u)}")
                         else:
                             # Single-service lab info
-                            port = self._get_lab_port(plugin_name)
+                            try:
+                                port = self._get_lab_port(plugin_name)
+                            except ValueError as exc:
+                                print(f"    ⚠️  {exc}")
+                                print()
+                                continue
                             print(f"    📍 Port: {port}")
                             print(f"    🌐 URL: http://localhost:{port}")
                             
                             if is_running:
-                                plugin_cmd = self.plugin_commands.get(plugin_name, {"single": "--target", "multiple": "--file", "supports_file": False})
-                                single_param = plugin_cmd["single"]
-                                print(f"    🎯 Test Command: vimana run {plugin_name} {single_param} http://localhost:{port}")
+                                print(f"    🎯 Test Command: {self._format_run_hint(plugin_name, f'http://localhost:{port}')}")
                     
                     if not is_valid:
                         print(f"    ❌ Missing: {', '.join(missing_files)}")
@@ -673,52 +629,11 @@ class VimanaLabManager:
         print(f"\n🌐 Lab Information:")
         print(f"   📍 Port: {port}")
         print(f"   🌐 URL: {url}")
-        
-        # Get correct command syntax for this plugin
-        plugin_cmd = self.plugin_commands.get(plugin_name, {"single": "--target", "multiple": "--file", "supports_file": False})
-        single_param = plugin_cmd["single"]
+        print(f"   🎯 Test Command: {self._format_run_hint(plugin_name, url)}")
 
-        if plugin_name == "socketline":
-            print(f"   🎯 Scan + audit: vimana run {plugin_name} {single_param} {url} --ws-audit --json --no-channels")
-            print(f"   🎯 Single path:   vimana run {plugin_name} --target-url {url} --ws-path /ws/chat --ws-audit --json")
+        lab_path = self._get_plugin_lab_path(plugin_name)
+        if os.path.exists(os.path.join(lab_path, "docker-compose.yml")):
             print(f"   📡 OpenAPI:       {url}/openapi.json")
-            print(f"   🔌 WebSocket:     ws://localhost:{port}/ws/chat")
-        elif plugin_name == "streamguard":
-            print(f"   🎯 Scan + audit: vimana run {plugin_name} {single_param} {url} --stream-audit --json --no-channels")
-            print(f"   🎯 SSE path:      vimana run {plugin_name} --target-url {url} --stream-path /events --stream-audit --json")
-            print(f"   🎯 NDJSON path:   vimana run {plugin_name} --target-url {url} --stream-path /logs/stream --stream-type ndjson --stream-audit")
-            print(f"   📡 OpenAPI:       {url}/openapi.json")
-        elif plugin_name == "boundr":
-            print(f"   🎯 Scan + audit: vimana run {plugin_name} {single_param} {url} --upload-audit --json --no-channels")
-            print(f"   🎯 Upload path:   vimana run {plugin_name} --target-url {url} --upload-endpoint /upload --upload-audit --json")
-            print(f"   🎯 Alt field:     vimana run {plugin_name} --target-url {url} --upload-endpoint /api/files --upload-field document --upload-audit")
-            print(f"   📡 OpenAPI:       {url}/openapi.json")
-        elif plugin_name == "framewire":
-            print(f"   🎯 Scan + fuzz:   vimana run {plugin_name} {single_param} {url} --frame-audit --json --no-channels")
-            print(f"   🎯 Echo path:     vimana run {plugin_name} --target-url {url} --frame-path /ws/echo --frame-audit --json")
-            print(f"   🎯 Cross-session: vimana run {plugin_name} --target-url {url} --frame-path /ws/room/1 --frame-vectors cross_session --frame-audit --json")
-            print(f"   📡 OpenAPI:       {url}/openapi.json")
-        elif plugin_name == "roomgate":
-            print(f"   🎯 Scan + audit:  vimana run {plugin_name} {single_param} {url} --room-audit --json --no-channels")
-            print(f"   🎯 Open rooms:    vimana run {plugin_name} --target-url {url} --room-path '/ws/room/{{id}}' --room-audit --json")
-            print(f"   🎯 Secure IDOR:   vimana run {plugin_name} --target-url {url} --room-path '/ws/secure/{{id}}' --room-id-a room-a --room-id-b room-b --room-auth-a 'Bearer user-a' --room-audit --json")
-            print(f"   📡 OpenAPI:       {url}/openapi.json")
-        elif plugin_name == "objgate":
-            print(f"   🎯 Scan + audit:  vimana run {plugin_name} {single_param} {url} --obj-audit --json --no-channels")
-            print(f"   🎯 Open orders:   vimana run {plugin_name} --target-url {url} --obj-path '/api/orders/{{id}}/' --obj-audit --json")
-            print(f"   🎯 Secure BOLA:   vimana run {plugin_name} --target-url {url} --obj-path '/api/secure/orders/{{id}}/' --obj-id-a 1 --obj-id-b 2 --obj-auth-a 'Bearer user-a-token' --obj-audit --json")
-            print(f"   📡 OpenAPI:       {url}/openapi.json")
-        elif plugin_name == "fetchbane":
-            print(f"   🎯 Scan + audit:  vimana run {plugin_name} {single_param} {url} --ssrf-audit --json --no-channels")
-            print(f"   🎯 Preview SSRF:  vimana run {plugin_name} --target-url {url} --ssrf-endpoint /preview --ssrf-audit --json")
-            print(f"   🎯 Webhook SSRF:  vimana run {plugin_name} --target-url {url} --ssrf-endpoint /webhook --ssrf-audit --json")
-            print(f"   📡 OpenAPI:       {url}/openapi.json")
-        elif plugin_name == "schemage":
-            print(f"   🎯 Scan + audit:  vimana run {plugin_name} {single_param} {url} --gql-audit --json --no-channels")
-            print(f"   🎯 GraphQL IDOR:  vimana run {plugin_name} --target-url {url} --gql-path /graphql --gql-auth-a 'Bearer user-a-token' --gql-audit --json")
-            print(f"   📡 GraphQL:       {url}/graphql")
-        else:
-            print(f"   🎯 Test Command: vimana run {plugin_name} {single_param} {url}")
         
         # Show targets file info if it exists
         if plugin_name in self.active_labs and "targets_file" in self.active_labs[plugin_name]:
@@ -729,7 +644,6 @@ class VimanaLabManager:
                 print(f"   💡 To set in shell: export VIMANA_LAB_TARGETS={targets_file}")
         
         # Show lab-specific information if available
-        lab_path = self._get_plugin_lab_path(plugin_name)
         readme_file = os.path.join(lab_path, "README.md")
         
         if os.path.exists(readme_file):
@@ -769,29 +683,29 @@ class VimanaLabManager:
         
         print()
         print("🧪 Test Individual Frameworks:")
-        plugin_cmd = self.plugin_commands.get(plugin_name, {"single": "--target", "multiple": "--file", "supports_file": False})
-        single_param = plugin_cmd["single"]
-        
         for service_name, service_info in services.items():
             framework = service_info["framework"]
             port = service_info["port"]
             url = f"http://localhost:{port}"
-            print(f"   vimana run {plugin_name} {single_param} {url}")
+            print(f"   {self._format_run_hint(plugin_name, url)}")
         
         print()
         print("🔗 Test All Frameworks at Once:")
-        if plugin_cmd["supports_file"]:
-            print(f"   vimana run {plugin_name} --file $VIMANA_LAB_TARGETS")
-            print(f"   vimana run {plugin_name} --file {os.environ.get('VIMANA_LAB_TARGETS', 'targets.txt')}")
-        else:
-            all_urls = [f"http://localhost:{service['port']}" for service in services.values()]
-            urls_string = ",".join(all_urls)
-            print(f"   vimana run {plugin_name} {single_param} \"{urls_string}\"")
+        print(f"   vimana run {plugin_name} --file $VIMANA_LAB_TARGETS")
+        print(f"   vimana run {plugin_name} --file {os.environ.get('VIMANA_LAB_TARGETS', 'targets.txt')}")
+        all_urls = [f"http://localhost:{service['port']}" for service in services.values()]
+        if all_urls:
+            print(f"   {self._format_run_hint(plugin_name, all_urls[0])}")
         
         print()
         print("🔧 Environment Setup:")
         current_env = os.environ.get('VIMANA_LAB_TARGETS', 'Not set')
         print(f"   VIMANA_LAB_TARGETS: {current_env}")
+        targets_file = None
+        if plugin_name in self.active_labs:
+            targets_file = self.active_labs[plugin_name].get('targets_file')
+        if not targets_file:
+            targets_file = os.path.join(self._get_plugin_lab_path(plugin_name), 'targets.txt')
         if current_env != 'Not set':
             print(f"   To use in shell: export VIMANA_LAB_TARGETS={current_env}")
         else:

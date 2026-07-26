@@ -350,7 +350,7 @@ class FrameMessageAuditor:
                     'severity': finding.severity,
                     'evidence': finding.evidence,
                 },
-            })
+            }, handler=self.handler)
 
     def print_findings(self, findings: List[FrameFinding]) -> None:
         if not findings:

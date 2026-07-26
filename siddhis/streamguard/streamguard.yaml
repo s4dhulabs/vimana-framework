@@ -27,7 +27,47 @@ composition:
   orchestrator_ready: true
   plugin_chain:
     streaming:
-      - streamguard
+    - streamguard
+  lab:
+    port: 18101
+    run_hint: vimana run {plugin} --target-url {url} --stream-audit --json --no-channels
+  specialty_args:
+    group: stream
+    tactical_keys:
+    - stream_audit_enabled
+    - stream_path
+    flags:
+    - flags:
+      - --stream-audit
+      dest: stream_audit_enabled
+      action: store_true
+      default: false
+    - flags:
+      - --stream-path
+      dest: stream_path
+      action: store
+      default: false
+    - flags:
+      - --stream-type
+      dest: stream_type
+      action: store
+      default: auto
+    - flags:
+      - --stream-duration
+      dest: stream_duration
+      action: store
+      type: int
+      default: 10
+    - flags:
+      - --stream-cursor
+      dest: stream_cursor
+      action: store
+      default: false
+    - flags:
+      - --stream-auth-header
+      dest: stream_auth_header
+      action: store
+      default: false
 description: |
   Streamguard is an independent FastAPI-focused auditor for Server-Sent Events (SSE),
   NDJSON streams, and chunked HTTP responses. It specializes exclusively in long-lived

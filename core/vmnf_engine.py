@@ -196,12 +196,15 @@ def abduct():
     # ~ new in vimana 1.0 - run plugin by name directly
     if hasattr(handler_ns, 'plugin_name') and handler_ns.plugin_name:
 
-        plugins_loaded = VFDBOps().getall('_SIDDHIS_')
+        plugins_loaded = VFDBOps().getall('_SIDDHIS_') or []
 
         if not plugins_loaded:
             if handler_ns.auto:
-                handler_ns.load_plugins = True
-                plugins_loaded = VFDBOps().getall('_SIDDHIS_')
+                # Actually load plugins into the DB, then re-query
+                vfmng(load_plugins=True, **{
+                    k: v for k, v in vars(handler_ns).items() if k != 'load_plugins'
+                }).load_siddhis()
+                plugins_loaded = VFDBOps().getall('_SIDDHIS_') or []
             else:
                 from res.vmnf_banners import default_naviban    
                 print("\033c", end="")
@@ -230,15 +233,18 @@ def abduct():
         vfmng(**vars(handler_ns)).run_siddhi()
         return True
     
-    if (handler_ns.module_run)\
-        and handler_ns.module_run \
-        not in _siddhis_.get("list"):
-        print(f"\n  Plugin {cl(handler_ns.module_run, 'red')} doesn't exist. Available plugins:\n")
-
-        [cprint('   ' + s, 'blue') \
-                for s in _siddhis_.get("list")]
-        print()
-        sys.exit(1)
+    # Single source of truth: validate plugin name against the live DB
+    if handler_ns.module_run:
+        plugins_loaded = VFDBOps().getall('_SIDDHIS_') or []
+        plugin_names = [p.name for p in plugins_loaded]
+        if handler_ns.module_run not in plugin_names:
+            print(f"\n  Plugin {cl(handler_ns.module_run, 'red')} doesn't exist. Available plugins:\n")
+            if plugin_names:
+                [cprint('   ' + s, 'blue') for s in plugin_names]
+            else:
+                cprint('   (none — run: vimana load --plugins)', 'yellow')
+            print()
+            sys.exit(1)
 
     # ~ save case 
     if handler_ns.save_case:
@@ -257,8 +263,10 @@ def abduct():
     elif handler_ns.load_session:
         VFSession(**vars(handler_ns)).load_session(handler_ns.load_session)
     
-    #~ load siddhis (inital vf setup)
-    elif handler_ns.load_plugins:
+    #~ load siddhis (inital vf setup / re-sync)
+    elif handler_ns.load_plugins or handler_ns.reload_plugins:
+        if handler_ns.reload_plugins and not handler_ns.load_plugins:
+            handler_ns.load_plugins = True
         vfmng(**vars(handler_ns)).load_siddhis()
         
     #~ list sessions

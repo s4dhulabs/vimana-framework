@@ -217,44 +217,33 @@ class vfasserts:
         self._vfh_ = _vfh_
 
     def tactical_mode(self):
-        return False if (
-            not self._vfh_['session_mode'] \
-            and not self._vfh_['request_data_set'] \
-            and not self._vfh_['apispec_enabled'] \
-            and not self._vfh_['inspect'] \
-            and not self._vfh_['listener_mode'] \
-            and not self._vfh_['auth_mode'] \
-            and not self._vfh_['target_url'] \
-            and not self._vfh_['rule_scan'] \
-            and not self._vfh_['framework_search_version'] \
-            and not self._vfh_['list_specs'] \
-            and not self._vfh_['flush_specs'] \
-            and not self._vfh_['flush_spec'] \
-            and not self._vfh_['fuzzerspec_enabled'] \
-            and not self._vfh_['create_env'] \
-            and not self._vfh_['load_from_env'] \
-            and not self._vfh_['api_scan_enabled'] \
-            and not self._vfh_['ws_audit_enabled'] \
-            and not self._vfh_['stream_audit_enabled'] \
-            and not self._vfh_['stream_path'] \
-            and not self._vfh_['upload_audit_enabled'] \
-            and not self._vfh_['upload_endpoint'] \
-            and not self._vfh_['frame_audit_enabled'] \
-            and not self._vfh_['frame_path'] \
-            and not self._vfh_['room_audit_enabled'] \
-            and not self._vfh_['room_path'] \
-            and not self._vfh_['obj_audit_enabled'] \
-            and not self._vfh_['obj_path'] \
-            and not self._vfh_['ssrf_audit_enabled'] \
-            and not self._vfh_['ssrf_endpoint'] \
-            and not self._vfh_['gql_audit_enabled'] \
-            and not self._vfh_['gql_path'] \
-            and not self._vfh_['wso_skip_handshake'] \
-            and not self._vfh_['wso_skip_frames'] \
-            and not self._vfh_['wso_skip_rooms'] \
-            and not self._vfh_['openapi_spec_file'] \
-            and not self._vfh_['openapi_spec_url'] \
-        ) else True
+        """True when any operational/tactical CLI mode is active."""
+        tactical_keys = [
+            'session_mode',
+            'request_data_set',
+            'apispec_enabled',
+            'inspect',
+            'listener_mode',
+            'auth_mode',
+            'target_url',
+            'rule_scan',
+            'framework_search_version',
+            'list_specs',
+            'flush_specs',
+            'flush_spec',
+            'fuzzerspec_enabled',
+            'create_env',
+            'load_from_env',
+            'api_scan_enabled',
+            'openapi_spec_file',
+            'openapi_spec_url',
+        ]
+        try:
+            from core.capabilities import specialty_tactical_keys
+            tactical_keys.extend(specialty_tactical_keys())
+        except Exception:
+            pass
+        return any(self._vfh_.get(key) for key in tactical_keys)
 
     def default_guide_mode(self):
         return True if (

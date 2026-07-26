@@ -27,7 +27,41 @@ composition:
   orchestrator_ready: true
   plugin_chain:
     upload:
-      - boundr
+    - boundr
+  lab:
+    port: 18102
+    run_hint: vimana run {plugin} --target-url {url} --upload-audit --json --no-channels
+  specialty_args:
+    group: upload
+    tactical_keys:
+    - upload_audit_enabled
+    - upload_endpoint
+    flags:
+    - flags:
+      - --upload-audit
+      dest: upload_audit_enabled
+      action: store_true
+      default: false
+    - flags:
+      - --upload-endpoint
+      dest: upload_endpoint
+      action: store
+      default: false
+    - flags:
+      - --upload-field
+      dest: upload_field
+      action: store
+      default: file
+    - flags:
+      - --upload-vectors
+      dest: upload_vectors
+      action: store
+      default: all
+    - flags:
+      - --upload-auth-header
+      dest: upload_auth_header
+      action: store
+      default: false
 description: |
   Boundr is an independent FastAPI-focused auditor for multipart/form-data and
   UploadFile surfaces. It specializes exclusively in upload boundary testing —

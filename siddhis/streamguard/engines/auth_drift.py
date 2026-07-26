@@ -256,7 +256,7 @@ class StreamEndpointAuditor:
                     'severity': finding.severity,
                     'evidence': finding.evidence,
                 },
-            })
+            }, handler=self.handler)
 
     def print_findings(self, findings: List[StreamFinding]) -> None:
         if not findings:

@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlencode
 
@@ -12,6 +11,7 @@ import requests
 from neotermcolor import colored
 
 from core.vmnf_channels import register_channel
+from core.findings import Finding as SsrfFinding
 from siddhis.fetchbane.engines.discovery import (
     build_vectors,
     resolve_canary,
@@ -19,15 +19,6 @@ from siddhis.fetchbane.engines.discovery import (
     resolve_param,
 )
 from siddhis.fetchbane.utils import CANARY_MARKER, get_hash, join_url
-
-
-@dataclass
-class SsrfFinding:
-    target: str
-    check: str
-    severity: str
-    detail: str
-    evidence: Dict[str, Any] = field(default_factory=dict)
 
 
 class SsrfAuditor:
@@ -124,6 +115,9 @@ class SsrfAuditor:
                         check=check,
                         severity=severity,
                         detail=detail,
+                        endpoint=endpoint,
+                        method=method,
+                        cwe='CWE-918',
                         evidence={
                             'method': method,
                             'endpoint': endpoint,
@@ -179,4 +173,4 @@ class SsrfAuditor:
                 'description': f.detail,
                 'status': 'active',
                 'metadata': {'severity': f.severity, 'evidence': f.evidence},
-            })
+            }, handler=self.handler)

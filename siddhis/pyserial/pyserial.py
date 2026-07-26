@@ -340,7 +340,7 @@ class siddhi:
                                 'details': test.get('vulnerability_details',''),
                             }
                         }
-                        register_channel(channel_data)
+                        register_channel(channel_data, handler=self.vmnf_handler)
                     
                 
                 

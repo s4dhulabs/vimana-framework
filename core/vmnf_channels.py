@@ -121,9 +121,28 @@ def show_channel(channel_id, compact=False):
     _format_json_field(ch.payload_template, 'Payload Template', compact)
     _format_json_field(ch.channel_metadata, 'Metadata', compact)
 
-def register_channel(channel_data):
+def _channel_quiet(quiet=None, handler=None) -> bool:
+    """True when channel registration should stay silent (CI / orchestrator)."""
+    if quiet is not None:
+        return bool(quiet)
+    if not handler:
+        return False
+    return bool(
+        handler.get('ci_mode')
+        or handler.get('json_output')
+        or handler.get('quiet_output')
+        or handler.get('no_metadata')
+        or handler.get('_orchestrator')
+    )
+
+
+def register_channel(channel_data, *, quiet=None, handler=None):
     """
     Register a new exploitation channel in the Vimana database.
+
+    quiet/handler: when CI/orchestrator quiet flags are set, suppress console output
+    so JSON/SARIF stdout stays clean.
+
     Example usage from a plugin:
         from core.vmnf_channels import register_channel
         register_channel({
@@ -131,48 +150,33 @@ def register_channel(channel_data):
             'type': 'RCE',
             'plugin': 'pyserial',
             'target_url': 'http://localhost:8003',
-            'endpoint': '/binary-data/process',
+            'endpoint': '/api/v1/media/attachments/decode',
             'method': 'POST',
             'payload_template': 'id && whoami && hostname',
             'description': 'Pickle RCE via custom test',
             'status': 'active',
             'metadata': {'lab': 'fastapi', 'vector': 'simple_command_execution'}
-        })
+        }, handler=self.handler)
     """
+    silent = _channel_quiet(quiet=quiet, handler=handler)
+    data = dict(channel_data)
+
     # Rename metadata to channel_metadata if present
-    if 'metadata' in channel_data:
-        channel_data['channel_metadata'] = channel_data.pop('metadata')
-    # --- PATCH: Validate payload_template for pyserial RCE/Exploit ---
-    if channel_data.get('plugin') == 'pyserial' and channel_data.get('type') in ['RCE', 'Exploit']:
-        import json
-        template = channel_data.get('payload_template', '')
-        try:
-            if isinstance(template, dict):
-                payload = template
-            elif isinstance(template, str) and template.strip():
-                payload = json.loads(template)
-            else:
-                payload = {}
-        except Exception:
-            payload = {}
-        # Ensure required keys
-        if not (isinstance(payload, dict) and all(k in payload for k in ['name','data_type','data'])):
-            payload = {
-                'name': 'cmd',
-                'data_type': 'pickle',
-                'data': payload if isinstance(payload, str) else ''
-            }
-        channel_data['payload_template'] = json.dumps(payload)
-    # --- END PATCH ---
-    db = VFDBOps(**channel_data)
+    if 'metadata' in data:
+        data['channel_metadata'] = data.pop('metadata')
+
+    db = VFDBOps(**data)
     # De-duplication: check if channel_id exists
-    existing = db.get_by_id('_CHANNELS_', 'channel_id', channel_data['channel_id'])
+    existing = db.get_by_id('_CHANNELS_', 'channel_id', data['channel_id'])
     if existing:
-        print(colored(f'Channel {channel_data["channel_id"]} already exists. Skipping registration.', 'yellow'))
-        return
+        if not silent:
+            print(colored(f'Channel {data["channel_id"]} already exists. Skipping registration.', 'yellow'))
+        return False
     db.register('_CHANNELS_')
-    print(colored(f'Channel {channel_data["channel_id"]} registered.', 'green'))
-    print(colored(f'Use: vimana show --channel {channel_data["channel_id"]}', 'cyan'))
+    if not silent:
+        print(colored(f'Channel {data["channel_id"]} registered.', 'green'))
+        print(colored(f'Use: vimana show --channel {data["channel_id"]}', 'cyan'))
+    return True
 
 def flush_channel(channel_id):
     db = VFDBOps()

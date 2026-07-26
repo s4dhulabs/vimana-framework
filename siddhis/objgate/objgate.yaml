@@ -26,6 +26,65 @@ tags:
 composition:
   mode: Standalone
   orchestrator_ready: true
+  lab:
+    port: 18105
+    run_hint: vimana run {plugin} --target-url {url} --obj-audit --json --no-channels
+  specialty_args:
+    group: object
+    tactical_keys:
+    - obj_audit_enabled
+    - obj_path
+    flags:
+    - flags:
+      - --obj-audit
+      dest: obj_audit_enabled
+      action: store_true
+      default: false
+    - flags:
+      - --obj-path
+      dest: obj_path
+      action: store
+      default: false
+    - flags:
+      - --obj-id-a
+      dest: obj_id_a
+      action: store
+      default: false
+    - flags:
+      - --obj-id-b
+      dest: obj_id_b
+      action: store
+      default: false
+    - flags:
+      - --obj-auth-a
+      dest: obj_auth_a
+      action: store
+      default: false
+    - flags:
+      - --obj-auth-b
+      dest: obj_auth_b
+      action: store
+      default: false
+    - flags:
+      - --obj-auth-header
+      dest: obj_auth_header
+      action: store
+      default: false
+    - flags:
+      - --obj-methods
+      dest: obj_methods
+      action: store
+      default: GET,PATCH
+    - flags:
+      - --obj-checks
+      dest: obj_checks
+      action: store
+      default: all
+    - flags:
+      - --obj-admin-path
+      dest: obj_admin_path
+      action: store
+      default: false
 description: |
   Objgate is an independent HTTP REST object-level authorization auditor.
   It specializes in BOLA/IDOR on path/query object IDs — complementary to
@@ -92,7 +151,19 @@ guide:
 
     # Scan + audit via OpenAPI
     vimana run objgate --scan-api http://localhost:18105 --obj-audit --json --no-channels
-  labs: |
-    # Start vulnerable DRF lab
-    vimana lab objgate --start
-    # or: bash siddhis/objgate/lab/setup.sh
+  lab_setup: |
+    Docker lab (Django REST Framework — open + broken secure orders):
+
+      vimana run --lab objgate
+
+    Manual:
+
+      cd siddhis/objgate/lab && ./setup.sh
+
+    Lab URL: http://localhost:18105
+    Paths: /api/orders/{id}, /api/secure/orders/{id}
+
+    Test:
+
+      vimana run objgate --target-url http://localhost:18105 \
+        --obj-path /api/orders/{id} --obj-audit --json --no-channels

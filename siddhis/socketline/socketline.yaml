@@ -28,9 +28,43 @@ composition:
   future_orchestrator: wso
   plugin_chain:
     websocket:
-      - socketline
-      - framewire
-      - roomgate
+    - socketline
+    - framewire
+    - roomgate
+  lab:
+    port: 18100
+    run_hint: vimana run {plugin} --target-url {url} --ws-audit --json --no-channels
+  specialty_args:
+    group: websocket
+    tactical_keys:
+    - ws_audit_enabled
+    - ws_path
+    flags:
+    - flags:
+      - --ws-audit
+      dest: ws_audit_enabled
+      action: store_true
+      default: false
+    - flags:
+      - --ws-path
+      dest: ws_path
+      action: store
+      default: false
+    - flags:
+      - --ws-dual-session
+      dest: ws_dual_session
+      action: store_true
+      default: false
+    - flags:
+      - --ws-auth-header
+      dest: ws_auth_header
+      action: store
+      default: false
+    - flags:
+      - --ws-origin
+      dest: ws_origin
+      action: store
+      default: false
 description: |
   Socketline is an independent FastAPI-focused WebSocket security auditor for the
   Vimana Framework. It discovers WebSocket endpoints, performs handshake security

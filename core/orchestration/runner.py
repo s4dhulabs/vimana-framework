@@ -55,6 +55,7 @@ def prepare_child_handler(handler: dict, orchestrator: str) -> dict:
 
     - Shallow copy (no shared mutation)
     - Disable ci_mode / json_output so children do not sys.exit or flood stdout
+    - Disable channel registration prints (no_channels) so aggregate JSON stays clean
     - Stamp orchestrator id for report metadata
     """
     child = dict(handler)
@@ -62,6 +63,7 @@ def prepare_child_handler(handler: dict, orchestrator: str) -> dict:
     child['json_output'] = False
     child['quiet_output'] = True
     child['no_metadata'] = True
+    child['no_channels'] = True
     child.pop('output', None)
     child['_orchestrator'] = orchestrator
     return child

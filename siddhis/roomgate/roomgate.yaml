@@ -28,9 +28,58 @@ composition:
   future_orchestrator: wso
   plugin_chain:
     websocket:
-      - socketline
-      - framewire
-      - roomgate
+    - socketline
+    - framewire
+    - roomgate
+  lab:
+    port: 18104
+    run_hint: vimana run {plugin} --target-url {url} --room-audit --json --no-channels
+  specialty_args:
+    group: room
+    tactical_keys:
+    - room_audit_enabled
+    - room_path
+    flags:
+    - flags:
+      - --room-audit
+      dest: room_audit_enabled
+      action: store_true
+      default: false
+    - flags:
+      - --room-path
+      dest: room_path
+      action: store
+      default: false
+    - flags:
+      - --room-id-a
+      dest: room_id_a
+      action: store
+      default: false
+    - flags:
+      - --room-id-b
+      dest: room_id_b
+      action: store
+      default: false
+    - flags:
+      - --room-auth-a
+      dest: room_auth_a
+      action: store
+      default: false
+    - flags:
+      - --room-auth-b
+      dest: room_auth_b
+      action: store
+      default: false
+    - flags:
+      - --room-auth-header
+      dest: room_auth_header
+      action: store
+      default: false
+    - flags:
+      - --room-checks
+      dest: room_checks
+      action: store
+      default: all
 description: |
   Roomgate is an independent FastAPI-focused WebSocket room/channel
   authorization auditor. It specializes in object-level access control
@@ -97,7 +146,19 @@ guide:
 
     # Scan + audit via OpenAPI
     vimana run roomgate --scan-api http://localhost:18104 --room-audit --json --no-channels
-  labs: |
-    # Start vulnerable room lab
-    vimana lab roomgate --start
-    # or: bash siddhis/roomgate/lab/setup.sh
+  lab_setup: |
+    Docker lab (FastAPI WebSocket rooms — open + BOLA /ws/secure):
+
+      vimana run --lab roomgate
+
+    Manual:
+
+      cd siddhis/roomgate/lab && ./setup.sh
+
+    Lab URL: http://localhost:18104
+    Paths: /ws/room/{id}, /ws/secure/{id}
+
+    Test:
+
+      vimana run roomgate --target-url http://localhost:18104 \
+        --room-path /ws/room/{id} --room-audit --json --no-channels

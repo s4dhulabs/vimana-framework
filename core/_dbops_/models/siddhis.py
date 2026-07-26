@@ -38,7 +38,7 @@ class Siddhis(db.Model):
     )
     brief = db.Column(
         db.String(100),
-        unique = True,
+        unique = False,
         nullable = False
     )
     category = db.Column(
@@ -88,7 +88,7 @@ class Siddhis(db.Model):
     )
     description = db.Column(
         db.String(1000),
-        unique = True,
+        unique = False,
         nullable = False
     )
     references = db.Column(
@@ -103,7 +103,7 @@ class Siddhis(db.Model):
     )
     guide = db.Column(
         JSON,
-        unique = True,
+        unique = False,
         nullable = False
     )
 

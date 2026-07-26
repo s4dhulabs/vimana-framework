@@ -146,6 +146,8 @@ class VimanaParser:
         load_cmd = subparsers.add_parser('load', add_help=False)
         load_cmd.add_argument('--session', action='store', dest='load_session') 
         load_cmd.add_argument('--plugins', action='store_true', dest='load_plugins') 
+        load_cmd.add_argument('--reload', '--force', action='store_true', dest='reload_plugins',
+                              help='Force re-sync of all plugin YAML into the database')
         load_cmd.add_argument('--case', action='store', dest='load_case') 
         # -----------------------------------------------------------------
         # `run` command overview 
@@ -357,6 +359,8 @@ class VimanaParser:
             vf_debugger     = False,
             load_session    = False,
             load_plugins    = False,
+            reload_plugins  = False,
+            force_reload    = False,
             list_channels   = False,
             flush_sessions  = False,
             flush_cases     = False,

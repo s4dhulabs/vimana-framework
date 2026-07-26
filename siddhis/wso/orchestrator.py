@@ -3,11 +3,11 @@
 
 from __future__ import annotations
 
-import json
 import sys
 from typing import Any, Dict, List
 
 from core.orchestration import OrchestratorRunner, OrchestratorStep, StepResult, load_entrypoint
+from core.findings import ci_exit_code, emit_report
 from siddhis.socketline.orchestrator import run_spec_scan as socketline_scan
 from siddhis.wso import presentation as ui
 
@@ -31,33 +31,23 @@ DEFAULT_STEPS = (
 
 
 def _emit_report(report: Dict[str, Any], handler: dict) -> None:
-    payload = json.dumps(report, indent=2, default=str)
-    output_path = handler.get('output')
-
-    if output_path:
-        with open(output_path, 'w') as handle:
-            handle.write(payload)
-            handle.write('\n')
-
-    if handler.get('json_output') or handler.get('ci_mode'):
-        sys.stdout.write(payload)
-        sys.stdout.write('\n')
-        return
-
-    if ui.is_interactive(handler):
+    """Preserve WSO interactive presentation; otherwise use core findings emitter."""
+    quiet_json = handler.get('json_output') or handler.get('ci_mode')
+    if ui.is_interactive(handler) and not quiet_json:
+        output_path = handler.get('output')
+        if output_path:
+            import json as _json
+            with open(output_path, 'w') as handle:
+                handle.write(_json.dumps(report, indent=2, default=str))
+                handle.write('\n')
         ui.print_report(report)
         if output_path:
             print(f'[+] JSON report saved to {output_path}')
+        if handler.get('sarif_output') or handler.get('sarif'):
+            from core.findings import emit_sarif
+            emit_sarif(report, handler)
         return
-
-    if output_path and not handler.get('quiet_output'):
-        print(f'[+] Report saved to {output_path}')
-
-
-def _ci_exit_code(report: Dict[str, Any]) -> int:
-    if report.get('summary', {}).get('findings_high', 0) > 0:
-        return 1
-    return 0
+    emit_report(report, handler)
 
 
 def _resolve_base_url(handler: dict) -> str:
@@ -188,6 +178,6 @@ def run_wso(handler: dict) -> Dict[str, Any]:
     _emit_report(report, handler)
 
     if handler.get('ci_mode'):
-        sys.exit(_ci_exit_code(report))
+        sys.exit(ci_exit_code(report, handler=handler))
 
     return report

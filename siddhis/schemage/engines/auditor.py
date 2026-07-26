@@ -43,16 +43,7 @@ class SchemageAuditor:
             print(colored(f'\n[*] Schemage: auditing {base_url}{path}', 'cyan'))
 
         findings = self.gql.audit(base_url)
-        findings_payload = [
-            {
-                'target': f.target,
-                'check': f.check,
-                'severity': f.severity,
-                'detail': f.detail,
-                'evidence': f.evidence,
-            }
-            for f in findings
-        ]
+        findings_payload = [f.to_dict() for f in findings]
 
         if not self.quiet:
             self.gql.print_findings(findings)

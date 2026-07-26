@@ -28,9 +28,44 @@ composition:
   future_orchestrator: wso
   plugin_chain:
     websocket:
-      - socketline
-      - framewire
-      - roomgate
+    - socketline
+    - framewire
+    - roomgate
+  lab:
+    port: 18103
+    run_hint: vimana run {plugin} --target-url {url} --frame-audit --json --no-channels
+  specialty_args:
+    group: frame
+    tactical_keys:
+    - frame_audit_enabled
+    - frame_path
+    flags:
+    - flags:
+      - --frame-audit
+      dest: frame_audit_enabled
+      action: store_true
+      default: false
+    - flags:
+      - --frame-path
+      dest: frame_path
+      action: store
+      default: false
+    - flags:
+      - --frame-vectors
+      dest: frame_vectors
+      action: store
+      default: all
+    - flags:
+      - --frame-max-bytes
+      dest: frame_max_bytes
+      action: store
+      type: int
+      default: 65536
+    - flags:
+      - --frame-auth-header
+      dest: frame_auth_header
+      action: store
+      default: false
 description: |
   Framewire is an independent FastAPI-focused WebSocket message/frame fuzzer.
   It specializes in post-handshake attacks — complementary to socketline

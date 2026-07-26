@@ -135,83 +135,17 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument('--scan-api',action='store',dest='api_scan_enabled',nargs='?',const='ENV_FALLBACK',default=False)
         vmnf_shared_parser.add_argument('--api-scan',action='store',dest='api_scan_enabled',nargs='?',const='ENV_FALLBACK',default=False)
 
-        # socketline — WebSocket security auditor
-        vmnf_shared_parser.add_argument('--ws-audit', action='store_true', dest='ws_audit_enabled', default=False)
-        vmnf_shared_parser.add_argument('--ws-path', action='store', dest='ws_path', default=False)
-        vmnf_shared_parser.add_argument('--ws-dual-session', action='store_true', dest='ws_dual_session', default=False)
-        vmnf_shared_parser.add_argument('--ws-auth-header', action='store', dest='ws_auth_header', default=False)
-        vmnf_shared_parser.add_argument('--ws-origin', action='store', dest='ws_origin', default=False)
+        # Common specialty / CI helpers (plugin-specific flags come from composition.specialty_args)
         vmnf_shared_parser.add_argument('--spec-file', action='store', dest='openapi_spec_file', default=False)
         vmnf_shared_parser.add_argument('--spec-url', action='store', dest='openapi_spec_url', default=False)
         vmnf_shared_parser.add_argument('--no-channels', action='store_true', dest='no_channels', default=False)
         vmnf_shared_parser.add_argument('--banner', action='store_true', dest='show_banner', default=False)
 
-        # streamguard — SSE & streaming endpoint security
-        vmnf_shared_parser.add_argument('--stream-audit', action='store_true', dest='stream_audit_enabled', default=False)
-        vmnf_shared_parser.add_argument('--stream-path', action='store', dest='stream_path', default=False)
-        vmnf_shared_parser.add_argument('--stream-type', action='store', dest='stream_type', default='auto')
-        vmnf_shared_parser.add_argument('--stream-duration', action='store', dest='stream_duration', type=int, default=10)
-        vmnf_shared_parser.add_argument('--stream-cursor', action='store', dest='stream_cursor', default=False)
-        vmnf_shared_parser.add_argument('--stream-auth-header', action='store', dest='stream_auth_header', default=False)
-
-        # boundr — Multipart & UploadFile boundary tester
-        vmnf_shared_parser.add_argument('--upload-audit', action='store_true', dest='upload_audit_enabled', default=False)
-        vmnf_shared_parser.add_argument('--upload-endpoint', action='store', dest='upload_endpoint', default=False)
-        vmnf_shared_parser.add_argument('--upload-field', action='store', dest='upload_field', default='file')
-        vmnf_shared_parser.add_argument('--upload-vectors', action='store', dest='upload_vectors', default='all')
-        vmnf_shared_parser.add_argument('--upload-auth-header', action='store', dest='upload_auth_header', default=False)
-
-        # framewire — WebSocket post-handshake frame/message fuzzer
-        vmnf_shared_parser.add_argument('--frame-audit', action='store_true', dest='frame_audit_enabled', default=False)
-        vmnf_shared_parser.add_argument('--frame-path', action='store', dest='frame_path', default=False)
-        vmnf_shared_parser.add_argument('--frame-vectors', action='store', dest='frame_vectors', default='all')
-        vmnf_shared_parser.add_argument('--frame-max-bytes', action='store', dest='frame_max_bytes', type=int, default=65536)
-        vmnf_shared_parser.add_argument('--frame-auth-header', action='store', dest='frame_auth_header', default=False)
-
-        # roomgate — WebSocket room/channel authz & IDOR auditor
-        vmnf_shared_parser.add_argument('--room-audit', action='store_true', dest='room_audit_enabled', default=False)
-        vmnf_shared_parser.add_argument('--room-path', action='store', dest='room_path', default=False)
-        vmnf_shared_parser.add_argument('--room-id-a', action='store', dest='room_id_a', default=False)
-        vmnf_shared_parser.add_argument('--room-id-b', action='store', dest='room_id_b', default=False)
-        vmnf_shared_parser.add_argument('--room-auth-a', action='store', dest='room_auth_a', default=False)
-        vmnf_shared_parser.add_argument('--room-auth-b', action='store', dest='room_auth_b', default=False)
-        vmnf_shared_parser.add_argument('--room-auth-header', action='store', dest='room_auth_header', default=False)
-        vmnf_shared_parser.add_argument('--room-checks', action='store', dest='room_checks', default='all')
-
-        # objgate — HTTP REST object authz & BOLA auditor
-        vmnf_shared_parser.add_argument('--obj-audit', action='store_true', dest='obj_audit_enabled', default=False)
-        vmnf_shared_parser.add_argument('--obj-path', action='store', dest='obj_path', default=False)
-        vmnf_shared_parser.add_argument('--obj-id-a', action='store', dest='obj_id_a', default=False)
-        vmnf_shared_parser.add_argument('--obj-id-b', action='store', dest='obj_id_b', default=False)
-        vmnf_shared_parser.add_argument('--obj-auth-a', action='store', dest='obj_auth_a', default=False)
-        vmnf_shared_parser.add_argument('--obj-auth-b', action='store', dest='obj_auth_b', default=False)
-        vmnf_shared_parser.add_argument('--obj-auth-header', action='store', dest='obj_auth_header', default=False)
-        vmnf_shared_parser.add_argument('--obj-methods', action='store', dest='obj_methods', default='GET,PATCH')
-        vmnf_shared_parser.add_argument('--obj-checks', action='store', dest='obj_checks', default='all')
-        vmnf_shared_parser.add_argument('--obj-admin-path', action='store', dest='obj_admin_path', default=False)
-
-        # fetchbane — SSRF auditor
-        vmnf_shared_parser.add_argument('--ssrf-audit', action='store_true', dest='ssrf_audit_enabled', default=False)
-        vmnf_shared_parser.add_argument('--ssrf-endpoint', action='store', dest='ssrf_endpoint', default=False)
-        vmnf_shared_parser.add_argument('--ssrf-param', action='store', dest='ssrf_param', default='url')
-        vmnf_shared_parser.add_argument('--ssrf-canary', action='store', dest='ssrf_canary', default=False)
-        vmnf_shared_parser.add_argument('--ssrf-vectors', action='store', dest='ssrf_vectors', default='all')
-
-        # schemage — GraphQL security auditor
-        vmnf_shared_parser.add_argument('--gql-audit', action='store_true', dest='gql_audit_enabled', default=False)
-        vmnf_shared_parser.add_argument('--gql-path', action='store', dest='gql_path', default=False)
-        vmnf_shared_parser.add_argument('--gql-auth-a', action='store', dest='gql_auth_a', default=False)
-        vmnf_shared_parser.add_argument('--gql-auth-b', action='store', dest='gql_auth_b', default=False)
-        vmnf_shared_parser.add_argument('--gql-order-a', action='store', dest='gql_order_a', default=False)
-        vmnf_shared_parser.add_argument('--gql-order-b', action='store', dest='gql_order_b', default=False)
-        vmnf_shared_parser.add_argument('--gql-max-depth', action='store', dest='gql_max_depth', type=int, default=8)
-        vmnf_shared_parser.add_argument('--gql-checks', action='store', dest='gql_checks', default='all')
-
-        # wso — WebSockets Orchestrator (socketline → framewire → roomgate)
-        vmnf_shared_parser.add_argument('--wso-skip-scan', action='store_true', dest='wso_skip_scan', default=False)
-        vmnf_shared_parser.add_argument('--wso-skip-handshake', action='store_true', dest='wso_skip_handshake', default=False)
-        vmnf_shared_parser.add_argument('--wso-skip-frames', action='store_true', dest='wso_skip_frames', default=False)
-        vmnf_shared_parser.add_argument('--wso-skip-rooms', action='store_true', dest='wso_skip_rooms', default=False)
+        try:
+            from core.capabilities import register_specialty_args
+            register_specialty_args(vmnf_shared_parser)
+        except Exception:
+            pass
 
         vmnf_shared_parser.add_argument('--check-debug',action='store_true',dest='check_debug',default=False)
         vmnf_shared_parser.add_argument('--discovery-only',action='store_true',dest='discovery_only',default=False)
@@ -352,6 +286,22 @@ class VimanaSharedArgs:
         vmnf_shared_parser.add_argument("--pretty",action="store_true",dest='pretty_output',default=False)
         vmnf_shared_parser.add_argument('--output', '-o', help='Output file for results (JSON format)')
         vmnf_shared_parser.add_argument('--json', action='store_true', dest='json_output', default=False)
+        vmnf_shared_parser.add_argument(
+            '--sarif',
+            action='store',
+            dest='sarif_output',
+            nargs='?',
+            const='vimana-report.sarif',
+            default=False,
+            help='Write SARIF 2.1.0 report (optional path; default: vimana-report.sarif)',
+        )
+        vmnf_shared_parser.add_argument(
+            '--ci-fail-on',
+            action='store',
+            dest='ci_fail_on',
+            default='high',
+            help='CI exit policy severity threshold: high|medium|low|info (default: high)',
+        )
         vmnf_shared_parser.add_argument("--app-scope",action="store_true",dest='app_scope',default=False)
         
         vmnf_shared_parser.add_argument('--no-evidence', action='store_true', help='Hide evidence details in console output')

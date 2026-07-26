@@ -24,6 +24,56 @@ tags:
 composition:
   mode: Standalone
   orchestrator_ready: true
+  lab:
+    port: 18107
+    run_hint: vimana run {plugin} --target-url {url} --gql-audit --json --no-channels
+  specialty_args:
+    group: graphql
+    tactical_keys:
+    - gql_audit_enabled
+    - gql_path
+    flags:
+    - flags:
+      - --gql-audit
+      dest: gql_audit_enabled
+      action: store_true
+      default: false
+    - flags:
+      - --gql-path
+      dest: gql_path
+      action: store
+      default: false
+    - flags:
+      - --gql-auth-a
+      dest: gql_auth_a
+      action: store
+      default: false
+    - flags:
+      - --gql-auth-b
+      dest: gql_auth_b
+      action: store
+      default: false
+    - flags:
+      - --gql-order-a
+      dest: gql_order_a
+      action: store
+      default: false
+    - flags:
+      - --gql-order-b
+      dest: gql_order_b
+      action: store
+      default: false
+    - flags:
+      - --gql-max-depth
+      dest: gql_max_depth
+      action: store
+      type: int
+      default: 8
+    - flags:
+      - --gql-checks
+      dest: gql_checks
+      action: store
+      default: all
 description: |
   Schemage is an independent GraphQL security auditor for Python stacks
   (Strawberry/Graphene-style HTTP GraphQL). It does not cover WebSockets.

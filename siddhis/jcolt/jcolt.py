@@ -169,7 +169,7 @@ class siddhi:
             }
             
             # Register the channel
-            register_channel(channel_info)
+            register_channel(channel_info, handler=self.vmnf_handler)
             
             if self.verbose_enabled:
                 print(colored(f" → Channel registered: {channel_id} ({vulnerability_type})", 'cyan'))

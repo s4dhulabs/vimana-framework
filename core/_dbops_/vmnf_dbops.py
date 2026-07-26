@@ -173,6 +173,40 @@ class VFDBOps:
 
         self.commit(vf_model(**self.vmnf_handler))
 
+    def upsert(self, _TABLE_, match_col: str = 'name'):
+        """Insert or update a row matched by match_col (default: name).
+
+        Returns 'created' or 'updated'.
+        """
+        vf_model = self.tbl_model[_TABLE_]
+
+        if not self.table_exists(_TABLE_):
+            self.create_table(vf_model)
+
+        payload = dict(self.vmnf_handler)
+        if _TABLE_ == '_SESSIONS_':
+            payload = dict(self.session) if self.session else payload
+
+        match_value = payload.get(match_col)
+        if match_value is None:
+            self.commit(vf_model(**payload))
+            return 'created'
+
+        model_attr = getattr(vf_model, match_col)
+        existing = vf_model.query.filter(model_attr == match_value).first()
+
+        if existing is None:
+            self.commit(vf_model(**payload))
+            return 'created'
+
+        column_names = {c.name for c in inspect(vf_model).columns if c.name != 'index'}
+        for key, value in payload.items():
+            if key in column_names:
+                setattr(existing, key, value)
+
+        db.session.commit()
+        return 'updated'
+
     def list_db(self):
         """
         List all tables and their columns/types in the Vimana database.

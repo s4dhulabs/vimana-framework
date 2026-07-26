@@ -10,7 +10,7 @@
 # 
 # This file is part of Vimana Framework Project.
 
-from siddhis.djunch.engines._dju_settings import table_models 
+from siddhis.djunch.engines._dju_settings import table_models
 from core.vmnf_sessions_utils import abduct_items
 from neotermcolor import cprint, colored as cl
 from ._dbops_.vmnf_dbops import VFDBOps
@@ -18,12 +18,19 @@ from ._dbops_.db_utils import handle_OpErr
 from .vmnf_navi_siddhis import navisiddhis 
 #from .setevars import set_vimana_path
 from core.load_settings import _version_
+from core.vmnf_siddhi_schema import (
+    SiddhiSchemaError,
+    guide_section,
+    normalize_guide,
+    validate_siddhi_schema,
+)
 
 from res.vmnf_banners import case_header
 from .vmnf_asserts import vfasserts
 from .vmnf_utils import describe
 from sqlalchemy import inspect
 from time import sleep
+import hashlib
 import yaml
 import sys
 import os
@@ -59,7 +66,7 @@ class VFManager:
         return vimana_root
 
     def _siddhis_already_loaded(self):
-        """Check if siddhis are already loaded efficiently."""
+        """Check if siddhis are already loaded efficiently (auto-first-load gate only)."""
         if not VFDBOps().table_exists('_SIDDHIS_'):
             return False
         
@@ -67,7 +74,7 @@ class VFManager:
         try:
             count = VFDBOps().count_records('_SIDDHIS_')
             return count > 0
-        except:
+        except Exception:
             return False
 
     def _discover_plugin_dirs(self, siddhis_path):
@@ -93,6 +100,13 @@ class VFManager:
         
         return plugin_dirs
 
+    def _yaml_content_hash(self, yaml_file):
+        try:
+            with open(yaml_file, 'rb') as handle:
+                return hashlib.sha256(handle.read()).hexdigest()[:16]
+        except OSError:
+            return None
+
     def _load_plugin_yaml(self, yaml_file, plugin_name):
         """Load a single plugin YAML file with error handling."""
         try:
@@ -106,33 +120,62 @@ class VFManager:
             cprint(f"Warning: Could not load {plugin_name}: {e}", 'yellow')
             return None
 
-    def _process_siddhi_data(self, siddhi_data, plugin_name):
-        """Process siddhi data and prepare for registration."""
+    def _process_siddhi_data(self, siddhi_data, plugin_name, yaml_file=None):
+        """Validate, normalize, and prepare siddhi data for registration."""
         if not siddhi_data:
             return None
-        
+
+        try:
+            validated, warnings = validate_siddhi_schema(
+                siddhi_data,
+                plugin_name=plugin_name,
+                yaml_file=yaml_file,
+            )
+        except SiddhiSchemaError as err:
+            cprint(f"Schema error in {plugin_name}:", 'red')
+            for detail in err.errors:
+                cprint(f"  - {detail}", 'red')
+            if yaml_file:
+                cprint(f"  file: {yaml_file}", 'yellow')
+            return None
+
+        for warning in warnings:
+            cprint(f"Warning ({plugin_name}): {warning}", 'yellow')
+
         fields = ['name', 'category', 'framework', 'package', 'type']
-        
-        # Process fields efficiently
         processed_data = {}
         for field in fields:
-            if field in siddhi_data:
-                value = siddhi_data[field]
+            if field in validated:
+                value = validated[field]
                 if not isinstance(value, bool):
                     processed_data[field] = value.lower()
                 else:
                     processed_data[field] = value
-        
-        # Add other fields as-is
-        for key, value in siddhi_data.items():
+
+        for key, value in validated.items():
             if key not in fields:
                 processed_data[key] = value
-        
+
+        # Ensure guide is normalized (labs -> lab_setup)
+        if isinstance(processed_data.get('guide'), dict):
+            processed_data['guide'] = normalize_guide(processed_data['guide'])
+
+        # Stamp content hash into vfset for change detection
+        if yaml_file:
+            vfset = dict(processed_data.get('vfset') or {})
+            content_hash = self._yaml_content_hash(yaml_file)
+            if content_hash:
+                vfset['_yaml_hash'] = content_hash
+            processed_data['vfset'] = vfset
+
         return processed_data
 
-    def _register_siddhis_batch(self, siddhis_data):
-        """Register multiple siddhis in batch with error handling."""
+    def _register_siddhis_batch(self, siddhis_data, *, force: bool = False):
+        """Upsert multiple siddhis with schema validation and error handling."""
         success_count = 0
+        updated_count = 0
+        created_count = 0
+        skipped_count = 0
         error_count = 0
         
         for plugin_info in siddhis_data:
@@ -146,14 +189,34 @@ class VFManager:
                 error_count += 1
                 continue
             
-            processed_data = self._process_siddhi_data(siddhi_data, plugin_name)
+            processed_data = self._process_siddhi_data(
+                siddhi_data, plugin_name, yaml_file=yaml_file
+            )
             if not processed_data:
                 error_count += 1
                 continue
+
+            # Skip unchanged plugins unless --reload/--force
+            if not force:
+                existing = VFDBOps().get_by_id('_SIDDHIS_', 'name', processed_data.get('name'))
+                if existing is not None:
+                    existing_hash = (existing.vfset or {}).get('_yaml_hash') if isinstance(existing.vfset, dict) else None
+                    new_hash = (processed_data.get('vfset') or {}).get('_yaml_hash')
+                    if existing_hash and new_hash and existing_hash == new_hash:
+                        skipped_count += 1
+                        cprint(f"\t  unchanged ({plugin_name})", 'cyan')
+                        success_count += 1
+                        continue
             
             try:
                 abduct_items(**processed_data)
-                VFDBOps(**processed_data).register('_SIDDHIS_')
+                action = VFDBOps(**processed_data).upsert('_SIDDHIS_', match_col='name')
+                if action == 'updated':
+                    updated_count += 1
+                    cprint(f"\t  updated ({plugin_name})", 'green')
+                else:
+                    created_count += 1
+                    cprint(f"\t  created ({plugin_name})", 'green')
                 success_count += 1
             except Exception as e:
                 cprint(f"Error registering {plugin_name}: {e}", 'red')
@@ -161,12 +224,18 @@ class VFManager:
         
         if error_count > 0:
             cprint(f"Warning: {error_count} plugins failed to load", 'yellow')
+        if created_count or updated_count or skipped_count:
+            cprint(
+                f"Sync summary: {created_count} created, {updated_count} updated, "
+                f"{skipped_count} unchanged, {error_count} errors",
+                'cyan',
+            )
         
         return success_count, error_count
 
     def load_tools(self):
         if VFDBOps().table_exists('_TOOLS_') and VFDBOps().getall('_TOOLS_'):
-            handle_OpErr('db ready')
+            return
 
         vimana_root = self._get_vimana_root()
         tools_file = os.path.join(vimana_root, 'tools', 'tools.yaml')
@@ -178,19 +247,24 @@ class VFManager:
         try:
             with open(tools_file, 'r') as f:
                 tools = yaml.load(f, Loader=yaml.FullLoader)
-                
-                for tool in tools['tools']:
-                    VFDBOps(**tool).register('_TOOLS_')
+            
+            for tool in tools['tools']:
+                VFDBOps(**tool).register('_TOOLS_')
         except Exception as e:
             cprint(f"Error loading tools: {e}", 'red')
             
     def load_siddhis(self):
-        """Load siddhis with optimized path resolution and error handling."""
-        
-        # Check if already loaded efficiently
-        if self._siddhis_already_loaded():
+        """Load/sync siddhis from YAML. Explicit load always upserts; auto-first-load skips if DB has rows."""
+        force = bool(self.handler.get('reload_plugins') or self.handler.get('force_reload'))
+        explicit_load = bool(self.handler.get('load_plugins'))
+
+        # Auto-first-load only: skip when DB already populated (unless --reload/--force)
+        if not explicit_load and not force and self._siddhis_already_loaded():
             handle_OpErr('db ready')
-            return True  
+            return True
+
+        if force:
+            cprint("Reloading plugins from YAML (--reload)...", 'cyan')
         
         # Get Vimana root path
         vimana_root = self._get_vimana_root()
@@ -203,11 +277,11 @@ class VFManager:
             cprint("No valid plugin directories found", 'red')
             return False
         
-        # Register siddhis in batch with error handling
-        success_count, error_count = self._register_siddhis_batch(plugin_dirs)
+        # Upsert siddhis with schema validation
+        success_count, error_count = self._register_siddhis_batch(plugin_dirs, force=force)
         
         if success_count > 0:
-            cprint(f"Successfully loaded {success_count} plugins", 'green')
+            cprint(f"Successfully synced {success_count} plugins", 'green')
         
         # Load tools and list siddhis
         self.load_tools()
@@ -284,14 +358,24 @@ class VFManager:
             print(f"\t\t{cl(line,'white')}")
 
     def show_guide(self, sguide, sections:list):
+        if not isinstance(sguide, dict):
+            self.print_guide_line('(guide unavailable)')
+            print()
+            return
+
+        missing = '(section not documented for this plugin)'
+
         if '-e' in sections:
-            for ie in sguide['examples'].split('\n'):
+            examples = guide_section(sguide, 'examples', default=missing)
+            for ie in examples.split('\n'):
                 self.print_guide_line(ie)
         if '-a' in sections:
-            for arg in sguide['args'].split('\n'):
+            args = guide_section(sguide, 'args', default=missing)
+            for arg in args.split('\n'):
                 self.print_guide_line(arg)
         if '-l' in sections:
-            for lset in sguide['lab_setup'].split('\n'):
+            labs = guide_section(sguide, 'lab_setup', 'labs', default=missing)
+            for lset in labs.split('\n'):
                 self.print_guide_line(lset)
         print()
     

@@ -43,5 +43,5 @@ def run_ssrf_audit(handler: dict, orchestrator: str = None) -> Dict[str, Any]:
     )
     emit_report(report, audit_handler)
     if audit_handler.get('ci_mode') and not audit_handler.get('_orchestrator'):
-        sys.exit(ci_exit_code(report))
+        sys.exit(ci_exit_code(report, handler=audit_handler))
     return report

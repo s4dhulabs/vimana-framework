@@ -5,15 +5,9 @@
 #
 # This file is part of Vimana Framework Project.
 
-import hashlib
 from neotermcolor import colored
-
-
-def should_show_banner(handler: dict) -> bool:
-    """Banner is opt-in only (--banner). Off by default for pipes/CI."""
-    if handler.get('ci_mode') or handler.get('json_output') or handler.get('no_metadata'):
-        return False
-    return bool(handler.get('show_banner'))
+from core.spec_runtime import should_show_banner, get_hash, join_url  # noqa: F401
+from core.vmnf_specs import get_methods  # noqa: F401
 
 
 def sl_banner():
@@ -32,23 +26,6 @@ def sl_banner():
                     @s4dhulabs
         """
     )
-
-
-def get_hash(content: str) -> str:
-    return hashlib.sha256(content.encode('utf-8')).hexdigest()
-
-
-def get_methods(api_specs: dict) -> str:
-    methods = set()
-    for path_item in api_specs.get('paths', {}).values():
-        if not isinstance(path_item, dict):
-            continue
-        for method in path_item:
-            if method.lower() in {
-                'get', 'post', 'put', 'patch', 'delete', 'head', 'options', 'trace',
-            }:
-                methods.add(method.upper())
-    return ','.join(sorted(methods)) or 'N/A'
 
 
 def http_to_ws_url(url: str) -> str:

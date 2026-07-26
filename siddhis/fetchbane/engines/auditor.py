@@ -63,16 +63,7 @@ class FetchbaneAuditor:
                 'source': 'cli' if self.handler.get('ssrf_endpoint') else 'discovery',
             })
 
-        findings_payload = [
-            {
-                'target': f.target,
-                'check': f.check,
-                'severity': f.severity,
-                'detail': f.detail,
-                'evidence': f.evidence,
-            }
-            for f in all_findings
-        ]
+        findings_payload = [f.to_dict() for f in all_findings]
 
         if not self.quiet:
             self.ssrf.print_findings(all_findings)

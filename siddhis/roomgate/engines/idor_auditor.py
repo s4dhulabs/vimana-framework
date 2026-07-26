@@ -244,4 +244,4 @@ class RoomAuthzAuditor:
                     'severity': f.severity,
                     'evidence': f.evidence,
                 },
-            })
+            }, handler=self.handler)

@@ -24,6 +24,40 @@ tags:
 composition:
   mode: Standalone
   orchestrator_ready: true
+  lab:
+    port: 18106
+    run_hint: vimana run {plugin} --target-url {url} --ssrf-audit --json --no-channels
+  specialty_args:
+    group: ssrf
+    tactical_keys:
+    - ssrf_audit_enabled
+    - ssrf_endpoint
+    flags:
+    - flags:
+      - --ssrf-audit
+      dest: ssrf_audit_enabled
+      action: store_true
+      default: false
+    - flags:
+      - --ssrf-endpoint
+      dest: ssrf_endpoint
+      action: store
+      default: false
+    - flags:
+      - --ssrf-param
+      dest: ssrf_param
+      action: store
+      default: url
+    - flags:
+      - --ssrf-canary
+      dest: ssrf_canary
+      action: store
+      default: false
+    - flags:
+      - --ssrf-vectors
+      dest: ssrf_vectors
+      action: store
+      default: all
 description: |
   Fetchbane is an independent SSRF auditor for Python web/API apps.
   It probes endpoints that accept attacker-controlled URLs (preview, webhook,

@@ -79,7 +79,8 @@ def handle_OpErr(exception):
         cprint("         vimana load --plugins", 'green', attrs=['bold'])
         print()
     elif exception.startswith('db ready'):
-        cprint("        Plugins already loaded. Try vimana list --plugins \n", 'yellow')
+        cprint("        Plugins already loaded. Try vimana list --plugins", 'yellow')
+        cprint("        To re-sync YAML into the DB: vimana load --plugins --reload\n", 'cyan')
 
     #os._exit(os.EX_OK)
     return

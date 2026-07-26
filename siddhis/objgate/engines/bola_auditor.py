@@ -4,13 +4,13 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 
 import requests
 from neotermcolor import colored
 
 from core.vmnf_channels import register_channel
+from core.findings import Finding as ObjFinding
 from siddhis.objgate.utils import get_hash, join_url, parse_auth_header, render_obj_path
 
 
@@ -21,13 +21,13 @@ def handler_admin_path(handler: dict) -> Optional[str]:
     return str(raw)
 
 
-@dataclass
-class ObjFinding:
-    target: str
-    check: str
-    severity: str
-    detail: str
-    evidence: Dict[str, Any] = field(default_factory=dict)
+_CHECK_CWE = {
+    'unauthenticated_object_access': 'CWE-306',
+    'cross_tenant_object_idor': 'CWE-639',
+    'vertical_privilege_object': 'CWE-269',
+    'membership_baseline': 'CWE-284',
+    'membership_own_denied': 'CWE-284',
+}
 
 
 class ObjBolaAuditor:
@@ -211,9 +211,14 @@ class ObjBolaAuditor:
                     },
                 ))
 
+        for finding in findings:
+            if not finding.cwe:
+                finding.cwe = _CHECK_CWE.get(finding.check, 'CWE-639')
+            if not finding.endpoint and finding.evidence:
+                finding.endpoint = finding.evidence.get('endpoint') or finding.target
+            if not finding.method and finding.evidence:
+                finding.method = finding.evidence.get('method')
         return findings
-
-    def print_findings(self, findings: List[ObjFinding]) -> None:
         if not findings:
             print(colored('\n[+] No object authorization findings.', 'green'))
             return
@@ -251,4 +256,4 @@ class ObjBolaAuditor:
                     'severity': f.severity,
                     'evidence': f.evidence,
                 },
-            })
+            }, handler=self.handler)

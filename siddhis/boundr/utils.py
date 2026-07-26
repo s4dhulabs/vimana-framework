@@ -5,15 +5,8 @@
 #
 # This file is part of Vimana Framework Project.
 
-import hashlib
 from neotermcolor import colored
-
-
-def should_show_banner(handler: dict) -> bool:
-    """Banner is opt-in only (--banner). Off by default for pipes/CI."""
-    if handler.get('ci_mode') or handler.get('json_output') or handler.get('no_metadata'):
-        return False
-    return bool(handler.get('show_banner'))
+from core.spec_runtime import should_show_banner, get_hash, join_url  # noqa: F401
 
 
 def bd_banner():
@@ -34,12 +27,5 @@ def bd_banner():
     )
 
 
-def get_hash(content: str) -> str:
-    return hashlib.sha256(content.encode('utf-8')).hexdigest()
-
-
 def join_http_url(base_url: str, path: str) -> str:
-    base = base_url.rstrip('/')
-    if not path.startswith('/'):
-        path = '/' + path
-    return base + path
+    return join_url(base_url, path)

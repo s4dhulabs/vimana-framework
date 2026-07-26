@@ -4,13 +4,13 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 
 import requests
 from neotermcolor import colored
 
 from core.vmnf_channels import register_channel
+from core.findings import Finding as GqlFinding
 from siddhis.schemage.utils import get_hash, join_url, parse_auth_header
 
 
@@ -25,13 +25,15 @@ query IntrospectionQuery {
 """
 
 
-@dataclass
-class GqlFinding:
-    target: str
-    check: str
-    severity: str
-    detail: str
-    evidence: Dict[str, Any] = field(default_factory=dict)
+# Default CWE tags by check id (flows into JSON + SARIF)
+_CHECK_CWE = {
+    'introspection_enabled': 'CWE-200',
+    'unbounded_query_depth': 'CWE-400',
+    'alias_batch_overload': 'CWE-400',
+    'cross_tenant_order_idor': 'CWE-639',
+    'cross_tenant_mutation_idor': 'CWE-639',
+    'unauthenticated_sensitive_query': 'CWE-306',
+}
 
 
 class GraphQLAuditor:
@@ -220,13 +222,14 @@ class GraphQLAuditor:
                     evidence={'status': status, 'order': order},
                 ))
 
+        for finding in findings:
+            if not finding.cwe:
+                finding.cwe = _CHECK_CWE.get(finding.check)
+            if not finding.endpoint:
+                finding.endpoint = self.path
+            if not finding.method:
+                finding.method = 'POST'
         return findings
-
-    def print_findings(self, findings: List[GqlFinding]) -> None:
-        if not findings:
-            print(colored('\n[+] No GraphQL findings.', 'green'))
-            return
-        print(colored(f'\n[*] Schemage findings: {len(findings)}', 'cyan'))
         for f in findings:
             color = {'high': 'red', 'medium': 'yellow', 'low': 'white', 'info': 'blue'}.get(f.severity, 'white')
             print(colored(f'  [{f.severity.upper()}] {f.check}', color))
@@ -249,4 +252,4 @@ class GraphQLAuditor:
                 'description': f.detail,
                 'status': 'active',
                 'metadata': {'severity': f.severity, 'evidence': f.evidence},
-            })
+            }, handler=self.handler)

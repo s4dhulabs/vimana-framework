@@ -5,14 +5,8 @@
 #
 # This file is part of Vimana Framework Project.
 
-import hashlib
 from neotermcolor import colored
-
-
-def should_show_banner(handler: dict) -> bool:
-    if handler.get('ci_mode') or handler.get('json_output') or handler.get('no_metadata'):
-        return False
-    return bool(handler.get('show_banner'))
+from core.spec_runtime import should_show_banner, get_hash, join_url  # noqa: F401
 
 
 def rg_banner():
@@ -30,10 +24,6 @@ def rg_banner():
                     @s4dhulabs
         """
     )
-
-
-def get_hash(content: str) -> str:
-    return hashlib.sha256(content.encode('utf-8')).hexdigest()
 
 
 def http_to_ws_url(url: str) -> str:
@@ -61,6 +51,5 @@ def render_room_path(template: str, room_id: str) -> str:
         if token in path:
             path = path.replace(token, str(room_id))
     if path == template and not path.rstrip('/').endswith(str(room_id)):
-        # bare prefix like /ws/room → /ws/room/<id>
         path = path.rstrip('/') + '/' + str(room_id)
     return path

@@ -70,16 +70,7 @@ class ObjgateAuditor:
             )
             all_findings.extend(findings)
 
-        findings_payload = [
-            {
-                'target': f.target,
-                'check': f.check,
-                'severity': f.severity,
-                'detail': f.detail,
-                'evidence': f.evidence,
-            }
-            for f in all_findings
-        ]
+        findings_payload = [f.to_dict() for f in all_findings]
 
         if not self.quiet:
             self.bola_auditor.print_findings(all_findings)

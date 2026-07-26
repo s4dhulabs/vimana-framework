@@ -155,7 +155,7 @@ class WebSocketHandshakeAuditor:
                     'severity': finding.severity,
                     'evidence': finding.evidence,
                 },
-            })
+            }, handler=self.handler)
 
     def print_findings(self, findings: List[HandshakeFinding]) -> None:
         if not findings:

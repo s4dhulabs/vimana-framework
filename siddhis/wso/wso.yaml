@@ -26,9 +26,40 @@ composition:
   mode: Orchestrator
   plugin_chain:
     websocket:
-      - socketline
-      - framewire
-      - roomgate
+    - socketline
+    - framewire
+    - roomgate
+  lab:
+    port: 18100
+    run_hint: vimana run {plugin} --target-url {url} --json --no-channels
+  specialty_args:
+    group: wso
+    tactical_keys:
+    - wso_skip_handshake
+    - wso_skip_frames
+    - wso_skip_rooms
+    - wso_skip_scan
+    flags:
+    - flags:
+      - --wso-skip-scan
+      dest: wso_skip_scan
+      action: store_true
+      default: false
+    - flags:
+      - --wso-skip-handshake
+      dest: wso_skip_handshake
+      action: store_true
+      default: false
+    - flags:
+      - --wso-skip-frames
+      dest: wso_skip_frames
+      action: store_true
+      default: false
+    - flags:
+      - --wso-skip-rooms
+      dest: wso_skip_rooms
+      action: store_true
+      default: false
 description: |
   WSO (WebSockets Orchestrator) is the first Vimana orchestrator built on the
   new core.orchestration runner. It chains WebSocket specialty plugins without
