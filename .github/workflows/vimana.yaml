@@ -1,0 +1,27 @@
+# Wait to use this workflow. I'm just playing around a bit. It should be ready in the next release. 
+name: Vimana Framework Security Scan
+on:
+  push:
+    branches: [ main ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'
+    - name: Vimana Docker Build
+      run: |
+        chmod +x scripts/build
+        export TERM=xterm
+        ./scripts/build
+    - name: Runs Vimana security scan
+      run: |
+        docker run -t vimana_framework:v0.8 run --plugin viewscan --project-dir "${GITHUB_WORKSPACE}"
+    - name: Upload SARIF results
+      uses: github/codeql-action/upload-sarif@v1
+      with:
+        sarif_file: viewscan.sarif
+

@@ -1,6 +1,7 @@
 # Vimana Framework v0.1 - Installation Guide
- ![image](https://github.com/user-attachments/assets/5e438547-47be-474c-8393-871fbff3c211)
+<img width="3840" height="2160" alt="Vimana Install-selection" src="https://github.com/user-attachments/assets/836bb079-71df-48ea-87ef-a088a19b1019" />
 </br>
+
 [![Python Version](https://img.shields.io/badge/python-3.9%2B-yellow.svg)](https://www.python.org/downloads/)
 [![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://www.docker.com/)
 [![GitHub Actions](https://img.shields.io/badge/github%20actions-ready-green.svg)](https://github.com/features/actions)

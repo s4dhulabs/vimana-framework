@@ -1,5 +1,6 @@
 # Vimana Framework User Guide
-![image](https://github.com/user-attachments/assets/5e438547-47be-474c-8393-871fbff3c211)
+<!-- ![image](https://github.com/user-attachments/assets/5e438547-47be-474c-8393-871fbff3c211) -->
+<img width="3840" height="2160" alt="Vimana Install-selection" src="https://github.com/user-attachments/assets/949baae9-88ad-48a1-aa6a-b428069a9605" />
 
 ## Table of Contents
 - [Overview](#overview)
