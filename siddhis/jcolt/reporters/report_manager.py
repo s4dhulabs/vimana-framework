@@ -65,7 +65,7 @@ class ReportManager:
             if self.output_file:
                 output_file = self.output_file
             else:
-            output_file = f"jcolt_pydantic_tests_{self.timestamp}.json"
+                output_file = f"jcolt_pydantic_tests_{self.timestamp}.json"
                 
             with open(output_file, 'w') as f:
                 json.dump(self.results, f, indent=2)
