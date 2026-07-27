@@ -16,57 +16,35 @@ import socket
 from typing import Dict, List, Any, Optional, Union
 from collections import defaultdict
 
-# Framework metadata
+# Framework metadata (descriptive only — no CVE catalogs).
+# CVE correlation requires reliable version detection; do not invent
+# "potential vulnerabilities" from static lists.
 FRAMEWORK_METADATA = {
     'Django': {
         'description': 'High-level Python web framework',
         'website': 'https://www.djangoproject.com/',
         'versions': ['1.8.x', '1.9.x', '1.10.x', '1.11.x', '2.0.x', '2.1.x', '2.2.x', '3.0.x', '3.1.x', '3.2.x', '4.0.x', '4.1.x', '4.2.x', '5.0.x'],
-        'common_cves': {
-            'CVE-2023-46695': 'SQL injection in QuerySet.annotate()',
-            'CVE-2023-36053': 'Potential denial-of-service vulnerability',
-            'CVE-2022-41323': 'Potential bypass of AdminSite.has_permission()',
-            'CVE-2021-33203': 'Header injection via HTTP_HOST in HttpRequest',
-        }
     },
     'Flask': {
         'description': 'Lightweight WSGI web application framework',
         'website': 'https://flask.palletsprojects.com/',
         'versions': ['0.12.x', '1.0.x', '1.1.x', '2.0.x', '2.1.x', '2.2.x', '2.3.x', '3.0.x'],
-        'common_cves': {
-            'CVE-2023-30861': 'Session fixation via session cookie',
-            'CVE-2019-1010083': 'Improper input validation in JSON parser',
-            'CVE-2019-14806': 'XSS vulnerability in redirect()',
-            'CVE-2018-1000656': 'Security bypass in send_file()',
-        }
     },
     'FastAPI': {
         'description': 'Modern, fast, web framework for building APIs',
         'website': 'https://fastapi.tiangolo.com/',
         'versions': ['0.68.x', '0.70.x', '0.78.x', '0.79.x', '0.85.x', '0.88.x', '0.89.x', '0.92.x', '0.95.x', '0.100.x'],
-        'common_cves': {
-            'CVE-2023-37920': 'Path traversal vulnerability in file upload',
-            'CVE-2022-41340': 'Denial of service via unlimited depth of JSON data',
-        }
     },
     'Pyramid': {
         'description': 'Small, fast, down-to-earth Python web framework',
         'website': 'https://trypyramid.com/',
         'versions': ['1.9.x', '1.10.x', '2.0.x'],
-        'common_cves': {
-            'CVE-2018-8768': 'XSS vulnerability in error pages',
-        }
     },
     'Bottle': {
         'description': 'Fast and simple micro-framework for Python web applications',
         'website': 'https://bottlepy.org/',
         'versions': ['0.12.x', '0.13.x'],
-        'common_cves': {
-            'CVE-2020-28473': 'Path traversal vulnerability',
-            'CVE-2016-9964': 'HTML injection vulnerability',
-        }
     },
-    # Add other frameworks as needed
 }
 
 
@@ -329,15 +307,12 @@ class ResultManager:
                 # Get components
                 components = list(self.components.get(framework, set()))
                 
-                # Get relevant CVEs based on detected version
-                cves = self._get_relevant_cves(framework, version)
-                
-                # Get vulnerability data from vulnerability engine if available
+                # Only real CVE hits from VulnerabilityEngine/Prana (when version is known).
+                # Do not inject static framework CVE lists — that is not detection.
                 vulnerability_data = getattr(self, 'vulnerability_data', {}).get(framework, [])
                 component_vulnerability_data = getattr(self, 'component_vulnerability_data', {}).get(framework, {})
                 
-                # Combine all vulnerability data
-                all_vulnerabilities = cves + vulnerability_data
+                all_vulnerabilities = list(vulnerability_data)
                 for component_vulns in component_vulnerability_data.values():
                     all_vulnerabilities.extend(component_vulns)
                 
@@ -353,31 +328,13 @@ class ResultManager:
         
         return results
         
-    def _get_relevant_cves(self, 
-                           framework: str, 
+    def _get_relevant_cves(self,
+                           framework: str,
                            version: str) -> List[Dict[str, str]]:
         """
-        Get relevant CVEs for the detected framework and version
-        
-        Args:
-            framework: Framework name
-            version: Detected version
-            
-        Returns:
-            List of CVE dictionaries
+        Reserved for future version-aware CVE lookup.
+
+        Returns an empty list: hardcoded CVE catalogs were removed because
+        framewalk does not yet resolve precise framework versions reliably.
         """
-        if framework not in FRAMEWORK_METADATA:
-            return []
-            
-        # For now, simply return all CVEs for the framework
-        # In a more advanced version, this would filter by version
-        cves = []
-        for cve_id, description in FRAMEWORK_METADATA[framework].get('common_cves', {}).items():
-            cves.append({
-                "id": cve_id,
-                "description": description,
-                # Severity would be determined based on CVSS score in a full implementation
-                "severity": "unknown"
-            })
-            
-        return cves
+        return []
