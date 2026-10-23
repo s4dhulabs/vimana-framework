@@ -28,6 +28,9 @@ tags:
   - WebApp
 composition: 
   mode: Standalone
+  lab:
+    port: 8081
+    run_hint: "vimana run {plugin} --file siddhis/framewalk/lab/targets.txt --json --no-channels"
 description: |
   Framewalk is a sophisticated Python web framework detection plugin 
   designed to identify frameworks, versions, and components 

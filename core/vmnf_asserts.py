@@ -21,6 +21,10 @@ require_module = [
 # Command registry - maps command names to their help identifiers
 vmnf_cmds = {
     'about' :  'about',
+    'api'   :  'api',
+    'monitor': 'monitor',
+    'mcp'   :  'mcp',
+    'agent' :  'agent',
     'create':  'guide',  
     'args'  :  'args',
     'guide' :  'guide',

@@ -64,6 +64,7 @@ from res.vmnf_fuzz_data import VMNFPayloads
 from res.colors import *
 
 #from core.api.dashboard_utils import send_to_dashboard, prepare_dashboard_data
+# → reconnect via core.api.monitor_client (opt-in: monitor_enabled / VIMANA_MONITOR_ENABLED)
 
 
 class DJEngineParser(scrapy.Spider):
@@ -93,6 +94,15 @@ class DJEngineParser(scrapy.Spider):
         self.set_close = False
         self.first_run = True
         self.app_name = None
+        # Stable id for Exception Monitor grouping (only used when monitor opted-in)
+        try:
+            from core.api.dashboard_utils import make_scan_id
+            self.scan_id = (
+                vmnf_handler.get('scan_id')
+                or make_scan_id(f"djunch|{self.target}|{vmnf_handler.get('module_run')}")
+            )
+        except Exception:
+            self.scan_id = None
         
         _ISSUES_ = IssuesPool()
         _ISSUES_['ISSUES'] = {
@@ -394,44 +404,54 @@ class DJEngineParser(scrapy.Spider):
             self.djx_parser(response)
         
     def handle_exception_item(self, response):
-        ''' Handle exception item: Vimana Monitor API '''
-        
-        from siddhis.djunch.engines._djxip import ParseXItem
-        from core.vmnf_utils import generate_exception_id
+        '''Publish exception to Exception Monitor (opt-in, fail-soft).'''
+        try:
+            from core.api.monitor_client import is_monitor_enabled, publish_from_response
+        except Exception:
+            return
 
-        exception_id = generate_exception_id(response.text)
-        self.exception_parser = ParseXItem(response)
-        exception_info = self.exception_parser.dump_traceback()
-        exception_info['meta'] = response.meta
-        exception_info['exception_id'] = exception_id
+        if not is_monitor_enabled(self.vmnf_handler):
+            return
 
-        dashboard_data = prepare_dashboard_data(
-            response=response,
-            exception_info=exception_info,
-            extracted_vars=False
-        )
-        if not self.app_name:
-            environment = self.exception_parser.dump_environment()
-            
-            if 'ROOT_URLCONF' in environment:
-                self.app_name = environment['ROOT_URLCONF'].split('.')[0].strip().replace("'", "").replace(",", "")
+        try:
+            from siddhis.djunch.engines._djxip import ParseXItem
+            from core.vmnf_utils import generate_exception_id
 
-                if self.app_name:
-                    send_to_dashboard(app_env={self.app_name: environment})
+            exception_id = generate_exception_id(response.text)
+            self.exception_parser = ParseXItem(response)
+            exception_info = self.exception_parser.dump_traceback()
+            exception_info['meta'] = response.meta
+            exception_info['exception_id'] = exception_id
+            exception_info['scan_id'] = self.scan_id
 
-        dashboard_data['exception_meta']['view_trigger']['app_name'] = self.app_name
-        dashboard_data['exception_meta']['plugin'] = self.vmnf_handler.get('module_run', 'djunch')
-        send_to_dashboard(data=dashboard_data)
-    
+            env_payload = None
+            if not self.app_name:
+                environment = self.exception_parser.dump_environment()
+                if 'ROOT_URLCONF' in environment:
+                    self.app_name = (
+                        environment['ROOT_URLCONF']
+                        .split('.')[0].strip()
+                        .replace("'", "").replace(",", "")
+                    )
+                    if self.app_name:
+                        env_payload = {self.app_name: environment}
+
+            publish_from_response(
+                response,
+                exception_info,
+                handler=self.vmnf_handler,
+                scan_id=self.scan_id,
+                plugin=self.vmnf_handler.get('module_run', 'djunch'),
+                app_name=self.app_name,
+                send_env_once=env_payload,
+            )
+        except Exception:
+            # Never break the fuzzer / parser path
+            return
+
     def djx_parser(self, response):
         ''' Parse and register a new exception '''
         
-        '''
-        # >> Vimana API connector
-        if response.xpath('//div[@id="summary"]//tr'):
-            self.handle_exception_item(response)
-        '''
-
         try:
             self.EXCEPTION_PATTERN = (response.xpath('//div[@id="summary"]//tr'))
         except scrapy.exceptions.NotSupported as sntx:
@@ -728,6 +748,12 @@ class DJEngineParser(scrapy.Spider):
 
         self._ISSUES_POOL['EXCEPTIONS'].append(_EXCEPTION_)
         self.collected_sample = _EXCEPTION_
+
+        # Exception Monitor publish (no-op unless monitor_enabled / VIMANA_MONITOR_ENABLED)
+        try:
+            self.handle_exception_item(response)
+        except Exception:
+            pass
         
         if self.vmnf_handler.get('sample'):
             raise CloseSpider(f"[VMNF@ExceptionCaught(): {EXCEPTION_TYPE}]→ SAMPLE MODE enabled     ")

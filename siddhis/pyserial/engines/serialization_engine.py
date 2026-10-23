@@ -1395,41 +1395,61 @@ def run_serialization_tests(vmnf_handler: Dict[str, Any], schema: Dict[str, Any]
 
         # Set up HTTP client
         async with httpx.AsyncClient(timeout=30.0, verify=False) as client:
-            # First get available tests endpoint (if it exists)
+            # Discover lab flavor (Orchard /api/v1/… or legacy /serialization-tests)
+            from .lab_routes import (
+                CAPABILITY_PROBES,
+                flavor_from_capability_body,
+                flavor_from_capability_path,
+                routes_for_flavor,
+            )
+
+            is_serialization_api = False
+            lab_flavor = 'legacy'
+            category_endpoints: Dict[str, str] = {}
+            helper_paths: Dict[str, str] = {}
             try:
                 if verbose:
                     print(f" → Checking for serialization test endpoints on {target_url}")
 
-                # Attempt to get serialization test info
-                test_info_url = f"{target_url}/serialization-tests"
-                test_info_response = await client.get(test_info_url)
-
-                if test_info_response.status_code == 200:
-                    test_info = test_info_response.json()
+                test_info = {}
+                last_status = None
+                for probe in CAPABILITY_PROBES:
+                    test_info_url = f"{target_url.rstrip('/')}{probe}"
+                    test_info_response = await client.get(test_info_url)
+                    last_status = test_info_response.status_code
+                    if test_info_response.status_code != 200:
+                        continue
+                    try:
+                        test_info = test_info_response.json()
+                    except Exception:
+                        test_info = {}
                     is_serialization_api = True
+                    lab_flavor = (
+                        flavor_from_capability_body(test_info)
+                        or flavor_from_capability_path(probe)
+                    )
                     if verbose:
-                        print(f" → Found serialization test API with {len(test_info.get('available_tests', []))} test endpoints")
-                else:
-                    is_serialization_api = False
-                    if verbose:
-                        print(f" → Target does not appear to be a serialization test API ({test_info_response.status_code})")
+                        n_tests = len(test_info.get('available_tests', []) or [])
+                        print(
+                            f" → Found serialization lab ({lab_flavor}) via {probe}"
+                            f" with {n_tests} test endpoint(s)"
+                        )
+                    break
+
+                if not is_serialization_api and verbose:
+                    print(
+                        f" → Target does not appear to be a serialization test API"
+                        f" (last={last_status})"
+                    )
                 print()
             except Exception as e:
                 is_serialization_api = False
                 if verbose:
                     print(f" → Error checking for serialization test endpoints: {str(e)}")
 
-            # Map test categories to API endpoints
-            # The serialization lab has specific endpoints for each category
-            category_endpoints = {
-                "circular_references": "/circular-reference/create",
-                "depth_testing": "/nested-structure/create",
-                "binary_data": "/binary-data/process",
-                "type_confusion": "/type-confusion/process",
-                "large_nested_structures": "/large-structure/create",
-                "special_characters": "/special-characters/process",
-                "custom": "/custom-serialization/process"
-            }
+            category_endpoints, helper_paths = routes_for_flavor(lab_flavor)
+            if verbose and is_serialization_api:
+                print(f" → Using {lab_flavor} route map for category tests")
 
             # Generate test vectors for schemas found in the API
             test_categories = test_vector_generator.categories
@@ -1718,7 +1738,10 @@ def run_serialization_tests(vmnf_handler: Dict[str, Any], schema: Dict[str, Any]
                                     response = await client.post(test_url)
                                 elif category == "binary_data":
                                     # Get sample pickle data
-                                    pickle_url = f"{target_url}/binary-data/create-pickle-sample"
+                                    pickle_url = (
+                                        f"{target_url}"
+                                        f"{helper_paths.get('pickle_sample', '/binary-data/create-pickle-sample')}"
+                                    )
                                     pickle_response = await client.get(pickle_url)
                                     if pickle_response.status_code == 200:
                                         pickle_data = pickle_response.json()
@@ -1737,7 +1760,10 @@ def run_serialization_tests(vmnf_handler: Dict[str, Any], schema: Dict[str, Any]
                                         response = None
                                 elif category == "type_confusion":
                                     # Get sample payload
-                                    example_url = f"{target_url}/type-confusion/example"
+                                    example_url = (
+                                        f"{target_url}"
+                                        f"{helper_paths.get('type_confusion_example', '/type-confusion/example')}"
+                                    )
                                     example_response = await client.get(example_url)
                                     if example_response.status_code == 200:
                                         examples = example_response.json()
@@ -1765,7 +1791,10 @@ def run_serialization_tests(vmnf_handler: Dict[str, Any], schema: Dict[str, Any]
                                     response = await client.post(test_url)
                                 elif category == "special_characters":
                                     # Get sample payload
-                                    examples_url = f"{target_url}/special-characters/examples"
+                                    examples_url = (
+                                        f"{target_url}"
+                                        f"{helper_paths.get('special_characters_examples', '/special-characters/examples')}"
+                                    )
                                     examples_response = await client.get(examples_url)
                                     if examples_response.status_code == 200:
                                         examples = examples_response.json()
@@ -2024,8 +2053,13 @@ def run_serialization_tests(vmnf_handler: Dict[str, Any], schema: Dict[str, Any]
                                 test_result["pass"] = False
                     else:
                         # If not a serialization test API, mark as informational
+                        # (do NOT count as pass — that produced false 100% summaries)
                         test_result["actual_result"] = "NOT_TESTED"
-                        test_result["description"] = f"Target doesn't appear to be a serialization test API. Tests for {category} not performed."
+                        test_result["pass"] = False
+                        test_result["description"] = (
+                            f"Target doesn't appear to be a serialization test API. "
+                            f"Tests for {category} not performed."
+                        )
 
                     # Add this test to the list
                     tests_for_model.append(test_result)
@@ -2048,9 +2082,9 @@ def run_serialization_tests(vmnf_handler: Dict[str, Any], schema: Dict[str, Any]
 
         return all_test_results
 
-    # Run the tests
-    loop = asyncio.get_event_loop()
-    results = loop.run_until_complete(perform_serialization_tests(target_url))
+    # Run the tests (Python 3.10+ safe — no get_event_loop())
+    from ._async_compat import run_async
+    results = run_async(perform_serialization_tests(target_url))
 
     if verbose:
         print(f" → Completed {len(results)} schema tests for serialization vulnerabilities")

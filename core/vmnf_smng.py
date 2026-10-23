@@ -300,24 +300,36 @@ class VFManager:
 
     def get_filters(self):
         filters = []
+        # Handler carries many operational flags (incl. Control API defaults).
+        # Only string metadata fields become siddhi query filters.
+        skip_fields = {
+            'fancy_table',
+            'color_enabled',
+            'colors_enabled',
+            'highlight_enabled',
+            'guide_examples',
+            'module_list',
+            'guide_args',
+            'guide_labs',
+            'args',
+            'control_api',
+            'mcp_server',
+            'agent_mode',
+            'api_host',
+            'api_port',
+            'lab_test',
+            'lab_stop',
+            'run_lab',
+            'lab_operation',
+        }
 
-        for field,value in self.handler.items():
+        for field, value in self.handler.items():
             if not value or value is None:
                 continue
-            
-            if field in [
-                'fancy_table',
-                'color_enabled',
-                'colors_enabled',
-                'highlight_enabled',
-                'guide_examples', 
-                'module_list', 
-                'guide_args', 
-                'guide_labs',
-                'args'
-                ]:
+
+            if field in skip_fields:
                 continue
-            
+
             if field in ['module_info']:
                 self.handler['module'] = \
                         self.handler['module_info']
@@ -335,6 +347,10 @@ class VFManager:
                         self.handler['module_run']
                 self.handler['module_run'] = False
                 field = 'module'
+
+            # Non-string values (e.g. api_port=8090) must never become filters
+            if not isinstance(value, str):
+                continue
             
             # recorded as is: uppercase stuff
             if field in ['astt']:

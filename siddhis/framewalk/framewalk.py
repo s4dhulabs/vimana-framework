@@ -62,8 +62,14 @@ class siddhi:
             # Multi Targets
             file_path = self.vmnf_handler.get('file_scope')
             summary_only = self.vmnf_handler.get('summary_only', False)
-            
-            if summary_only:
+            import os as _os
+            quiet = bool(
+                _os.getenv('VIMANA_QUIET_CONSOLE')
+                or _os.getenv('VIMANA_MCP')
+                or self.vmnf_handler.get('json_output')
+            )
+
+            if summary_only and not quiet:
                 self.presenter.print_header()
             
             start_time = time.time()
@@ -74,14 +80,15 @@ class siddhi:
                 
                 for idx, target in enumerate(targets):
                     if summary_only:
-                        print(f"Scanning target: {target}")
+                        if not quiet:
+                            print(f"Scanning target: {target}")
                     else:
                         if idx > 0:
                             print("\n" + "─" * 80 + "\n")
                             
                         print(f"\n[Target {idx+1}/{len(targets)}] Scanning: {target}")
 
-                        if idx == 0:
+                        if idx == 0 and not quiet:
                             self.presenter.print_header()
                     
                     target_config = self.vmnf_handler.copy()
@@ -103,7 +110,8 @@ class siddhi:
                 if not summary_only:
                     print("\n" + "─" * 80 + "\n")
                 
-                self.presenter._print_aggregate_results_rich(self.aggregate_results)
+                if not quiet:
+                    self.presenter._print_aggregate_results_rich(self.aggregate_results)
                 
                 return self.aggregate_results
                 
@@ -119,7 +127,8 @@ class siddhi:
                 
                 self.detector.config['target_url'] = target_url
                 
-                self.presenter.print_header()
+                if not quiet:
+                    self.presenter.print_header()
                 result = self.detector.run()
                 return result
                 

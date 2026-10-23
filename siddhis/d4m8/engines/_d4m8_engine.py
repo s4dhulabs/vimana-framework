@@ -63,7 +63,8 @@ from ..utils import (
 
 from siddhis.djunch.engines._djxip import ParseXItem
 from core.vmnf_utils import generate_exception_id
-# connect to dashboard api
+# Exception Monitor: core.api.monitor_client (opt-in VIA monitor_enabled / VIMANA_MONITOR_ENABLED)
+# Legacy imports kept commented — do not re-enable treq path from engine modules.
 #from core.api.dashboard_utils import send_to_dashboard
 #from core.api.dashboard_utils import prepare_dashboard_data
 
@@ -306,26 +307,42 @@ class d4m8(scrapy.Spider):
         return None
 
     def handle_exception_item(self, response):
-        ''' Handle exception item: Vimana Monitor API '''
-        
-        dashboard_data = prepare_dashboard_data(
-            response=response,
-            exception_info=self.exception_info,
-            extracted_vars=False
-        )
-        if not self.app_name:
-            environment = self.exception_parser.dump_environment()
-            
-            if 'ROOT_URLCONF' in environment:
-                self.app_name = environment['ROOT_URLCONF'].split('.')[0].strip().replace("'", "").replace(",", "")
+        '''Publish exception to Exception Monitor (opt-in, fail-soft).'''
+        try:
+            from core.api.monitor_client import is_monitor_enabled, publish_from_response
+        except Exception:
+            return
 
-                if self.app_name:
-                    send_to_dashboard(app_env={self.app_name: environment})
+        if not is_monitor_enabled(self.handler):
+            return
 
-        dashboard_data['exception_meta']['view_trigger']['app_name'] = self.app_name
-        dashboard_data['exception_meta']['plugin'] = 'd4m8'
+        try:
+            env_payload = None
+            if not self.app_name and getattr(self, 'exception_parser', None):
+                environment = self.exception_parser.dump_environment()
+                if 'ROOT_URLCONF' in environment:
+                    self.app_name = (
+                        environment['ROOT_URLCONF']
+                        .split('.')[0].strip()
+                        .replace("'", "").replace(",", "")
+                    )
+                    if self.app_name:
+                        env_payload = {self.app_name: environment}
 
-        send_to_dashboard(data=dashboard_data)
+            info = dict(self.exception_info or {})
+            info['scan_id'] = self.scan_id
+
+            publish_from_response(
+                response,
+                info,
+                handler=self.handler,
+                scan_id=self.scan_id,
+                plugin='d4m8',
+                app_name=self.app_name,
+                send_env_once=env_payload,
+            )
+        except Exception:
+            return
 
     def parse_exception(self, response):
         if response.status == 500 and is_django_exception(response):
@@ -443,12 +460,13 @@ class d4m8(scrapy.Spider):
             
             # Add the new exception to the collection
             VFDBOps(**exception).register('_EXCEPTIONS_')
-            
-            '''
-            # >> Vimana API connector
-            if response.xpath('//div[@id="summary"]//tr'):
+
+            # Exception Monitor publish (no-op unless monitor_enabled / VIMANA_MONITOR_ENABLED)
+            try:
                 self.handle_exception_item(response)
-            '''
+            except Exception:
+                pass
+
             if not self.silent_mode:
                 print(f"{colored(f'    {exception_type} ', 99, attrs=['bold']):>35}")
                 print()

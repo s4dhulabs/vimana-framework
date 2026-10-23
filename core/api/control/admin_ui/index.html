@@ -1,0 +1,2676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vimana Control</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0c1016;
+      --panel: #151c26;
+      --panel-2: #1b2430;
+      --border: #2a3544;
+      --text: #e8eef6;
+      --muted: #8b9bb0;
+      --accent: #3d9a7a;
+      --accent-dim: #2a6b55;
+      --accent-soft: rgba(61, 154, 122, 0.14);
+      --danger: #c45c5c;
+      --warn: #c9a227;
+      --link: #6eb8ff;
+      --mono: "IBM Plex Mono", ui-monospace, monospace;
+      --sans: "IBM Plex Sans", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      background:
+        radial-gradient(1100px 520px at 8% -8%, #163028 0%, transparent 55%),
+        radial-gradient(800px 480px at 100% 0%, #182033 0%, transparent 48%),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    header {
+      padding: 1.1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: baseline;
+      gap: 1rem;
+      flex-wrap: wrap;
+      backdrop-filter: blur(8px);
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: rgba(12, 16, 22, 0.85);
+    }
+    header h1 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      margin: 0;
+      text-transform: uppercase;
+    }
+    header .sub { color: var(--muted); font-size: 0.85rem; }
+    header .health {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+    header .health.ok { color: var(--accent); }
+    header .header-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      flex-wrap: wrap;
+    }
+    header a.api-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-decoration: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.28rem 0.55rem;
+      transition: color .15s, border-color .15s, background .15s;
+    }
+    header a.api-link:hover {
+      color: var(--accent);
+      border-color: var(--accent-dim);
+      background: var(--accent-soft);
+    }
+    header a.api-link .ext { opacity: 0.7; font-size: 0.85em; }
+    header button.mcp-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.28rem 0.55rem;
+      cursor: pointer;
+      transition: color .15s, border-color .15s, background .15s;
+    }
+    header button.mcp-btn:hover,
+    header button.mcp-btn.active {
+      color: var(--accent);
+      border-color: var(--accent-dim);
+      background: var(--accent-soft);
+    }
+    header button.mon-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.28rem 0.55rem;
+      cursor: pointer;
+      transition: color .15s, border-color .15s, background .15s;
+    }
+    header button.mon-btn:hover,
+    header button.mon-btn.active {
+      color: #c9a227;
+      border-color: #8a7020;
+      background: rgba(201, 162, 39, 0.12);
+    }
+    .mon-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 40;
+      justify-content: flex-end;
+    }
+    .mon-backdrop.open { display: flex; }
+    .mon-drawer {
+      width: min(520px, 100%);
+      height: 100%;
+      background: var(--panel);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 1rem 1.1rem 1.25rem;
+      overflow: auto;
+    }
+    .mon-drawer header.mon-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 0.85rem;
+    }
+    .mon-drawer header.mon-head h2 {
+      margin: 0;
+      font-size: 1rem;
+      letter-spacing: 0.04em;
+    }
+    .mon-note { color: var(--muted); font-size: 0.78rem; margin: 0.2rem 0 0; line-height: 1.4; }
+    .mon-field {
+      display: flex;
+      gap: 0.4rem;
+      margin-bottom: 0.65rem;
+      flex-wrap: wrap;
+    }
+    .mon-field input {
+      flex: 1;
+      min-width: 180px;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      padding: 0.35rem 0.5rem;
+    }
+    .mon-stat {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.45rem;
+      margin: 0.6rem 0 0.85rem;
+    }
+    .mon-stat .cell {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.45rem 0.55rem;
+    }
+    .mon-stat .cell .n {
+      font-family: var(--mono);
+      font-size: 1rem;
+      color: var(--accent);
+    }
+    .mon-stat .cell .l {
+      font-size: 0.65rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .mon-scan {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.5rem 0.6rem;
+      margin-bottom: 0.4rem;
+      background: var(--panel-2);
+      cursor: pointer;
+    }
+    .mon-scan:hover { border-color: var(--accent-dim); }
+    .mon-scan .sid { font-family: var(--mono); font-size: 0.72rem; }
+    .mon-scan .meta { color: var(--muted); font-size: 0.7rem; margin-top: 0.2rem; }
+    .mon-exc {
+      border-left: 2px solid var(--border);
+      padding: 0.35rem 0.55rem;
+      margin: 0.25rem 0 0.25rem 0.3rem;
+      font-size: 0.75rem;
+    }
+    .mon-exc .etype { font-family: var(--mono); color: var(--warn); }
+    .mon-exc .ep { color: var(--muted); font-size: 0.68rem; word-break: break-all; }
+    header button.atma-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.28rem 0.55rem;
+      cursor: pointer;
+      transition: color .15s, border-color .15s, background .15s;
+    }
+    header button.atma-btn:hover,
+    header button.atma-btn.active {
+      color: var(--accent);
+      border-color: var(--accent-dim);
+      background: var(--accent-soft);
+    }
+    header button.atma-btn .glyph {
+      font-size: 0.95em;
+      letter-spacing: 0.04em;
+    }
+    .atma-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(6, 9, 14, 0.62);
+      z-index: 40;
+      display: none;
+      align-items: stretch;
+      justify-content: flex-end;
+    }
+    .atma-backdrop.open { display: flex; }
+    .atma-drawer {
+      width: min(420px, 100%);
+      background: var(--panel);
+      border-left: 1px solid var(--border);
+      box-shadow: -12px 0 40px rgba(0,0,0,0.35);
+      padding: 1.15rem 1.2rem 1.6rem;
+      overflow-y: auto;
+      animation: slideIn .22s ease;
+    }
+    @keyframes slideIn {
+      from { transform: translateX(18px); opacity: 0.6; }
+      to { transform: none; opacity: 1; }
+    }
+    .atma-drawer header.atma-head {
+      position: static;
+      background: transparent;
+      border: none;
+      padding: 0 0 0.85rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+    .atma-drawer header.atma-head h2 {
+      margin: 0;
+      font-family: var(--mono);
+      font-size: 1.05rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .atma-drawer .atma-note {
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1.45;
+      margin: 0 0 1rem;
+    }
+    .atma-plugin {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.65rem 0.75rem;
+      margin-bottom: 0.45rem;
+      background: var(--bg);
+      cursor: default;
+    }
+    .atma-plugin.clickable { cursor: pointer; }
+    .atma-plugin.clickable:hover {
+      border-color: var(--accent-dim);
+      background: var(--accent-soft);
+    }
+    .atma-plugin .row-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 0.5rem;
+    }
+    .atma-plugin .pname {
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      font-weight: 500;
+    }
+    .atma-plugin .st {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+    }
+    .atma-plugin .st.running { color: var(--warn); }
+    .atma-plugin .st.succeeded { color: var(--accent); }
+    .atma-plugin .st.failed,
+    .atma-plugin .st.timeout { color: var(--danger); }
+    .atma-plugin .blurb {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 0.25rem;
+      line-height: 1.35;
+    }
+    .atma-plugin .err-line {
+      font-size: 0.72rem;
+      color: var(--danger);
+      margin-top: 0.3rem;
+      font-family: var(--mono);
+    }
+    .atma-section-label {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin: 1rem 0 0.45rem;
+    }
+    .mcp-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 40;
+      justify-content: flex-end;
+    }
+    .mcp-backdrop.open { display: flex; }
+    .mcp-drawer {
+      width: min(540px, 100%);
+      height: 100%;
+      background: var(--panel);
+      border-left: 1px solid var(--border);
+      padding: 1rem 1.1rem 1.5rem;
+      overflow: auto;
+      box-shadow: -12px 0 40px rgba(0,0,0,0.35);
+    }
+    .mcp-drawer header.mcp-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 0.85rem;
+    }
+    .mcp-drawer header.mcp-head h2 {
+      margin: 0;
+      font-size: 1.05rem;
+      font-family: var(--mono);
+    }
+    .mcp-note {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin: 0.25rem 0 0;
+      line-height: 1.4;
+    }
+    .mcp-code {
+      background: #0d1117;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+      overflow: auto;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      line-height: 1.55;
+      color: #e6edf3;
+      white-space: pre;
+      tab-size: 2;
+    }
+    .mcp-code .k { color: #7ee787; }
+    .mcp-code .s { color: #a5d6ff; }
+    .mcp-code .p { color: #8b949e; }
+    .mcp-meta {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin: 0.75rem 0 0.5rem;
+      font-family: var(--mono);
+    }
+    .atma-safety {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+      margin: 0 0 0.9rem;
+    }
+    main {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      min-height: calc(100vh - 58px);
+    }
+    @media (max-width: 920px) {
+      main { grid-template-columns: 1fr; }
+    }
+    aside {
+      border-right: 1px solid var(--border);
+      background: rgba(21, 28, 38, 0.72);
+      padding: 0.85rem;
+      overflow-y: auto;
+      max-height: calc(100vh - 58px);
+    }
+    aside input {
+      width: 100%;
+      margin-bottom: 0.65rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.5rem 0.65rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+    }
+    aside input:focus { outline: 1px solid var(--accent-dim); border-color: var(--accent); }
+    .plugin {
+      padding: 0.6rem 0.7rem;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      margin-bottom: 0.3rem;
+      transition: background .15s, border-color .15s;
+    }
+    .plugin:hover { background: var(--panel-2); }
+    .plugin.active {
+      border-color: var(--accent-dim);
+      background: var(--accent-soft);
+    }
+    .plugin .name { font-family: var(--mono); font-size: 0.88rem; font-weight: 500; }
+    .plugin .meta { font-size: 0.7rem; color: var(--muted); margin-top: 0.2rem; }
+    section.detail {
+      padding: 1.35rem 1.6rem 2.5rem;
+      overflow-y: auto;
+      max-height: calc(100vh - 58px);
+    }
+    .empty { color: var(--muted); padding: 2.5rem 0; }
+    .hero {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1.25rem;
+      align-items: flex-start;
+      margin-bottom: 1.1rem;
+    }
+    .hero h2 {
+      margin: 0;
+      font-family: var(--mono);
+      font-size: 1.55rem;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+    }
+    .hero .brief {
+      width: 100%;
+      color: var(--muted);
+      margin: 0.15rem 0 0;
+      font-size: 0.95rem;
+      line-height: 1.45;
+      max-width: 48rem;
+    }
+    .pills { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+    .pill {
+      display: inline-block;
+      font-size: 0.68rem;
+      padding: 0.18rem 0.5rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: var(--mono);
+    }
+    .pill.on { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+    .pill.tag { border-color: #3a4a5e; color: #b7c5d8; }
+    .tabs {
+      display: flex;
+      gap: 0.25rem;
+      border-bottom: 1px solid var(--border);
+      margin: 0.5rem 0 1.1rem;
+      flex-wrap: wrap;
+    }
+    .tab {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      padding: 0.55rem 0.9rem;
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 500;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      font-family: var(--sans);
+    }
+    .tab:hover { color: var(--text); }
+    .tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .tab-panel { display: none; animation: fade .2s ease; }
+    .tab-panel.active { display: block; }
+    @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.05rem 1.15rem;
+      margin-bottom: 1rem;
+    }
+    .panel h3 {
+      margin: 0 0 0.75rem;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .prose {
+      margin: 0;
+      white-space: pre-wrap;
+      line-height: 1.55;
+      font-size: 0.9rem;
+      color: #d5deea;
+    }
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 0.65rem;
+    }
+    .meta-item {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.65rem 0.75rem;
+    }
+    .meta-item .k {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+    .meta-item .v {
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      word-break: break-word;
+    }
+    .guide-block {
+      background: #0a0e14;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.9rem 1rem;
+      overflow: auto;
+      max-height: 420px;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      color: #c5d0de;
+    }
+    .guide-block.empty-sec { color: var(--muted); font-family: var(--sans); font-size: 0.85rem; }
+    .ref-list { margin: 0; padding-left: 1.1rem; }
+    .ref-list li { margin-bottom: 0.35rem; font-size: 0.85rem; line-height: 1.4; }
+    .ref-list a { color: var(--link); text-decoration: none; }
+    .ref-list a:hover { text-decoration: underline; }
+    .chain {
+      display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center;
+    }
+    .chain .arrow { color: var(--muted); font-size: 0.75rem; }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 0.85rem;
+      align-items: center;
+    }
+    button, .btn {
+      background: var(--accent-dim);
+      color: var(--text);
+      border: 1px solid var(--accent);
+      padding: 0.42rem 0.9rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.84rem;
+      font-family: var(--sans);
+    }
+    button:hover { filter: brightness(1.08); }
+    button.ghost {
+      background: transparent;
+      border-color: var(--border);
+      color: var(--muted);
+    }
+    button.danger { border-color: var(--danger); background: #3a2222; }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+    label.field {
+      display: block;
+      margin-bottom: 0.7rem;
+      font-size: 0.8rem;
+    }
+    label.field span {
+      display: block;
+      color: var(--muted);
+      margin-bottom: 0.28rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+    }
+    label.field input[type="text"],
+    label.field input[type="url"] {
+      width: 100%;
+      max-width: 32rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.42rem 0.55rem;
+      border-radius: 6px;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+    }
+    label.field.check {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    label.field.check span { margin: 0; }
+    pre.out {
+      background: #0a0e14;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.85rem;
+      overflow: auto;
+      max-height: 380px;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      line-height: 1.4;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: #c5d0de;
+    }
+    .out-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+      margin-bottom: 0.65rem;
+    }
+    .out-tab {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 0.28rem 0.65rem;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 0.72rem;
+      font-family: var(--mono);
+    }
+    .out-tab.active {
+      color: var(--accent);
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+    .out-pane { display: none; }
+    .out-pane.active { display: block; }
+    pre.term {
+      background: #070b10;
+      border: 1px solid #1e2a38;
+      border-radius: 8px;
+      padding: 0.9rem 1rem;
+      overflow: auto;
+      max-height: 460px;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: #b8f0c8;
+    }
+    pre.json-view {
+      background: #0a0e14;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.9rem 1rem;
+      overflow: auto;
+      max-height: 460px;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: #d6e4f5;
+    }
+    pre.json-view .k { color: #7eb6ff; }
+    pre.json-view .s { color: #9cdc9c; }
+    pre.json-view .n { color: #d7ba7d; }
+    pre.json-view .b { color: #c586c0; }
+    pre.json-view .null { color: #808080; }
+    .art-meta {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-bottom: 0.45rem;
+      font-family: var(--mono);
+    }
+    .err { color: var(--danger); font-size: 0.85rem; }
+    .muted { color: var(--muted); font-size: 0.85rem; }
+    aside .nav-section {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 0.65rem;
+      background: rgba(10, 14, 20, 0.35);
+      overflow: hidden;
+    }
+    aside .nav-section > summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 0.55rem 0.7rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      user-select: none;
+    }
+    aside .nav-section > summary::-webkit-details-marker { display: none; }
+    aside .nav-section > summary::after {
+      content: '▸';
+      font-size: 0.65rem;
+      opacity: 0.7;
+      transition: transform .15s;
+      flex-shrink: 0;
+    }
+    aside .nav-section[open] > summary::after { transform: rotate(90deg); }
+    aside .nav-section[open] > summary { color: var(--accent); border-bottom: 1px solid var(--border); }
+    aside .nav-section .sum-main {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      min-width: 0;
+    }
+    aside .nav-section .sec-ico {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+      opacity: 0.85;
+    }
+    aside .nav-section[open] .sec-ico { opacity: 1; }
+    aside .nav-section .section-body { padding: 0.55rem 0.55rem 0.65rem; }
+    aside .nav-section .section-body > .filter-wrap { margin-bottom: 0.5rem; }
+    aside .nav-section .section-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      margin-top: 0.45rem;
+    }
+    aside .res-group { margin-bottom: 0.55rem; }
+    aside .res-group:last-child { margin-bottom: 0; }
+    aside .res-group-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin: 0.35rem 0.35rem 0.4rem;
+      font-family: var(--mono);
+    }
+    .res-item {
+      padding: 0.55rem 0.65rem;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      margin-bottom: 0.25rem;
+      transition: background .15s, border-color .15s;
+    }
+    .res-item:hover { background: var(--panel-2); }
+    .res-item.active {
+      border-color: var(--accent-dim);
+      background: var(--accent-soft);
+    }
+    .res-item .name { font-family: var(--mono); font-size: 0.8rem; font-weight: 500; }
+    .res-item .meta { font-size: 0.68rem; color: var(--muted); margin-top: 0.15rem; line-height: 1.35; }
+    pre.json-view.tall { max-height: min(62vh, 720px); }
+    .spec-view-tabs {
+      display: flex;
+      gap: 0.25rem;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .swagger-wrap {
+      background: #fafafa;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      min-height: 320px;
+      max-height: min(72vh, 900px);
+      overflow-y: auto;
+    }
+    .swagger-wrap .swagger-ui .topbar { display: none; }
+    .swagger-wrap .swagger-ui .info { margin: 1rem 0 0.5rem; }
+    .swagger-wrap .swagger-ui { font-family: var(--sans); }
+    .swagger-note {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin: 0 0 0.65rem;
+      line-height: 1.4;
+    }
+    .ctx-menu {
+      position: fixed;
+      z-index: 80;
+      min-width: 180px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 10px 28px rgba(0,0,0,0.45);
+      padding: 0.35rem;
+      display: none;
+    }
+    .ctx-menu.open { display: block; }
+    .ctx-menu button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      padding: 0.45rem 0.65rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+    .ctx-menu button:hover { background: var(--accent-soft); color: var(--accent); }
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(6, 9, 14, 0.65);
+      z-index: 70;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      width: min(420px, 100%);
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.1rem 1.15rem 1.2rem;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.4);
+    }
+    .modal h3 {
+      margin: 0 0 0.35rem;
+      font-family: var(--mono);
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+    .modal .modal-note { color: var(--muted); font-size: 0.78rem; margin: 0 0 0.85rem; line-height: 1.4; }
+    .modal select {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.45rem 0.55rem;
+      border-radius: 6px;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      margin-bottom: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Vimana</h1>
+    <span class="sub">Control · Admin</span>
+    <div class="header-right">
+      <button type="button" class="atma-btn" id="atma-open"
+              title="Atma — dogfood this Control API with a safe FastAPI suite">
+        <span class="glyph" aria-hidden="true">◎</span> atma
+      </button>
+      <button type="button" class="mon-btn" id="mon-open"
+              title="Exception Monitor — scans, demos, FuzzingDashboard">
+        <span aria-hidden="true">▣</span> Monitor
+      </button>
+      <button type="button" class="mcp-btn" id="mcp-open"
+              title="MCP — connect Cursor / agents (copy JSON)">
+        <span aria-hidden="true">{ }</span> MCP
+      </button>
+      <a class="api-link" href="/docs" target="_blank" rel="noopener noreferrer"
+         title="Open Control API docs (Swagger) in a new tab">
+        <span aria-hidden="true">&lt;/&gt;</span> API
+        <span class="ext" aria-hidden="true">↗</span>
+      </a>
+      <span id="health" class="health">connecting…</span>
+    </div>
+  </header>
+  <main>
+    <aside>
+      <details class="nav-section" id="sec-plugins">
+        <summary>
+          <span class="sum-main">
+            <svg class="sec-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+              <path d="M12 3v3M12 18v3M3 12h3M18 12h3"/>
+              <rect x="7" y="7" width="10" height="10" rx="2"/>
+              <path d="M9 12h6M12 9v6"/>
+            </svg>
+            Plugins
+            <span id="plugins-count" class="muted"></span>
+          </span>
+        </summary>
+        <div class="section-body">
+          <div class="filter-wrap">
+            <input id="filter" type="search" placeholder="Filter plugins…" autocomplete="off" />
+          </div>
+          <div id="plugin-list"></div>
+        </div>
+      </details>
+      <details class="nav-section" id="sec-labs" open>
+        <summary>
+          <span class="sum-main">
+            <svg class="sec-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+              <path d="M9 3h6"/>
+              <path d="M10 3v6.2L5.2 18.5A2 2 0 0 0 7 21.5h10a2 2 0 0 0 1.8-3L14 9.2V3"/>
+              <path d="M8.5 14h7"/>
+            </svg>
+            Labs
+            <span id="labs-count" class="muted"></span>
+          </span>
+        </summary>
+        <div class="section-body">
+          <p class="muted" style="font-size:.72rem;margin:0 0 .55rem;line-height:1.35">
+            Framework lab environments (Docker). Not collected artifacts.
+          </p>
+          <div id="labs-list"></div>
+          <div class="section-actions">
+            <button type="button" class="ghost" id="labs-cleanup"
+              style="font-size:.72rem;padding:.28rem .55rem" title="Stop all running labs">Cleanup all</button>
+            <button type="button" class="ghost" id="labs-refresh"
+              style="font-size:.72rem;padding:.28rem .55rem">Refresh</button>
+          </div>
+        </div>
+      </details>
+      <details class="nav-section" id="sec-resources" open>
+        <summary>
+          <span class="sum-main">
+            <svg class="sec-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+              <path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5v-9Z"/>
+              <path d="M12 12v9M4 7.5l8 4.5 8-4.5"/>
+            </svg>
+            Resources
+            <span id="resources-count" class="muted"></span>
+          </span>
+        </summary>
+        <div class="section-body">
+          <p class="muted" style="font-size:.72rem;margin:0 0 .55rem;line-height:1.35">
+            Artifacts shared across plugins (specs, channels, cases).
+          </p>
+          <div class="res-group">
+            <div class="res-group-label">Specs <span id="specs-count"></span></div>
+            <div id="specs-list"></div>
+          </div>
+          <div class="res-group">
+            <div class="res-group-label">Channels <span id="channels-count"></span></div>
+            <div id="channels-list"></div>
+          </div>
+          <div class="res-group">
+            <div class="res-group-label">Cases <span id="cases-count"></span></div>
+            <div id="cases-list"></div>
+          </div>
+          <div class="section-actions">
+            <button type="button" class="ghost" id="resources-refresh" style="font-size:.72rem;padding:.28rem .55rem">Refresh</button>
+          </div>
+        </div>
+      </details>
+    </aside>
+    <section class="detail" id="detail">
+      <p class="empty">Select a plugin, lab, or resource to inspect.</p>
+    </section>
+  </main>
+  <div class="ctx-menu" id="ctx-menu" role="menu">
+    <button type="button" data-action="run-spec">Run plugin with this spec…</button>
+  </div>
+  <div class="modal-backdrop" id="run-spec-modal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-labelledby="run-spec-title">
+      <h3 id="run-spec-title">Run plugin</h3>
+      <p class="modal-note" id="run-spec-note"></p>
+      <label class="field"><span>Plugin (spec consumer)</span>
+        <select id="run-spec-plugin"></select>
+      </label>
+      <p id="run-spec-path" class="muted" hidden></p>
+      <p id="run-spec-err" class="err" hidden></p>
+      <div class="row">
+        <button type="button" id="run-spec-go">Run</button>
+        <button type="button" class="ghost" id="run-spec-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+  <div class="atma-backdrop" id="atma-backdrop" aria-hidden="true">
+    <aside class="atma-drawer" role="dialog" aria-labelledby="atma-title">
+      <header class="atma-head">
+        <div style="flex:1">
+          <h2 id="atma-title">Atma</h2>
+          <p class="atma-note" id="atma-desc">Loading…</p>
+        </div>
+        <button type="button" class="ghost" id="atma-close" title="Close">Close</button>
+      </header>
+      <div class="atma-safety" id="atma-safety"></div>
+      <div class="row" style="margin-bottom:1rem">
+        <button type="button" id="atma-start">Run suite</button>
+        <button type="button" class="ghost" id="atma-refresh">Refresh</button>
+        <span class="pill" id="atma-job-status">idle</span>
+      </div>
+      <p id="atma-err" class="err" hidden></p>
+      <div class="atma-section-label">Plugins</div>
+      <div id="atma-plugins"></div>
+      <div class="atma-section-label">MCP checks</div>
+      <p class="mcp-note" style="margin:0 0 0.5rem">
+        Protocol dogfood via a private stdio child — live NDJSON appears in the
+        <code>vimana api</code> terminal as <code>[atma-mcp]</code>
+        (not in a separate idle <code>vimana mcp</code>).
+      </p>
+      <div id="atma-mcp"></div>
+      <div class="panel" style="margin-top:1rem" id="atma-run-panel" hidden>
+        <h3>Run artifact</h3>
+        <div id="atma-run-viewer"></div>
+      </div>
+    </aside>
+  </div>
+  <div class="mcp-backdrop" id="mcp-backdrop" aria-hidden="true">
+    <aside class="mcp-drawer" role="dialog" aria-labelledby="mcp-title">
+      <header class="mcp-head">
+        <div style="flex:1">
+          <h2 id="mcp-title">MCP</h2>
+          <p class="mcp-note" id="mcp-desc">Connect Cursor or other agents via stdio.</p>
+        </div>
+        <button type="button" class="ghost" id="mcp-close" title="Close">Close</button>
+      </header>
+      <div class="row" style="margin-bottom:0.75rem">
+        <button type="button" id="mcp-copy">Copy JSON</button>
+        <button type="button" class="ghost" id="mcp-copy-local" title="Absolute paths for this machine only — do not commit">Copy local</button>
+        <button type="button" class="ghost" id="mcp-refresh">Refresh</button>
+        <span class="pill" id="mcp-path-hint"></span>
+      </div>
+      <p id="mcp-err" class="err" hidden></p>
+      <p class="mcp-meta" id="mcp-cli"></p>
+      <div class="mcp-code" id="mcp-json" aria-label="mcp.json portable snippet"></div>
+      <p class="mcp-note" id="mcp-local-hint" style="margin-top:0.65rem" hidden></p>
+      <p class="mcp-note" id="mcp-note" style="margin-top:0.85rem"></p>
+    </aside>
+  </div>
+  <div class="mon-backdrop" id="mon-backdrop" aria-hidden="true">
+    <aside class="mon-drawer" role="dialog" aria-labelledby="mon-title">
+      <header class="mon-head">
+        <div style="flex:1">
+          <h2 id="mon-title">Exception Monitor</h2>
+          <p class="mon-note">
+            Live exception API for fuzz engines (djunch/d4m8 opt-in).
+            With <code>vimana api</code> it is mounted at <code>/monitor</code> on this host
+            (seed/browse here). The full React panel is FuzzingDashboard on
+            <code>:3000</code> — use <b>UI ↗</b> (passes <code>?monitor=</code> and selected <code>?scan=</code>).
+          </p>
+        </div>
+        <button type="button" class="ghost" id="mon-close" title="Close">Close</button>
+      </header>
+      <div class="mon-field">
+        <input id="mon-url" type="url" spellcheck="false"
+               placeholder="http://127.0.0.1:8000" />
+        <button type="button" class="ghost" id="mon-ping">Ping</button>
+      </div>
+      <div class="mon-field">
+        <input id="mon-ui-url" type="url" spellcheck="false"
+               placeholder="http://127.0.0.1:3000 (FuzzingDashboard)" />
+        <a class="api-link" id="mon-open-ui" href="http://127.0.0.1:3000" target="_blank"
+           rel="noopener noreferrer" title="Open FuzzingDashboard">UI ↗</a>
+      </div>
+      <div class="row" style="margin-bottom:0.75rem;flex-wrap:wrap">
+        <button type="button" id="mon-seed">Seed demo</button>
+        <button type="button" class="ghost" id="mon-refresh">Refresh</button>
+        <button type="button" class="ghost" id="mon-reset">Reset</button>
+        <span class="pill" id="mon-status">idle</span>
+      </div>
+      <p id="mon-err" class="err" hidden></p>
+      <div class="mon-stat" id="mon-stats">
+        <div class="cell"><div class="n" id="mon-n-scans">—</div><div class="l">scans</div></div>
+        <div class="cell"><div class="n" id="mon-n-exc">—</div><div class="l">exceptions</div></div>
+        <div class="cell"><div class="n" id="mon-n-env">—</div><div class="l">apps/env</div></div>
+      </div>
+      <div class="atma-section-label">Scans</div>
+      <div id="mon-scans"></div>
+      <div class="atma-section-label">Exceptions (selected scan)</div>
+      <div id="mon-exceptions"><p class="mon-note">Select a scan above.</p></div>
+    </aside>
+  </div>
+  <script>
+    const API = '';
+    let plugins = [];
+    let specs = [];
+    let channels = [];
+    let labs = [];
+    let cases = [];
+    let selected = null;          // plugin name
+    let selectedResource = null;  // { kind: 'spec'|'channel'|'case'|'lab', id }
+    let detail = null;
+    let currentSpec = null;
+    let activeTab = 'overview';
+    let specConsumers = [];
+
+    const AUDIT_FLAGS = {
+      boundr: 'upload_audit_enabled',
+      socketline: 'ws_audit_enabled',
+      streamguard: 'stream_audit_enabled',
+      schemage: 'gql_audit_enabled',
+      roomgate: 'room_audit_enabled',
+      objgate: 'obj_audit_enabled',
+      framewire: 'frame_audit_enabled',
+      fetchbane: 'ssrf_audit_enabled',
+    };
+    const PATH_DESTS = {
+      boundr: 'upload_endpoint',
+      fetchbane: 'ssrf_endpoint',
+      objgate: 'obj_path',
+    };
+
+    async function api(path, opts = {}) {
+      const res = await fetch(API + path, {
+        headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
+        ...opts,
+      });
+      const text = await res.text();
+      let data;
+      try { data = text ? JSON.parse(text) : null; } catch { data = { raw: text }; }
+      if (!res.ok) {
+        const msg = (data && (data.detail || data.error)) || res.statusText;
+        throw new Error(typeof msg === 'string' ? msg : JSON.stringify(msg));
+      }
+      return data;
+    }
+
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    async function refreshHealth() {
+      const el = document.getElementById('health');
+      try {
+        const h = await api('/v1/health');
+        el.textContent = `v${h.version} · ${h.plugins_loaded} plugins · ok`;
+        el.classList.add('ok');
+      } catch (e) {
+        el.textContent = 'API unreachable';
+        el.classList.remove('ok');
+      }
+    }
+
+    async function loadPlugins() {
+      const data = await api('/v1/plugins');
+      plugins = data.plugins || [];
+      const count = document.getElementById('plugins-count');
+      if (count) count.textContent = `(${plugins.length})`;
+      renderList();
+    }
+
+    async function loadResources() {
+      try {
+        const [s, c, cons, L, cs] = await Promise.all([
+          api('/v1/specs'),
+          api('/v1/channels'),
+          api('/v1/resources/spec-consumers'),
+          api('/v1/labs'),
+          api('/v1/cases'),
+        ]);
+        specs = s.specs || [];
+        channels = c.channels || [];
+        labs = L.labs || [];
+        cases = cs.cases || [];
+        specConsumers = (cons && cons.plugins) || [];
+      } catch (e) {
+        specs = [];
+        channels = [];
+        labs = [];
+        cases = [];
+        const sl = document.getElementById('specs-list');
+        if (sl) sl.innerHTML = `<p class="err">${esc(e.message)}</p>`;
+        return;
+      }
+      renderResources();
+    }
+
+    async function pollRunUntilDone(runId, { onTick, maxMs = 600000, intervalMs = 1200 } = {}) {
+      const started = Date.now();
+      while (Date.now() - started < maxMs) {
+        const full = await api('/v1/runs/' + encodeURIComponent(runId));
+        if (onTick) onTick(full);
+        if (full.status === 'succeeded' || full.status === 'failed') return full;
+        await new Promise(r => setTimeout(r, intervalMs));
+      }
+      throw new Error('run poll timed out');
+    }
+
+    function renderList() {
+      const q = (document.getElementById('filter').value || '').toLowerCase();
+      const root = document.getElementById('plugin-list');
+      root.innerHTML = '';
+      plugins
+        .filter(p => !q || (p.name || '').toLowerCase().includes(q)
+          || (p.category || '').toLowerCase().includes(q)
+          || (p.type || '').toLowerCase().includes(q)
+          || (p.info || '').toLowerCase().includes(q))
+        .forEach(p => {
+          const div = document.createElement('div');
+          div.className = 'plugin' + (selected === p.name && !selectedResource ? ' active' : '');
+          div.innerHTML = `<div class="name">${esc(p.name)}</div>
+            <div class="meta">${esc(p.type || '')} · ${esc(p.category || '')}${p.has_lab ? ' · lab' : ''}</div>`;
+          div.onclick = () => selectPlugin(p.name);
+          root.appendChild(div);
+        });
+    }
+
+    function renderResources() {
+      const sc = document.getElementById('specs-count');
+      const cc = document.getElementById('channels-count');
+      const lc = document.getElementById('labs-count');
+      const cac = document.getElementById('cases-count');
+      const rc = document.getElementById('resources-count');
+      if (sc) sc.textContent = `(${specs.length})`;
+      if (cc) cc.textContent = `(${channels.length})`;
+      if (lc) lc.textContent = `(${labs.length})`;
+      if (cac) cac.textContent = `(${cases.length})`;
+      if (rc) rc.textContent = `(${specs.length + channels.length + cases.length})`;
+
+      const ll = document.getElementById('labs-list');
+      if (ll) {
+        ll.innerHTML = '';
+        if (!labs.length) {
+          ll.innerHTML = '<p class="muted" style="padding:.25rem .35rem;font-size:.75rem">No labs found.</p>';
+        } else {
+          labs.forEach(lab => {
+            const div = document.createElement('div');
+            const active = selectedResource && selectedResource.kind === 'lab'
+              && selectedResource.id === lab.plugin;
+            div.className = 'res-item' + (active ? ' active' : '');
+            const st = lab.running ? 'running' : (lab.valid ? 'ready' : 'invalid');
+            div.innerHTML = `<div class="name">${esc(lab.plugin)}</div>
+              <div class="meta"><span class="pill ${lab.running ? 'on' : ''}">${esc(st)}</span>
+                ${lab.url ? esc(lab.url) : ''}</div>`;
+            div.onclick = async () => {
+              await selectPlugin(lab.plugin);
+              selectedResource = { kind: 'lab', id: lab.plugin };
+              renderResources();
+              const operateBtn = document.querySelector('.tab[data-tab="operate"]');
+              if (operateBtn) operateBtn.click();
+            };
+            ll.appendChild(div);
+          });
+        }
+      }
+
+      const sl = document.getElementById('specs-list');
+      sl.innerHTML = '';
+      if (!specs.length) {
+        sl.innerHTML = '<p class="muted" style="padding:.25rem .35rem;font-size:.75rem">No specs registered.</p>';
+      } else {
+        specs.forEach(s => {
+          const div = document.createElement('div');
+          const active = selectedResource && selectedResource.kind === 'spec'
+            && selectedResource.id === s.spec_id;
+          div.className = 'res-item' + (active ? ' active' : '');
+          div.innerHTML = `<div class="name">${esc(s.spec_id)}</div>
+            <div class="meta">${esc(s.spec_title || '')} · ${esc(s.spec_paths || '?')} paths
+              <br/>${esc(s.spec_host || '')}</div>`;
+          div.onclick = () => selectSpec(s.spec_id);
+          div.oncontextmenu = (ev) => {
+            ev.preventDefault();
+            openSpecContextMenu(ev, s.spec_id);
+          };
+          sl.appendChild(div);
+        });
+      }
+
+      const cl = document.getElementById('channels-list');
+      cl.innerHTML = '';
+      if (!channels.length) {
+        cl.innerHTML = '<p class="muted" style="padding:.25rem .35rem;font-size:.75rem">No channels registered.</p>';
+      } else {
+        channels.forEach(ch => {
+          const div = document.createElement('div');
+          const active = selectedResource && selectedResource.kind === 'channel'
+            && selectedResource.id === ch.channel_id;
+          div.className = 'res-item' + (active ? ' active' : '');
+          div.innerHTML = `<div class="name">${esc(ch.channel_id)}</div>
+            <div class="meta">${esc(ch.type || '')} · ${esc(ch.plugin || '')} · ${esc(ch.status || '')}
+              <br/>${esc(ch.method || '')} ${esc(ch.endpoint || '')}</div>`;
+          div.onclick = () => selectChannel(ch.channel_id);
+          cl.appendChild(div);
+        });
+      }
+
+      const casel = document.getElementById('cases-list');
+      if (casel) {
+        casel.innerHTML = '';
+        if (!cases.length) {
+          casel.innerHTML = '<p class="muted" style="padding:.25rem .35rem;font-size:.75rem">No cases saved.</p>';
+        } else {
+          cases.forEach(cs => {
+            const div = document.createElement('div');
+            const active = selectedResource && selectedResource.kind === 'case'
+              && selectedResource.id === cs.case_id;
+            div.className = 'res-item' + (active ? ' active' : '');
+            div.innerHTML = `<div class="name">${esc(cs.case_id)}</div>
+              <div class="meta">${esc(cs.case_plugin || '')} · ${esc(cs.case_name || '')}
+                <br/>${esc(cs.case_target || '')}</div>`;
+            div.onclick = () => selectCase(cs.case_id);
+            casel.appendChild(div);
+          });
+        }
+      }
+    }
+
+    async function selectCase(caseId) {
+      selected = null;
+      selectedResource = { kind: 'case', id: caseId };
+      currentSpec = null;
+      renderList();
+      renderResources();
+      const el = document.getElementById('detail');
+      el.innerHTML = `<p class="empty">Loading case ${esc(caseId)}…</p>`;
+      try {
+        const ch = await api('/v1/cases/' + encodeURIComponent(caseId));
+        renderCaseDetail(ch);
+      } catch (e) {
+        el.innerHTML = `<p class="err">${esc(e.message)}</p>`;
+      }
+    }
+
+    function renderCaseDetail(cs) {
+      const el = document.getElementById('detail');
+      const hint = cs.run_hint || {};
+      el.innerHTML = `
+        <div class="hero">
+          <div style="flex:1;min-width:220px">
+            <h2>${esc(cs.case_id)}</h2>
+            <p class="brief">${esc(cs.case_name || 'Saved case')}</p>
+          </div>
+          <div class="pills">
+            <span class="pill on">case</span>
+            <span class="pill">${esc(cs.case_plugin || '')}</span>
+            <span class="pill">${esc(cs.case_plugin_type || '')}</span>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Metadata</h3>
+          <div class="meta-grid">
+            <div class="meta-item"><div class="k">Target</div><div class="v">${esc(cs.case_target || '—')}</div></div>
+            <div class="meta-item"><div class="k">Plugin</div><div class="v">${esc(cs.case_plugin || '—')}</div></div>
+            <div class="meta-item"><div class="k">Date</div><div class="v">${esc(cs.case_date || '—')}</div></div>
+            <div class="meta-item"><div class="k">ASTT</div><div class="v">${esc(cs.case_plugin_astt || '—')}</div></div>
+          </div>
+          <div class="row" style="margin-top:.85rem">
+            <button type="button" id="case-run-btn">Run case…</button>
+          </div>
+          <p id="case-run-err" class="err" hidden></p>
+        </div>
+        <div class="panel">
+          <h3>Run hint args</h3>
+          <pre class="json-view">${hint.args
+            ? highlightJson(JSON.stringify(hint.args, null, 2))
+            : `<span class="muted">${esc(cs.run_hint_error || 'Unavailable')}</span>`}</pre>
+        </div>
+        <div class="panel">
+          <h3>Run output</h3>
+          <div id="run-viewer"><p class="muted">Run this case to see artifacts here.</p></div>
+        </div>
+      `;
+      const btn = document.getElementById('case-run-btn');
+      if (btn) btn.onclick = async () => {
+        const err = document.getElementById('case-run-err');
+        err.hidden = true;
+        btn.disabled = true;
+        btn.textContent = 'Queuing…';
+        try {
+          const queued = await api('/v1/cases/' + encodeURIComponent(cs.case_id) + '/run?async=true', {
+            method: 'POST',
+          });
+          btn.textContent = 'Running…';
+          showRunResult(queued, document.getElementById('run-viewer'));
+          const done = await pollRunUntilDone(queued.run_id, {
+            onTick: (r) => showRunResult(r, document.getElementById('run-viewer')),
+          });
+          showRunResult(done, document.getElementById('run-viewer'));
+        } catch (e) {
+          err.textContent = e.message;
+          err.hidden = false;
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'Run case…';
+        }
+      };
+    }
+
+    async function selectPlugin(name) {
+      selected = name;
+      selectedResource = null;
+      currentSpec = null;
+      activeTab = 'overview';
+      renderList();
+      renderResources();
+      const el = document.getElementById('detail');
+      el.innerHTML = `<p class="empty">Loading ${esc(name)}…</p>`;
+      try {
+        detail = await api('/v1/plugins/' + encodeURIComponent(name));
+        let lab = null;
+        try { lab = await api('/v1/labs/' + encodeURIComponent(name)); } catch (_) {}
+        renderDetail(detail, lab);
+      } catch (e) {
+        el.innerHTML = `<p class="err">${esc(e.message)}</p>`;
+      }
+    }
+
+    async function selectSpec(specId) {
+      selected = null;
+      selectedResource = { kind: 'spec', id: specId };
+      renderList();
+      renderResources();
+      const el = document.getElementById('detail');
+      el.innerHTML = `<p class="empty">Loading spec ${esc(specId)}…</p>`;
+      try {
+        currentSpec = await api('/v1/specs/' + encodeURIComponent(specId));
+        renderSpecDetail(currentSpec);
+      } catch (e) {
+        currentSpec = null;
+        el.innerHTML = `<p class="err">${esc(e.message)}</p>`;
+      }
+    }
+
+    async function selectChannel(channelId) {
+      selected = null;
+      selectedResource = { kind: 'channel', id: channelId };
+      currentSpec = null;
+      renderList();
+      renderResources();
+      const el = document.getElementById('detail');
+      el.innerHTML = `<p class="empty">Loading channel ${esc(channelId)}…</p>`;
+      try {
+        const ch = await api('/v1/channels/' + encodeURIComponent(channelId));
+        renderChannelDetail(ch);
+      } catch (e) {
+        el.innerHTML = `<p class="err">${esc(e.message)}</p>`;
+      }
+    }
+
+    function selectionPathFromSpec(spec) {
+      const sel = (window.getSelection && window.getSelection().toString() || '').trim()
+        .replace(/^["']|["']$/g, '');
+      if (!sel || !spec || !spec.body || !spec.body.paths) return null;
+      if (Object.prototype.hasOwnProperty.call(spec.body.paths, sel)) return sel;
+      return null;
+    }
+
+    function renderSpecDetail(s) {
+      const el = document.getElementById('detail');
+      const bodyText = s.body ? JSON.stringify(s.body, null, 2) : '';
+      el.innerHTML = `
+        <div class="hero">
+          <div style="flex:1;min-width:220px">
+            <h2>${esc(s.spec_id)}</h2>
+            <p class="brief">${esc(s.spec_title || 'OpenAPI specification')}</p>
+          </div>
+          <div class="pills">
+            <span class="pill on">spec</span>
+            <span class="pill">${esc(s.openapi_version || '')}</span>
+            <span class="pill">${esc(String(s.spec_paths || ''))} paths</span>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Metadata</h3>
+          <div class="meta-grid">
+            <div class="meta-item"><div class="k">Host</div><div class="v">${esc(s.spec_host || '—')}</div></div>
+            <div class="meta-item"><div class="k">Methods</div><div class="v">${esc(s.spec_methods || '—')}</div></div>
+            <div class="meta-item"><div class="k">API version</div><div class="v">${esc(s.fastapi_version || '—')}</div></div>
+            <div class="meta-item"><div class="k">Date</div><div class="v">${esc(s.spec_date || '—')}</div></div>
+            <div class="meta-item" style="grid-column:1/-1"><div class="k">File</div><div class="v">${esc(s.spec_file_path || '—')}</div></div>
+          </div>
+          <div class="row" style="margin-top:.85rem">
+            <button type="button" id="spec-run-btn">Run plugin…</button>
+            <button type="button" class="ghost" id="spec-refresh-btn">Reload</button>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>OpenAPI document</h3>
+          <p class="swagger-note">Docs renders the collected replica like FastAPI <code>/docs</code> (Swagger UI). Try it out uses the registered host when present — CORS may block remote targets from this Admin origin.</p>
+          <div class="spec-view-tabs" role="tablist">
+            <button type="button" class="out-tab active" data-spec-view="docs">Docs</button>
+            <button type="button" class="out-tab" data-spec-view="json">JSON</button>
+          </div>
+          <div id="spec-pane-docs" class="out-pane active">
+            <div class="swagger-wrap"><div id="swagger-ui">Loading Swagger UI…</div></div>
+          </div>
+          <div id="spec-pane-json" class="out-pane">
+            <p class="muted" style="margin:0 0 .5rem;font-size:.72rem">Select a path key, then Run plugin…</p>
+            <pre class="json-view tall" id="spec-json">${bodyText ? highlightJson(bodyText) : '<span class="muted">No body</span>'}</pre>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Run output</h3>
+          <div id="run-viewer"><p class="muted">Run a consumer plugin against this spec to see artifacts here.</p></div>
+        </div>
+      `;
+      const runBtn = document.getElementById('spec-run-btn');
+      if (runBtn) runBtn.onclick = () => openRunSpecModal(s.spec_id, selectionPathFromSpec(s));
+      const reload = document.getElementById('spec-refresh-btn');
+      if (reload) reload.onclick = () => selectSpec(s.spec_id);
+      el.querySelectorAll('[data-spec-view]').forEach(btn => {
+        btn.onclick = () => {
+          const view = btn.dataset.specView;
+          el.querySelectorAll('[data-spec-view]').forEach(t =>
+            t.classList.toggle('active', t === btn));
+          document.getElementById('spec-pane-docs').classList.toggle('active', view === 'docs');
+          document.getElementById('spec-pane-json').classList.toggle('active', view === 'json');
+        };
+      });
+      const pre = document.getElementById('spec-json');
+      if (pre) {
+        pre.oncontextmenu = (ev) => {
+          ev.preventDefault();
+          openSpecContextMenu(ev, s.spec_id, selectionPathFromSpec(s));
+        };
+      }
+      mountSwaggerUI(s);
+    }
+
+    function ensureSwaggerAssets() {
+      return new Promise((resolve, reject) => {
+        if (window.SwaggerUIBundle) {
+          resolve();
+          return;
+        }
+        if (!document.getElementById('swagger-ui-css')) {
+          const link = document.createElement('link');
+          link.id = 'swagger-ui-css';
+          link.rel = 'stylesheet';
+          link.href = 'https://unpkg.com/swagger-ui-dist@5.17.14/swagger-ui.css';
+          document.head.appendChild(link);
+        }
+        const existing = document.getElementById('swagger-ui-bundle');
+        if (existing) {
+          existing.addEventListener('load', () => resolve());
+          existing.addEventListener('error', () => reject(new Error('Failed to load Swagger UI')));
+          return;
+        }
+        const script = document.createElement('script');
+        script.id = 'swagger-ui-bundle';
+        script.src = 'https://unpkg.com/swagger-ui-dist@5.17.14/swagger-ui-bundle.js';
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error(
+          'Failed to load Swagger UI from CDN — check network, or use the JSON tab'));
+        document.head.appendChild(script);
+      });
+    }
+
+    function mountSwaggerUI(s) {
+      const host = document.getElementById('swagger-ui');
+      if (!host) return;
+      if (!s.body) {
+        host.innerHTML = '<p class="muted" style="padding:1rem">No OpenAPI body.</p>';
+        return;
+      }
+      ensureSwaggerAssets().then(() => {
+        const spec = JSON.parse(JSON.stringify(s.body));
+        // Point Try it out at the collected target host (replica navigation)
+        if (s.spec_host) {
+          spec.servers = [{ url: String(s.spec_host).replace(/\/$/, ''), description: 'Registered host' }];
+        }
+        host.innerHTML = '';
+        window.SwaggerUIBundle({
+          spec: spec,
+          dom_id: '#swagger-ui',
+          deepLinking: true,
+          docExpansion: 'list',
+          defaultModelsExpandDepth: 1,
+          tryItOutEnabled: true,
+          displayRequestDuration: true,
+          filter: true,
+          showExtensions: true,
+          persistAuthorization: true,
+        });
+      }).catch((e) => {
+        host.innerHTML = `<p class="err" style="padding:1rem">${esc(e.message)}</p>`;
+      });
+    }
+
+    function renderChannelDetail(ch) {
+      const el = document.getElementById('detail');
+      let metaPretty = '';
+      try {
+        metaPretty = ch.channel_metadata
+          ? JSON.stringify(ch.channel_metadata, null, 2)
+          : '';
+      } catch (_) { metaPretty = String(ch.channel_metadata || ''); }
+      let payload = ch.payload_template || '';
+      try {
+        if (payload && (payload.trim().startsWith('{') || payload.trim().startsWith('['))) {
+          payload = JSON.stringify(JSON.parse(payload), null, 2);
+        }
+      } catch (_) {}
+      el.innerHTML = `
+        <div class="hero">
+          <div style="flex:1;min-width:220px">
+            <h2>${esc(ch.channel_id)}</h2>
+            <p class="brief">${esc(ch.description || 'Registered channel')}</p>
+          </div>
+          <div class="pills">
+            <span class="pill on">channel</span>
+            <span class="pill">${esc(ch.type || '')}</span>
+            <span class="pill">${esc(ch.plugin || '')}</span>
+            <span class="pill ${ch.status === 'active' ? 'on' : ''}">${esc(ch.status || '')}</span>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Metadata</h3>
+          <div class="meta-grid">
+            <div class="meta-item"><div class="k">Target</div><div class="v">${esc(ch.target_url || '—')}</div></div>
+            <div class="meta-item"><div class="k">Endpoint</div><div class="v">${esc(ch.method || '')} ${esc(ch.endpoint || '')}</div></div>
+            <div class="meta-item"><div class="k">Created</div><div class="v">${esc(ch.created_at || '—')}</div></div>
+            <div class="meta-item"><div class="k">Last verified</div><div class="v">${esc(ch.last_verified || '—')}</div></div>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Payload template</h3>
+          <pre class="json-view">${payload ? highlightJson(payload) : '<span class="muted">Empty</span>'}</pre>
+        </div>
+        <div class="panel">
+          <h3>Channel metadata</h3>
+          <pre class="json-view">${metaPretty ? highlightJson(metaPretty) : '<span class="muted">Empty</span>'}</pre>
+        </div>
+      `;
+    }
+
+    let ctxSpecId = null;
+    let ctxSelectedPath = null;
+
+    function openSpecContextMenu(ev, specId, selectedPath) {
+      ctxSpecId = specId;
+      ctxSelectedPath = selectedPath || null;
+      const menu = document.getElementById('ctx-menu');
+      menu.style.left = Math.min(ev.clientX, window.innerWidth - 200) + 'px';
+      menu.style.top = Math.min(ev.clientY, window.innerHeight - 80) + 'px';
+      menu.classList.add('open');
+    }
+
+    function closeCtxMenu() {
+      document.getElementById('ctx-menu').classList.remove('open');
+    }
+
+    document.addEventListener('click', closeCtxMenu);
+    document.getElementById('ctx-menu').addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      const btn = ev.target.closest('button[data-action]');
+      if (!btn) return;
+      if (btn.dataset.action === 'run-spec' && ctxSpecId) {
+        openRunSpecModal(ctxSpecId, ctxSelectedPath);
+      }
+      closeCtxMenu();
+    });
+
+    async function openRunSpecModal(specId, selectedPath) {
+      const modal = document.getElementById('run-spec-modal');
+      const note = document.getElementById('run-spec-note');
+      const sel = document.getElementById('run-spec-plugin');
+      const pathEl = document.getElementById('run-spec-path');
+      const err = document.getElementById('run-spec-err');
+      err.hidden = true;
+      ctxSpecId = specId;
+      ctxSelectedPath = selectedPath || null;
+
+      if (!specConsumers.length) {
+        try {
+          const cons = await api('/v1/resources/spec-consumers');
+          specConsumers = cons.plugins || [];
+        } catch (_) {}
+      }
+      const meta = specs.find(s => s.spec_id === specId) || currentSpec || {};
+      note.textContent = `Spec ${specId} · target ${meta.spec_host || '(from record)'} · --apispec`;
+      sel.innerHTML = specConsumers.map(n =>
+        `<option value="${esc(n)}">${esc(n)}</option>`).join('')
+        || '<option value="">(none)</option>';
+      if (selectedPath) {
+        pathEl.hidden = false;
+        pathEl.textContent = `Selected path: ${selectedPath}`;
+      } else {
+        pathEl.hidden = true;
+        pathEl.textContent = '';
+      }
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeRunSpecModal() {
+      const modal = document.getElementById('run-spec-modal');
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+    }
+
+    document.getElementById('run-spec-cancel').onclick = closeRunSpecModal;
+    document.getElementById('run-spec-modal').addEventListener('click', (ev) => {
+      if (ev.target === document.getElementById('run-spec-modal')) closeRunSpecModal();
+    });
+    document.getElementById('run-spec-go').onclick = async () => {
+      const err = document.getElementById('run-spec-err');
+      const btn = document.getElementById('run-spec-go');
+      const plugin = document.getElementById('run-spec-plugin').value;
+      err.hidden = true;
+      if (!plugin || !ctxSpecId) {
+        err.textContent = 'Choose a plugin';
+        err.hidden = false;
+        return;
+      }
+      btn.disabled = true;
+      btn.textContent = 'Running…';
+      try {
+        let host = (currentSpec && currentSpec.spec_id === ctxSpecId && currentSpec.spec_host)
+          || (specs.find(s => s.spec_id === ctxSpecId) || {}).spec_host
+          || '';
+        if (!host || (currentSpec && currentSpec.spec_id !== ctxSpecId)) {
+          const full = await api('/v1/specs/' + encodeURIComponent(ctxSpecId));
+          host = full.spec_host || host;
+          if (selectedResource && selectedResource.kind === 'spec'
+              && selectedResource.id === ctxSpecId) {
+            currentSpec = full;
+          }
+        }
+        const args = {
+          apispec_enabled: ctxSpecId,
+          target_url: host,
+          json_output: true,
+          no_channels: true,
+        };
+        const audit = AUDIT_FLAGS[plugin];
+        if (audit) args[audit] = true;
+        if (ctxSelectedPath) {
+          const dest = PATH_DESTS[plugin];
+          if (dest) args[dest] = ctxSelectedPath;
+        }
+        const result = await api('/v1/plugins/' + encodeURIComponent(plugin) + '/run?async=true', {
+          method: 'POST',
+          body: JSON.stringify({ args }),
+        });
+        closeRunSpecModal();
+        if (!(selectedResource && selectedResource.kind === 'spec'
+            && selectedResource.id === ctxSpecId)) {
+          await selectSpec(ctxSpecId);
+        }
+        if (!document.getElementById('run-viewer') && currentSpec) {
+          renderSpecDetail(currentSpec);
+        }
+        const viewer = document.getElementById('run-viewer');
+        showRunResult(result, viewer);
+        const done = await pollRunUntilDone(result.run_id, {
+          onTick: (r) => showRunResult(r, viewer),
+        });
+        showRunResult(done, viewer);
+      } catch (e) {
+        err.textContent = e.message;
+        err.hidden = false;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Run';
+      }
+    };
+
+    function formFieldsFromSchema(p, lab) {
+      const fields = Array.isArray(p.form) ? p.form.slice() : [];
+      // Prefill target_url from live lab URL when present
+      return fields.map(f => {
+        const copy = Object.assign({}, f);
+        if (copy.dest === 'target_url' && lab && lab.url) {
+          copy.default = lab.url;
+        }
+        return copy;
+      });
+    }
+
+    function renderFormFields(fields) {
+      if (!fields.length) {
+        return '<p class="muted">No run parameters declared in YAML (specialty_args / naviargs).</p>';
+      }
+      return fields.map(f => {
+        const label = f.label || f.dest;
+        const help = f.help ? `<small class="muted" style="display:block;margin:.15rem 0 .35rem">${esc(f.help)}</small>` : '';
+        const src = f.source ? `<span class="pill" style="margin-left:.35rem">${esc(f.source)}</span>` : '';
+        if (f.action === 'store_true' || f.type === 'checkbox') {
+          const checked = f.default === true ? 'checked' : '';
+          return `<label class="field check"><input type="checkbox" name="${esc(f.dest)}" ${checked} />
+            <span>${esc(label)}${src}</span></label>${help}`;
+        }
+        const def = (f.default === false || f.default == null) ? '' : String(f.default);
+        const inputType = f.type === 'url' ? 'url' : 'text';
+        const ph = f.dest === 'target_url' ? 'http://127.0.0.1:…'
+          : (f.dest === 'django_version' ? 'e.g. 3.1' : '');
+        return `<label class="field"><span>${esc(label)}${f.required ? ' *' : ''}${src}</span>${help}
+          <input type="${inputType}" name="${esc(f.dest)}" value="${esc(def)}"
+            placeholder="${esc(ph)}" ${f.required ? 'required' : ''} /></label>`;
+      }).join('');
+    }
+
+    function renderChain(composition) {
+      const chain = (composition && composition.plugin_chain) || {};
+      const keys = Object.keys(chain);
+      if (!keys.length) return '<p class="muted">No plugin chain documented.</p>';
+      return keys.map(group => {
+        const steps = Array.isArray(chain[group]) ? chain[group] : [];
+        const nodes = steps.map((s, i) =>
+          `<span class="pill on">${esc(s)}</span>${i < steps.length - 1 ? '<span class="arrow">→</span>' : ''}`
+        ).join('');
+        return `<div class="row" style="margin-bottom:.4rem">
+          <span class="pill">${esc(group)}</span>
+          <div class="chain">${nodes || '<span class="muted">—</span>'}</div>
+        </div>`;
+      }).join('');
+    }
+
+    function guideBox(text) {
+      if (!text || !String(text).trim()) {
+        return '<div class="guide-block empty-sec">Section not documented for this plugin.</div>';
+      }
+      return `<div class="guide-block">${esc(text)}</div>`;
+    }
+
+    function renderDetail(p, lab) {
+      const el = document.getElementById('detail');
+      const fields = formFieldsFromSchema(p, lab);
+      const running = lab && lab.running;
+      const labValid = lab && lab.valid;
+      const tags = Array.isArray(p.tags) ? p.tags : [];
+      const links = (p.references && p.references.links) || [];
+      const cwes = (p.references && p.references.cwe) || [];
+      const guide = p.guide || {};
+      const mode = (p.composition && p.composition.mode) || '';
+      const hasLab = !!(p.has_lab || labValid);
+
+      el.innerHTML = `
+        <div class="hero">
+          <div style="flex:1;min-width:220px">
+            <h2>${esc(p.name)}</h2>
+            <p class="brief">${esc(p.brief || p.info || '')}</p>
+          </div>
+          <div class="pills">
+            <span class="pill">${esc(p.type || '')}</span>
+            <span class="pill">${esc(p.category || '')}</span>
+            <span class="pill">${esc(p.astt || '')}</span>
+            ${mode ? `<span class="pill">${esc(mode)}</span>` : ''}
+            ${p.has_orchestrator ? '<span class="pill on">orchestrator</span>' : ''}
+            ${running ? '<span class="pill on">lab running</span>' : ''}
+          </div>
+        </div>
+
+        <div class="tabs" role="tablist">
+          <button type="button" class="tab ${activeTab==='overview'?'active':''}" data-tab="overview">Overview</button>
+          <button type="button" class="tab ${activeTab==='guide'?'active':''}" data-tab="guide">Guide</button>
+          <button type="button" class="tab ${activeTab==='operate'?'active':''}" data-tab="operate">Operate</button>
+        </div>
+
+        <div class="tab-panel ${activeTab==='overview'?'active':''}" id="tab-overview">
+          <div class="panel">
+            <h3>About</h3>
+            <p class="prose">${esc(p.description || p.info || 'No description in YAML.')}</p>
+          </div>
+          <div class="panel">
+            <h3>Metadata</h3>
+            <div class="meta-grid">
+              <div class="meta-item"><div class="k">Author</div><div class="v">${esc(p.author || '—')}</div></div>
+              <div class="meta-item"><div class="k">Framework</div><div class="v">${esc(p.framework || '—')}</div></div>
+              <div class="meta-item"><div class="k">Package</div><div class="v">${esc(p.package || '—')}</div></div>
+              <div class="meta-item"><div class="k">Module</div><div class="v">${esc(p.module || '—')}</div></div>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>Tags</h3>
+            <div class="pills">${tags.length
+              ? tags.map(t => `<span class="pill tag">${esc(t)}</span>`).join('')
+              : '<span class="muted">No tags</span>'}</div>
+          </div>
+          <div class="panel">
+            <h3>Composition / chain</h3>
+            ${renderChain(p.composition)}
+          </div>
+          <div class="panel">
+            <h3>References</h3>
+            ${links.length || cwes.length ? `
+              ${links.length ? `<ul class="ref-list">${links.map(u =>
+                `<li><a href="${esc(u)}" target="_blank" rel="noopener">${esc(u)}</a></li>`).join('')}</ul>` : ''}
+              ${cwes.length ? `<div class="pills" style="margin-top:.75rem">${cwes.map(c =>
+                `<span class="pill">${esc(c)}</span>`).join('')}</div>` : ''}
+            ` : '<p class="muted">No references documented.</p>'}
+          </div>
+        </div>
+
+        <div class="tab-panel ${activeTab==='guide'?'active':''}" id="tab-guide">
+          <div class="panel">
+            <h3>Arguments <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:400">· vimana guide -a</span></h3>
+            ${guideBox(guide.args)}
+          </div>
+          <div class="panel">
+            <h3>Examples <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:400">· vimana guide -e</span></h3>
+            ${guideBox(guide.examples)}
+          </div>
+          <div class="panel">
+            <h3>Lab setup <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:400">· vimana guide -l</span></h3>
+            ${guideBox(guide.labs)}
+          </div>
+        </div>
+
+        <div class="tab-panel ${activeTab==='operate'?'active':''}" id="tab-operate">
+          <div class="panel">
+            <h3>Lab</h3>
+            <div class="row">
+              <span class="pill ${running ? 'on' : ''}">${running ? 'running' : 'stopped'}</span>
+              ${lab && lab.url ? `<span class="pill">${esc(lab.url)}</span>` : ''}
+              ${!labValid ? '<span class="pill">invalid / no lab</span>' : ''}
+            </div>
+            <div class="row">
+              <button type="button" id="lab-start" ${!labValid ? 'disabled' : ''}>Start lab</button>
+              <button type="button" class="danger" id="lab-stop" ${!running ? 'disabled' : ''}>Stop lab</button>
+              <button type="button" id="lab-test" ${!labValid ? 'disabled' : ''} title="vimana run --lab ${esc(p.name)} --test">Start + test</button>
+              <button type="button" class="ghost" id="lab-refresh">Refresh</button>
+            </div>
+            <p class="muted" style="margin:.5rem 0 0">Start + test uses composition.lab.run_hint (same as CLI --test).</p>
+          </div>
+          <div class="panel">
+            <h3>Run <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:400">· form from YAML</span></h3>
+            <form id="run-form">
+              ${renderFormFields(fields)}
+              <div class="row">
+                <button type="submit" id="run-btn" ${!fields.length ? 'disabled' : ''}>Run plugin</button>
+              </div>
+            </form>
+            <p id="run-err" class="err" hidden></p>
+            <div id="run-viewer">
+              <p class="muted">Run a plugin to see console output and artifacts here.</p>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>Recent runs</h3>
+            <div class="row"><button type="button" class="ghost" id="runs-refresh">Refresh</button></div>
+            <pre class="out" id="runs-out">[]</pre>
+          </div>
+        </div>
+      `;
+
+      el.querySelectorAll('.tab').forEach(btn => {
+        btn.onclick = () => {
+          activeTab = btn.dataset.tab;
+          el.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === activeTab));
+          el.querySelectorAll('.tab-panel').forEach(panel => panel.classList.toggle('active', panel.id === 'tab-' + activeTab));
+        };
+      });
+
+      const startBtn = document.getElementById('lab-start');
+      const stopBtn = document.getElementById('lab-stop');
+      const testBtn = document.getElementById('lab-test');
+      const refreshBtn = document.getElementById('lab-refresh');
+      if (startBtn) startBtn.onclick = async () => {
+        try {
+          const s = await api('/v1/labs/' + encodeURIComponent(p.name) + '/start', { method: 'POST' });
+          renderDetail(p, s);
+        } catch (e) { alert(e.message); }
+      };
+      if (stopBtn) stopBtn.onclick = async () => {
+        try {
+          const s = await api('/v1/labs/' + encodeURIComponent(p.name) + '/stop', { method: 'POST' });
+          renderDetail(p, s);
+        } catch (e) { alert(e.message); }
+      };
+      if (testBtn) testBtn.onclick = async () => {
+        const err = document.getElementById('run-err');
+        err.hidden = true;
+        testBtn.disabled = true;
+        testBtn.textContent = 'Testing…';
+        try {
+          const result = await api('/v1/labs/' + encodeURIComponent(p.name) + '/test', { method: 'POST' });
+          const s = {
+            plugin: result.plugin,
+            running: result.running,
+            valid: result.valid,
+            url: result.url,
+            ports: result.ports,
+            missing_files: result.missing_files,
+            meta: result.meta,
+            lab_path: result.lab_path,
+          };
+          activeTab = 'operate';
+          renderDetail(p, s);
+          const payload = result.run || result;
+          showRunResult(payload);
+          if (!result.ok) {
+            const e2 = document.getElementById('run-err');
+            e2.textContent = result.error || 'Lab test failed';
+            e2.hidden = false;
+          }
+          loadRuns();
+        } catch (e) {
+          err.textContent = e.message;
+          err.hidden = false;
+        } finally {
+          const btn = document.getElementById('lab-test');
+          if (btn) { btn.disabled = !labValid; btn.textContent = 'Start + test'; }
+        }
+      };
+      if (refreshBtn) refreshBtn.onclick = () => selectPlugin(p.name);
+
+      const form = document.getElementById('run-form');
+      if (form) form.onsubmit = async (ev) => {
+        ev.preventDefault();
+        const args = {};
+        form.querySelectorAll('input').forEach(input => {
+          if (input.type === 'checkbox') args[input.name] = input.checked;
+          else if (input.value !== '') args[input.name] = input.value;
+        });
+        const err = document.getElementById('run-err');
+        const btn = document.getElementById('run-btn');
+        err.hidden = true;
+        btn.disabled = true;
+        btn.textContent = 'Queuing…';
+        try {
+          const queued = await api('/v1/plugins/' + encodeURIComponent(p.name) + '/run?async=true', {
+            method: 'POST',
+            body: JSON.stringify({ args }),
+          });
+          btn.textContent = 'Running…';
+          showRunResult(queued);
+          const result = await pollRunUntilDone(queued.run_id, {
+            onTick: (r) => showRunResult(r),
+          });
+          showRunResult(result);
+          loadRuns();
+        } catch (e) {
+          err.textContent = e.message;
+          err.hidden = false;
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'Run plugin';
+        }
+      };
+
+      const runsRefresh = document.getElementById('runs-refresh');
+      if (runsRefresh) runsRefresh.onclick = loadRuns;
+      if (activeTab === 'operate') loadRuns();
+    }
+
+    function highlightJson(text) {
+      const src = esc(text);
+      return src
+        .replace(/("(?:\\.|[^"\\])*")(\s*:)/g, '<span class="k">$1</span>$2')
+        .replace(/:\s*("(?:\\.|[^"\\])*")/g, ': <span class="s">$1</span>')
+        .replace(/\b(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)\b/g, '<span class="n">$1</span>')
+        .replace(/\b(true|false)\b/g, '<span class="b">$1</span>')
+        .replace(/\bnull\b/g, '<span class="null">null</span>');
+    }
+
+    function showRunResult(result, rootEl) {
+      const root = rootEl || document.getElementById('run-viewer');
+      if (!root) return;
+      let arts = (result.artifacts_detail || []).slice();
+      // Synthesize console pane if stdout present but not packaged as artifact
+      if (result.stdout && !arts.some(a => a.id === 'console')) {
+        arts.unshift({ id: 'console', kind: 'console', label: 'Console output', content: result.stdout });
+      }
+      if (result.stderr && !arts.some(a => a.id === 'stderr')) {
+        arts.push({ id: 'stderr', kind: 'console', label: 'Stderr', content: result.stderr });
+      }
+      const meta = `status=${esc(result.status)} · run=${esc(result.run_id || '')}`;
+      if (!arts.length && !result.report) {
+        root.innerHTML = `<p class="art-meta">${meta}</p><pre class="out">${esc(JSON.stringify(result, null, 2))}</pre>`;
+        return;
+      }
+      if (!arts.length && result.report) {
+        arts = [{
+          id: 'report', kind: 'json', label: 'Report',
+          content: JSON.stringify(result.report, null, 2),
+        }];
+      }
+
+      // Prefer ordered: console first, then report/json, then files
+      const ordered = arts.slice().sort((a, b) => {
+        const rank = (k) => (k === 'console' ? 0 : k === 'json' ? 1 : 2);
+        return rank(a.kind) - rank(b.kind);
+      });
+
+      const tabs = ordered.map((a, i) =>
+        `<button type="button" class="out-tab ${i===0?'active':''}" data-art="${esc(a.id)}">${esc(a.label || a.id)}</button>`
+      ).join('');
+
+      const panes = ordered.map((a, i) => {
+        const kind = a.kind || 'text';
+        const trunc = a.truncated ? ' · truncated' : '';
+        const path = a.path ? ` · ${esc(a.path)}` : '';
+        let body;
+        if (kind === 'console') {
+          body = `<pre class="term">${esc(a.content || '')}</pre>`;
+        } else if (kind === 'json') {
+          body = `<pre class="json-view">${highlightJson(a.content || '')}</pre>`;
+        } else {
+          body = `<pre class="out">${esc(a.content || '')}</pre>`;
+        }
+        return `<div class="out-pane ${i===0?'active':''}" id="art-${esc(a.id)}">
+          <div class="art-meta">${esc(kind)}${path}${trunc}</div>${body}</div>`;
+      }).join('');
+
+      root.innerHTML = `
+        <p class="art-meta">${meta}</p>
+        <div class="out-tabs">${tabs || '<span class="muted">No artifacts</span>'}</div>
+        ${panes}
+      `;
+      root.querySelectorAll('.out-tab').forEach(btn => {
+        btn.onclick = () => {
+          root.querySelectorAll('.out-tab').forEach(t => t.classList.toggle('active', t === btn));
+          root.querySelectorAll('.out-pane').forEach(p =>
+            p.classList.toggle('active', p.id === 'art-' + btn.dataset.art));
+        };
+      });
+    }
+
+    async function loadRuns() {
+      const out = document.getElementById('runs-out');
+      if (!out) return;
+      try {
+        const data = await api('/v1/runs?limit=20');
+        const filtered = (data.runs || []).filter(r => !selected || r.plugin === selected);
+        if (!filtered.length) {
+          out.textContent = '[]';
+          return;
+        }
+        out.innerHTML = filtered.map(r => {
+          const line = `${r.status}  ${r.plugin}  ${r.run_id.slice(0, 8)}…  ${r.finished_at || r.created_at || ''}`;
+          return `<button type="button" class="out-tab" style="display:block;width:100%;text-align:left;margin:0 0 .35rem"
+            data-run="${esc(r.run_id)}">${esc(line)}</button>`;
+        }).join('');
+        out.querySelectorAll('[data-run]').forEach(btn => {
+          btn.onclick = async () => {
+            try {
+              const full = await api('/v1/runs/' + encodeURIComponent(btn.dataset.run));
+              showRunResult(full);
+            } catch (e) {
+              alert(e.message);
+            }
+          };
+        });
+      } catch (e) {
+        out.textContent = e.message;
+      }
+    }
+
+    document.getElementById('filter').addEventListener('input', renderList);
+    document.getElementById('resources-refresh').onclick = () => loadResources();
+    document.getElementById('labs-refresh').onclick = () => loadResources();
+    document.getElementById('labs-cleanup').onclick = async () => {
+      if (!confirm('Stop all running labs?')) return;
+      try {
+        await api('/v1/labs/cleanup', { method: 'POST' });
+        await loadResources();
+      } catch (e) {
+        alert(e.message);
+      }
+    };
+    refreshHealth();
+    loadPlugins().catch(e => {
+      document.getElementById('plugin-list').innerHTML =
+        `<p class="err">${esc(e.message)}</p>`;
+    });
+    loadResources().catch(e => {
+      document.getElementById('specs-list').innerHTML =
+        `<p class="err">${esc(e.message)}</p>`;
+    });
+    setInterval(refreshHealth, 15000);
+
+    /* --- Atma dogfood panel --- */
+    let atmaManifest = null;
+    let atmaJob = null;
+    let atmaPollTimer = null;
+
+    function openAtma() {
+      const bd = document.getElementById('atma-backdrop');
+      bd.classList.add('open');
+      bd.setAttribute('aria-hidden', 'false');
+      document.getElementById('atma-open').classList.add('active');
+      refreshAtma();
+    }
+
+    function closeAtma() {
+      const bd = document.getElementById('atma-backdrop');
+      bd.classList.remove('open');
+      bd.setAttribute('aria-hidden', 'true');
+      document.getElementById('atma-open').classList.remove('active');
+      if (atmaPollTimer) {
+        clearInterval(atmaPollTimer);
+        atmaPollTimer = null;
+      }
+    }
+
+    function atmaStatusClass(st) {
+      if (st === 'running' || st === 'succeeded' || st === 'failed' || st === 'timeout') return st;
+      return '';
+    }
+
+    function renderAtmaJob(job) {
+      atmaJob = job;
+      const stEl = document.getElementById('atma-job-status');
+      const list = document.getElementById('atma-plugins');
+      const mcpList = document.getElementById('atma-mcp');
+      const startBtn = document.getElementById('atma-start');
+
+      function mcpCards(items, fromManifest) {
+        if (!items || !items.length) {
+          return '<p class="muted">No MCP checks.</p>';
+        }
+        return items.map(p => {
+          const id = p.id || p.name;
+          const label = p.label || id;
+          const st = fromManifest ? 'queued' : (p.status || 'queued');
+          const err = p.error ? `<div class="err-line">${esc(p.error)}</div>` : '';
+          const sum = p.summary
+            ? `<div class="blurb" style="font-family:var(--mono)">${esc(JSON.stringify(p.summary))}</div>`
+            : '';
+          const blurb = fromManifest
+            ? `${esc(p.blurb || '')} · timeout ${esc(p.timeout_sec)}s`
+            : esc(p.blurb || '');
+          return `<div class="atma-plugin">
+            <div class="row-top">
+              <span class="pname">${esc(label)}</span>
+              <span class="st ${atmaStatusClass(st)}">${esc(st)}</span>
+            </div>
+            <div class="blurb">${blurb}</div>
+            ${sum}${err}
+          </div>`;
+        }).join('');
+      }
+
+      if (!job) {
+        stEl.textContent = 'idle';
+        stEl.className = 'pill';
+        const plugs = (atmaManifest && atmaManifest.plugins) || [];
+        list.innerHTML = plugs.map(p => `
+          <div class="atma-plugin">
+            <div class="row-top">
+              <span class="pname">${esc(p.label || p.name)}</span>
+              <span class="st">queued</span>
+            </div>
+            <div class="blurb">${esc(p.blurb || '')} · timeout ${esc(p.timeout_sec)}s</div>
+          </div>`).join('') || '<p class="muted">No suite plugins.</p>';
+        mcpList.innerHTML = mcpCards((atmaManifest && atmaManifest.mcp_checks) || [], true);
+        startBtn.disabled = false;
+        startBtn.textContent = 'Run suite';
+        return;
+      }
+
+      stEl.textContent = job.status || '—';
+      stEl.className = 'pill' + (job.status === 'running' ? ' on' : '');
+      const busy = job.status === 'queued' || job.status === 'running';
+      startBtn.disabled = busy;
+      startBtn.textContent = busy ? 'Running…' : 'Run suite';
+
+      list.innerHTML = (job.plugins || []).map(p => {
+        const clickable = p.run_id ? ' clickable' : '';
+        const err = p.error ? `<div class="err-line">${esc(p.error)}</div>` : '';
+        const runHint = p.run_id ? ` · open run` : '';
+        return `<div class="atma-plugin${clickable}" data-run="${esc(p.run_id || '')}">
+          <div class="row-top">
+            <span class="pname">${esc(p.label || p.name)}</span>
+            <span class="st ${atmaStatusClass(p.status)}">${esc(p.status)}${runHint}</span>
+          </div>
+          <div class="blurb">${esc(p.blurb || '')}</div>
+          ${err}
+        </div>`;
+      }).join('');
+
+      mcpList.innerHTML = mcpCards(job.mcp_checks || [], false);
+
+      list.querySelectorAll('.atma-plugin.clickable').forEach(el => {
+        el.onclick = async () => {
+          const rid = el.dataset.run;
+          if (!rid) return;
+          const panel = document.getElementById('atma-run-panel');
+          const viewer = document.getElementById('atma-run-viewer');
+          panel.hidden = false;
+          viewer.innerHTML = '<p class="muted">Loading run…</p>';
+          try {
+            const full = await api('/v1/runs/' + encodeURIComponent(rid));
+            showRunResult(full, viewer);
+          } catch (e) {
+            viewer.innerHTML = `<p class="err">${esc(e.message)}</p>`;
+          }
+        };
+      });
+
+      if (busy && !atmaPollTimer) {
+        atmaPollTimer = setInterval(() => refreshAtmaJob(), 1500);
+      }
+      if (!busy && atmaPollTimer) {
+        clearInterval(atmaPollTimer);
+        atmaPollTimer = null;
+      }
+    }
+
+    async function refreshAtmaJob() {
+      try {
+        if (atmaJob && atmaJob.job_id) {
+          const job = await api('/v1/atma/' + encodeURIComponent(atmaJob.job_id));
+          renderAtmaJob(job);
+          return;
+        }
+        const active = await api('/v1/atma/active');
+        renderAtmaJob(active.job || null);
+      } catch (e) {
+        const err = document.getElementById('atma-err');
+        err.textContent = e.message;
+        err.hidden = false;
+      }
+    }
+
+    async function refreshAtma() {
+      const err = document.getElementById('atma-err');
+      err.hidden = true;
+      try {
+        atmaManifest = await api('/v1/atma');
+        document.getElementById('atma-desc').textContent =
+          atmaManifest.description || 'Dogfood this Control API.';
+        const safety = atmaManifest.safety || {};
+        document.getElementById('atma-safety').innerHTML = Object.keys(safety)
+          .filter(k => safety[k])
+          .map(k => `<span class="pill on">${esc(k.replace(/_/g, ' '))}</span>`)
+          .join('');
+        const active = await api('/v1/atma/active');
+        if (active.job) {
+          atmaJob = active.job;
+          renderAtmaJob(active.job);
+        } else if (atmaJob && atmaJob.job_id) {
+          await refreshAtmaJob();
+        } else {
+          renderAtmaJob(null);
+        }
+      } catch (e) {
+        err.textContent = e.message;
+        err.hidden = false;
+      }
+    }
+
+    document.getElementById('atma-open').onclick = openAtma;
+    document.getElementById('atma-close').onclick = closeAtma;
+    document.getElementById('atma-backdrop').addEventListener('click', (ev) => {
+      if (ev.target === document.getElementById('atma-backdrop')) closeAtma();
+    });
+    document.getElementById('atma-refresh').onclick = refreshAtma;
+    document.getElementById('atma-start').onclick = async () => {
+      const err = document.getElementById('atma-err');
+      const btn = document.getElementById('atma-start');
+      err.hidden = true;
+      btn.disabled = true;
+      btn.textContent = 'Starting…';
+      try {
+        const job = await api('/v1/atma/start', { method: 'POST' });
+        document.getElementById('atma-run-panel').hidden = true;
+        renderAtmaJob(job);
+      } catch (e) {
+        err.textContent = e.message;
+        err.hidden = false;
+        btn.disabled = false;
+        btn.textContent = 'Run suite';
+      }
+    };
+
+    /* --- MCP connect panel --- */
+    let mcpPayload = null;
+
+    function highlightJson(text) {
+      return esc(text)
+        .replace(/(&quot;[^&]*&quot;)(\s*:)/g, '<span class="k">$1</span><span class="p">$2</span>')
+        .replace(/: (&quot;[^&]*&quot;)/g, ': <span class="s">$1</span>')
+        .replace(/([{}\[\],])/g, '<span class="p">$1</span>');
+    }
+
+    function openMcp() {
+      const bd = document.getElementById('mcp-backdrop');
+      bd.classList.add('open');
+      bd.setAttribute('aria-hidden', 'false');
+      document.getElementById('mcp-open').classList.add('active');
+      refreshMcp();
+    }
+
+    function closeMcp() {
+      const bd = document.getElementById('mcp-backdrop');
+      bd.classList.remove('open');
+      bd.setAttribute('aria-hidden', 'true');
+      document.getElementById('mcp-open').classList.remove('active');
+    }
+
+    function mcpPortableText() {
+      return (mcpPayload && mcpPayload.cursor && mcpPayload.cursor.mcp_json_text)
+        || JSON.stringify((mcpPayload && mcpPayload.cursor && mcpPayload.cursor.mcp_json) || {}, null, 2);
+    }
+
+    function mcpLocalText() {
+      const loc = mcpPayload && mcpPayload.cursor && mcpPayload.cursor.resolved_local;
+      if (loc && loc.mcp_json_text) return loc.mcp_json_text;
+      return '';
+    }
+
+    async function copyMcpText(text, btn) {
+      const err = document.getElementById('mcp-err');
+      err.hidden = true;
+      try {
+        await navigator.clipboard.writeText(text);
+        const prev = btn.textContent;
+        btn.textContent = 'Copied';
+        setTimeout(() => { btn.textContent = prev; }, 1200);
+      } catch (e) {
+        err.textContent = 'Clipboard failed: ' + e.message;
+        err.hidden = false;
+      }
+    }
+
+    async function refreshMcp() {
+      const err = document.getElementById('mcp-err');
+      err.hidden = true;
+      try {
+        mcpPayload = await api('/v1/mcp/connect');
+        const text = mcpPortableText();
+        document.getElementById('mcp-json').innerHTML = highlightJson(text);
+        document.getElementById('mcp-cli').textContent =
+          'CLI: ' + (mcpPayload.cli || 'vimana mcp') +
+          ' · framing: ' + (mcpPayload.framing || 'NDJSON') +
+          ' · portable: ${workspaceFolder}';
+        document.getElementById('mcp-path-hint').textContent =
+          (mcpPayload.cursor && mcpPayload.cursor.path_hint) || '.cursor/mcp.json';
+        document.getElementById('mcp-note').textContent =
+          (mcpPayload.cursor && mcpPayload.cursor.note) || '';
+        document.getElementById('mcp-desc').textContent =
+          'Paste into project ' + ((mcpPayload.cursor && mcpPayload.cursor.path_hint) || '.cursor/mcp.json');
+        const loc = mcpPayload.cursor && mcpPayload.cursor.resolved_local;
+        const localHint = document.getElementById('mcp-local-hint');
+        if (loc && loc.repo) {
+          localHint.hidden = false;
+          localHint.textContent =
+            'This host (do not commit): ' + loc.repo +
+            (loc.python ? ' · python=' + loc.python : '');
+        } else {
+          localHint.hidden = true;
+          localHint.textContent = '';
+        }
+      } catch (e) {
+        err.textContent = e.message;
+        err.hidden = false;
+      }
+    }
+
+    document.getElementById('mcp-open').onclick = openMcp;
+    document.getElementById('mcp-close').onclick = closeMcp;
+    document.getElementById('mcp-backdrop').addEventListener('click', (ev) => {
+      if (ev.target === document.getElementById('mcp-backdrop')) closeMcp();
+    });
+    document.getElementById('mcp-refresh').onclick = refreshMcp;
+    document.getElementById('mcp-copy').onclick = async () => {
+      await copyMcpText(mcpPortableText(), document.getElementById('mcp-copy'));
+    };
+    document.getElementById('mcp-copy-local').onclick = async () => {
+      const text = mcpLocalText();
+      if (!text) {
+        const err = document.getElementById('mcp-err');
+        err.textContent = 'No local resolved snippet from API';
+        err.hidden = false;
+        return;
+      }
+      await copyMcpText(text, document.getElementById('mcp-copy-local'));
+    };
+
+    /* --- Exception Monitor panel --- */
+    const MON_URL_KEY = 'vimana.monitor.url';
+    const MON_UI_KEY = 'vimana.monitor.ui';
+    let monSelectedScan = null;
+
+    function monBase() {
+      const el = document.getElementById('mon-url');
+      const raw = (el.value || '').trim();
+      if (raw) return raw.replace(/\/$/, '');
+      // Same-origin mount under Control API (vimana api)
+      return window.location.origin.replace(/\/$/, '') + '/monitor';
+    }
+
+    async function monFetch(path, opts = {}) {
+      const res = await fetch(monBase() + path, {
+        headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
+        ...opts,
+      });
+      const text = await res.text();
+      let data;
+      try { data = text ? JSON.parse(text) : null; } catch { data = { raw: text }; }
+      if (!res.ok) {
+        const detail = (data && (data.detail || data.message)) || text || res.statusText;
+        throw new Error(typeof detail === 'string' ? detail : JSON.stringify(detail));
+      }
+      return data;
+    }
+
+    function openMon() {
+      const bd = document.getElementById('mon-backdrop');
+      bd.classList.add('open');
+      bd.setAttribute('aria-hidden', 'false');
+      document.getElementById('mon-open').classList.add('active');
+      const saved = localStorage.getItem(MON_URL_KEY);
+      const savedUi = localStorage.getItem(MON_UI_KEY);
+      if (saved) document.getElementById('mon-url').value = saved;
+      else document.getElementById('mon-url').value =
+        window.location.origin.replace(/\/$/, '') + '/monitor';
+      if (savedUi) document.getElementById('mon-ui-url').value = savedUi;
+      else if (!document.getElementById('mon-ui-url').value)
+        document.getElementById('mon-ui-url').value = 'http://127.0.0.1:3000';
+      // Prefer live Control mount info when available
+      api('/v1/monitor/info').then((info) => {
+        if (info && info.mounted) {
+          const mounted = window.location.origin.replace(/\/$/, '') + (info.base_path || '/monitor');
+          // Upgrade legacy :8000 default / empty saved to same-process mount
+          if (!saved || /:8000\/?$/.test(String(saved))) {
+            document.getElementById('mon-url').value = mounted;
+            localStorage.setItem(MON_URL_KEY, mounted);
+          }
+        }
+      }).catch(() => {}).finally(() => {
+        syncMonUiLink();
+        refreshMon();
+      });
+      return;
+    }
+
+    function closeMon() {
+      const bd = document.getElementById('mon-backdrop');
+      bd.classList.remove('open');
+      bd.setAttribute('aria-hidden', 'true');
+      document.getElementById('mon-open').classList.remove('active');
+    }
+
+    function syncMonUiLink() {
+      const api = monBase();
+      const u = document.getElementById('mon-ui-url').value || 'http://127.0.0.1:3000';
+      const base = u.replace(/\/$/, '');
+      const params = new URLSearchParams();
+      params.set('monitor', api);
+      if (monSelectedScan) params.set('scan', monSelectedScan);
+      document.getElementById('mon-open-ui').href = base + '/?' + params.toString();
+      localStorage.setItem(MON_UI_KEY, u);
+      localStorage.setItem(MON_URL_KEY, api);
+    }
+
+    async function refreshMon() {
+      const err = document.getElementById('mon-err');
+      const st = document.getElementById('mon-status');
+      err.hidden = true;
+      st.textContent = 'loading…';
+      syncMonUiLink();
+      try {
+        const [scansBody, excBody, envsBody] = await Promise.all([
+          monFetch('/scans'),
+          monFetch('/exceptions?limit=2000'),
+          monFetch('/environments'),
+        ]);
+        const scans = scansBody.scans || [];
+        const exceptions = excBody.exceptions || [];
+        const envs = (envsBody && envsBody.environments) || envsBody || {};
+        const envCount = envs && typeof envs === 'object' ? Object.keys(envs).length : 0;
+        document.getElementById('mon-n-scans').textContent = String(scans.length);
+        document.getElementById('mon-n-exc').textContent = String(excBody.total_matching != null ? excBody.total_matching : exceptions.length);
+        document.getElementById('mon-n-env').textContent = String(envCount);
+        const box = document.getElementById('mon-scans');
+        if (!scans.length) {
+          box.innerHTML = '<p class="mon-note">No scans yet — click <b>Seed demo</b> or run <code>vimana monitor --seed-demo</code>.</p>';
+        } else {
+          box.innerHTML = scans.map(s => {
+            const plugs = (s.plugins || []).join(', ') || '—';
+            const active = monSelectedScan === s.scan_id ? ' style="border-color:var(--accent)"' : '';
+            return `<div class="mon-scan" data-scan="${esc(s.scan_id)}"${active}>
+              <div class="sid">${esc(s.scan_id)}</div>
+              <div class="meta">${s.count || 0} exceptions · plugins: ${esc(plugs)} · ${esc(s.last_timestamp || '')}</div>
+            </div>`;
+          }).join('');
+          box.querySelectorAll('.mon-scan').forEach(el => {
+            el.onclick = () => {
+              monSelectedScan = el.getAttribute('data-scan');
+              syncMonUiLink();
+              refreshMon();
+            };
+          });
+        }
+        const exBox = document.getElementById('mon-exceptions');
+        if (!monSelectedScan) {
+          exBox.innerHTML = '<p class="mon-note">Select a scan above.</p>';
+        } else {
+          const filtered = exceptions.filter(e => e.scan_id === monSelectedScan);
+          if (!filtered.length) {
+            exBox.innerHTML = '<p class="mon-note">No exceptions for this scan in the current page.</p>';
+          } else {
+            exBox.innerHTML = filtered.slice(0, 40).map(e => {
+              let app = '';
+              try {
+                const raw = typeof e.raw_output === 'string' ? JSON.parse(e.raw_output) : (e.raw_output || {});
+                app = (raw.view_trigger && raw.view_trigger.app_name) || '';
+              } catch (_) {}
+              return `<div class="mon-exc">
+                <div class="etype">${esc(e.exception_type || '?')} · ${esc(e.severity || '')}${app ? ' · ' + esc(app) : ''}</div>
+                <div class="ep">${esc(e.method || '')} ${esc(e.endpoint || '')}</div>
+              </div>`;
+            }).join('');
+          }
+        }
+        st.textContent = 'online';
+      } catch (e) {
+        err.textContent = e.message + ' — with vimana api use /monitor on this host, or run: vimana monitor --seed-demo';
+        err.hidden = false;
+        st.textContent = 'offline';
+        document.getElementById('mon-n-scans').textContent = '—';
+        document.getElementById('mon-n-exc').textContent = '—';
+        document.getElementById('mon-n-env').textContent = '—';
+      }
+    }
+
+    document.getElementById('mon-open').onclick = openMon;
+    document.getElementById('mon-close').onclick = closeMon;
+    document.getElementById('mon-backdrop').addEventListener('click', (ev) => {
+      if (ev.target === document.getElementById('mon-backdrop')) closeMon();
+    });
+    document.getElementById('mon-refresh').onclick = refreshMon;
+    document.getElementById('mon-ping').onclick = refreshMon;
+    document.getElementById('mon-url').addEventListener('change', syncMonUiLink);
+    document.getElementById('mon-ui-url').addEventListener('change', syncMonUiLink);
+    document.getElementById('mon-seed').onclick = async () => {
+      const err = document.getElementById('mon-err');
+      const st = document.getElementById('mon-status');
+      err.hidden = true;
+      st.textContent = 'seeding…';
+      try {
+        const r = await monFetch('/demo/seed?reset=true', { method: 'POST' });
+        st.textContent = 'seeded ' + ((r && r.exceptions) || '?');
+        monSelectedScan = (r.scans && r.scans[0] && r.scans[0].scan_id) || null;
+        syncMonUiLink();
+        await refreshMon();
+      } catch (e) {
+        err.textContent = e.message;
+        err.hidden = false;
+        st.textContent = 'seed failed';
+      }
+    };
+    document.getElementById('mon-reset').onclick = async () => {
+      const err = document.getElementById('mon-err');
+      err.hidden = true;
+      try {
+        await monFetch('/demo/reset', { method: 'POST' });
+        monSelectedScan = null;
+        await refreshMon();
+      } catch (e) {
+        err.textContent = e.message;
+        err.hidden = false;
+      }
+    };
+  </script>
+</body>
+</html>

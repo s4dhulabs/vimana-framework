@@ -32,8 +32,10 @@
 ---
 
 ## 📋 Documentation
-- **[Installation Guide](docs/INSTALL_GUIDE.md)** - Setup instructions and deployment options
-- **[User Guide](docs/USER_GUIDE.md)** - Complete usage guide and command reference
-- **[CI/CD Integration](docs/pipelines/)** - Pipeline templates for GitHub Actions, GitLab CI/CD, CircleCI, Jenkins
-
-
+- **[Installation Guide](docs/INSTALL_GUIDE.md)** — setup and deployment
+- **[User Guide](docs/USER_GUIDE.md)** — usage and command reference
+- **[Control API](docs/CONTROL_API.md)** — HTTP control plane + Admin UI
+- **[MCP](docs/MCP.md)** — stdio tools for Cursor / external agents
+- **[Labs](docs/LABS.md)** — plugin lab environments
+- **[Agent](docs/AGENT.md)** — native LLM agent loop + tool policy
+- **[CI/CD Integration](docs/pipelines/)** — GitHub Actions, GitLab CI, CircleCI, Jenkins

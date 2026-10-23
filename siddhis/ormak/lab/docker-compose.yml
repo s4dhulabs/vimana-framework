@@ -1,0 +1,18 @@
+services:
+  ormak-lab:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ormak-test-app
+    ports:
+      - "18108:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DJANGO_SETTINGS_MODULE=config.settings
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 25s

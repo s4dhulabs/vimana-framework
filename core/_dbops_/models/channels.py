@@ -15,4 +15,7 @@ class VFChannels(db.Model):
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     last_verified = Column(DateTime, default=datetime.datetime.utcnow)
     status = Column(String(32), default='active')
-    channel_metadata = Column(JSON, nullable=True) 
+    channel_metadata = Column(JSON, nullable=True)
+
+    def to_dict(self) -> dict:
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}

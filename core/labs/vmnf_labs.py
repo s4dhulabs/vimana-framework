@@ -208,11 +208,15 @@ class VimanaLabManager:
         """Get lab configuration from docker-compose.yml."""
         lab_path = self._get_plugin_lab_path(plugin_name)
         compose_file = os.path.join(lab_path, "docker-compose.yml")
-        
+
+        if not os.path.isfile(compose_file):
+            # Plugins without a lab — quiet (Control API polls status for every plugin)
+            return {}
+
         try:
             with open(compose_file, 'r') as f:
                 config = yaml.safe_load(f)
-            return config
+            return config or {}
         except Exception as e:
             cprint(f"Warning: Could not read docker-compose.yml: {e}", 'yellow')
             return {}
@@ -258,6 +262,155 @@ class VimanaLabManager:
             hint = "vimana run {plugin} --target-url {url}"
         return str(hint).format(plugin=plugin_name, url=url, port=urlparse(url).port or '')
 
+    def _shared_flag_map(self) -> Dict[str, tuple]:
+        """CLI flag → (handler_dest, action) for common shared args used in run_hints."""
+        return {
+            '--target-url': ('target_url', 'store'),
+            '--endpoint-url': ('endpoint_url', 'store'),
+            '--endpoint': ('endpoint', 'store'),
+            '--file': ('file_scope', 'store'),
+            '--json': ('json_output', 'store_true'),
+            '--no-channels': ('no_channels', 'store_true'),
+            '--ci-mode': ('ci_mode', 'store_true'),
+            '--auto': ('auto', 'store_true'),
+            '--debug': ('debug', 'store_true'),
+            '--verbose': ('verbose', 'store_true'),
+            '--scan-api': ('api_scan_enabled', 'store'),
+            '--api-scan': ('api_scan_enabled', 'store'),
+            '--spec-url': ('openapi_spec_url', 'store'),
+            '--spec-file': ('openapi_spec_file', 'store'),
+        }
+
+    def _specialty_flag_map(self, plugin_name: str) -> Dict[str, tuple]:
+        """CLI flag → (dest, action) from composition.specialty_args."""
+        mapping: Dict[str, tuple] = {}
+        try:
+            from core.capabilities import get_capability
+            cap = get_capability(plugin_name) or {}
+        except Exception:
+            return mapping
+        specialty = cap.get('specialty_args') or {}
+        for flag in specialty.get('flags') or []:
+            dest = flag.get('dest')
+            if not dest:
+                continue
+            action = flag.get('action', 'store')
+            for name in flag.get('flags') or []:
+                mapping[str(name)] = (dest, action)
+        return mapping
+
+    def parse_run_hint_args(self, plugin_name: str, url: str) -> Dict[str, Any]:
+        """
+        Materialize composition.lab.run_hint into a handler kwargs dict.
+
+        Example hint:
+            vimana run boundr --target-url http://localhost:18102 --upload-audit --json --no-channels
+        """
+        import shlex
+
+        hint = self._format_run_hint(plugin_name, url)
+        tokens = shlex.split(hint)
+        # Drop leading: vimana run [plugin]
+        while tokens and tokens[0] in ('vimana', 'vf', 'run'):
+            tokens.pop(0)
+        if tokens and tokens[0] == plugin_name:
+            tokens.pop(0)
+
+        flag_map = {}
+        flag_map.update(self._shared_flag_map())
+        flag_map.update(self._specialty_flag_map(plugin_name))
+
+        args: Dict[str, Any] = {
+            'target_url': url,
+            'json_output': True,
+            'no_channels': True,
+            'ci_mode': False,
+        }
+
+        i = 0
+        while i < len(tokens):
+            tok = tokens[i]
+            if tok in flag_map:
+                dest, action = flag_map[tok]
+                if action == 'store_true':
+                    args[dest] = True
+                    i += 1
+                elif action == 'store_false':
+                    args[dest] = False
+                    i += 1
+                else:
+                    if i + 1 >= len(tokens) or tokens[i + 1].startswith('-'):
+                        # nargs='?' style — presence alone
+                        args[dest] = True
+                        i += 1
+                    else:
+                        args[dest] = tokens[i + 1]
+                        i += 2
+            else:
+                # Unknown flag: skip flag and optional value
+                if tok.startswith('-') and i + 1 < len(tokens) and not tokens[i + 1].startswith('-'):
+                    i += 2
+                else:
+                    i += 1
+
+        # Always prefer live lab URL for target_url
+        args['target_url'] = url
+        return args
+
+    def test_lab_plugin(self, plugin_name: str) -> bool:
+        """
+        Run the plugin against its lab using composition.lab.run_hint.
+
+        Assumes the lab is already up (or start_lab just succeeded).
+        """
+        try:
+            if not self._check_lab_health(plugin_name):
+                cprint(f"❌ Lab for '{plugin_name}' is not healthy — cannot --test", 'red')
+                return False
+
+            port = self._get_lab_port(plugin_name)
+            url = f"http://localhost:{port}"
+            hint = self._format_run_hint(plugin_name, url)
+            args = self.parse_run_hint_args(plugin_name, url)
+
+            cprint(f"\n🧪 Lab test — running plugin against lab", 'cyan')
+            cprint(f"   Hint: {hint}", 'white')
+            cprint(f"   URL:  {url}\n", 'white')
+
+            # Prefer leaf orchestrator path (same as Control API) when available
+            try:
+                from core.api.control.services import run_plugin as control_run_plugin
+                record = control_run_plugin(plugin_name, args)
+                if record and record.status == 'succeeded':
+                    report = record.report or {}
+                    summary = report.get('summary') if isinstance(report, dict) else None
+                    cprint(f"✅ Lab test finished for '{plugin_name}'", 'green')
+                    if summary:
+                        cprint(f"   Summary: {summary}", 'cyan')
+                    return True
+                err = (record.error if record else None) or 'unknown error'
+                cprint(f"❌ Lab test failed: {err}", 'red')
+                return False
+            except Exception:
+                # Fallback: classic VFManager.run_siddhi
+                from core.vmnf_smng import VFManager
+
+                run_handler = dict(self.handler or {})
+                run_handler.update(args)
+                run_handler['module_run'] = plugin_name
+                run_handler['module'] = plugin_name
+                run_handler['plugin_name'] = plugin_name
+                run_handler['run_lab'] = False
+                run_handler['lab_test'] = False
+                run_handler['lab_operation'] = False
+                VFManager(**run_handler).run_siddhi()
+                cprint(f"✅ Lab test finished for '{plugin_name}'", 'green')
+                return True
+
+        except Exception as e:
+            cprint(f"❌ Lab test error: {str(e)}", 'red')
+            return False
+
     def _get_lab_port(self, plugin_name: str) -> int:
         """Primary lab port: docker-compose ports → composition.lab.port → error."""
         # For multi-service labs, return the first service port
@@ -294,6 +447,41 @@ class VimanaLabManager:
             f"or composition.lab.port in siddhis/{plugin_name}/{plugin_name}.yaml"
         )
 
+    def _port_conflicts(self, ports: List[int]) -> List[Tuple[int, str]]:
+        """Return (port, hint) for host ports that already accept connections."""
+        import socket
+
+        conflicts: List[Tuple[int, str]] = []
+        for port in ports:
+            if port is None:
+                continue
+            try:
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                    sock.settimeout(0.35)
+                    if sock.connect_ex(('127.0.0.1', int(port))) != 0:
+                        continue
+            except OSError:
+                continue
+            hint = f'127.0.0.1:{port} already accepting connections'
+            try:
+                # Best-effort: name the Docker publisher when present.
+                ps = subprocess.run(
+                    ['docker', 'ps', '--format', '{{.Names}}\t{{.Ports}}'],
+                    capture_output=True, text=True, timeout=5,
+                )
+                if ps.returncode == 0:
+                    needle = f':{port}->'
+                    for line in (ps.stdout or '').splitlines():
+                        if needle in line or f':{port}-' in line:
+                            name = line.split('\t', 1)[0].strip()
+                            if name:
+                                hint = f'port {port} published by Docker container {name}'
+                                break
+            except Exception:
+                pass
+            conflicts.append((int(port), hint))
+        return conflicts
+
     def _run_docker_compose(self, plugin_name: str, command: str, 
                            capture_output: bool = False) -> subprocess.CompletedProcess:
         """Run docker-compose command for a specific lab."""
@@ -311,9 +499,35 @@ class VimanaLabManager:
             cmd = ['docker-compose'] + command.split()
             
             if capture_output:
-                result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
             else:
-                result = subprocess.run(cmd, timeout=60)
+                # Stream progress to the terminal AND keep a copy so callers
+                # can surface a real error (compose often writes failures to
+                # stdout; without capture, CompletedProcess.stderr is None).
+                proc = subprocess.Popen(
+                    cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    text=True,
+                    bufsize=1,
+                )
+                chunks: List[str] = []
+                assert proc.stdout is not None
+                for line in proc.stdout:
+                    chunks.append(line)
+                    try:
+                        sys.stdout.write(line)
+                        sys.stdout.flush()
+                    except Exception:
+                        pass
+                returncode = proc.wait(timeout=300)
+                combined = ''.join(chunks)
+                result = subprocess.CompletedProcess(
+                    args=cmd,
+                    returncode=returncode,
+                    stdout=combined,
+                    stderr=combined,
+                )
             
             return result
             
@@ -406,6 +620,18 @@ class VimanaLabManager:
                 cprint(f"⚠️  Lab for '{plugin_name}' is already running", 'yellow')
                 self._show_lab_info(plugin_name)
                 return True
+
+            # Step 4b: Fail fast on host port collisions (common with other labs)
+            conflicts = self._port_conflicts(self._get_lab_ports(plugin_name))
+            if conflicts:
+                cprint(f"❌ Cannot start lab '{plugin_name}': host port(s) already in use", 'red')
+                for port, hint in conflicts:
+                    cprint(f"   • {hint}", 'yellow')
+                cprint(
+                    "   Stop the conflicting container/lab, or remap ports in the lab compose file.",
+                    'cyan',
+                )
+                return False
             
             # Step 5: Start the lab
             cprint(f"🚀 Starting lab for plugin '{plugin_name}'...", 'cyan')
@@ -413,7 +639,15 @@ class VimanaLabManager:
             # Run docker-compose up
             result = self._run_docker_compose(plugin_name, "up --build -d")
             if result.returncode != 0:
-                cprint(f"❌ Failed to start lab: {result.stderr}", 'red')
+                err = (result.stderr or result.stdout or '').strip()
+                if not err:
+                    err = f'docker-compose exited with code {result.returncode}'
+                # Prefer the last non-empty line (usually the bind/port error).
+                last = next(
+                    (ln.strip() for ln in reversed(err.splitlines()) if ln.strip()),
+                    err,
+                )
+                cprint(f"❌ Failed to start lab: {last}", 'red')
                 return False
             
             # Step 6: Wait for service to be ready
@@ -466,14 +700,19 @@ class VimanaLabManager:
             # Check if lab is running
             if not self._check_lab_health(plugin_name):
                 cprint(f"⚠️  Lab for '{plugin_name}' is not running", 'yellow')
+                # Still clear stale status entry if present
+                if plugin_name in self.active_labs:
+                    del self.active_labs[plugin_name]
+                    self._save_lab_status()
                 return True
             
             cprint(f"🛑 Stopping lab for plugin '{plugin_name}'...", 'cyan')
             
-            # Run docker-compose down
-            result = self._run_docker_compose(plugin_name, "down")
+            # Run docker-compose down (capture stderr for diagnostics)
+            result = self._run_docker_compose(plugin_name, "down", capture_output=True)
             if result.returncode != 0:
-                cprint(f"❌ Failed to stop lab: {result.stderr}", 'red')
+                err = (result.stderr or result.stdout or '').strip() or f'exit {result.returncode}'
+                cprint(f"❌ Failed to stop lab: {err}", 'red')
                 return False
             
             # Update status
@@ -499,6 +738,9 @@ class VimanaLabManager:
                             cprint(f"Warning: Could not remove environment file: {e}", 'yellow')
                 
                 del self.active_labs[plugin_name]
+                self._save_lab_status()
+            else:
+                # Lab was running in Docker but not tracked in status file — still OK
                 self._save_lab_status()
             
             cprint(f"✅ Lab for '{plugin_name}' stopped successfully!", 'green')
@@ -713,8 +955,10 @@ class VimanaLabManager:
         
         print()
         print("🛑 Lab Control:")
-        print(f"   Stop Lab:   vimana run --lab {plugin_name} --lab-operation stop")
+        print(f"   Start+Test: vimana run --lab {plugin_name} --test")
+        print(f"   Stop Lab:   vimana run --lab {plugin_name} --stop")
         print(f"   Lab Status: vimana run --lab {plugin_name} --lab-operation status")
+        print(f"   Cleanup:    vimana run --lab {plugin_name} --lab-operation cleanup")
         
         # Show lab-specific information if available
         lab_path = self._get_plugin_lab_path(plugin_name)
@@ -725,47 +969,92 @@ class VimanaLabManager:
         
         print()
 
+    def _discover_running_labs(self) -> List[str]:
+        """Find labs that respond on their ports (Docker truth), not only status file."""
+        running: List[str] = []
+        if not os.path.isdir(self.labs_root):
+            return running
+        for entry in os.scandir(self.labs_root):
+            if not entry.is_dir() or entry.name.startswith('_'):
+                continue
+            lab_dir = os.path.join(entry.path, 'lab')
+            if not os.path.isdir(lab_dir):
+                continue
+            try:
+                if self._check_lab_health(entry.name):
+                    running.append(entry.name)
+            except Exception:
+                continue
+        return sorted(running)
+
     def cleanup_labs(self) -> None:
-        """Stop all running labs and clean up."""
+        """Stop all running labs and clean up (Docker health + status file)."""
         try:
-            if not self.active_labs:
+            discovered = self._discover_running_labs()
+            tracked = list(self.active_labs.keys())
+            names = sorted(set(discovered) | set(tracked))
+
+            if not names:
                 cprint("ℹ️  No active labs to clean up", 'cyan')
                 return
-            
-            cprint("🧹 Cleaning up all labs...", 'cyan')
-            
-            for plugin_name in list(self.active_labs.keys()):
+
+            cprint("🧹 Cleaning up labs...", 'cyan')
+            if discovered:
+                cprint(f"   Detected running: {', '.join(discovered)}", 'white')
+            if tracked and set(tracked) - set(discovered):
+                stale = sorted(set(tracked) - set(discovered))
+                cprint(f"   Stale status entries: {', '.join(stale)}", 'yellow')
+
+            for plugin_name in names:
                 self.stop_lab(plugin_name)
-            
-            # Remove status file
+
+            self.active_labs = {}
             if os.path.exists(self.lab_status_file):
-                os.remove(self.lab_status_file)
-            
-            # Clean up any remaining targets files and .env files
-            for plugin_name, lab_info in self.active_labs.items():
-                if "targets_file" in lab_info:
-                    targets_file = lab_info["targets_file"]
-                    if targets_file and os.path.exists(targets_file):
-                        try:
-                            os.remove(targets_file)
-                            cprint(f"🗑️  Targets file removed: {targets_file}", 'cyan')
-                        except Exception as e:
-                            cprint(f"Warning: Could not remove targets file: {e}", 'yellow')
-                    
-                    # Also remove .env file
-                    lab_path = self._get_plugin_lab_path(plugin_name)
-                    env_file = os.path.join(lab_path, ".env")
-                    if os.path.exists(env_file):
-                        try:
-                            os.remove(env_file)
-                            cprint(f"🗑️  Environment file removed: {env_file}", 'cyan')
-                        except Exception as e:
-                            cprint(f"Warning: Could not remove environment file: {e}", 'yellow')
-            
+                try:
+                    os.remove(self.lab_status_file)
+                except Exception as e:
+                    cprint(f"Warning: Could not remove status file: {e}", 'yellow')
+
             cprint("✅ All labs cleaned up successfully!", 'green')
-            
+
         except Exception as e:
             cprint(f"❌ Error during cleanup: {str(e)}", 'red')
+
+
+def _resolve_lab_operation(handler_ns) -> str:
+    """
+    Resolve lab operation from flags / positional token.
+
+    Supports:
+      vimana run --lab X --lab-operation stop
+      vimana run --lab X --stop
+      vimana run --lab X stop          # positional (common mistake → now works)
+      vimana run --lab-operation cleanup   # no --lab required
+      vimana run --cleanup-labs
+      vimana run --lab-operation list
+    """
+    ops = {'start', 'stop', 'status', 'list', 'cleanup'}
+
+    if getattr(handler_ns, 'cleanup_labs', False):
+        return 'cleanup'
+
+    if getattr(handler_ns, 'lab_stop', False):
+        return 'stop'
+
+    positional = getattr(handler_ns, 'plugin_name', None)
+    if positional and str(positional).lower() in ops:
+        return str(positional).lower()
+
+    leftovers = getattr(handler_ns, 'args', None) or []
+    if isinstance(leftovers, (list, tuple)):
+        for tok in leftovers:
+            if str(tok).lower() in ops:
+                return str(tok).lower()
+
+    if getattr(handler_ns, 'lab_operation', None):
+        return str(handler_ns.lab_operation)
+
+    return 'start'
 
 
 def handle_lab_command(handler_ns) -> None:
@@ -776,22 +1065,32 @@ def handle_lab_command(handler_ns) -> None:
         handler_ns: Vimana handler namespace with lab parameters
     """
     try:
-        # Initialize lab manager
         lab_manager = VimanaLabManager(**vars(handler_ns))
-        
-        # Get the lab name from handler
-        lab_name = handler_ns.run_lab
-        
+        lab_name = getattr(handler_ns, 'run_lab', None) or None
+        operation = _resolve_lab_operation(handler_ns)
+
+        # Global ops do not require --lab
+        if operation in ('cleanup', 'list'):
+            if operation == 'list':
+                lab_manager.list_labs()
+            else:
+                lab_manager.cleanup_labs()
+            return
+
         if not lab_name:
             cprint("❌ No lab specified", 'red')
             cprint("   Usage: vimana run --lab <plugin_name>", 'cyan')
+            cprint("   Stop:  vimana run --lab <plugin_name> --stop", 'cyan')
+            cprint("   Test:  vimana run --lab <plugin_name> --test", 'cyan')
+            cprint("   All:   vimana run --cleanup-labs", 'cyan')
+            cprint("   List:  vimana run --lab-operation list", 'cyan')
             return
-        
-        # Handle different lab operations
-        if hasattr(handler_ns, 'lab_operation'):
-            operation = handler_ns.lab_operation
-        else:
-            operation = "start"  # Default operation
+
+        want_test = bool(getattr(handler_ns, 'lab_test', False))
+        if want_test and operation not in ('start',):
+            cprint("❌ --test only applies with lab start (default operation)", 'red')
+            cprint("   Usage: vimana run --lab <plugin_name> --test", 'cyan')
+            sys.exit(1)
         
         if operation == "start":
             success = lab_manager.start_lab(lab_name)
@@ -799,19 +1098,19 @@ def handle_lab_command(handler_ns) -> None:
             success = lab_manager.stop_lab(lab_name)
         elif operation == "status":
             success = lab_manager.status_lab(lab_name)
-        elif operation == "list":
-            lab_manager.list_labs()
-            return
-        elif operation == "cleanup":
-            lab_manager.cleanup_labs()
-            return
         else:
             cprint(f"❌ Unknown lab operation: {operation}", 'red')
             cprint("   Available operations: start, stop, status, list, cleanup", 'cyan')
+            cprint("   Tip: vimana run --lab <plugin> --stop", 'cyan')
+            cprint("   Tip: vimana run --cleanup-labs", 'cyan')
             return
         
         if not success:
             sys.exit(1)
+
+        if want_test and operation == "start":
+            if not lab_manager.test_lab_plugin(lab_name):
+                sys.exit(1)
             
     except Exception as e:
         cprint(f"❌ Lab management error: {str(e)}", 'red')

@@ -20,32 +20,39 @@ from core.load_settings import _version_
 
 
 class VimanaHelp:
-    ''' '''
+    """
+    Vimana Framework {0}
+    
+    Usage: vimana <command> [options]
+
+    Commands:
+        about   Framework information and version
+        api     Start Control API + Admin UI
+        monitor Start Exception Monitor (+ optional demo seed)
+        mcp     Start MCP stdio tool server (agents)
+        agent   Native agentic planner (LLM + Control tools)
+        create  Create new resources (env, vars, creds)
+        flush   Remove recorded resources
+        guide   Show plugin usage examples and arguments
+        help    Display comprehensive help for all commands
+        info    Show detailed plugin information
+        list    List available resources
+        load    Load recorded sessions
+        run     Execute plugins, cases, or workflows
+        show    Display detailed resource information
+        start   Start interactive mode
+
+    Run 'vimana <command> --help' for command-specific help.
+    """
     def __init__(self):
-        """
-        Vimana Framework {0}
-        
-        Usage: vimana <command> [options]
-
-        Commands:
-            about   Framework information and version
-            create  Create new resources (env, vars, creds)
-            flush   Remove recorded resources
-            guide   Show plugin usage examples and arguments
-            help    Display comprehensive help for all commands
-            info    Show detailed plugin information
-            list    List available resources
-            load    Load recorded sessions
-            run     Execute plugins, cases, or workflows
-            show    Display detailed resource information
-            start   Start interactive mode
-
-        Run 'vimana <command> --help' for command-specific help.
-        """
-        
+        pass
     def overview(self):
         ovw = {
             'about' : "Framework information and version",
+            'api'   : "Start Control API + Admin UI",
+            'monitor': "Start Exception Monitor (+ demo seed)",
+            'mcp'   : "Start MCP stdio tool server (agents)",
+            'agent' : "Native agentic planner (LLM + Control tools)",
             'create': "Create new resources (env, vars, creds)",
             'flush' : "Remove recorded resources", 
             'dbops' : "Database operations and maintenance",
@@ -570,6 +577,20 @@ class VimanaHelp:
     vimana run djapp8          # Execute case by name
     vimana run @cf12           # Execute case by ID
 
+    > Labs
+    Start a plugin lab (Docker):
+    vimana run --lab boundr
+
+    Start the lab and run the plugin against it automatically:
+    vimana run --lab boundr --test
+
+    Stop / status / cleanup:
+    vimana run --lab boundr --stop
+    vimana run --lab boundr --lab-operation status
+    vimana run --cleanup-labs
+    vimana run --lab-operation list
+    vimana run --lab-operation cleanup
+
     Note: --plugin, --siddhi, and --module are interchangeable.
     Use `vimana guide --plugin <name> --args` for detailed options.
         '''
@@ -601,6 +622,102 @@ class VimanaHelp:
 
         This command is intended for advanced users and administrators.
         More options will be added in future versions.
+        '''
+
+    def api(self):
+        '''
+        [ api ]
+
+        Start the Framework Control API and Admin UI.
+
+        Usage: vimana api [--host HOST] [--port PORT]
+
+        Options:
+            --host HOST       Bind address (default: 127.0.0.1)
+            --port PORT       Bind port (default: 8090)
+
+        Surfaces:
+            Admin UI   http://HOST:PORT/admin/
+            OpenAPI    http://HOST:PORT/docs
+            Health     GET /v1/health
+            Plugins    GET /v1/plugins
+            Run        POST /v1/plugins/{name}/run
+            Labs       GET|POST /v1/labs/{plugin}[/start|/stop]
+
+        Distinct from the Exception Monitor — see also: vimana monitor
+        '''
+
+    def monitor(self):
+        '''
+        [ monitor ]
+
+        Start the Exception Monitor API (djunch/d4m8 dashboard backend).
+
+        Usage:
+            vimana monitor
+            vimana monitor --seed-demo
+            vimana monitor --seed
+            vimana monitor --seed --apps shop,blog
+            vimana monitor --reset
+
+        Options:
+            --host HOST       Bind address (default: 127.0.0.1)
+            --port PORT       Bind port (default: 8000)
+            --seed-demo       Start already populated with multi-app mocks
+            --seed            POST /demo/seed to a running monitor
+            --reset           Clear in-memory + persisted monitor data
+            --apps LIST       Subset for seed (shop,blog,intranet,payments,cms)
+            --url URL         Remote monitor URL for --seed/--reset
+
+        Also mounted under Control API at /monitor when using: vimana api
+        Admin UI → Monitor drawer can Seed demo against that path.
+        '''
+
+    def mcp(self):
+        '''
+        [ mcp ]
+
+        Start the Vimana MCP stdio server (Fase 2.1 tool runtime).
+
+        Usage: vimana mcp
+
+        Exposes Control tools (plugins, runs, labs, specs, channels, cases)
+        for external agents (Cursor, Claude Code, etc.). No embedded LLM.
+
+        Also available over HTTP while Control API is running:
+            GET  /v1/tools
+            POST /v1/tools/{name}
+        '''
+
+    def agent(self):
+        '''
+        [ agent ]
+
+        Native agentic planner (Fase 2.2) — LLM + Control tools in-process.
+
+        Usage:
+            vimana agent "check health and list plugins"
+            vimana agent --provider scripted "smoke"
+            vimana agent --provider ollama --model qwen3.5:0.8b "…"
+
+        Options:
+            --provider   ollama | openai | scripted  (default: ollama)
+            --model      model name                  (default: llama3.2)
+            --base-url   OpenAI-compat base URL
+            --max-turns  max model↔tool rounds       (default: 8)
+            --json       machine-readable result
+            --quiet      suppress turn logs
+            --no-save    skip transcript under ~/.vimana/control/agent/
+            --policy     safe (default) | lab | run | full
+            --allow-tool NAME   (repeatable)
+            --deny-tool  NAME   (repeatable; always wins)
+            --show-policy       dump policy matrix + threat notes
+
+        Env: VIMANA_AGENT_PROVIDER, VIMANA_AGENT_MODEL, VIMANA_AGENT_BASE_URL,
+        VIMANA_AGENT_API_KEY, VIMANA_AGENT_MAX_TURNS, VIMANA_AGENT_POLICY,
+        VIMANA_AGENT_ALLOW_TOOLS, VIMANA_AGENT_DENY_TOOLS
+
+        Security: default policy=safe (read-only tools). Escalation is explicit.
         '''
 
     @staticmethod
@@ -644,6 +761,10 @@ class VimanaHelp:
             'help': VimanaHelp._get_help_help,
             'args': VimanaHelp._get_args_help,
             'about': VimanaHelp._get_about_help,
+            'api': VimanaHelp._get_api_help,
+            'monitor': VimanaHelp._get_monitor_help,
+            'mcp': VimanaHelp._get_mcp_help,
+            'agent': VimanaHelp._get_agent_help,
             'set_scope': VimanaHelp._get_scope_help,
             'general_options': VimanaHelp._get_general_options_help,
             'save_case': VimanaHelp._get_save_case_help,
@@ -677,18 +798,22 @@ class VimanaHelp:
         """Get command overview as a string"""
         return """
 Command Overview:
-  about  - Framework information and version
-  create - Create new resources (env, vars, creds)
-  flush  - Remove recorded resources
-  dbops  - Database operations and maintenance
-  guide  - Show plugin usage examples and arguments
-  help   - Display comprehensive help for all commands
-  info   - Show detailed plugin information
-  list   - List available resources
-  load   - Load recorded sessions
-  run    - Execute plugins, cases, or workflows
-  show   - Display detailed resource information
-  start  - Start interactive mode
+  about   - Framework information and version
+  api     - Start Control API + Admin UI
+  monitor - Start Exception Monitor (+ demo seed)
+  mcp     - Start MCP stdio tool server (agents)
+  agent   - Native agentic planner (LLM + Control tools)
+  create  - Create new resources (env, vars, creds)
+  flush   - Remove recorded resources
+  dbops   - Database operations and maintenance
+  guide   - Show plugin usage examples and arguments
+  help    - Display comprehensive help for all commands
+  info    - Show detailed plugin information
+  list    - List available resources
+  load    - Load recorded sessions
+  run     - Execute plugins, cases, or workflows
+  show    - Display detailed resource information
+  start   - Start interactive mode
 """
     
     @staticmethod
@@ -701,6 +826,29 @@ Display comprehensive framework information including version details,
 capabilities, and system information. Use 'vimana about' to view
 complete framework overview and current installation details.
 """
+
+    @staticmethod
+    def _get_api_help() -> str:
+        """Get api help text"""
+        return VimanaHelp.api.__doc__ or """
+[ api ]
+
+Start the Framework Control API and Admin UI.
+
+Usage: vimana api [--host HOST] [--port PORT]
+"""
+
+    @staticmethod
+    def _get_monitor_help() -> str:
+        return VimanaHelp.monitor.__doc__ or '[ monitor ]\n\nStart Exception Monitor.\n'
+
+    @staticmethod
+    def _get_mcp_help() -> str:
+        return VimanaHelp.mcp.__doc__ or '[ mcp ]\n\nStart MCP stdio server.\n'
+
+    @staticmethod
+    def _get_agent_help() -> str:
+        return VimanaHelp.agent.__doc__ or '[ agent ]\n\nNative agentic planner.\n'
 
     @staticmethod
     def _get_help_help() -> str:

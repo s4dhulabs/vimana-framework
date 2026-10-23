@@ -93,7 +93,7 @@ def abduct():
         VimanaHelp().basic_help()
         sys.exit(1)
 
-    elif arg_len == 1 and cmd != 'start':
+    elif arg_len == 1 and cmd not in ('start', 'api', 'mcp', 'monitor'):
         if cmd in vmnf_cmds.keys():
             #if cmd !='about':
             #    vmn05()
@@ -167,6 +167,30 @@ def abduct():
         print()
         sys.exit(1)
 
+    if getattr(handler_ns, 'control_api', False):
+        from core.api.control import serve_control_api
+        host = getattr(handler_ns, 'api_host', None) or '127.0.0.1'
+        port = getattr(handler_ns, 'api_port', None) or 8090
+        serve_control_api(host=host, port=int(port))
+        return True
+
+    if getattr(handler_ns, 'exception_monitor', False):
+        from core.api.backend.cli import run_monitor_cli
+        run_monitor_cli(handler_ns)
+        return True
+
+    if getattr(handler_ns, 'mcp_server', False):
+        from core.api.control import serve_mcp_stdio
+        serve_mcp_stdio()
+        return True
+
+    if getattr(handler_ns, 'agent_mode', False):
+        from core.agentic import run_agent_cli
+        if not getattr(handler_ns, 'agent_prompt', None) and getattr(handler_ns, 'prompt', None):
+            handler_ns.agent_prompt = handler_ns.prompt
+        run_agent_cli(handler_ns)
+        return True
+
     # run vimana in full navigation mode
     if cmd == 'start':
         handler_ns.start = True
@@ -189,6 +213,14 @@ def abduct():
                 handler_ns.start_resource.append(arg)
 
     if handler_ns.run_lab:
+        from core.labs.vmnf_labs import handle_lab_command
+        handle_lab_command(handler_ns)
+        return True
+
+    # Global lab ops without --lab (cleanup / list)
+    if getattr(handler_ns, 'cleanup_labs', False) or getattr(handler_ns, 'lab_operation', None) in (
+        'cleanup', 'list',
+    ):
         from core.labs.vmnf_labs import handle_lab_command
         handle_lab_command(handler_ns)
         return True
@@ -310,14 +342,21 @@ def abduct():
         CasManager(handler_ns).list_cases()
  
     #~ list all scans
-    elif handler_ns.list_scans:
+    elif getattr(handler_ns, 'list_scans', False):
         VFScan(**vars(handler_ns)).list_scans()
 
-    elif handler_ns.list_specs:
+    elif getattr(handler_ns, 'list_specs', False):
         VFSpecsManager(**vars(handler_ns)).list_specs()
 
+    #~ flush OpenAPI specs
+    elif getattr(handler_ns, 'flush_specs', False):
+        VFSpecsManager(**vars(handler_ns)).flush_specs(remove_all=True)
+
+    elif getattr(handler_ns, 'flush_spec', False):
+        VFSpecsManager(**vars(handler_ns)).flush_spec(str(handler_ns.flush_spec))
+
     #~ list all channels
-    elif handler_ns.list_channels:
+    elif getattr(handler_ns, 'list_channels', False):
         from core.vmnf_channels import (
             list_channels, 
             get_channels_by_type, 

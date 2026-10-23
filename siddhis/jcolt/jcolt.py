@@ -56,19 +56,19 @@ class siddhi:
         self.cache_dir = f'.vimana/cache/{plugin_scope}'
         self.abs_cache_path = os.path.join(os.path.expanduser("~"), self.cache_dir)
         
-        self.export_enabled = self.vmnf_handler['export_body']
-        self.fuzzer_enabled =  self.vmnf_handler['fuzzerspec_enabled']
-        self.api_scan_enabled = self.vmnf_handler['api_scan_enabled']
+        self.export_enabled = self.vmnf_handler.get('export_body', False)
+        self.fuzzer_enabled =  self.vmnf_handler.get('fuzzerspec_enabled', False)
+        self.api_scan_enabled = self.vmnf_handler.get('api_scan_enabled', False)
         self.ENV_FALLBACK_SPEC_ID = None
-        self.fingerprint_enabled = self.vmnf_handler['fingerprint']
-        self.inspect_spec = self.vmnf_handler['apispec_enabled']
+        self.fingerprint_enabled = self.vmnf_handler.get('fingerprint', False)
+        self.inspect_spec = self.vmnf_handler.get('apispec_enabled', False)
         self.workflow_mode = False
         
         # Load environment variables from .jcolt_env
         self.load_jcolt_env()
 
         # vimana run -p jcolt --oas OAS9981
-        if self.vmnf_handler['apispec_enabled']:
+        if self.vmnf_handler.get('apispec_enabled'):
 
             # vimana run -p jcolt --oas OAS9981 --fuzzspec
             if self.fuzzer_enabled == 'ENV_FALLBACK':
@@ -91,33 +91,33 @@ class siddhi:
             self.v_color = None
             self.align = 25
         
-        self.list_pydantic_models = self.vmnf_handler['list_pydantic_models']
-        self.list_field_constraints = self.vmnf_handler['list_field_constraints']
-        self.list_endpoint_models = self.vmnf_handler['list_endpoint_models']
-        self.list_security_fields = self.vmnf_handler['list_security_fields']
-        self.list_enums = self.vmnf_handler['list_enums']
-        self.list_model_relationships = self.vmnf_handler['list_model_relationships']
-        self.list_validation_coverage = self.vmnf_handler['list_validation_coverage']
+        self.list_pydantic_models = self.vmnf_handler.get('list_pydantic_models', False)
+        self.list_field_constraints = self.vmnf_handler.get('list_field_constraints', False)
+        self.list_endpoint_models = self.vmnf_handler.get('list_endpoint_models', False)
+        self.list_security_fields = self.vmnf_handler.get('list_security_fields', False)
+        self.list_enums = self.vmnf_handler.get('list_enums', False)
+        self.list_model_relationships = self.vmnf_handler.get('list_model_relationships', False)
+        self.list_validation_coverage = self.vmnf_handler.get('list_validation_coverage', False)
 
-        self.list_opids = self.vmnf_handler['list_op_ids']
-        self.list_parameters = self.vmnf_handler['list_parameters']
-        self.list_schemas = self.vmnf_handler['list_schemas']
-        self.list_response_codes =  self.vmnf_handler['list_response_codes']
-        self.list_examples = self.vmnf_handler['list_examples']
-        self.list_tags = self.vmnf_handler['list_tags']
-        self.list_paths_mode = self.vmnf_handler['list_paths']
-        self.schema_validate = self.vmnf_handler['schema_validate']
-        self.list_specs  = self.vmnf_handler['list_specs'] 
-        self.list_descriptions  = self.vmnf_handler['list_descriptions'] 
-        self.flush_spec = self.vmnf_handler['flush_spec']
-        self.flush_specs = self.vmnf_handler['flush_specs']
+        self.list_opids = self.vmnf_handler.get('list_op_ids', False)
+        self.list_parameters = self.vmnf_handler.get('list_parameters', False)
+        self.list_schemas = self.vmnf_handler.get('list_schemas', False)
+        self.list_response_codes =  self.vmnf_handler.get('list_response_codes', False)
+        self.list_examples = self.vmnf_handler.get('list_examples', False)
+        self.list_tags = self.vmnf_handler.get('list_tags', False)
+        self.list_paths_mode = self.vmnf_handler.get('list_paths', False)
+        self.schema_validate = self.vmnf_handler.get('schema_validate', False)
+        self.list_specs  = self.vmnf_handler.get('list_specs', False)
+        self.list_descriptions  = self.vmnf_handler.get('list_descriptions', False)
+        self.flush_spec = self.vmnf_handler.get('flush_spec', False)
+        self.flush_specs = self.vmnf_handler.get('flush_specs', False)
         
-        self.api_scan_enabled = self.vmnf_handler['api_scan_enabled']
-        self.target_url = self.vmnf_handler['target_url'] if not self.api_scan_enabled else self.api_scan_enabled
-        self.list_response_headers = self.vmnf_handler['list_response_headers']
-        self.load_from_env = self.vmnf_handler['load_from_env']
+        self.api_scan_enabled = self.vmnf_handler.get('api_scan_enabled', False)
+        self.target_url = self.vmnf_handler.get('target_url') if not self.api_scan_enabled else self.api_scan_enabled
+        self.list_response_headers = self.vmnf_handler.get('list_response_headers', False)
+        self.load_from_env = self.vmnf_handler.get('load_from_env', False)
         self.env_name = self.load_from_env
-        self.describe_mode = self.vmnf_handler['describe_mode_enabled']
+        self.describe_mode = self.vmnf_handler.get('describe_mode_enabled', False)
 
         self.pydantic_test = self.vmnf_handler.get('pydantic_test', False)
         self.pydantic_test_types = self.vmnf_handler.get('pydantic_test_types', [])
@@ -1182,10 +1182,13 @@ class siddhi:
             flush_specs(f_specs)
             sys.exit(0)
 
-        # Direct API scan mode - now handles both direct target and ENV_FALLBACK
+        # Direct API scan mode - now handles both direct target and ENV_FALLBACK.
+        # When pydantic/serialization tests are also requested (agent --auto / Control),
+        # scan first then fall through into the test path instead of exiting.
         if self.api_scan_enabled:
             asyncio.run(self.check_api())
-            
+            self.load_jcolt_env()
+
             # Show additional environment info when using fallback
             if self.api_scan_enabled == 'ENV_FALLBACK' and self.verbose_enabled:
                 print("\nCurrent Environment Configuration:")
@@ -1195,13 +1198,26 @@ class siddhi:
                 print(f" → Total Paths: {self.jcolt_env.get('JCOLT_TOTAL_PATHS')}")
                 print(f" → Available Methods: {self.jcolt_env.get('JCOLT_API_METHODS')}")
                 print(f" → Last Scan: {self.jcolt_env.get('JCOLT_LAST_SCAN_DATE')}\n")
-            
-            self.list_paths()
-            sys.exit(0)
+
+            wants_tests = bool(self.pydantic_test or self.serialization_test)
+            if wants_tests and self.ENV_FALLBACK_SPEC_ID:
+                # Continue into set_spec + pydantic/serialization below
+                self.vmnf_handler['apispec_enabled'] = self.ENV_FALLBACK_SPEC_ID
+                self.inspect_spec = False
+            else:
+                self.list_paths()
+                if self.vmnf_handler.get('runner_mode'):
+                    return {
+                        'plugin': 'jcolt',
+                        'mode': 'api_scan',
+                        'ok': True,
+                        'spec_id': self.ENV_FALLBACK_SPEC_ID,
+                    }
+                sys.exit(0)
 
         # Determine if we're in workflow mode
         self.workflow_mode = not any([
-            self.vmnf_handler['apispec_enabled'],
+            self.vmnf_handler.get('apispec_enabled'),
             self.inspect_spec,
             self.fuzzer_enabled not in [False, 'ENV_FALLBACK']
         ])
@@ -1261,13 +1277,13 @@ class siddhi:
             sys.exit(0)
 
         # Handle all spec-dependent operations
+        report = None
         if self.describe_mode:
             self.describe_spec()
         elif self.serialization_test:
-            #print("🎷 Working on it...")
-            self.run_serialization_tests()
+            report = self.run_serialization_tests()
         elif self.pydantic_test:
-            self.run_pydantic_tests()
+            report = self.run_pydantic_tests()
         elif self.fingerprint_enabled:
             print("🎷 Working on it...")
         elif self.list_opids:
@@ -1311,5 +1327,17 @@ class siddhi:
             # Default behavior in workflow mode - list paths
             self.list_paths()
 
-            
-            
+        if self.vmnf_handler.get('runner_mode'):
+            if isinstance(report, dict):
+                report.setdefault('plugin', 'jcolt')
+                report.setdefault('ok', True)
+                report.setdefault('spec_id', getattr(self, 'spec_id', None) or self.ENV_FALLBACK_SPEC_ID)
+                return report
+            return {
+                'plugin': 'jcolt',
+                'ok': True,
+                'spec_id': getattr(self, 'spec_id', None) or self.ENV_FALLBACK_SPEC_ID,
+                'result': report,
+            }
+        return report
+

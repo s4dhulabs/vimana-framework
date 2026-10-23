@@ -137,6 +137,14 @@ class VimanaParser:
         flush_cmd.add_argument('--fastflush',action='store_true', dest='fastflush')
         flush_cmd.add_argument('--channel', action='store', dest='flush_channel')
         flush_cmd.add_argument('--channels', action='store_true', dest='flush_channels')
+        flush_cmd.add_argument(
+            '--specs', action='store_true', dest='flush_specs',
+            help='Flush all registered OpenAPI specs (_SPECS_)',
+        )
+        flush_cmd.add_argument(
+            '--spec', action='store', dest='flush_spec',
+            help='Flush one OpenAPI spec by id (e.g. aS2022)',
+        )
         # -----------------------------------------------------------------
         # `load` command overview 
         # -----------------------------------------------------------------
@@ -181,9 +189,36 @@ class VimanaParser:
         run_cmd.add_argument('--channel', action='store', nargs='?', default=False, dest='cmd_channel')
         run_cmd.add_argument('--ci-mode', action='store_true', dest='ci_mode')
         run_cmd.add_argument('--lab', action='store', dest='run_lab', help='Run a lab for the specified plugin')
-        run_cmd.add_argument('--lab-operation', action='store', dest='lab_operation', 
-                           choices=['start', 'stop', 'status', 'list', 'cleanup'], 
-                           default='start', help='Lab operation to perform (default: start)')
+        run_cmd.add_argument(
+            '--lab-operation',
+            action='store',
+            dest='lab_operation',
+            choices=['start', 'stop', 'status', 'list', 'cleanup'],
+            default=None,
+            help='Lab operation (default: start when --lab is set). '
+                 'cleanup/list work without --lab.',
+        )
+        run_cmd.add_argument(
+            '--cleanup-labs',
+            action='store_true',
+            dest='cleanup_labs',
+            default=False,
+            help='Stop all running labs (alias for --lab-operation cleanup)',
+        )
+        run_cmd.add_argument(
+            '--stop',
+            action='store_true',
+            dest='lab_stop',
+            default=False,
+            help='Shortcut for --lab-operation stop (with --lab)',
+        )
+        run_cmd.add_argument(
+            '--test',
+            action='store_true',
+            dest='lab_test',
+            default=False,
+            help='After starting the lab, run the plugin against it (uses composition.lab.run_hint)',
+        )
         #run_cmd.add_argument('--cmd', action='store', nargs='?', default=False, dest='cmd')
         #run_cmd.add_argument('--pycode', action='store', nargs='?', default=False, dest='pycode')
 
@@ -284,7 +319,237 @@ class VimanaParser:
             help='Show module arguments'
         )
         args_cmd.add_argument('-m', '--module',action='store',dest='module_args')
-        
+
+        # -----------------------------------------------------------------
+        # `api` — Framework Control API + Admin UI
+        # -----------------------------------------------------------------
+        api_cmd = subparsers.add_parser(
+            'api',
+            help='Start Framework Control API (Admin UI at /admin)',
+            add_help=False,
+        )
+        api_cmd.add_argument(
+            '--host',
+            action='store',
+            dest='api_host',
+            default='127.0.0.1',
+            help='Bind address (default: 127.0.0.1)',
+        )
+        api_cmd.add_argument(
+            '--port',
+            action='store',
+            dest='api_port',
+            type=int,
+            default=8090,
+            help='Bind port (default: 8090)',
+        )
+        api_cmd.set_defaults(control_api=True)
+
+        # -----------------------------------------------------------------
+        # `monitor` — Exception Monitor (legado) + demo seed
+        # -----------------------------------------------------------------
+        monitor_cmd = subparsers.add_parser(
+            'monitor',
+            help='Start Exception Monitor API (FuzzingDashboard backend) or seed demo data',
+            add_help=False,
+        )
+        monitor_cmd.add_argument(
+            '--host',
+            dest='monitor_host',
+            default='127.0.0.1',
+            help='Bind address (default: 127.0.0.1)',
+        )
+        monitor_cmd.add_argument(
+            '--port',
+            dest='monitor_port',
+            type=int,
+            default=8000,
+            help='Bind port (default: 8000)',
+        )
+        monitor_cmd.add_argument(
+            '--url',
+            dest='monitor_url',
+            default=None,
+            help='Remote monitor URL for --seed / --reset (default: http://host:port)',
+        )
+        monitor_cmd.add_argument(
+            '--seed',
+            dest='monitor_seed',
+            action='store_true',
+            help='POST /demo/seed to a running monitor (does not start server)',
+        )
+        monitor_cmd.add_argument(
+            '--seed-demo',
+            dest='monitor_seed_demo',
+            action='store_true',
+            help='Start monitor and load multi-app mock exceptions',
+        )
+        monitor_cmd.add_argument(
+            '--reset',
+            dest='monitor_reset',
+            action='store_true',
+            help='POST /demo/reset to clear persisted + in-memory data',
+        )
+        monitor_cmd.add_argument(
+            '--apps',
+            dest='monitor_apps',
+            default=None,
+            help='Comma-separated app subset for seed (shop,blog,intranet,payments,cms)',
+        )
+        monitor_cmd.set_defaults(exception_monitor=True)
+
+        # -----------------------------------------------------------------
+        # 'mcp' — MCP stdio tool server (agents; Fase 2.1)
+        # -----------------------------------------------------------------
+        mcp_cmd = subparsers.add_parser(
+            'mcp',
+            help='Start Vimana MCP stdio server (tools over Control services)',
+            add_help=False,
+        )
+        mcp_cmd.set_defaults(mcp_server=True)
+
+        # -----------------------------------------------------------------
+        # 'agent' — native agentic loop (Fase 2.2)
+        # -----------------------------------------------------------------
+        agent_cmd = subparsers.add_parser(
+            'agent',
+            help='Native agentic planner (LLM + Control tools)',
+            add_help=False,
+        )
+        agent_cmd.add_argument(
+            'prompt',
+            nargs='?',
+            default=None,
+            help='Goal / instruction for the agent',
+        )
+        agent_cmd.add_argument(
+            '--prompt',
+            dest='agent_prompt',
+            default=None,
+            help='Goal (alternative to positional prompt)',
+        )
+        agent_cmd.add_argument(
+            '--provider',
+            dest='agent_provider',
+            default='ollama',
+            help='LLM provider: ollama | openai | scripted (default: ollama)',
+        )
+        agent_cmd.add_argument(
+            '--model',
+            dest='agent_model',
+            default=None,
+            help='Model name (default: auto-detect from Ollama tags)',
+        )
+        agent_cmd.add_argument(
+            '--base-url',
+            dest='agent_base_url',
+            default=None,
+            help='LLM base URL (default: http://127.0.0.1:11434/v1)',
+        )
+        agent_cmd.add_argument(
+            '--api-key',
+            dest='agent_api_key',
+            default='ollama',
+            help='API key for OpenAI-compatible endpoints',
+        )
+        agent_cmd.add_argument(
+            '--max-turns',
+            dest='agent_max_turns',
+            type=int,
+            default=8,
+            help='Max model↔tool rounds (default: 8)',
+        )
+        agent_cmd.add_argument(
+            '--json',
+            dest='agent_json',
+            action='store_true',
+            help='Emit machine-readable JSON result',
+        )
+        agent_cmd.add_argument(
+            '--quiet',
+            dest='agent_quiet',
+            action='store_true',
+            help='Suppress turn logs on stderr',
+        )
+        agent_cmd.add_argument(
+            '--no-save',
+            dest='agent_no_save',
+            action='store_true',
+            help='Do not persist transcript under ~/.vimana/control/agent/',
+        )
+        agent_cmd.add_argument(
+            '--policy',
+            dest='agent_policy',
+            default=None,
+            help='Tool privilege: safe (default) | lab | run | full',
+        )
+        agent_cmd.add_argument(
+            '--allow-tool',
+            dest='agent_allow_tools',
+            action='append',
+            default=None,
+            help='Extra tool name to allow (repeatable / comma-separated via env)',
+        )
+        agent_cmd.add_argument(
+            '--deny-tool',
+            dest='agent_deny_tools',
+            action='append',
+            default=None,
+            help='Tool name to deny (wins over allow/policy; repeatable)',
+        )
+        agent_cmd.add_argument(
+            '--show-policy',
+            dest='agent_show_policy',
+            action='store_true',
+            help='Print tool policy matrix + threat notes as JSON and exit',
+        )
+        agent_cmd.add_argument(
+            '--scripted-deny',
+            dest='agent_scripted_deny',
+            action='store_true',
+            help='With --provider scripted: attempt vimana_lab_cleanup (security smoke)',
+        )
+        agent_cmd.add_argument(
+            '--scripted-scenario',
+            dest='agent_scripted_scenario',
+            default=None,
+            help='With --provider scripted: named scenario (boundr | deny | remote-deny)',
+        )
+        agent_cmd.add_argument(
+            '--allow-target',
+            dest='agent_allow_targets',
+            action='append',
+            default=None,
+            help='Host allowed for EXECUTE targets (repeatable; default: loopback only)',
+        )
+        agent_cmd.add_argument(
+            '--allow-any-target',
+            dest='agent_allow_any_target',
+            action='store_true',
+            help='Disable EXECUTE host allowlist (explicit opt-in for remote scans)',
+        )
+        agent_cmd.add_argument(
+            '--confirm',
+            dest='agent_confirm',
+            action='store_true',
+            help='Prompt before each EXECUTE tool (run_plugin / run_case)',
+        )
+        agent_cmd.add_argument(
+            '--yes',
+            dest='agent_yes',
+            action='store_true',
+            help='Non-interactive: skip EXECUTE confirmation (CI / scripted)',
+        )
+        agent_cmd.add_argument(
+            '--auto',
+            dest='agent_auto',
+            action='store_true',
+            help=(
+                'After analyze fingerprint/triage, run the full deterministic '
+                'plugin queue (FastAPI: jcolt→fff→pyserial→…; Django: sttinger→dmt→d4m8→…)'
+            ),
+        )
+        agent_cmd.set_defaults(agent_mode=True)
         return parser
 
     def start_handler(self):
@@ -341,6 +606,9 @@ class VimanaParser:
             plugin_run      = False,
             run_lab         = False,
             lab_operation   = False,
+            cleanup_labs    = False,
+            lab_stop        = False,
+            lab_test        = False,
             external_disabled = False,
             module_list     = False,
             list_payloads   = False,
@@ -348,6 +616,7 @@ class VimanaParser:
             list_cases      = False,
             list_sessions   = False,
             list_scans      = False,
+            list_specs      = False,
             navigation_mode = False,
             navi            = False,
             save_case       = False,
@@ -366,6 +635,8 @@ class VimanaParser:
             flush_cases     = False,
             flush_session   = False,
             flush_case      = False,
+            flush_specs     = False,
+            flush_spec      = False,
             endpoint_url    = False,
             xray_enabled    = False,
             fastflush       = False,
@@ -398,7 +669,40 @@ class VimanaParser:
             db_update       = False,
             db_rename       = False,
             db_integrity_check = False,
-            ci_mode         = False
+            ci_mode         = False,
+            control_api     = False,
+            exception_monitor = False,
+            monitor_host = False,
+            monitor_port = False,
+            monitor_url = False,
+            monitor_seed = False,
+            monitor_seed_demo = False,
+            monitor_reset = False,
+            monitor_apps = False,
+            mcp_server      = False,
+            agent_mode      = False,
+            api_host        = False,
+            api_port        = False,
+            agent_prompt    = False,
+            agent_provider  = False,
+            agent_model     = False,
+            agent_base_url  = False,
+            agent_api_key   = False,
+            agent_max_turns = False,
+            agent_json      = False,
+            agent_quiet     = False,
+            agent_no_save   = False,
+            agent_policy    = False,
+            agent_allow_tools = False,
+            agent_deny_tools = False,
+            agent_show_policy = False,
+            agent_scripted_deny = False,
+            agent_scripted_scenario = False,
+            agent_allow_targets = False,
+            agent_allow_any_target = False,
+            agent_confirm = False,
+            agent_yes = False,
+            agent_auto = False,
         )
 
         if len(sys.argv) > 1:

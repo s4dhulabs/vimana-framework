@@ -1,0 +1,105 @@
+# -*- coding: utf-8 -*-
+#  __ _
+#   \/imana 2016
+#   [|-ramewørk
+#
+# This file is part of Vimana Framework Project.
+
+name: Ormak
+author: s4dhu <s4dhul4bs[at]prontonmail[dot]ch
+brief: Django ORM relational filter leak auditor
+category: Audit
+framework: Django
+info: Proves a Django queryset filter accepts untrusted relational lookups and can change which rows come back.
+module: siddhis/ormak/ormak.py
+package: Django REST Framework
+type: DAST
+astt: DAST
+tags:
+  - ORM
+  - Django
+  - DRF
+  - Information Exposure
+composition:
+  mode: Standalone
+  orchestrator_ready: false
+  lab:
+    port: 18108
+    run_hint: vimana run {plugin} --target-url {url}/api/articles/ --orm-audit --orm-canary-field created_by__note --json --no-channels
+  specialty_args:
+    group: orm
+    tactical_keys:
+    - orm_audit_enabled
+    flags:
+    - flags:
+      - --orm-audit
+      dest: orm_audit_enabled
+      action: store_true
+      default: false
+      help: Probe the target for a relational ORM filter leak
+    - flags:
+      - --orm-canary-field
+      dest: orm_canary_field
+      action: store
+      default: false
+      help: Relation field to recover with startswith (lab canary is created_by__note)
+    - flags:
+      - --orm-canary-alphabet
+      dest: orm_canary_alphabet
+      action: store
+      default: abcdefghijklmnopqrstuvwxyz
+      help: Alphabet used to recover the canary field
+    - flags:
+      - --orm-safe-url
+      dest: orm_safe_url
+      action: store
+      default: false
+      help: Allowlisted sink to confirm the same lookup is rejected
+description: |
+  Ormak checks whether a JSON body is unpacked into a Django
+  QuerySet.filter call. A relational lookup that is not part of the
+  response shape must change the result set. The paired lab exposes
+  that sink and a second view that allowlists title and title__contains.
+
+  The audit does not walk password hashes. When --orm-canary-field is
+  set, a short value is recovered from that field only. If both letter
+  cases match, the oracle is marked case-insensitive and the recovered
+  text is not treated as byte-exact.
+references:
+  links:
+    - https://www.elttam.com/blog/plormbing-your-django-orm
+  cwe:
+    - CWE-200 - Exposure of Sensitive Information to an Unauthorized Actor
+vfset:
+  parse_plugin_scope: False
+guide:
+  naviargs:
+    target_url: True
+  args: |
+    ø----------------------------------------------------------------------ø
+    ⣿ ORMAK — Django ORM relational filter leak
+    ø-----------+----------------------------------------------------------ø
+     --orm-audit              Probe relational lookups against target-url
+     --orm-canary-field PATH  Field to recover (lab: created_by__note)
+     --orm-canary-alphabet S  Alphabet for that recovery
+     --orm-safe-url URL       Sink that must reject the same lookup
+    ø-----------+----------------------------------------------------------ø
+     --json / --ci-mode / --no-channels
+  examples: |
+    vimana run ormak --target-url http://127.0.0.1:18108/api/articles/ \
+      --orm-audit --orm-canary-field created_by__note --json --no-channels
+
+    vimana run ormak --target-url http://127.0.0.1:18108/api/articles/safe/ \
+      --orm-audit --json --no-channels
+  lab_setup: |
+    Docker lab (vulnerable filter + allowlisted filter):
+
+      vimana run --lab ormak
+
+    Lab URL: http://localhost:18108
+    Paths: /api/articles/ and /api/articles/safe/
+
+    Test:
+
+      vimana run ormak --target-url http://127.0.0.1:18108/api/articles/ \
+        --orm-audit --orm-canary-field created_by__note --json --no-channels

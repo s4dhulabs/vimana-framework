@@ -254,3 +254,16 @@ class VFSpecsManager:
 
     def list_specs(self):
         return list_specs(self.get_specs())
+
+    def flush_specs(self, remove_all: bool = True, spec_ids: Optional[List[str]] = None):
+        """Remove cached OpenAPI specs from DB + disk (framework-level)."""
+        from siddhis.jcolt.utils import flush_specs as _flush_specs
+        if remove_all:
+            return _flush_specs(None, True)
+        ids = spec_ids or []
+        if isinstance(ids, str):
+            ids = [x for x in ids.replace(',', ' ').split() if x]
+        return _flush_specs(ids, False)
+
+    def flush_spec(self, spec_id: str):
+        return self.flush_specs(remove_all=False, spec_ids=[spec_id])
